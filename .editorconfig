@@ -1,0 +1,22 @@
+# EditorConfig 配置文件
+# 用于统一不同编辑器的代码风格
+# 文档：https://editorconfig.org
+
+root = true
+
+# 所有文件的默认配置
+[*]
+charset = utf-8                      # 字符编码：UTF-8
+indent_size = 2                      # 缩进大小：2 个空格
+indent_style = space                 # 缩进风格：空格
+insert_final_newline = true          # 文件末尾插入空行
+trim_trailing_whitespace = true      # 删除行尾空格
+end_of_line = lf                     # 换行符：LF (Unix 风格)
+
+# Markdown 文件特殊配置
+[*.md]
+trim_trailing_whitespace = false     # 保留行尾空格（Markdown 语法需要）
+
+# JSON/YAML 文件配置
+[*.{json,yml,yaml}]
+indent_size = 2                      # 缩进大小：2 个空格
