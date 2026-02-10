@@ -38,3 +38,6 @@ __screenshots__/
 # docs
 docs/.vitepress/cache
 docs/.vitepress/dist
+
+#claude
+.claude/
