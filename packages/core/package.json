@@ -1,0 +1,29 @@
+{
+    "name": "@vtable-guild/core",
+    "version": "0.0.1",
+    "description": "Core utilities and theme system for vtable-guild",
+    "type": "module",
+    "files": [
+        "dist"
+    ],
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.mjs"
+        }
+    },
+    "main": "./dist/index.mjs",
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "build": "vite build",
+        "dev": "vite build --watch",
+        "type-check": "vue-tsc --build"
+    },
+    "dependencies": {
+        "tailwind-variants": "^3.2.2"
+    },
+    "peerDependencies": {
+        "vue": "^3.5.0"
+    },
+    "license": "MIT"
+}
