@@ -8,12 +8,11 @@
     "pnpm": ">=10.28.0"
   },
   "scripts": {
-    "dev": "vite",
-    "build": "run-p type-check \"build-only {@}\" --",
-    "preview": "vite preview",
-    "build-only": "vite build",
-    "type-check": "vue-tsc --build",
-    "lint": "eslint . --fix --cache",
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "type-check": "turbo run type-check",
     "lint:style": "stylelint \"**/*.{css,scss,sass,less,vue,html}\" --fix",
     "format": "prettier --write --experimental-cli src/",
     "prepare": "husky",

@@ -41,3 +41,6 @@ docs/.vitepress/dist
 
 #claude
 .claude/
+
+# turbo
+.turbo
