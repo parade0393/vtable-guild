@@ -19,8 +19,5 @@
     "dev": "vite build --watch",
     "type-check": "vue-tsc --build"
   },
-  "peerDependencies": {
-    "@vtable-guild/core": "workspace:*"
-  },
   "license": "MIT"
 }
