@@ -213,32 +213,7 @@ import '../assets/css/main.css'
 ````typescript
 // packages/core/src/utils/types.ts
 
-import type { TVReturnType } from 'tailwind-variants'
-
 // ---------- 主题配置相关 ----------
-
-/**
- * 从 tv() 返回类型中提取 slots 名称的联合类型。
- *
- * 使用方式：
- * ```ts
- * const theme = tv({ slots: { root: '', cell: '' } })
- * type Slots = ExtractSlots<typeof theme>  // 'root' | 'cell'
- * ```
- */
-export type ExtractSlots<T> =
-  T extends TVReturnType<
-    infer S,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    any,
-    any,
-    any,
-    any,
-    any,
-    any
-  >
-    ? keyof S & string
-    : never
 
 /**
  * 组件主题的原始配置对象（传给 tv() 之前的形态）。
@@ -1096,13 +1071,7 @@ export { tv, cn } from './utils/tv'
 export { optionalProp, requiredProp, optionalBoolProp, optionalStringProp } from './utils/props'
 
 // ---------- Types ----------
-export type {
-  ThemeConfig,
-  SlotProps,
-  ExtractSlots,
-  VTableGuildOptions,
-  VTableGuildContext,
-} from './utils/types'
+export type { ThemeConfig, SlotProps, VTableGuildOptions, VTableGuildContext } from './utils/types'
 
 // ---------- Composables ----------
 export { useTheme } from './composables/useTheme'

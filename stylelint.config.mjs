@@ -7,6 +7,13 @@ export default {
     },
   ],
   rules: {
+    // 允许 Tailwind CSS 4 的自定义 at-rule（@theme、@apply、@config 等）
+    'at-rule-no-unknown': [
+      true,
+      {
+        ignoreAtRules: ['theme', 'apply', 'config', 'plugin', 'utility', 'variant', 'custom-variant', 'source', 'reference'],
+      },
+    ],
     // 允许 BEM（Element Plus 等三方组件类名，如 el-table__header / el-table-v2__row-cell）
     'selector-class-pattern': [
       '^(?:(?:o|c|u|t|s|is|has|_|js|qa)-)?[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*(?:__[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*)?(?:--[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*)?(?:[.+])?$',
