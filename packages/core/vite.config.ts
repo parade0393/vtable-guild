@@ -9,7 +9,7 @@ export default defineConfig({
       fileName: () => 'index.mjs',
     },
     rollupOptions: {
-      external: ['vue', 'tailwind-variants'], // vue 和 tailwind-variants 不打包进产物，由使用方提供
+      external: ['vue', 'tailwind-variants', 'tailwind-merge'], // vue 和 tailwind-variants 不打包进产物，由使用方提供
     },
   },
 })
