@@ -104,3 +104,21 @@ pnpm workspace 的符号链接让**模块解析**生效，TypeScript project ref
 | 方向       | 向上找父配置               | 向外找兄弟项目                                              |
 | 类比       | CSS 公共样式文件           | package.json 的 dependencies                                |
 | 去掉会怎样 | 每个包要重复写所有编译选项 | TypeScript 找不到其他包的类型，`tsc --build` 不知道构建顺序 |
+
+---
+
+## 3. Turbo 报错：Missing `packageManager` field in package.json
+
+### 3.1 原因
+
+Turborepo 需要通过根 `package.json` 的 `packageManager` 字段来确定当前项目使用哪个包管理器（npm / yarn / pnpm）以及具体版本。它依赖这个字段来：
+
+1. **选择正确的命令** — 比如用 `pnpm run build` 而不是 `npm run build` 来执行子包脚本
+2. **解析 workspace 结构** — 不同包管理器的 workspace 协议不同（pnpm 用 `pnpm-workspace.yaml`，yarn 用 `package.json` 的 `workspaces` 字段）
+3. **生成正确的 lockfile 哈希** — turbo 的缓存机制需要知道去哈希哪个 lockfile（`pnpm-lock.yaml` vs `yarn.lock`）
+
+### 3.2 为什么这样设计
+
+`packageManager` 是 Node.js 官方规范的字段（[Corepack](https://nodejs.org/api/corepack.html)），不是 Turbo 自创的。它的意义是让项目**显式声明**包管理器及版本，而不是靠环境碰运气。Turbo 选择依赖这个标准字段而非自己发明配置项。
+
+`package.json` 里的 `engines` 只是建议性的警告，`packageManager` 才是声明性的绑定。
