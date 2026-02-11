@@ -262,6 +262,21 @@ export default {
 }
 ```
 
+**为什么 Stylelint 不走 turbo？**
+
+ESLint 可以通过 `turbo run lint` 分发到各子包执行（利用拓扑排序和缓存），但 Stylelint 不需要：
+- CSS 没有跨包构建依赖，不需要 turbo 的拓扑排序
+- Stylelint 配置只有根目录一份，从根扫描即可覆盖所有子包
+- 不需要先 `^build` 上游依赖
+
+因此 `lint:style` 作为**根级命令**直接运行，不经过 turbo。实际触发点有三个：
+
+| 场景 | 命令 | 说明 |
+|------|------|------|
+| 手动全量检查 | `pnpm lint:style` | 根 scripts，扫描所有样式文件 |
+| 提交时增量检查 | lint-staged → `stylelint --fix` | 只检查暂存的样式文件 |
+| CI 流水线 | `pnpm lint:style` | 直接调用，不需要 turbo 编排 |
+
 <!-- PLACEHOLDER_HUSKY -->
 
 ### 3.5 Husky — Git Hooks 管理
@@ -429,7 +444,7 @@ Closes #12
 
     // 代码规范
     "lint": "eslint . --fix --cache",
-    "lint:style": "stylelint \"**/*.{css,scss,sass,less,vue,html}\" --fix",
+    "lint:style": "stylelint \"**/*.{css,scss,sass,less,vue,html}\" --fix",  // 根级命令，不走 turbo
     "format": "prettier --write \"packages/*/src/**/*.{ts,tsx,vue,css,json,md}\"",
 
     // Git 工作流
@@ -467,6 +482,7 @@ Closes #12
 │                    CI 阶段（可选）                    │
 │                                                     │
 │  turbo run lint → 全量 ESLint 检查                   │
+│  pnpm lint:style → 全量 Stylelint 检查（根级命令）    │
 │  turbo run type-check → TypeScript 类型检查          │
 │  turbo run test → 单元测试                           │
 │  turbo run build → 构建                              │

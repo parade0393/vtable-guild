@@ -219,6 +219,7 @@ mkdir -p packages/core/src/plugin
 ```
 
 **关键说明**：
+
 - `"type": "module"` — 与根保持一致，ESM 优先
 - `"files": ["dist"]` — npm publish 时只包含 dist 目录
 - `"exports"` — Node.js 条件导出，`types` 必须放在 `import` 前面
