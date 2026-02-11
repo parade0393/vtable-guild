@@ -1,0 +1,32 @@
+{
+  "name": "@vtable-guild/vtable-guild",
+  "version": "0.0.1",
+  "description": "A highly customizable Vue 3 Table component library powered by tailwind-variants",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "type-check": "vue-tsc --build"
+  },
+  "dependencies": {
+    "@vtable-guild/core": "workspace:*",
+    "@vtable-guild/theme": "workspace:*",
+    "@vtable-guild/table": "workspace:*",
+    "@vtable-guild/pagination": "workspace:*"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.0"
+  },
+  "license": "MIT"
+}

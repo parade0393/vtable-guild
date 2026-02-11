@@ -1,0 +1,2 @@
+// @vtable-guild/theme
+export {}

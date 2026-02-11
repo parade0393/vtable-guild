@@ -1,0 +1,2 @@
+// @vtable-guild/table
+export {}

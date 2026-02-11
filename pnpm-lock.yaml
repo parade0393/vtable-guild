@@ -96,6 +96,63 @@ importers:
         specifier: ^3.2.1
         version: 3.2.2(typescript@5.9.3)
 
+  packages/core:
+    dependencies:
+      tailwind-variants:
+        specifier: ^3.2.2
+        version: 3.2.2(tailwindcss@4.1.18)
+      vue:
+        specifier: ^3.5.0
+        version: 3.5.26(typescript@5.9.3)
+
+  packages/pagination:
+    dependencies:
+      '@vtable-guild/core':
+        specifier: workspace:*
+        version: link:../core
+      vue:
+        specifier: ^3.5.0
+        version: 3.5.26(typescript@5.9.3)
+
+  packages/table:
+    dependencies:
+      '@vtable-guild/core':
+        specifier: workspace:*
+        version: link:../core
+      '@vtable-guild/pagination':
+        specifier: workspace:*
+        version: link:../pagination
+      '@vtable-guild/theme':
+        specifier: workspace:*
+        version: link:../theme
+      vue:
+        specifier: ^3.5.0
+        version: 3.5.26(typescript@5.9.3)
+
+  packages/theme:
+    dependencies:
+      '@vtable-guild/core':
+        specifier: workspace:*
+        version: link:../core
+
+  packages/vtable-guild:
+    dependencies:
+      '@vtable-guild/core':
+        specifier: workspace:*
+        version: link:../core
+      '@vtable-guild/pagination':
+        specifier: workspace:*
+        version: link:../pagination
+      '@vtable-guild/table':
+        specifier: workspace:*
+        version: link:../table
+      '@vtable-guild/theme':
+        specifier: workspace:*
+        version: link:../theme
+      vue:
+        specifier: ^3.5.0
+        version: 3.5.26(typescript@5.9.3)
+
 packages:
 
   '@babel/code-frame@7.27.1':
@@ -2515,6 +2572,16 @@ packages:
   table@6.9.0:
     resolution: {integrity: sha512-9kY+CygyYM6j02t5YFHbNz2FN5QmYGv9zAjVp4lCDjlCw7amdckXlEt/bjMhUIfj4ThGRE4gCUH5+yGnNuPo5A==}
     engines: {node: '>=10.0.0'}
+
+  tailwind-variants@3.2.2:
+    resolution: {integrity: sha512-Mi4kHeMTLvKlM98XPnK+7HoBPmf4gygdFmqQPaDivc3DpYS6aIY6KiG/PgThrGvii5YZJqRsPz0aPyhoFzmZgg==}
+    engines: {node: '>=16.x', pnpm: '>=7.x'}
+    peerDependencies:
+      tailwind-merge: '>=3.0.0'
+      tailwindcss: '*'
+    peerDependenciesMeta:
+      tailwind-merge:
+        optional: true
 
   tailwindcss@4.1.18:
     resolution: {integrity: sha512-4+Z+0yiYyEtUVCScyfHCxOYP06L5Ne+JiHhY2IjR2KWMIWhJOYZKLSGZaP5HkZ8+bY0cxfzwDE5uOmzFXyIwxw==}
@@ -5218,6 +5285,10 @@ snapshots:
       slice-ansi: 4.0.0
       string-width: 4.2.3
       strip-ansi: 6.0.1
+
+  tailwind-variants@3.2.2(tailwindcss@4.1.18):
+    dependencies:
+      tailwindcss: 4.1.18
 
   tailwindcss@4.1.18: {}
 

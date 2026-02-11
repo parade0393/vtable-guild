@@ -1,0 +1,26 @@
+{
+  "name": "@vtable-guild/theme",
+  "version": "0.0.1",
+  "description": "Default theme definitions for vtable-guild",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "type-check": "vue-tsc --build"
+  },
+  "peerDependencies": {
+    "@vtable-guild/core": "workspace:*"
+  },
+  "license": "MIT"
+}
