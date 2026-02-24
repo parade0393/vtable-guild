@@ -7,11 +7,24 @@ export default {
     },
   ],
   rules: {
+    // Tailwind CSS v4 要求裸字符串 @import "tailwindcss"，
+    // stylelint-config-standard 默认强制 url() 写法，需覆盖为 string
+    'import-notation': 'string',
     // 允许 Tailwind CSS 4 的自定义 at-rule（@theme、@apply、@config 等）
     'at-rule-no-unknown': [
       true,
       {
-        ignoreAtRules: ['theme', 'apply', 'config', 'plugin', 'utility', 'variant', 'custom-variant', 'source', 'reference'],
+        ignoreAtRules: [
+          'theme',
+          'apply',
+          'config',
+          'plugin',
+          'utility',
+          'variant',
+          'custom-variant',
+          'source',
+          'reference',
+        ],
       },
     ],
     // 允许 BEM（Element Plus 等三方组件类名，如 el-table__header / el-table-v2__row-cell）

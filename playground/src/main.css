@@ -1,2 +1,2 @@
-@import url('tailwindcss');
-@import url('@vtable-guild/theme/css');
+@import 'tailwindcss';
+@import '@vtable-guild/theme/css';

@@ -1,9 +1,9 @@
 import { createApp } from 'vue'
 import App from './App.vue'
+import './main.css'
 import { createVTableGuild } from '@vtable-guild/core'
 
 // Playground CSS 入口（Tailwind + 语义化 token）
-import './main.css'
 
 const app = createApp(App)
 
