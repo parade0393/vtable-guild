@@ -1,7 +1,6 @@
 {
   "extends": "@tsconfig/node24/tsconfig.json",
   "include": [
-    "vite.config.*",
     "vitest.config.*",
     "cypress.config.*",
     "nightwatch.conf.*",

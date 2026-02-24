@@ -1,0 +1,19 @@
+{
+  "name": "@vtable-guild/playground",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite"
+  },
+  "dependencies": {
+    "@vtable-guild/core": "workspace:*",
+    "@vtable-guild/theme": "workspace:*",
+    "vue": "^3.5.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.18",
+    "tailwindcss": "^4.1.18",
+    "vite-plugin-vue-devtools": "^8.0.5"
+  }
+}

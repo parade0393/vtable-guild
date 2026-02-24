@@ -4,13 +4,15 @@
   "description": "Default theme definitions for vtable-guild",
   "type": "module",
   "files": [
-    "dist"
+    "dist",
+    "css"
   ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs"
-    }
+    },
+    "./css": "./css/tokens.css"
   },
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -18,6 +20,9 @@
     "build": "vite build",
     "dev": "vite build --watch",
     "type-check": "vue-tsc --build"
+  },
+  "devDependencies": {
+    "@vtable-guild/core": "workspace:*"
   },
   "license": "MIT"
 }
