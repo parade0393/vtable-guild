@@ -34,12 +34,24 @@ export interface ThemeConfig {
  */
 export type SlotProps<T extends ThemeConfig> = Partial<Record<keyof T['slots'] & string, string>>
 
+// ---------- 主题预设相关 ----------
+
+/**
+ * 可选的主题预设名称。
+ *
+ * - 'antdv'：默认预设，视觉对齐 ant-design-vue
+ * - 'element-plus'：预留扩展，阶段三未实现时 fallback 到 antdv
+ */
+export type ThemePresetName = 'antdv' | 'element-plus'
+
 // ---------- 插件配置相关 ----------
 
 /**
  * createVTableGuild() 的配置参数。
  */
 export interface VTableGuildOptions {
+  /** 全局主题预设，默认 'antdv' */
+  themePreset?: ThemePresetName
   /** 全局主题覆盖，key 为组件名（如 'table'、'pagination'） */
   theme?: Record<string, Partial<ThemeConfig>>
 }
@@ -48,5 +60,6 @@ export interface VTableGuildOptions {
  * 通过 provide/inject 传递的全局配置。
  */
 export interface VTableGuildContext {
+  themePreset: ThemePresetName
   theme: Record<string, Partial<ThemeConfig>>
 }

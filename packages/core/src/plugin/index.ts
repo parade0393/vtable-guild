@@ -38,6 +38,7 @@ export function createVTableGuild(options: VTableGuildOptions = {}): Plugin {
   return {
     install(app) {
       const context: VTableGuildContext = {
+        themePreset: options.themePreset ?? 'antdv',
         theme: options.theme ?? {},
       }
 

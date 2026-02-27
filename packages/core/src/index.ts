@@ -5,7 +5,13 @@ export { tv, cn } from './utils/tv'
 export { optionalProp, requiredProp, optionalBoolProp, optionalStringProp } from './utils/props'
 
 // ---------- Types ----------
-export type { ThemeConfig, SlotProps, VTableGuildOptions, VTableGuildContext } from './utils/types'
+export type {
+  ThemeConfig,
+  SlotProps,
+  VTableGuildOptions,
+  VTableGuildContext,
+  ThemePresetName,
+} from './utils/types'
 
 // ---------- Composables ----------
 export { useTheme } from './composables/useTheme'
