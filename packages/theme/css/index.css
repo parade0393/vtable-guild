@@ -1,0 +1,12 @@
+/* @vtable-guild/theme/css — 默认入口 */
+
+/*
+ * 引入顺序：
+ * 1. tokens.css — 注册 Tailwind 主题色（@theme），不含值定义
+ * 2. presets/antdv.css — 默认 preset，定义语义 token 值 + 组件 token
+ *
+ * 使用方通过 `@import '@vtable-guild/theme/css'` 即可获得完整主题。
+ * 如需切换到 element-plus，替换第 2 行为 presets/element-plus.css。
+ */
+@import './tokens.css';
+@import './presets/antdv.css';

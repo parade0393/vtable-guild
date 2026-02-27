@@ -1,0 +1,60 @@
+/* @vtable-guild/theme/css/presets — Ant Design Vue 预设 */
+
+/*
+ * antdv preset 自包含：
+ * 1. 语义 token — antdv 设计体系的精确值
+ * 2. 组件 token — 100% 引用语义 token，无硬编码颜色
+ * 3. .dark — 只覆盖语义 token，组件 token 自动跟随
+ */
+
+:root {
+  /* ===== 语义 token — antdv 设计体系值 ===== */
+
+  /* 表面/背景 */
+  --color-surface: #ffffff;
+  --color-surface-hover: #fafafa;
+  --color-elevated: #f5f5f5;
+
+  /* 文本 */
+  --color-on-surface: rgb(0 0 0 / 88%);
+  --color-muted: rgb(0 0 0 / 45%);
+
+  /* 边框 */
+  --color-default: #f0f0f0;
+
+  /* 主题色 */
+  --color-primary: #1677ff;
+  --color-primary-hover: #4096ff;
+
+  /* ===== 组件 token — 100% 引用语义 token ===== */
+  --vtg-table-bg: var(--color-surface);
+  --vtg-table-header-bg: var(--color-surface-hover);
+  --vtg-table-header-color: var(--color-on-surface);
+  --vtg-table-text-color: var(--color-on-surface);
+  --vtg-table-border-color: var(--color-default);
+  --vtg-table-row-hover-bg: var(--color-surface-hover);
+
+  /* 尺寸类 token（亮暗一致，不映射语义 token） */
+  --vtg-table-font-size: 14px;
+  --vtg-table-line-height: 1.5715;
+
+  /* 三档 size 对应 antdv 的 large/middle/small */
+  --vtg-table-cell-padding-inline-lg: 16px;
+  --vtg-table-cell-padding-block-lg: 16px;
+  --vtg-table-cell-padding-inline-md: 8px;
+  --vtg-table-cell-padding-block-md: 12px;
+  --vtg-table-cell-padding-inline-sm: 8px;
+  --vtg-table-cell-padding-block-sm: 8px;
+}
+
+.dark {
+  /* ===== 语义 token 暗色值 — 只改语义 token，组件 token 自动跟随 ===== */
+  --color-surface: #141414;
+  --color-surface-hover: #1d1d1d;
+  --color-elevated: #262626;
+  --color-on-surface: rgb(255 255 255 / 85%);
+  --color-muted: rgb(255 255 255 / 45%);
+  --color-default: #303030;
+  --color-primary: #1668dc;
+  --color-primary-hover: #15417e;
+}

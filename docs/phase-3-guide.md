@@ -69,22 +69,25 @@
 
 #### 1.4 关键 token 映射表（阶段三用到的子集）
 
-| Ant token             | 参考值（默认算法）                  | vtable CSS 变量                      |
-| --------------------- | ----------------------------------- | ------------------------------------ |
-| `headerBg`            | `#fafafa`                           | `--vtg-table-header-bg`              |
-| `headerColor`         | `rgba(0,0,0,0.88)`                  | `--vtg-table-header-color`           |
-| `colorText`           | `rgba(0,0,0,0.88)`                  | `--vtg-table-text-color`             |
-| `colorBgContainer`    | `#ffffff`                           | `--vtg-table-bg`                     |
-| `borderColor`         | `#f0f0f0`（`colorBorderSecondary`） | `--vtg-table-border-color`           |
-| `rowHoverBg`          | `#fafafa`                           | `--vtg-table-row-hover-bg`           |
-| `cellFontSize`        | `14px`                              | `--vtg-table-font-size`              |
-| `lineHeight`          | `1.5715`                            | `--vtg-table-line-height`            |
-| `cellPaddingInline`   | `16px`                              | `--vtg-table-cell-padding-inline-lg` |
-| `cellPaddingBlock`    | `16px`                              | `--vtg-table-cell-padding-block-lg`  |
-| `cellPaddingInlineMD` | `8px`                               | `--vtg-table-cell-padding-inline-md` |
-| `cellPaddingBlockMD`  | `12px`                              | `--vtg-table-cell-padding-block-md`  |
-| `cellPaddingInlineSM` | `8px`                               | `--vtg-table-cell-padding-inline-sm` |
-| `cellPaddingBlockSM`  | `8px`                               | `--vtg-table-cell-padding-block-sm`  |
+> **新增"语义 token 映射"列**：组件 token 100% 引用语义 token，不出现硬编码颜色值。
+> 尺寸类 token（字号、行高、padding）不映射语义 token，直接定义具体值。
+
+| Ant token             | 参考值（默认算法）                  | vtable CSS 变量                      | 语义 token 映射              |
+| --------------------- | ----------------------------------- | ------------------------------------ | ---------------------------- |
+| `headerBg`            | `#fafafa`                           | `--vtg-table-header-bg`              | `var(--color-surface-hover)` |
+| `headerColor`         | `rgba(0,0,0,0.88)`                  | `--vtg-table-header-color`           | `var(--color-on-surface)`    |
+| `colorText`           | `rgba(0,0,0,0.88)`                  | `--vtg-table-text-color`             | `var(--color-on-surface)`    |
+| `colorBgContainer`    | `#ffffff`                           | `--vtg-table-bg`                     | `var(--color-surface)`       |
+| `borderColor`         | `#f0f0f0`（`colorBorderSecondary`） | `--vtg-table-border-color`           | `var(--color-default)`       |
+| `rowHoverBg`          | `#fafafa`                           | `--vtg-table-row-hover-bg`           | `var(--color-surface-hover)` |
+| `cellFontSize`        | `14px`                              | `--vtg-table-font-size`              | —（尺寸类，直接定义）        |
+| `lineHeight`          | `1.5715`                            | `--vtg-table-line-height`            | —（尺寸类，直接定义）        |
+| `cellPaddingInline`   | `16px`                              | `--vtg-table-cell-padding-inline-lg` | —（尺寸类，直接定义）        |
+| `cellPaddingBlock`    | `16px`                              | `--vtg-table-cell-padding-block-lg`  | —（尺寸类，直接定义）        |
+| `cellPaddingInlineMD` | `8px`                               | `--vtg-table-cell-padding-inline-md` | —（尺寸类，直接定义）        |
+| `cellPaddingBlockMD`  | `12px`                              | `--vtg-table-cell-padding-block-md`  | —（尺寸类，直接定义）        |
+| `cellPaddingInlineSM` | `8px`                               | `--vtg-table-cell-padding-inline-sm` | —（尺寸类，直接定义）        |
+| `cellPaddingBlockSM`  | `8px`                               | `--vtg-table-cell-padding-block-sm`  | —（尺寸类，直接定义）        |
 
 #### 1.5 验证
 
@@ -322,70 +325,56 @@ export const elementPlusTableThemePlaceholder = {
 export const ELEMENT_PLUS_THEME_IMPLEMENTED = false
 ```
 
-#### 3.5 验证
+#### 3.5 创建 CSS 预设目录结构
+
+> **关键架构决策**：语义 token 的值不在 `tokens.css` 中定义，而是由 preset CSS 文件定义。
+> 每个 preset CSS 自包含：定义该设计体系的语义 token 值 + 组件 token（100% 引用语义 token）。
+> `tokens.css` 只负责 Tailwind 主题注册，不参与值定义。
 
 ```bash
-pnpm build
+mkdir -p packages/theme/css/presets
 ```
 
-预期：构建通过。`presets/` 目录下有 `types.ts` 和 `element-plus/table.ts` 两个文件。antdv 预设在 Step 5 创建。
-
----
-
-## Part 2：antdv 主题实现（Step 4 – 7）
-
-### Step 4：CSS Token 实现 — 新增 `--vtg-table-*` 变量 + `.dark` 覆盖
-
-#### 4.1 为什么先写 CSS 变量
-
-antdv 主题的 Tailwind class 会引用这些 CSS 变量（如 `bg-[var(--vtg-table-header-bg)]`）。如果变量不存在，样式不会生效，且 DevTools 中看到的是空值——难以调试。
-
-#### 4.2 修改 `packages/theme/css/tokens.css`
-
-在已有语义 token 基础上新增 Table 专用变量，**包含 `.dark` 暗色覆盖**：
+#### 3.6 创建 `packages/theme/css/presets/antdv.css`
 
 ```css
-@source '../dist';
-
-/* @vtable-guild/theme/css — tokens.css */
+/* @vtable-guild/theme/css/presets — Ant Design Vue 预设 */
 
 /*
- * vtable-guild 语义化颜色 token
- *
- * 使用 Tailwind CSS 4 的 @theme 指令注册自定义颜色，
- * 这样在 class 中可以直接使用 bg-surface、text-on-surface 等。
- *
- * 亮色/暗色模式通过 CSS 变量切换：
- * - :root 定义亮色值
- * - .dark 选择器定义暗色值（兼容 Tailwind 的 class 策略）
+ * antdv preset 自包含：
+ * 1. 语义 token — antdv 设计体系的精确值
+ * 2. 组件 token — 100% 引用语义 token，无硬编码颜色
+ * 3. .dark — 只覆盖语义 token，组件 token 自动跟随
  */
 
-/* ===== 1. 语义化变量定义 ===== */
 :root {
+  /* ===== 语义 token — antdv 设计体系值 ===== */
+
   /* 表面/背景 */
-  --color-surface: oklch(100% 0 0deg); /* white */
-  --color-surface-hover: oklch(97% 0 0deg); /* gray-50 */
-  --color-elevated: oklch(95% 0 0deg); /* gray-100 */
+  --color-surface: #ffffff;
+  --color-surface-hover: #fafafa;
+  --color-elevated: #f5f5f5;
 
   /* 文本 */
-  --color-on-surface: oklch(15% 0 0deg); /* gray-900 */
-  --color-muted: oklch(55% 0 0deg); /* gray-500 */
+  --color-on-surface: rgba(0, 0, 0, 0.88);
+  --color-muted: rgba(0, 0, 0, 0.45);
 
   /* 边框 */
-  --color-default: oklch(87% 0 0deg); /* gray-300 */
+  --color-default: #f0f0f0;
 
-  /* 主题色（可被用户覆盖） */
-  --color-primary: oklch(55% 0.25 260deg); /* blue-600 */
-  --color-primary-hover: oklch(49% 0.25 260deg); /* blue-700 */
+  /* 主题色 */
+  --color-primary: #1677ff;
+  --color-primary-hover: #4096ff;
 
-  /* ===== Table 专用 token（antdv 默认值） ===== */
-  --vtg-table-bg: #ffffff;
-  --vtg-table-header-bg: #fafafa;
-  --vtg-table-header-color: rgba(0, 0, 0, 0.88);
-  --vtg-table-text-color: rgba(0, 0, 0, 0.88);
-  --vtg-table-border-color: #f0f0f0;
-  --vtg-table-row-hover-bg: #fafafa;
+  /* ===== 组件 token — 100% 引用语义 token ===== */
+  --vtg-table-bg: var(--color-surface);
+  --vtg-table-header-bg: var(--color-surface-hover);
+  --vtg-table-header-color: var(--color-on-surface);
+  --vtg-table-text-color: var(--color-on-surface);
+  --vtg-table-border-color: var(--color-default);
+  --vtg-table-row-hover-bg: var(--color-surface-hover);
 
+  /* 尺寸类 token（亮暗一致，不映射语义 token） */
   --vtg-table-font-size: 14px;
   --vtg-table-line-height: 1.5715;
 
@@ -399,25 +388,108 @@ antdv 主题的 Tailwind class 会引用这些 CSS 变量（如 `bg-[var(--vtg-t
 }
 
 .dark {
-  --color-surface: oklch(17% 0 0deg); /* gray-900 */
-  --color-surface-hover: oklch(21% 0 0deg); /* gray-800 */
-  --color-elevated: oklch(25% 0 0deg); /* gray-700 */
-  --color-on-surface: oklch(95% 0 0deg); /* gray-100 */
-  --color-muted: oklch(65% 0 0deg); /* gray-400 */
-  --color-default: oklch(37% 0 0deg); /* gray-600 */
-  --color-primary: oklch(65% 0.25 260deg); /* blue-400 */
-  --color-primary-hover: oklch(70% 0.25 260deg); /* blue-300 */
-
-  /* ===== Table 暗色 token（antdv dark 算法参考值） ===== */
-  --vtg-table-bg: #141414;
-  --vtg-table-header-bg: #1d1d1d;
-  --vtg-table-header-color: rgba(255, 255, 255, 0.85);
-  --vtg-table-text-color: rgba(255, 255, 255, 0.85);
-  --vtg-table-border-color: #303030;
-  --vtg-table-row-hover-bg: #1d1d1d;
+  /* ===== 语义 token 暗色值 — 只改语义 token，组件 token 自动跟随 ===== */
+  --color-surface: #141414;
+  --color-surface-hover: #1d1d1d;
+  --color-elevated: #262626;
+  --color-on-surface: rgba(255, 255, 255, 0.85);
+  --color-muted: rgba(255, 255, 255, 0.45);
+  --color-default: #303030;
+  --color-primary: #1668dc;
+  --color-primary-hover: #15417e;
 }
+```
 
-/* ===== 2. 注册为 Tailwind 主题色 ===== */
+**关键设计**：
+
+| 设计决策                         | 原因                                                        |
+| -------------------------------- | ----------------------------------------------------------- |
+| 语义 token 值由 preset 定义      | 不同 UI 库的精确颜色值不同，由 preset 负责匹配              |
+| 组件 token 100% 引用语义 token   | 暗色模式零冗余——`.dark` 只改语义 token，组件 token 自动跟随 |
+| `.dark` 中不出现 `--vtg-table-*` | 组件 token 通过 `var()` 引用语义 token，暗色值自动传递      |
+| 尺寸类 token 直接定义值          | 字号、行高、padding 亮暗一致，不需要语义映射                |
+
+#### 3.7 创建 `packages/theme/css/presets/element-plus.css`（占位）
+
+```css
+/* @vtable-guild/theme/css/presets — Element Plus 预设（占位） */
+
+/*
+ * 后续阶段实现。
+ * 届时在此定义 element-plus 设计体系的语义 token 值，如：
+ *   --color-surface-hover: #f5f7fa;
+ *   --color-on-surface: #303133;
+ * 组件 token 引用语义 token 的方式与 antdv.css 完全一致。
+ */
+```
+
+#### 3.8 创建 `packages/theme/css/index.css`（默认入口）
+
+```css
+/* @vtable-guild/theme/css — 默认入口 */
+
+/*
+ * 引入顺序：
+ * 1. tokens.css — 注册 Tailwind 主题色（@theme），不含值定义
+ * 2. presets/antdv.css — 默认 preset，定义语义 token 值 + 组件 token
+ *
+ * 使用方通过 `@import '@vtable-guild/theme/css'` 即可获得完整主题。
+ * 如需切换到 element-plus，替换第 2 行为 presets/element-plus.css。
+ */
+@import './tokens.css';
+@import './presets/antdv.css';
+```
+
+#### 3.9 验证
+
+```bash
+pnpm build
+```
+
+预期：构建通过。目录结构如下：
+
+- `src/presets/` 下有 `types.ts` 和 `element-plus/table.ts`（TS 文件）
+- `css/presets/` 下有 `antdv.css` 和 `element-plus.css`（CSS 文件）
+- `css/index.css` 存在
+- antdv TS 预设在 Step 5 创建
+
+---
+
+## Part 2：antdv 主题实现（Step 4 – 7）
+
+### Step 4：CSS Token 架构 — tokens.css 瘦身 + preset 入口
+
+#### 4.1 为什么先写 CSS 变量
+
+antdv 主题的 Tailwind class 会引用这些 CSS 变量（如 `bg-[var(--vtg-table-header-bg)]`）。如果变量不存在，样式不会生效，且 DevTools 中看到的是空值——难以调试。
+
+> **架构变更**：Phase 2 的 `tokens.css` 同时负责"注册 Tailwind 主题色"和"定义具体值"。
+> Phase 3 将职责拆分：
+>
+> - `tokens.css` — **只做 Tailwind 注册**（`@source` + `@theme`），不定义任何值
+> - `presets/antdv.css` — **定义所有值**（语义 token + 组件 token）
+> - `index.css` — **默认入口**，组合 tokens + antdv preset
+
+#### 4.2 修改 `packages/theme/css/tokens.css`
+
+剥离所有 `:root` 和 `.dark` 中的值定义，只保留 `@source` + `@theme` 注册：
+
+```css
+@source '../dist';
+
+/* @vtable-guild/theme/css — tokens.css */
+
+/*
+ * 仅负责 Tailwind CSS 4 主题注册。
+ *
+ * ⚠️ 不在此文件定义任何 CSS 变量值！
+ * 所有值由 preset CSS 提供（如 presets/antdv.css）。
+ *
+ * 职责：
+ * 1. @source — 扫描 dist 目录中的 class 名
+ * 2. @theme — 将语义 token 注册为 Tailwind 主题色
+ *    使得 bg-surface、text-on-surface 等 utility class 可用
+ */
 
 @theme {
   --color-surface: var(--color-surface);
@@ -433,13 +505,31 @@ antdv 主题的 Tailwind class 会引用这些 CSS 变量（如 `bg-[var(--vtg-t
 
 **关键变更**：
 
-- 新增 12 个 `--vtg-table-*` 变量（亮色）
-- 新增 6 个 `.dark` 暗色覆盖（字号、行高、padding 亮暗一致，无需覆盖）
-- 暗色值参考 ant-design-vue 的 dark 算法输出
+- **删除** `:root { ... }` 中所有语义 token 值定义（oklch 值）
+- **删除** `:root { ... }` 中所有 `--vtg-table-*` 变量定义
+- **删除** `.dark { ... }` 整个块
+- **保留** `@source '../dist'` 和 `@theme { ... }`
+- 语义 token 的值定义移至 `presets/antdv.css`（已在 Step 3.6 创建）
+- 组件 token 也在 `presets/antdv.css` 中定义，且 100% 引用语义 token
 
-#### 4.3 验证
+#### 4.3 确认 `packages/theme/css/index.css`（已在 Step 3.8 创建）
 
-打开 playground，在 DevTools 中检查 `:root` 下是否出现所有 `--vtg-table-*` 变量。添加 `class="dark"` 到 `<html>` 后变量值应切换。
+`index.css` 是新的默认入口，替代原来的 `tokens.css`：
+
+```css
+@import './tokens.css';
+@import './presets/antdv.css';
+```
+
+使用方通过 `@import '@vtable-guild/theme/css'` 导入，`package.json` 的 `exports["./css"]` 指向此文件（Step 7 更新）。
+
+#### 4.4 验证
+
+打开 playground，在 DevTools 中检查：
+
+1. `:root` 下 `--color-surface-hover` 值为 `#fafafa`（来自 antdv preset，非 oklch）
+2. `--vtg-table-header-bg` 值为 `var(--color-surface-hover)`（引用语义 token，非硬编码）
+3. 添加 `class="dark"` 到 `<html>` → `--color-surface-hover` 变为 `#1d1d1d`，`--vtg-table-header-bg` 自动跟随
 
 ---
 
@@ -469,7 +559,7 @@ import type { ThemeConfig } from '@vtable-guild/core'
  * Ant Design Vue Table 主题。
  *
  * 使用 --vtg-table-* CSS 变量实现视觉对齐。
- * 亮色/暗色通过 tokens.css 中的 :root / .dark 切换。
+ * 亮色/暗色通过 preset CSS（如 presets/antdv.css）中的 :root / .dark 切换。
  *
  * ⚠️ 注意 Tailwind CSS 4 消歧语法：
  * - text-[color:var(...)] 用于文字颜色
@@ -706,7 +796,52 @@ export type { TableSlots, TableVariantProps } from './table'
 export type { PaginationSlots, PaginationVariantProps } from './pagination'
 ```
 
-#### 7.4 验证检查点 #1
+#### 7.4 修改 `packages/theme/package.json` — CSS 导出路径
+
+> **关键变更**：`"./css"` 不再指向 `tokens.css`，改为指向新的 `index.css` 入口。
+> 同时新增细粒度导出路径，允许使用方按需引入。
+
+```jsonc
+{
+  "name": "@vtable-guild/theme",
+  "version": "0.0.1",
+  "description": "Default theme definitions for vtable-guild",
+  "type": "module",
+  "files": ["dist", "css"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+    },
+    "./css": "./css/index.css",
+    "./css/tokens": "./css/tokens.css",
+    "./css/presets/antdv": "./css/presets/antdv.css",
+    "./css/presets/element-plus": "./css/presets/element-plus.css",
+  },
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "type-check": "vue-tsc --build",
+  },
+  "devDependencies": {
+    "@vtable-guild/core": "workspace:*",
+  },
+  "license": "MIT",
+}
+```
+
+**关键变更**：
+
+| 导出路径                     | 指向文件                         | 说明                              |
+| ---------------------------- | -------------------------------- | --------------------------------- |
+| `./css`                      | `./css/index.css`                | 默认入口（tokens + antdv preset） |
+| `./css/tokens`               | `./css/tokens.css`               | 仅 Tailwind 注册，无值定义        |
+| `./css/presets/antdv`        | `./css/presets/antdv.css`        | antdv 语义 token 值 + 组件 token  |
+| `./css/presets/element-plus` | `./css/presets/element-plus.css` | 占位，后续实现                    |
+
+#### 7.5 验证检查点 #1
 
 ```bash
 pnpm build
@@ -717,6 +852,7 @@ pnpm build
 - `Tasks: 5 successful, 5 total`
 - `packages/theme/dist/index.mjs` 包含 `resolveThemePreset`、`resolveTableThemePreset`
 - `packages/theme/dist/index.d.ts` 包含 `ThemePresetName` 类型
+- `packages/theme/package.json` 的 `exports["./css"]` 指向 `./css/index.css`
 
 如果构建失败，常见原因：
 
@@ -1757,6 +1893,9 @@ app.mount('#app')
 - `themePreset: 'antdv'` 显式声明
 - 移除阶段二的全局 theme 覆盖（阶段三对照时不做覆盖）
 
+> **CSS 导入路径说明**：playground 的 `main.css` 中 `@import '@vtable-guild/theme/css'` 不需要修改。
+> Step 7.4 已将 `"./css"` 指向 `index.css`（自动包含 tokens + antdv preset），导入语句不变。
+
 #### 20.5 修改 `playground/src/App.vue`
 
 ```vue
@@ -2004,21 +2143,73 @@ text-[length:var(--vtg-table-font-size)]
 
 #### Q7：后续真正实现 element-plus 主题时要改哪些点？
 
-1. `packages/theme/src/presets/element-plus/table.ts`：补全 token 与 slot 样式
-2. `packages/theme/css/tokens.css`：补 element 系列 CSS 变量（如果与 antdv 不同）
-3. `packages/theme/src/presets/index.ts`：`ELEMENT_PLUS_THEME_IMPLEMENTED` 改为 `true`，去掉 fallback
-4. Playground 增加 element 对照页（建议三栏：Ant / Element / VTable）
+**TS 层（preset 逻辑）**：
+
+1. `packages/theme/src/presets/element-plus/table.ts`：补全 token 与 slot 样式（Tailwind class 引用 `--vtg-table-*` 变量）
+2. `packages/theme/src/presets/index.ts`：`ELEMENT_PLUS_THEME_IMPLEMENTED` 改为 `true`，去掉 fallback
+
+**CSS 层（token 值）**：
+
+3. `packages/theme/css/presets/element-plus.css`：定义 element-plus 设计体系的语义 token 值（如 `--color-surface-hover: #f5f7fa`），无需定义组件 token——组件 token 的 `var()` 引用在 `antdv.css` 和 `element-plus.css` 中结构相同
+4. `packages/theme/css/index.css`：如需默认切换到 element-plus，改第 2 行 import；或提供文档让使用方自行选择 import 哪个 preset CSS
+
+**Playground**：
+
+5. 增加 element 对照页（建议三栏：Ant / Element / VTable）
 
 #### Q8：暗色模式 token 的值是怎么得出来的？
 
-参考 ant-design-vue 的 dark 算法输出。antdv 使用 `@ant-design/cssinjs` 的 dark 算法，对每个 seed token 做颜色反转。本项目直接取了 dark 模式下的计算结果作为 CSS 变量值：
+参考 ant-design-vue 的 dark 算法输出。antdv 使用 `@ant-design/cssinjs` 的 dark 算法，对每个 seed token 做颜色反转。本项目在 **preset CSS**（`css/presets/antdv.css`）的 `.dark` 块中定义暗色语义 token 值：
 
-| 亮色               | 暗色                     | 说明            |
-| ------------------ | ------------------------ | --------------- |
-| `#ffffff`          | `#141414`                | 背景色反转      |
-| `#fafafa`          | `#1d1d1d`                | 表头/hover 背景 |
-| `rgba(0,0,0,0.88)` | `rgba(255,255,255,0.85)` | 文字颜色        |
-| `#f0f0f0`          | `#303030`                | 边框色          |
+| 语义 token              | 亮色（`:root`）    | 暗色（`.dark`）          | 说明            |
+| ----------------------- | ------------------ | ------------------------ | --------------- |
+| `--color-surface`       | `#ffffff`          | `#141414`                | 背景色反转      |
+| `--color-surface-hover` | `#fafafa`          | `#1d1d1d`                | 表头/hover 背景 |
+| `--color-on-surface`    | `rgba(0,0,0,0.88)` | `rgba(255,255,255,0.85)` | 文字颜色        |
+| `--color-default`       | `#f0f0f0`          | `#303030`                | 边框色          |
+
+**关键优势**：`.dark` 中只需覆盖语义 token，所有组件 token（如 `--vtg-table-header-bg: var(--color-surface-hover)`）自动跟随暗色值，零冗余。
+
+#### Q8.1：为什么语义 token 值由 preset 定义而不是 tokens.css？
+
+Phase 2 在 `tokens.css` 中用 oklch 通用值定义语义 token（如 `--color-surface-hover: oklch(97%)`），Phase 3 引入 antdv 组件 token 时发现问题：
+
+1. **oklch 值与 antdv 精确值不匹配**：`oklch(97%)` ≈ `#f7f7f8` ≠ antdv 的 `#fafafa`
+2. **组件 token 被迫硬编码**：如果语义 token 是通用值，组件 token 就无法引用它（值不对），只能硬编码颜色
+
+**解决方案**：反转思路——语义 token 不定义通用值，由 preset 来定义精确值。这样：
+
+- antdv preset 设置 `--color-surface-hover: #fafafa` → `--vtg-table-header-bg: var(--color-surface-hover)` 自然匹配
+- element-plus preset 设置 `--color-surface-hover: #f5f7fa` → 同样的 `var()` 引用自动适配
+- `tokens.css` 只做 Tailwind `@theme` 注册，职责清晰
+
+#### Q8.2：后续实现 element-plus 主题时 CSS 层要改什么？
+
+只需在 `css/presets/element-plus.css` 中定义 element-plus 的语义 token 值：
+
+```css
+/* css/presets/element-plus.css */
+:root {
+  --color-surface: #ffffff;
+  --color-surface-hover: #f5f7fa; /* element-plus 的 hover 背景 */
+  --color-on-surface: #303133; /* element-plus 的文字颜色 */
+  --color-default: #ebeef5; /* element-plus 的边框色 */
+  /* ... */
+
+  /* 组件 token 的 var() 引用与 antdv.css 完全一致 */
+  --vtg-table-bg: var(--color-surface);
+  --vtg-table-header-bg: var(--color-surface-hover);
+  /* ... */
+}
+
+.dark {
+  --color-surface: #141414;
+  --color-surface-hover: #1d1d1d;
+  /* ... */
+}
+```
+
+使用方在 `index.css` 中将 `@import './presets/antdv.css'` 替换为 `@import './presets/element-plus.css'` 即可切换。
 
 #### Q9：`themeProps.value` 传给 `useTheme` 是否破坏了响应性？
 
@@ -2065,7 +2256,13 @@ vtable-guild/
 │   │   └── src/index.ts                                    [修改] 导出 ThemePresetName
 │   │
 │   ├── theme/
-│   │   ├── css/tokens.css                                  [修改] 新增 table token + .dark 覆盖
+│   │   ├── package.json                                  [修改] CSS 导出路径更新
+│   │   ├── css/
+│   │   │   ├── tokens.css                                [修改] 剥离值定义，仅保留 @source + @theme
+│   │   │   ├── index.css                                 [新增] 默认入口（tokens + antdv preset）
+│   │   │   └── presets/
+│   │   │       ├── antdv.css                             [新增] antdv 语义 token 值 + 组件 token
+│   │   │       └── element-plus.css                      [新增，占位]
 │   │   └── src/
 │   │       ├── table.ts                                    [修改] 重导出 antdv preset
 │   │       ├── index.ts                                    [修改] 导出 resolver
@@ -2106,7 +2303,7 @@ vtable-guild/
         └── App.vue                                         [修改] 并排对照页
 ```
 
-共 **新增 16 个文件**，**修改 9 个文件**。
+共 **新增 19 个文件**，**修改 10 个文件**。
 
 ---
 
@@ -2123,12 +2320,12 @@ pnpm playground   # 运行 playground
 
 ### 常见问题
 
-| #   | 错误                                      | 原因                              | 修复                                            |
-| --- | ----------------------------------------- | --------------------------------- | ----------------------------------------------- |
-| 1   | `slots.headerCellInner is not a function` | 主题中缺少 `headerCellInner` slot | 检查 `presets/antdv/table.ts` 的 `slots`        |
-| 2   | `element-plus` preset 选了但样式没变      | 阶段三未实现 element-plus 主题    | 预期行为，控制台有 warning                      |
-| 3   | `customRender` 返回 VNode 未渲染          | 用了 `<component :is="vnode">`    | 改为 `<component :is="() => vnode" />`          |
-| 4   | bodyCell slot 内容不显示                  | `useSlots()` 无法跨层级           | 确认用了 `provide/inject`                       |
-| 5   | 暗色模式下文字看不清                      | `.dark` 中 table token 缺失       | 确认 `tokens.css` 有 `.dark` 内 `--vtg-table-*` |
-| 6   | `text-[var(...)]` 应用了错误的 CSS 属性   | Tailwind CSS 4 歧义               | 使用 `text-[color:var(...)]` 消歧               |
-| 7   | `pnpm build` 报 Cannot find module        | 包依赖顺序问题                    | 先 `pnpm install`，turbo 会按拓扑序构建         |
+| #   | 错误                                      | 原因                              | 修复                                                  |
+| --- | ----------------------------------------- | --------------------------------- | ----------------------------------------------------- |
+| 1   | `slots.headerCellInner is not a function` | 主题中缺少 `headerCellInner` slot | 检查 `presets/antdv/table.ts` 的 `slots`              |
+| 2   | `element-plus` preset 选了但样式没变      | 阶段三未实现 element-plus 主题    | 预期行为，控制台有 warning                            |
+| 3   | `customRender` 返回 VNode 未渲染          | 用了 `<component :is="vnode">`    | 改为 `<component :is="() => vnode" />`                |
+| 4   | bodyCell slot 内容不显示                  | `useSlots()` 无法跨层级           | 确认用了 `provide/inject`                             |
+| 5   | 暗色模式下文字看不清                      | `.dark` 中语义 token 缺失         | 确认 `presets/antdv.css` 有 `.dark` 内语义 token 覆盖 |
+| 6   | `text-[var(...)]` 应用了错误的 CSS 属性   | Tailwind CSS 4 歧义               | 使用 `text-[color:var(...)]` 消歧                     |
+| 7   | `pnpm build` 报 Cannot find module        | 包依赖顺序问题                    | 先 `pnpm install`，turbo 会按拓扑序构建               |

@@ -3,47 +3,16 @@
 /* @vtable-guild/theme/css — tokens.css */
 
 /*
- * vtable-guild 语义化颜色 token
+ * 仅负责 Tailwind CSS 4 主题注册。
  *
- * 使用 Tailwind CSS 4 的 @theme 指令注册自定义颜色，
- * 这样在 class 中可以直接使用 bg-surface、text-on-surface 等。
+ * ⚠️ 不在此文件定义任何 CSS 变量值！
+ * 所有值由 preset CSS 提供（如 presets/antdv.css）。
  *
- * 亮色/暗色模式通过 CSS 变量切换：
- * - :root 定义亮色值
- * - .dark 选择器定义暗色值（兼容 Tailwind 的 class 策略）
+ * 职责：
+ * 1. @source — 扫描 dist 目录中的 class 名
+ * 2. @theme — 将语义 token 注册为 Tailwind 主题色
+ *    使得 bg-surface、text-on-surface 等 utility class 可用
  */
-
-/* ===== 1. 语义化变量定义 ===== */
-:root {
-  /* 表面/背景 */
-  --color-surface: oklch(100% 0 0deg); /* white */
-  --color-surface-hover: oklch(97% 0 0deg); /* gray-50 */
-  --color-elevated: oklch(95% 0 0deg); /* gray-100 */
-
-  /* 文本 */
-  --color-on-surface: oklch(15% 0 0deg); /* gray-900 */
-  --color-muted: oklch(55% 0 0deg); /* gray-500 */
-
-  /* 边框 */
-  --color-default: oklch(87% 0 0deg); /* gray-300 */
-
-  /* 主题色（可被用户覆盖） */
-  --color-primary: oklch(55% 0.25 260deg); /* blue-600 */
-  --color-primary-hover: oklch(49% 0.25 260deg); /* blue-700 */
-}
-
-.dark {
-  --color-surface: oklch(17% 0 0deg); /* gray-900 */
-  --color-surface-hover: oklch(21% 0 0deg); /* gray-800 */
-  --color-elevated: oklch(25% 0 0deg); /* gray-700 */
-  --color-on-surface: oklch(95% 0 0deg); /* gray-100 */
-  --color-muted: oklch(65% 0 0deg); /* gray-400 */
-  --color-default: oklch(37% 0 0deg); /* gray-600 */
-  --color-primary: oklch(65% 0.25 260deg); /* blue-400 */
-  --color-primary-hover: oklch(70% 0.25 260deg); /* blue-300 */
-}
-
-/* ===== 2. 注册为 Tailwind 主题色 ===== */
 
 @theme {
   --color-surface: var(--color-surface);

@@ -12,7 +12,10 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs"
     },
-    "./css": "./css/tokens.css"
+    "./css": "./css/index.css",
+    "./css/tokens": "./css/tokens.css",
+    "./css/presets/antdv": "./css/presets/antdv.css",
+    "./css/presets/element-plus": "./css/presets/element-plus.css"
   },
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
