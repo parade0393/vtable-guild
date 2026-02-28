@@ -10,6 +10,12 @@
 :root {
   /* ===== 语义 token — antdv 设计体系值 ===== */
 
+  /* 排版 */
+  --font-family-base:
+    -apple-system, 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial',
+    'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+    'Noto Color Emoji';
+
   /* 表面/背景 */
   --color-surface: #ffffff;
   --color-surface-hover: #fafafa;
@@ -27,6 +33,7 @@
   --color-primary-hover: #4096ff;
 
   /* ===== 组件 token — 100% 引用语义 token ===== */
+  --vtg-table-font-family: var(--font-family-base);
   --vtg-table-bg: var(--color-surface);
   --vtg-table-header-bg: var(--color-surface-hover);
   --vtg-table-header-color: var(--color-on-surface);
