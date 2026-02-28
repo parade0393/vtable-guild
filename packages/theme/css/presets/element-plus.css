@@ -5,5 +5,6 @@
  * 届时在此定义 element-plus 设计体系的语义 token 值，如：
  *   --color-surface-hover: #f5f7fa;
  *   --color-on-surface: #303133;
+ *   --font-family-base: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
  * 组件 token 引用语义 token 的方式与 antdv.css 完全一致。
  */

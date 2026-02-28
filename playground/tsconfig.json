@@ -9,5 +9,9 @@
       "@/*": ["./src/*"]
     }
   },
-  "references": [{ "path": "../packages/core" }, { "path": "../packages/theme" }]
+  "references": [
+    { "path": "../packages/core" },
+    { "path": "../packages/theme" },
+    { "path": "../packages/table" }
+  ]
 }

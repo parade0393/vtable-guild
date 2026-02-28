@@ -9,12 +9,8 @@ const app = createApp(App)
 
 // ---- 全局主题配置（Layer 2） ----
 const vtg = createVTableGuild({
-  theme: {
-    table: {
-      // 全局覆盖 th 样式，验证合并逻辑
-      slots: { th: 'uppercase tracking-wider' },
-    },
-  },
+  themePreset: 'antdv',
+  theme: {},
 })
 
 app.use(vtg)

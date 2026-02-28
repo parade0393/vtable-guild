@@ -20,6 +20,7 @@ export const antdvTableTheme = {
     table: [
       'w-full border-separate border-spacing-0',
       'bg-[var(--vtg-table-bg)]',
+      'font-[family-name:var(--vtg-table-font-family)]',
       'text-[length:var(--vtg-table-font-size)]',
       'leading-[var(--vtg-table-line-height)]',
       'text-[color:var(--vtg-table-text-color)]',
@@ -28,7 +29,7 @@ export const antdvTableTheme = {
     tbody: '',
     tr: 'group/row transition-colors',
     th: [
-      'relative text-left font-medium',
+      'relative text-left font-semibold',
       'bg-[var(--vtg-table-header-bg)]',
       'text-[color:var(--vtg-table-header-color)]',
       'border-b border-[var(--vtg-table-border-color)]',

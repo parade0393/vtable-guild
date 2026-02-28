@@ -9,6 +9,8 @@
   "dependencies": {
     "@vtable-guild/core": "workspace:*",
     "@vtable-guild/theme": "workspace:*",
+    "@vtable-guild/table": "workspace:*",
+    "ant-design-vue": "^4.2.6",
     "vue": "^3.5.0"
   },
   "devDependencies": {
