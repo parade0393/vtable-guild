@@ -5,6 +5,13 @@
 >
 > 本阶段新增要求（已纳入实现）：默认主题对齐 **ant-design-vue**，同时预留 **element-plus** 主题扩展能力，使用者可通过 preset 选择主题。
 > 本次只实现 antdv 主题，element-plus 先提供可扩展骨架与 fallback。
+>
+> **Why TSX?** 本阶段所有 Table 组件采用 **TSX（`.tsx`）** 而非 SFC（`.vue`）格式：
+>
+> - `customRender` / `bodyCell` slot 返回的 VNode 可直接在 JSX 中通过 `{content}` 渲染，无需 `<component :is="() => vnode" />` 包裹
+> - `defineComponent` + `setup() { return () => <jsx /> }` 模式让 render 逻辑与响应式逻辑同处一个函数，类型推导更自然
+> - 条件渲染 `{cond ? <A /> : <B />}` 和列表渲染 `{items.map(...)}` 比 `v-if` / `v-for` 在纯逻辑组件中更简洁
+> - 所有组件仍使用 Vue 3 Composition API（`defineComponent`、`inject`、`computed` 等），与 SFC 无本质差异
 
 ---
 
@@ -26,7 +33,7 @@
 - `@vtable-guild/table` 拥有可用的基础 Table 渲染能力
 - 支持 `dataSource + columns` 基础渲染
 - 支持 `bodyCell` / `headerCell` slot（通过 **provide/inject** 跨层传递）
-- 支持 `column.customRender`（VNode 通过函数式组件包裹正确渲染）
+- 支持 `column.customRender`（TSX 原生渲染 VNode，无需额外包裹）
 - 支持列配置：`width`、`align`、`ellipsis`、`className`
 - 支持 `loading` / 空数据状态
 - 默认视觉风格与 ant-design-vue 基础 Table 对齐（视觉优先）
@@ -663,17 +670,21 @@ export type AntdvTableVariantProps = {
   striped?: boolean
   hoverable?: boolean
 }
+
+/** 窄类型：保留 `as const` 的字面量 slot key，供 resolver 返回。 */
+export type AntdvTableThemeConfig = typeof antdvTableTheme
 ```
 
 **关键设计决策**：
 
-| 决策                                                      | 原因                                                                    |
-| --------------------------------------------------------- | ----------------------------------------------------------------------- |
-| `border-separate border-spacing-0` 替代 `border-collapse` | 与 antdv 一致，且后续支持 `border-radius` 更灵活                        |
-| `text-[color:var(...)]` 消歧                              | Tailwind CSS 4 的 `text-` 前缀同时用于 `font-size` 和 `color`，必须消歧 |
-| `text-[length:var(...)]` 消歧                             | 同上，`font-size` 需要 `length` 类型标注                                |
-| `group/row` + `group-hover/row`                           | 命名组避免嵌套 table 时 hover 冒泡                                      |
-| 默认 `size: 'lg'`                                         | 对应 antdv 默认 spacing（16px），`md`/`sm` 分别映射 middle/small        |
+| 决策                                                      | 原因                                                                                                                                                                                                                                   |
+| --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AntdvTableThemeConfig` 窄类型导出                        | `ThemePreset.table` 类型为 `ThemeConfig`（`slots: Record<string, string>`），会拓宽 `as const` 的字面量 key。导出 `typeof antdvTableTheme` 让 resolver 返回窄类型，使消费端 `useTheme` 自动推导出 `root`、`table`、`th` 等具体 slot 名 |
+| `border-separate border-spacing-0` 替代 `border-collapse` | 与 antdv 一致，且后续支持 `border-radius` 更灵活                                                                                                                                                                                       |
+| `text-[color:var(...)]` 消歧                              | Tailwind CSS 4 的 `text-` 前缀同时用于 `font-size` 和 `color`，必须消歧                                                                                                                                                                |
+| `text-[length:var(...)]` 消歧                             | 同上，`font-size` 需要 `length` 类型标注                                                                                                                                                                                               |
+| `group/row` + `group-hover/row`                           | 命名组避免嵌套 table 时 hover 冒泡                                                                                                                                                                                                     |
+| 默认 `size: 'lg'`                                         | 对应 antdv 默认 spacing（16px），`md`/`sm` 分别映射 middle/small                                                                                                                                                                       |
 
 #### 5.3 验证
 
@@ -694,6 +705,7 @@ export type AntdvTableVariantProps = {
 
 import type { ThemePreset } from './types'
 import type { ThemePresetName } from '@vtable-guild/core'
+import type { AntdvTableThemeConfig } from './antdv/table'
 import { antdvTableTheme } from './antdv/table'
 import {
   ELEMENT_PLUS_THEME_IMPLEMENTED,
@@ -734,11 +746,14 @@ export function resolveThemePreset(name: ThemePresetName = 'antdv'): ThemePreset
 /**
  * 解析特定组件的主题预设。
  *
+ * 返回窄类型 AntdvTableThemeConfig，确保消费端 useTheme 能推导出
+ * 具体 slot 名称（root、table、th 等），而非拓宽为 string。
+ *
  * @param name - 预设名称
- * @returns Table 的 ThemeConfig
+ * @returns Table 的 AntdvTableThemeConfig（保留字面量 slot key）
  */
-export function resolveTableThemePreset(name: ThemePresetName = 'antdv') {
-  return resolveThemePreset(name).table
+export function resolveTableThemePreset(name: ThemePresetName = 'antdv'): AntdvTableThemeConfig {
+  return resolveThemePreset(name).table as AntdvTableThemeConfig
 }
 
 export type { ThemePresetName } from './types'
@@ -773,6 +788,7 @@ export { antdvTableTheme as tableTheme } from './presets/antdv/table'
 export type {
   AntdvTableSlots as TableSlots,
   AntdvTableVariantProps as TableVariantProps,
+  AntdvTableThemeConfig as TableThemeConfig,
 } from './presets/antdv/table'
 ```
 
@@ -792,7 +808,7 @@ export { resolveThemePreset, resolveTableThemePreset } from './presets'
 export type { ThemePresetName } from './presets'
 
 // ---------- 类型导出 ----------
-export type { TableSlots, TableVariantProps } from './table'
+export type { TableSlots, TableVariantProps, TableThemeConfig } from './table'
 export type { PaginationSlots, PaginationVariantProps } from './pagination'
 ```
 
@@ -870,7 +886,7 @@ pnpm build
 
 #### 8.1 为什么先写类型
 
-阶段三组件多（8 个 .vue 文件），先把 `columns` / `customRender` / slot 上下文的类型固定住，后面每个组件都可以直接复用，不会反复改签名。
+阶段三组件多（8 个 .tsx 文件），先把 `columns` / `customRender` / slot 上下文的类型固定住，后面每个组件都可以直接复用，不会反复改签名。
 
 #### 8.2 创建目录
 
@@ -1047,7 +1063,19 @@ export type {
 } from './table'
 ```
 
-#### 9.3 验证
+#### 9.3 确认 `packages/table/tsconfig.json` 包含 `*.tsx`
+
+> 因为本阶段组件使用 TSX 而非 SFC，需要确保 `include` 包含 `*.tsx` 文件：
+
+```jsonc
+{
+  // ... 其他配置
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  // 不再需要 "src/**/*.vue"
+}
+```
+
+#### 9.4 验证
 
 ```bash
 pnpm build
@@ -1171,16 +1199,16 @@ export { useColumns, getByDataIndex } from './useColumns'
 
 > **⚠️ 这是草稿文档的核心缺陷**
 
-Vue 的 scoped slots（`useSlots()` 返回值）**不跨组件层级自动传播**。用户在 `<VTable>` 上定义的 `bodyCell` slot 只能在 `Table.vue` 内部通过 `useSlots()` 获取，而 `TableCell.vue` 是 `Table > TableBody > TableRow > TableCell` 的孙组件，直接 `useSlots()` 拿到的是 `TableRow` 传给 `TableCell` 的 slots（空的）。
+Vue 的 scoped slots（`useSlots()` / `setup(_, { slots })` 返回值）**不跨组件层级自动传播**。用户在 `<VTable>` 上定义的 `bodyCell` slot 只能在 `Table.tsx` 内部通过 `setup(_, { slots })` 获取，而 `TableCell.tsx` 是 `Table > TableBody > TableRow > TableCell` 的孙组件，直接获取 slots 拿到的是 `TableRow` 传给 `TableCell` 的 slots（空的）。
 
-**解决方案**：在 `Table.vue` 中用 `provide()` 把 slots 注入到 context，所有后代组件通过 `inject()` 获取。
+**解决方案**：在 `Table.tsx` 中用 `provide()` 把 slots 注入到 context，所有后代组件通过 `inject()` 获取。
 
 ```
-用户定义 slots         Table.vue                    孙组件
+用户定义 slots         Table.tsx                    孙组件
 ┌──────────────┐      ┌────────────────┐            ┌──────────────┐
-│ <VTable>     │      │ useSlots()     │  provide   │ inject()     │
-│   #bodyCell  │ ───► │ ─► slots.body  │ ─────────► │ ─► bodyCell  │
-│   #headerCell│      │ ─► slots.head  │            │ ─► headerCell│
+│ <VTable>     │      │ setup(_, {     │  provide   │ inject()     │
+│   #bodyCell  │ ───► │   slots })     │ ─────────► │ ─► bodyCell  │
+│   #headerCell│      │ ─► slots.body  │            │ ─► headerCell│
 │ </VTable>    │      └────────────────┘            └──────────────┘
 ```
 
@@ -1194,18 +1222,18 @@ import type { InjectionKey, Slots } from 'vue'
 /**
  * Table 内部 context，通过 provide/inject 跨层传递。
  *
- * Table.vue 在 setup 阶段 provide 此 context，
+ * Table.tsx 在 setup 阶段 provide 此 context，
  * 所有后代组件（TableCell、TableHeaderCell 等）通过 inject 获取。
  */
 export interface TableContext {
   /**
    * 用户定义的 bodyCell slot 函数。
-   * 来自 Table.vue 的 useSlots().bodyCell。
+   * 来自 Table.tsx 的 setup(_, { slots }).bodyCell。
    */
   bodyCell?: Slots['bodyCell']
   /**
    * 用户定义的 headerCell slot 函数。
-   * 来自 Table.vue 的 useSlots().headerCell。
+   * 来自 Table.tsx 的 setup(_, { slots }).headerCell。
    */
   headerCell?: Slots['headerCell']
   /**
@@ -1228,13 +1256,13 @@ export const TABLE_CONTEXT_KEY: InjectionKey<TableContext> = Symbol('vtable-tabl
 
 #### 11.3 验证
 
-文件创建完毕。接 Step 12 开始实现子组件。
+文件创建完毕。接 Step 12 开始实现子组件（TSX 格式）。
 
 ---
 
 ## Part 5：子组件实现（Step 12 – 17）
 
-### Step 12：TableCell.vue — inject 获取 bodyCell slot + VNode 正确渲染
+### Step 12：TableCell.tsx — inject 获取 bodyCell slot + VNode 直接渲染
 
 #### 12.1 为什么这个组件最复杂
 
@@ -1246,12 +1274,10 @@ TableCell 有三层渲染优先级：
 
 前两种都可能返回 VNode，必须正确处理。
 
-> **⚠️ VNode 渲染陷阱**
+> **TSX 的优势：VNode 直接渲染**
 >
-> `<component :is="someVNode">` 无法正确渲染 VNode 对象。`<component :is>` 期望的是组件定义（对象或函数），不是 VNode 实例。
->
-> **正确做法**：将 VNode 包裹为函数式组件 `<component :is="() => someVNode" />`。
-> 这利用了 Vue 的函数式组件特性——返回 VNode 的函数被视为 render 函数。
+> 在 SFC `<template>` 中，VNode 不能直接插值——需要用 `<component :is="() => vnode" />` 包裹为函数式组件。
+> 在 TSX 中，`{vnodeContent}` 直接渲染 VNode，无需任何包裹，代码更简洁且不易出错。
 
 #### 12.2 创建目录
 
@@ -1259,112 +1285,102 @@ TableCell 有三层渲染优先级：
 mkdir -p packages/table/src/components
 ```
 
-#### 12.3 创建 `packages/table/src/components/TableCell.vue`
+#### 12.3 创建 `packages/table/src/components/TableCell.tsx`
 
-```vue
-<!-- packages/table/src/components/TableCell.vue -->
-<script setup lang="ts">
-import { computed, inject } from 'vue'
+```tsx
+// packages/table/src/components/TableCell.tsx
+
+import { computed, defineComponent, inject, type PropType } from 'vue'
 import { getByDataIndex } from '../composables/useColumns'
 import { TABLE_CONTEXT_KEY } from '../context'
 import type { ColumnType } from '../types'
 
-const props = defineProps<{
-  record: Record<string, unknown>
-  rowIndex: number
-  column: ColumnType<Record<string, unknown>>
-  tdClass: string
-  bodyCellEllipsisClass: string
-}>()
+export default defineComponent({
+  name: 'TableCell',
+  props: {
+    record: { type: Object as PropType<Record<string, unknown>>, required: true },
+    rowIndex: { type: Number, required: true },
+    column: { type: Object as PropType<ColumnType<Record<string, unknown>>>, required: true },
+    tdClass: { type: String, required: true },
+    bodyCellEllipsisClass: { type: String, required: true },
+  },
+  setup(props) {
+    // ---- 通过 inject 获取 Table.tsx provide 的 bodyCell slot ----
+    // ⚠️ 不使用 useSlots()！scoped slots 不跨层级传播。
+    const tableContext = inject(TABLE_CONTEXT_KEY, {})
 
-// ---- 通过 inject 获取 Table.vue provide 的 bodyCell slot ----
-// ⚠️ 不使用 useSlots()！scoped slots 不跨层级传播。
-const tableContext = inject(TABLE_CONTEXT_KEY, {})
+    const text = computed(() => getByDataIndex(props.record, props.column.dataIndex))
 
-const text = computed(() => getByDataIndex(props.record, props.column.dataIndex))
+    /**
+     * 计算最终渲染内容。
+     *
+     * 优先级：customRender > bodyCell slot > 纯文本
+     *
+     * TSX 中 VNode 可直接通过 {content} 渲染，无需 <component :is> 包裹。
+     */
+    const cellContent = computed(() => {
+      // 优先级 1：column.customRender
+      if (props.column.customRender) {
+        return props.column.customRender({
+          text: text.value,
+          record: props.record,
+          index: props.rowIndex,
+          column: props.column,
+        })
+      }
 
-/**
- * 计算最终渲染内容。
- *
- * 优先级：customRender > bodyCell slot > 纯文本
- *
- * 返回值类型：
- * - VNode/VNode[] → 需要用 <component :is="() => content" /> 渲染
- * - string/number → 直接插值 {{ content }}
- */
-const cellContent = computed(() => {
-  // 优先级 1：column.customRender
-  if (props.column.customRender) {
-    return props.column.customRender({
-      text: text.value,
-      record: props.record,
-      index: props.rowIndex,
-      column: props.column,
+      // 优先级 2：bodyCell slot（通过 inject 获取）
+      if (tableContext.bodyCell) {
+        return tableContext.bodyCell({
+          text: text.value,
+          record: props.record,
+          index: props.rowIndex,
+          column: props.column,
+        })
+      }
+
+      // 优先级 3：纯文本
+      return text.value ?? ''
     })
-  }
 
-  // 优先级 2：bodyCell slot（通过 inject 获取）
-  if (tableContext.bodyCell) {
-    return tableContext.bodyCell({
-      text: text.value,
-      record: props.record,
-      index: props.rowIndex,
-      column: props.column,
+    const cellClass = computed(() => {
+      const alignClass =
+        props.column.align === 'center'
+          ? 'text-center'
+          : props.column.align === 'right'
+            ? 'text-right'
+            : 'text-left'
+      return [props.tdClass, alignClass, props.column.className].filter(Boolean).join(' ')
     })
-  }
 
-  // 优先级 3：纯文本
-  return text.value ?? ''
+    const widthStyle = computed(() => {
+      if (!props.column.width) return undefined
+      return {
+        width:
+          typeof props.column.width === 'number' ? `${props.column.width}px` : props.column.width,
+      }
+    })
+
+    return () => (
+      <td class={cellClass.value} style={widthStyle.value}>
+        {props.column.ellipsis ? (
+          <div class={props.bodyCellEllipsisClass}>{cellContent.value}</div>
+        ) : (
+          cellContent.value
+        )}
+      </td>
+    )
+  },
 })
-
-/** 是否为 VNode 类型（需要用 component :is 渲染） */
-const isVNode = computed(() => {
-  const content = cellContent.value
-  return content !== null && content !== undefined && typeof content === 'object'
-})
-
-const cellClass = computed(() => {
-  const alignClass =
-    props.column.align === 'center'
-      ? 'text-center'
-      : props.column.align === 'right'
-        ? 'text-right'
-        : 'text-left'
-  return [props.tdClass, alignClass, props.column.className].filter(Boolean).join(' ')
-})
-
-const widthStyle = computed(() => {
-  if (!props.column.width) return undefined
-  return {
-    width: typeof props.column.width === 'number' ? `${props.column.width}px` : props.column.width,
-  }
-})
-</script>
-
-<template>
-  <td :class="cellClass" :style="widthStyle">
-    <div v-if="column.ellipsis" :class="bodyCellEllipsisClass">
-      <!--
-        ⚠️ VNode 渲染：() => cellContent 创建函数式组件。
-        不能直接 <component :is="cellContent" />，Vue 不接受裸 VNode。
-      -->
-      <component v-if="isVNode" :is="() => cellContent" />
-      <template v-else>{{ cellContent }}</template>
-    </div>
-    <template v-else>
-      <component v-if="isVNode" :is="() => cellContent" />
-      <template v-else>{{ cellContent }}</template>
-    </template>
-  </td>
-</template>
 ```
 
 **关键修正**：
 
-| 草稿写法                          | 修正写法                                | 原因                                |
-| --------------------------------- | --------------------------------------- | ----------------------------------- |
-| `useSlots()`                      | `inject(TABLE_CONTEXT_KEY)`             | scoped slots 不跨层级传播           |
-| `<component :is="customContent">` | `<component :is="() => cellContent" />` | `:is` 期望组件定义/函数，不是 VNode |
+| 草稿写法（SFC）                         | TSX 写法                            | 原因                              |
+| --------------------------------------- | ----------------------------------- | --------------------------------- |
+| `useSlots()`                            | `inject(TABLE_CONTEXT_KEY)`         | scoped slots 不跨层级传播         |
+| `<component :is="() => cellContent" />` | `{cellContent.value}`               | TSX 原生支持 VNode 渲染，无需包裹 |
+| `v-if="column.ellipsis"` + `v-else`     | `{cond ? <div>...</div> : content}` | TSX 使用三元表达式替代指令        |
 
 #### 12.4 验证
 
@@ -1372,73 +1388,71 @@ const widthStyle = computed(() => {
 
 ---
 
-### Step 13：TableHeaderCell.vue — inject 获取 headerCell slot
+### Step 13：TableHeaderCell.tsx — inject 获取 headerCell slot
 
-#### 13.1 创建 `packages/table/src/components/TableHeaderCell.vue`
+#### 13.1 创建 `packages/table/src/components/TableHeaderCell.tsx`
 
-```vue
-<!-- packages/table/src/components/TableHeaderCell.vue -->
-<script setup lang="ts">
-import { computed, inject } from 'vue'
+```tsx
+// packages/table/src/components/TableHeaderCell.tsx
+
+import { computed, defineComponent, inject, type PropType } from 'vue'
 import { TABLE_CONTEXT_KEY } from '../context'
 import type { ColumnType } from '../types'
 
-const props = defineProps<{
-  column: ColumnType<Record<string, unknown>>
-  index: number
-  thClass: string
-  headerCellInnerClass: string
-}>()
+export default defineComponent({
+  name: 'TableHeaderCell',
+  props: {
+    column: { type: Object as PropType<ColumnType<Record<string, unknown>>>, required: true },
+    index: { type: Number, required: true },
+    thClass: { type: String, required: true },
+    headerCellInnerClass: { type: String, required: true },
+  },
+  setup(props) {
+    // ---- 通过 inject 获取 headerCell slot ----
+    const tableContext = inject(TABLE_CONTEXT_KEY, {})
 
-// ---- 通过 inject 获取 headerCell slot ----
-const tableContext = inject(TABLE_CONTEXT_KEY, {})
+    const headerContent = computed(() => {
+      // 优先级 1：headerCell slot
+      if (tableContext.headerCell) {
+        return tableContext.headerCell({
+          title: props.column.title,
+          column: props.column,
+          index: props.index,
+        })
+      }
 
-const headerContent = computed(() => {
-  // 优先级 1：headerCell slot
-  if (tableContext.headerCell) {
-    return tableContext.headerCell({
-      title: props.column.title,
-      column: props.column,
-      index: props.index,
+      // 优先级 2：column.title 纯文本
+      return props.column.title ?? ''
     })
-  }
 
-  // 优先级 2：column.title 纯文本
-  return props.column.title ?? ''
+    const cellClass = computed(() => {
+      const alignClass =
+        props.column.align === 'center'
+          ? 'text-center'
+          : props.column.align === 'right'
+            ? 'text-right'
+            : 'text-left'
+      return [props.thClass, alignClass, props.column.className].filter(Boolean).join(' ')
+    })
+
+    const widthStyle = computed(() => {
+      if (!props.column.width) return undefined
+      return {
+        width:
+          typeof props.column.width === 'number' ? `${props.column.width}px` : props.column.width,
+      }
+    })
+
+    return () => (
+      <th class={cellClass.value} style={widthStyle.value}>
+        <span class={props.headerCellInnerClass}>
+          {/* TSX 中 VNode 直接渲染，无需 <component :is> 包裹 */}
+          {headerContent.value}
+        </span>
+      </th>
+    )
+  },
 })
-
-const isVNode = computed(() => {
-  const content = headerContent.value
-  return content !== null && content !== undefined && typeof content === 'object'
-})
-
-const cellClass = computed(() => {
-  const alignClass =
-    props.column.align === 'center'
-      ? 'text-center'
-      : props.column.align === 'right'
-        ? 'text-right'
-        : 'text-left'
-  return [props.thClass, alignClass, props.column.className].filter(Boolean).join(' ')
-})
-
-const widthStyle = computed(() => {
-  if (!props.column.width) return undefined
-  return {
-    width: typeof props.column.width === 'number' ? `${props.column.width}px` : props.column.width,
-  }
-})
-</script>
-
-<template>
-  <th :class="cellClass" :style="widthStyle">
-    <span :class="headerCellInnerClass">
-      <!-- 同 TableCell，VNode 通过函数式组件渲染 -->
-      <component v-if="isVNode" :is="() => headerContent" />
-      <template v-else>{{ headerContent }}</template>
-    </span>
-  </th>
-</template>
 ```
 
 #### 13.2 验证
@@ -1447,26 +1461,27 @@ const widthStyle = computed(() => {
 
 ---
 
-### Step 14：TableRow.vue — 行容器
+### Step 14：TableRow.tsx — 行容器
 
-#### 14.1 创建 `packages/table/src/components/TableRow.vue`
+#### 14.1 创建 `packages/table/src/components/TableRow.tsx`
 
-```vue
-<!-- packages/table/src/components/TableRow.vue -->
-<script setup lang="ts">
-defineProps<{
-  rowClass: string
-}>()
-</script>
+```tsx
+// packages/table/src/components/TableRow.tsx
 
-<template>
-  <tr :class="rowClass">
-    <slot />
-  </tr>
-</template>
+import { defineComponent } from 'vue'
+
+export default defineComponent({
+  name: 'TableRow',
+  props: {
+    rowClass: { type: String, required: true },
+  },
+  setup(props, { slots }) {
+    return () => <tr class={props.rowClass}>{slots.default?.()}</tr>
+  },
+})
 ```
 
-**关键说明**：`<slot />` 接收 TableBody 传入的 TableCell 列表。这里不需要 inject — 行容器只是布局组件。
+**关键说明**：`{slots.default?.()}` 接收 TableBody 传入的 TableCell 列表。这里不需要 inject — 行容器只是布局组件。
 
 #### 14.2 验证
 
@@ -1474,34 +1489,36 @@ defineProps<{
 
 ---
 
-### Step 15：TableEmpty.vue — 空状态
+### Step 15：TableEmpty.tsx — 空状态
 
-#### 15.1 创建 `packages/table/src/components/TableEmpty.vue`
+#### 15.1 创建 `packages/table/src/components/TableEmpty.tsx`
 
-```vue
-<!-- packages/table/src/components/TableEmpty.vue -->
-<script setup lang="ts">
-import { inject } from 'vue'
+```tsx
+// packages/table/src/components/TableEmpty.tsx
+
+import { defineComponent, inject } from 'vue'
 import { TABLE_CONTEXT_KEY } from '../context'
 
-defineProps<{
-  colSpan: number
-  emptyClass: string
-  tdClass: string
-}>()
+export default defineComponent({
+  name: 'TableEmpty',
+  props: {
+    colSpan: { type: Number, required: true },
+    emptyClass: { type: String, required: true },
+    tdClass: { type: String, required: true },
+  },
+  setup(props) {
+    const tableContext = inject(TABLE_CONTEXT_KEY, {})
 
-const tableContext = inject(TABLE_CONTEXT_KEY, {})
-</script>
-
-<template>
-  <tr>
-    <td :class="[tdClass, emptyClass]" :colspan="colSpan">
-      <!-- 优先使用用户自定义 empty slot -->
-      <component v-if="tableContext.empty" :is="() => tableContext.empty!()" />
-      <template v-else>No Data</template>
-    </td>
-  </tr>
-</template>
+    return () => (
+      <tr>
+        <td class={[props.tdClass, props.emptyClass]} colspan={props.colSpan}>
+          {/* 优先使用用户自定义 empty slot */}
+          {tableContext.empty ? tableContext.empty() : 'No Data'}
+        </td>
+      </tr>
+    )
+  },
+})
 ```
 
 #### 15.2 验证
@@ -1510,23 +1527,24 @@ const tableContext = inject(TABLE_CONTEXT_KEY, {})
 
 ---
 
-### Step 16：TableLoading.vue — 加载遮罩
+### Step 16：TableLoading.tsx — 加载遮罩
 
-#### 16.1 创建 `packages/table/src/components/TableLoading.vue`
+#### 16.1 创建 `packages/table/src/components/TableLoading.tsx`
 
-```vue
-<!-- packages/table/src/components/TableLoading.vue -->
-<script setup lang="ts">
-defineProps<{
-  loadingClass: string
-}>()
-</script>
+```tsx
+// packages/table/src/components/TableLoading.tsx
 
-<template>
-  <div :class="loadingClass">
-    <slot>Loading...</slot>
-  </div>
-</template>
+import { defineComponent } from 'vue'
+
+export default defineComponent({
+  name: 'TableLoading',
+  props: {
+    loadingClass: { type: String, required: true },
+  },
+  setup(props, { slots }) {
+    return () => <div class={props.loadingClass}>{slots.default?.() ?? 'Loading...'}</div>
+  },
+})
 ```
 
 #### 16.2 验证
@@ -1535,100 +1553,111 @@ defineProps<{
 
 ---
 
-### Step 17：TableHeader.vue + TableBody.vue — 表头/表体组装
+### Step 17：TableHeader.tsx + TableBody.tsx — 表头/表体组装
 
-#### 17.1 创建 `packages/table/src/components/TableHeader.vue`
+#### 17.1 创建 `packages/table/src/components/TableHeader.tsx`
 
-```vue
-<!-- packages/table/src/components/TableHeader.vue -->
-<script setup lang="ts">
-import TableHeaderCell from './TableHeaderCell.vue'
+```tsx
+// packages/table/src/components/TableHeader.tsx
+
+import { defineComponent, type PropType } from 'vue'
+import TableHeaderCell from './TableHeaderCell'
 import type { ColumnType } from '../types'
 
-defineProps<{
-  columns: ColumnType<Record<string, unknown>>[]
-  theadClass: string
-  rowClass: string
-  thClass: string
-  headerCellInnerClass: string
-}>()
-</script>
-
-<template>
-  <thead :class="theadClass">
-    <tr :class="rowClass">
-      <TableHeaderCell
-        v-for="(column, index) in columns"
-        :key="column.key ?? String(column.dataIndex ?? index)"
-        :column="column"
-        :index="index"
-        :th-class="thClass"
-        :header-cell-inner-class="headerCellInnerClass"
-      />
-    </tr>
-  </thead>
-</template>
+export default defineComponent({
+  name: 'TableHeader',
+  props: {
+    columns: { type: Array as PropType<ColumnType<Record<string, unknown>>[]>, required: true },
+    theadClass: { type: String, required: true },
+    rowClass: { type: String, required: true },
+    thClass: { type: String, required: true },
+    headerCellInnerClass: { type: String, required: true },
+  },
+  setup(props) {
+    return () => (
+      <thead class={props.theadClass}>
+        <tr class={props.rowClass}>
+          {props.columns.map((column, index) => (
+            <TableHeaderCell
+              key={column.key ?? String(column.dataIndex ?? index)}
+              column={column}
+              index={index}
+              thClass={props.thClass}
+              headerCellInnerClass={props.headerCellInnerClass}
+            />
+          ))}
+        </tr>
+      </thead>
+    )
+  },
+})
 ```
 
 **关键说明**：TableHeader 不需要传递 headerCell slot 给 TableHeaderCell — 因为 TableHeaderCell 自己通过 `inject(TABLE_CONTEXT_KEY)` 获取。
 
-#### 17.2 创建 `packages/table/src/components/TableBody.vue`
+#### 17.2 创建 `packages/table/src/components/TableBody.tsx`
 
-```vue
-<!-- packages/table/src/components/TableBody.vue -->
-<script setup lang="ts">
-import TableRow from './TableRow.vue'
-import TableCell from './TableCell.vue'
-import TableEmpty from './TableEmpty.vue'
+```tsx
+// packages/table/src/components/TableBody.tsx
+
+import { defineComponent, type PropType } from 'vue'
+import TableRow from './TableRow'
+import TableCell from './TableCell'
+import TableEmpty from './TableEmpty'
 import type { ColumnType, Key } from '../types'
 
-const props = defineProps<{
-  dataSource: Record<string, unknown>[]
-  columns: ColumnType<Record<string, unknown>>[]
-  tbodyClass: string
-  rowClass: string
-  tdClass: string
-  emptyClass: string
-  bodyCellEllipsisClass: string
-  rowKey?: string | ((record: Record<string, unknown>) => Key)
-}>()
+export default defineComponent({
+  name: 'TableBody',
+  props: {
+    dataSource: { type: Array as PropType<Record<string, unknown>[]>, required: true },
+    columns: { type: Array as PropType<ColumnType<Record<string, unknown>>[]>, required: true },
+    tbodyClass: { type: String, required: true },
+    rowClass: { type: String, required: true },
+    tdClass: { type: String, required: true },
+    emptyClass: { type: String, required: true },
+    bodyCellEllipsisClass: { type: String, required: true },
+    rowKey: {
+      type: [String, Function] as PropType<string | ((record: Record<string, unknown>) => Key)>,
+      default: undefined,
+    },
+  },
+  setup(props) {
+    function getRowKey(record: Record<string, unknown>, index: number): Key {
+      if (typeof props.rowKey === 'function') return props.rowKey(record)
+      if (typeof props.rowKey === 'string' && props.rowKey in record) {
+        return record[props.rowKey] as Key
+      }
+      return index
+    }
 
-function getRowKey(record: Record<string, unknown>, index: number): Key {
-  if (typeof props.rowKey === 'function') return props.rowKey(record)
-  if (typeof props.rowKey === 'string' && props.rowKey in record) {
-    return record[props.rowKey] as Key
-  }
-  return index
-}
-</script>
-
-<template>
-  <tbody :class="tbodyClass">
-    <template v-if="dataSource.length > 0">
-      <TableRow
-        v-for="(record, rowIndex) in dataSource"
-        :key="getRowKey(record, rowIndex)"
-        :row-class="rowClass"
-      >
-        <TableCell
-          v-for="(column, colIndex) in columns"
-          :key="column.key ?? String(column.dataIndex ?? colIndex)"
-          :record="record"
-          :row-index="rowIndex"
-          :column="column"
-          :td-class="tdClass"
-          :body-cell-ellipsis-class="bodyCellEllipsisClass"
-        />
-      </TableRow>
-    </template>
-    <TableEmpty
-      v-else
-      :col-span="columns.length || 1"
-      :empty-class="emptyClass"
-      :td-class="tdClass"
-    />
-  </tbody>
-</template>
+    return () => (
+      <tbody class={props.tbodyClass}>
+        {props.dataSource.length > 0 ? (
+          props.dataSource.map((record, rowIndex) => (
+            <TableRow key={getRowKey(record, rowIndex)} rowClass={props.rowClass}>
+              {props.columns.map((column, colIndex) => (
+                <TableCell
+                  key={column.key ?? String(column.dataIndex ?? colIndex)}
+                  record={record}
+                  rowIndex={rowIndex}
+                  column={column}
+                  tdClass={props.tdClass}
+                  bodyCellEllipsisClass={props.bodyCellEllipsisClass}
+                />
+              ))}
+            </TableRow>
+          ))
+        ) : (
+          <TableEmpty
+            colSpan={props.columns.length || 1}
+            emptyClass={props.emptyClass}
+            tdClass={props.tdClass}
+          />
+        )}
+      </tbody>
+    )
+  },
+})
 ```
 
 **关键说明**：TableBody 不需要传递 bodyCell slot — TableCell 自行 inject。这简化了中间层的 props 传递。
@@ -1641,134 +1670,146 @@ function getRowKey(record: Record<string, unknown>, index: number): Key {
 
 ## Part 6：主组件与集成（Step 18 – 20）
 
-### Step 18：Table.vue — preset 解析、useTheme 调用、provide context
+### Step 18：Table.tsx — preset 解析、useTheme 调用、provide context
 
-#### 18.1 为什么 Table.vue 是枢纽
+#### 18.1 为什么 Table.tsx 是枢纽
 
-Table.vue 承担三个核心职责：
+Table.tsx 承担三个核心职责：
 
 1. **Preset 解析**：确定用哪个主题（实例 prop > 全局配置 > 默认 antdv）
 2. **主题计算**：调用 `useTheme()` 获得最终 slot class
 3. **Context 注入**：通过 `provide(TABLE_CONTEXT_KEY)` 把 bodyCell/headerCell slots 传递给孙组件
 
-#### 18.2 创建 `packages/table/src/components/Table.vue`
+#### 18.2 创建 `packages/table/src/components/Table.tsx`
 
-```vue
-<!-- packages/table/src/components/Table.vue -->
-<script setup lang="ts">
-import { computed, inject, provide, useSlots } from 'vue'
+```tsx
+// packages/table/src/components/Table.tsx
+
+import { computed, defineComponent, inject, provide, type PropType, type SlotsType } from 'vue'
 import { useTheme, VTABLE_GUILD_INJECTION_KEY, type VTableGuildContext } from '@vtable-guild/core'
-import { resolveTableThemePreset, tableTheme } from '@vtable-guild/theme'
+import {
+  resolveTableThemePreset,
+  tableTheme,
+  type TableSlots,
+  type TableThemeConfig,
+} from '@vtable-guild/theme'
+import type { SlotProps, ThemePresetName } from '@vtable-guild/core'
 import { useColumns } from '../composables'
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
-import TableHeader from './TableHeader.vue'
-import TableBody from './TableBody.vue'
-import TableLoading from './TableLoading.vue'
-import type { TableProps } from '../types'
+import TableHeader from './TableHeader'
+import TableBody from './TableBody'
+import TableLoading from './TableLoading'
+import type { ColumnsType, ColumnType, Key } from '../types'
 
-const props = withDefaults(defineProps<TableProps>(), {
-  dataSource: () => [],
-  columns: () => [],
-  loading: false,
-  size: 'lg',
-  bordered: false,
-  striped: false,
-  hoverable: true,
+export default defineComponent({
+  name: 'VTable',
+  props: {
+    dataSource: { type: Array as PropType<Record<string, unknown>[]>, default: () => [] },
+    columns: { type: Array as PropType<ColumnsType<Record<string, unknown>>>, default: () => [] },
+    rowKey: {
+      type: [String, Function] as PropType<string | ((record: Record<string, unknown>) => Key)>,
+      default: undefined,
+    },
+    loading: { type: Boolean, default: false },
+    size: { type: String as PropType<'sm' | 'md' | 'lg'>, default: 'lg' },
+    bordered: { type: Boolean, default: false },
+    striped: { type: Boolean, default: false },
+    hoverable: { type: Boolean, default: true },
+    ui: {
+      type: Object as PropType<SlotProps<{ slots: Record<TableSlots, string> }>>,
+      default: undefined,
+    },
+    class: { type: String, default: undefined },
+    themePreset: { type: String as PropType<ThemePresetName>, default: undefined },
+  },
+  slots: Object as SlotsType<{
+    bodyCell: {
+      text: unknown
+      record: Record<string, unknown>
+      index: number
+      column: ColumnType<Record<string, unknown>>
+    }
+    headerCell: {
+      title: string | undefined
+      column: ColumnType<Record<string, unknown>>
+      index: number
+    }
+    empty: object
+    loading: object
+  }>,
+  setup(props, { slots }) {
+    // ---- Step 1: 解析 preset（实例 > 全局 > 默认） ----
+    const globalContext = inject<VTableGuildContext | null>(VTABLE_GUILD_INJECTION_KEY, null)
+    const effectivePreset = computed(
+      () => props.themePreset ?? globalContext?.themePreset ?? 'antdv',
+    )
+
+    // ---- Step 2: 根据 preset 获取默认主题 ----
+    //
+    // ⚠️ 重要限制：useTheme() 的 defaultTheme 参数为非响应式。
+    // resolveTableThemePreset() 在 setup 阶段调用一次，后续不会因 effectivePreset 变化而更新。
+    // 阶段三按"preset 初始化后不动态切换"实现，如需动态切换见 FAQ Q10。
+    const defaultTheme = resolveTableThemePreset(effectivePreset.value) ?? tableTheme
+
+    // ---- Step 3: 三层主题合并 ----
+    // 直接传 defineComponent 的 reactive props，useTheme 内部通过闭包懒读取保证响应性
+    const { slots: themeSlots } = useTheme('table', defaultTheme, props)
+
+    // ---- Step 4: 拍平列 ----
+    const { leafColumns } = useColumns(() => props.columns)
+
+    // ---- Step 5: 通过 provide 传递 slots 给孙组件 ----
+    // ⚠️ 核心修正：scoped slots 不跨层级传播，必须用 provide/inject。
+    provide<TableContext>(TABLE_CONTEXT_KEY, {
+      bodyCell: slots.bodyCell,
+      headerCell: slots.headerCell,
+      empty: slots.empty,
+    })
+
+    return () => (
+      <div class={themeSlots.root()}>
+        <div class={themeSlots.wrapper()}>
+          <table class={themeSlots.table()}>
+            <TableHeader
+              columns={leafColumns.value}
+              theadClass={themeSlots.thead()}
+              rowClass={themeSlots.tr()}
+              thClass={themeSlots.th()}
+              headerCellInnerClass={themeSlots.headerCellInner()}
+            />
+            <TableBody
+              dataSource={props.dataSource}
+              columns={leafColumns.value}
+              tbodyClass={themeSlots.tbody()}
+              rowClass={themeSlots.tr()}
+              tdClass={themeSlots.td()}
+              emptyClass={themeSlots.empty()}
+              bodyCellEllipsisClass={themeSlots.bodyCellEllipsis()}
+              rowKey={props.rowKey}
+            />
+          </table>
+
+          {props.loading && (
+            <TableLoading loadingClass={themeSlots.loading()}>
+              {slots.loading?.() ?? 'Loading...'}
+            </TableLoading>
+          )}
+        </div>
+      </div>
+    )
+  },
 })
-
-defineSlots<{
-  bodyCell?: (props: {
-    text: unknown
-    record: Record<string, unknown>
-    index: number
-    column: Record<string, unknown>
-  }) => unknown
-  headerCell?: (props: {
-    title: string | undefined
-    column: Record<string, unknown>
-    index: number
-  }) => unknown
-  empty?: () => unknown
-  loading?: () => unknown
-}>()
-
-// ---- Step 1: 解析 preset（实例 > 全局 > 默认） ----
-const globalContext = inject<VTableGuildContext | null>(VTABLE_GUILD_INJECTION_KEY, null)
-const effectivePreset = computed(() => props.themePreset ?? globalContext?.themePreset ?? 'antdv')
-
-// ---- Step 2: 根据 preset 获取默认主题 ----
-//
-// ⚠️ 重要限制：useTheme() 的 defaultTheme 参数为非响应式。
-// resolveTableThemePreset() 在 setup 阶段调用一次，后续不会因 effectivePreset 变化而更新。
-// 阶段三按"preset 初始化后不动态切换"实现，如需动态切换见 FAQ Q10。
-const defaultTheme = resolveTableThemePreset(effectivePreset.value) ?? tableTheme
-
-// ---- Step 3: 构造 useTheme 所需的 props ----
-const themeProps = computed(() => ({
-  size: props.size,
-  bordered: props.bordered,
-  striped: props.striped,
-  hoverable: props.hoverable,
-  ui: props.ui,
-  class: props.class,
-}))
-
-// ---- Step 4: 三层主题合并 ----
-const { slots } = useTheme('table', defaultTheme, themeProps.value)
-
-// ---- Step 5: 拍平列 ----
-const { leafColumns } = useColumns(() => props.columns)
-
-// ---- Step 6: 通过 provide 传递 slots 给孙组件 ----
-// ⚠️ 核心修正：scoped slots 不跨层级传播，必须用 provide/inject。
-const parentSlots = useSlots()
-
-provide<TableContext>(TABLE_CONTEXT_KEY, {
-  bodyCell: parentSlots.bodyCell,
-  headerCell: parentSlots.headerCell,
-  empty: parentSlots.empty,
-})
-</script>
-
-<template>
-  <div :class="slots.root()">
-    <div :class="slots.wrapper()">
-      <table :class="slots.table()">
-        <TableHeader
-          :columns="leafColumns"
-          :thead-class="slots.thead()"
-          :row-class="slots.tr()"
-          :th-class="slots.th()"
-          :header-cell-inner-class="slots.headerCellInner()"
-        />
-        <TableBody
-          :data-source="props.dataSource"
-          :columns="leafColumns"
-          :tbody-class="slots.tbody()"
-          :row-class="slots.tr()"
-          :td-class="slots.td()"
-          :empty-class="slots.empty()"
-          :body-cell-ellipsis-class="slots.bodyCellEllipsis()"
-          :row-key="props.rowKey"
-        />
-      </table>
-
-      <TableLoading v-if="props.loading" :loading-class="slots.loading()">
-        <slot name="loading">Loading...</slot>
-      </TableLoading>
-    </div>
-  </div>
-</template>
 ```
 
 **关键设计**：
 
-| 步骤                                                | 说明                                                   |
-| --------------------------------------------------- | ------------------------------------------------------ |
-| `provide(TABLE_CONTEXT_KEY, ...)`                   | 把 bodyCell/headerCell/empty slots 注入到 context      |
-| `useSlots()`                                        | 在 Table.vue 中获取用户定义的 scoped slots             |
-| `resolveTableThemePreset()`                         | 非响应式调用，setup 阶段执行一次                       |
-| `useTheme('table', defaultTheme, themeProps.value)` | 三层合并，themeProps 是 computed 保证 variant 变化响应 |
+| 步骤                                     | 说明                                                             |
+| ---------------------------------------- | ---------------------------------------------------------------- |
+| `provide(TABLE_CONTEXT_KEY, ...)`        | 把 bodyCell/headerCell/empty slots 注入到 context                |
+| `slots` (setup 第二参数)                 | TSX 中通过 `setup(props, { slots })` 获取用户定义的 scoped slots |
+| `SlotsType<...>`                         | Vue 3.3+ 类型特性，为 TSX slots 提供完整类型推导                 |
+| `resolveTableThemePreset()`              | 非响应式调用，setup 阶段执行一次                                 |
+| `useTheme('table', defaultTheme, props)` | 三层合并，直接传 reactive props 保证 variant 变化响应            |
 
 #### 18.3 验证
 
@@ -1783,7 +1824,7 @@ provide<TableContext>(TABLE_CONTEXT_KEY, {
 ```typescript
 // packages/table/src/index.ts
 
-export { default as VTable } from './components/Table.vue'
+export { default as VTable } from './components/Table'
 
 export type {
   Key,
@@ -1816,12 +1857,12 @@ pnpm build
 
 如果构建失败，常见原因：
 
-| 错误                                        | 修复                                                  |
-| ------------------------------------------- | ----------------------------------------------------- |
-| `Cannot find module '../context'`           | 检查 `packages/table/src/context.ts` 是否存在         |
-| Vue SFC 编译错误                            | 确认 `vite.config.ts` 中有 `vue()` 和 `vueJsx()` 插件 |
-| 类型错误 `Slots['bodyCell']`                | 确认 Vue 版本 ≥ 3.5.0                                 |
-| `resolveTableThemePreset is not a function` | 确认 theme 包已先构建（turbo `^build` 自动处理）      |
+| 错误                                        | 修复                                                                            |
+| ------------------------------------------- | ------------------------------------------------------------------------------- |
+| `Cannot find module '../context'`           | 检查 `packages/table/src/context.ts` 是否存在                                   |
+| Vue SFC 编译错误                            | 确认 `vite.config.ts` 中有 `vue()` 和 `vueJsx()` 插件，且 tsconfig 包含 `*.tsx` |
+| 类型错误 `Slots['bodyCell']`                | 确认 Vue 版本 ≥ 3.5.0                                                           |
+| `resolveTableThemePreset is not a function` | 确认 theme 包已先构建（turbo `^build` 自动处理）                                |
 
 ---
 
@@ -1847,7 +1888,7 @@ pnpm add ant-design-vue @vtable-guild/table --filter @vtable-guild/playground
 ```jsonc
 {
   "extends": "@vue/tsconfig/tsconfig.dom.json",
-  "include": ["env.d.ts", "src/**/*", "src/**/*.vue"],
+  "include": ["env.d.ts", "src/**/*", "src/**/*.vue", "src/**/*.tsx"],
   "exclude": ["src/**/__tests__/*"],
   "compilerOptions": {
     "composite": true,
@@ -2098,27 +2139,34 @@ pnpm build && pnpm playground
 
 #### Q4：为什么 bodyCell/headerCell slot 要用 provide/inject 而不是 useSlots()？
 
-Vue scoped slots **不跨组件层级传播**。`<VTable>` 上定义的 `#bodyCell` 只能在 `Table.vue` 的 `useSlots()` 中拿到，而实际消费它的 `TableCell.vue` 是孙组件（`Table > TableBody > TableRow > TableCell`）。
+Vue scoped slots **不跨组件层级传播**。`<VTable>` 上定义的 `#bodyCell` 只能在 `Table.tsx` 的 `setup(_, { slots })` 中拿到，而实际消费它的 `TableCell.tsx` 是孙组件（`Table > TableBody > TableRow > TableCell`）。
 
-如果用 `useSlots()`，在 `TableCell.vue` 中拿到的是 `TableRow` 传给它的 slots——是空的。
+如果用 `useSlots()`，在 `TableCell.tsx` 中拿到的是 `TableRow` 传给它的 slots——是空的。
 
-`provide/inject` 可以跨越任意层级，Table.vue provide 的内容在所有后代中都可以 inject 到。
+`provide/inject` 可以跨越任意层级，Table.tsx provide 的内容在所有后代中都可以 inject 到。
 
-#### Q5：为什么 VNode 渲染要用 `<component :is="() => vnode" />` 而不是 `<component :is="vnode">`？
+#### Q5：VNode 渲染在 TSX 中还需要 `<component :is="() => vnode" />` 吗？
 
-`<component :is>` 的 `is` 属性期望的是**组件定义**（对象、函数或字符串标签名），而不是 VNode 实例。
+**不需要。** 这是 TSX 相比 SFC `<template>` 的一个核心优势。
 
-直接传 VNode 会导致 Vue 尝试把它当组件定义解析，结果是渲染错误或空白。
+在 SFC 的 `<template>` 中，`<component :is>` 的 `is` 属性期望**组件定义**（对象、函数或字符串标签名），不是 VNode 实例。传 VNode 会导致渲染错误，必须用 `() => vnode` 包裹为函数式组件。
 
-`() => vnode` 是一个**函数式组件**——返回 VNode 的函数被 Vue 视为 render 函数，可以正确渲染。
+在 TSX 中，VNode 可以直接作为 JSX 子元素渲染：
 
-```typescript
-// ❌ 错误：VNode 不是组件定义
-<component :is="customRenderResult" />
+```tsx
+// ✅ TSX：VNode 直接渲染
+const cellContent = computed(() => {
+  if (column.customRender) {
+    return column.customRender({ text, record, index, column })
+  }
+  return text ?? ''
+})
 
-// ✅ 正确：包裹为函数式组件
-<component :is="() => customRenderResult" />
+// render 函数中：
+return () => <td>{cellContent.value}</td>
 ```
+
+无论 `cellContent` 是字符串、数字还是 VNode/VNode[]，TSX 都能正确渲染——这正是本阶段选择 TSX 的主要原因之一。
 
 #### Q6：为什么 `text-[var(--vtg-table-text-color)]` 不能直接用？
 
@@ -2211,13 +2259,15 @@ Phase 2 在 `tokens.css` 中用 oklch 通用值定义语义 token（如 `--color
 
 使用方在 `index.css` 中将 `@import './presets/antdv.css'` 替换为 `@import './presets/element-plus.css'` 即可切换。
 
-#### Q9：`themeProps.value` 传给 `useTheme` 是否破坏了响应性？
+#### Q9：`useTheme` 返回的 `slots` 为什么不是 `ComputedRef`？
 
-`useTheme` 的第三个参数 `props` 在内部通过 `computed` 访问属性（`props[key]`），只要 `themeProps` 是 computed，每次 `themeProps.value` 变化时 `useTheme` 内部的 computed 会重新计算。
+`useTheme` 返回的 `slots` 是**普通对象**（非 `ComputedRef`），每个 slot 是一个稳定的函数引用。这样设计的原因：
 
-但注意：传入的是 `.value`（解包后的普通对象），不是 computed ref 本身。这意味着 `useTheme` 内部的 `computed` 会在 `themeProps` 变化时重新计算——因为 Vue 的 `computed` 会追踪 `themeProps` 的依赖。
+1. **TSX 兼容**：`ComputedRef` 在 Vue `<template>` 中会自动 unwrap，但在 TSX render function 中不会。如果返回 `ComputedRef`，TSX 中写 `themeSlots.root()` 实际上是在 ComputedRef 对象上调方法，运行时崩溃。
+2. **行为一致**：普通对象在 `<template>` 和 TSX 中行为完全一致，不需要额外的 `.value`。
+3. **响应性保留**：每个 slot 函数内部通过闭包懒读取 internal computed 的 `.value`，在 render effect 中执行时 Vue 自动追踪依赖。
 
-实际上更精确的做法是传 reactive 对象或 getter，但阶段三的实现已够用。
+**使用要求**：`props` 参数必须是响应式对象（`defineComponent` 的 `props` 参数或 `defineProps()` 返回值）。不要传 `.value` 解包后的快照对象，否则 variant 切换不会触发重算。
 
 #### Q10：`defaultTheme` 参数为什么是非响应式的？动态切换 preset 怎么办？
 
@@ -2226,7 +2276,7 @@ Phase 2 在 `tokens.css` 中用 oklch 通用值定义语义 token（如 `--color
 ```typescript
 // ❌ preset 变化时 defaultTheme 不会更新
 const defaultTheme = resolveTableThemePreset(effectivePreset.value)
-const { slots } = useTheme('table', defaultTheme, themeProps.value)
+const { slots } = useTheme('table', defaultTheme, props)
 ```
 
 如果 `effectivePreset` 从 `'antdv'` 变为 `'element-plus'`，`defaultTheme` 仍然是 antdv 的主题——因为 `resolveTableThemePreset()` 只在 setup 阶段执行了一次。
@@ -2286,14 +2336,14 @@ vtable-guild/
 │           │   ├── useColumns.ts                           [新增]
 │           │   └── index.ts                                [新增]
 │           └── components/
-│               ├── Table.vue                               [新增]
-│               ├── TableHeader.vue                         [新增]
-│               ├── TableBody.vue                           [新增]
-│               ├── TableRow.vue                            [新增]
-│               ├── TableCell.vue                           [新增]
-│               ├── TableHeaderCell.vue                     [新增]
-│               ├── TableEmpty.vue                          [新增]
-│               └── TableLoading.vue                        [新增]
+│               ├── Table.tsx                               [新增]
+│               ├── TableHeader.tsx                         [新增]
+│               ├── TableBody.tsx                           [新增]
+│               ├── TableRow.tsx                            [新增]
+│               ├── TableCell.tsx                           [新增]
+│               ├── TableHeaderCell.tsx                     [新增]
+│               ├── TableEmpty.tsx                          [新增]
+│               └── TableLoading.tsx                        [新增]
 │
 └── playground/
     ├── package.json                                        [修改] 添加 ant-design-vue + table
@@ -2320,12 +2370,12 @@ pnpm playground   # 运行 playground
 
 ### 常见问题
 
-| #   | 错误                                      | 原因                              | 修复                                                  |
-| --- | ----------------------------------------- | --------------------------------- | ----------------------------------------------------- |
-| 1   | `slots.headerCellInner is not a function` | 主题中缺少 `headerCellInner` slot | 检查 `presets/antdv/table.ts` 的 `slots`              |
-| 2   | `element-plus` preset 选了但样式没变      | 阶段三未实现 element-plus 主题    | 预期行为，控制台有 warning                            |
-| 3   | `customRender` 返回 VNode 未渲染          | 用了 `<component :is="vnode">`    | 改为 `<component :is="() => vnode" />`                |
-| 4   | bodyCell slot 内容不显示                  | `useSlots()` 无法跨层级           | 确认用了 `provide/inject`                             |
-| 5   | 暗色模式下文字看不清                      | `.dark` 中语义 token 缺失         | 确认 `presets/antdv.css` 有 `.dark` 内语义 token 覆盖 |
-| 6   | `text-[var(...)]` 应用了错误的 CSS 属性   | Tailwind CSS 4 歧义               | 使用 `text-[color:var(...)]` 消歧                     |
-| 7   | `pnpm build` 报 Cannot find module        | 包依赖顺序问题                    | 先 `pnpm install`，turbo 会按拓扑序构建               |
+| #   | 错误                                      | 原因                              | 修复                                                                   |
+| --- | ----------------------------------------- | --------------------------------- | ---------------------------------------------------------------------- |
+| 1   | `slots.headerCellInner is not a function` | 主题中缺少 `headerCellInner` slot | 检查 `presets/antdv/table.ts` 的 `slots`                               |
+| 2   | `element-plus` preset 选了但样式没变      | 阶段三未实现 element-plus 主题    | 预期行为，控制台有 warning                                             |
+| 3   | `customRender` 返回 VNode 未渲染          | TSX render 函数返回值类型不对     | 确认 `cellContent` 返回 `VNodeChild`，JSX 中直接 `{cellContent.value}` |
+| 4   | bodyCell slot 内容不显示                  | `useSlots()` 无法跨层级           | 确认用了 `provide/inject`                                              |
+| 5   | 暗色模式下文字看不清                      | `.dark` 中语义 token 缺失         | 确认 `presets/antdv.css` 有 `.dark` 内语义 token 覆盖                  |
+| 6   | `text-[var(...)]` 应用了错误的 CSS 属性   | Tailwind CSS 4 歧义               | 使用 `text-[color:var(...)]` 消歧                                      |
+| 7   | `pnpm build` 报 Cannot find module        | 包依赖顺序问题                    | 先 `pnpm install`，turbo 会按拓扑序构建                                |

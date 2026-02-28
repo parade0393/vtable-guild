@@ -110,3 +110,6 @@ export type AntdvTableVariantProps = {
   striped?: boolean
   hoverable?: boolean
 }
+
+/** 窄类型：保留 `as const` 的字面量 slot key，供 resolver 返回。 */
+export type AntdvTableThemeConfig = typeof antdvTableTheme

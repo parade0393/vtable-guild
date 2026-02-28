@@ -765,7 +765,7 @@ import { computed, inject } from 'vue'
 import { cn } from '../utils/tv'
 import { tv } from '../utils/tv'
 import { VTABLE_GUILD_INJECTION_KEY } from '../plugin/index'
-import type { ThemeConfig, SlotProps, VTableGuildContext } from '../utils/types'
+import type { ThemeConfig, VTableGuildContext } from '../utils/types'
 
 /**
  * 三层主题合并 composable。
@@ -774,9 +774,11 @@ import type { ThemeConfig, SlotProps, VTableGuildContext } from '../utils/types'
  *
  * @param componentName - 组件名（如 'table'），用于查找全局配置中对应的主题
  * @param defaultTheme  - 来自 @vtable-guild/theme 的默认主题配置
- * @param props         - 组件 props（含 variant props + ui + class）
+ * @param props         - 组件 props，必须是响应式对象（defineComponent 的 props 参数）
  *
- * @returns `{ slots }` — slots 是一个对象，每个 key 是 slot 名，值是返回 class 字符串的函数
+ * @returns `{ slots }` — slots 是普通对象（非 ComputedRef），每个 key 是 slot 名，
+ *          值是返回 class 字符串的函数。函数引用在 setup 阶段创建后不变，
+ *          内部通过闭包懒读取 computed，保证响应性。
  *
  * @example
  * ```vue
@@ -809,17 +811,13 @@ export function useTheme<T extends ThemeConfig>(
   // ========== Layer 2: 通过 inject 获取全局配置 ==========
   const globalContext = inject<VTableGuildContext | null>(VTABLE_GUILD_INJECTION_KEY, null)
 
-  const slots = computed(() => {
-    // 获取该组件的全局主题覆盖
+  // 内部 computed：缓存 merge + tv() 的计算结果
+  // 仅在 variant props 变化时重算，ui/class 变化不触发
+  const _slotFns = computed(() => {
     const globalTheme = globalContext?.theme?.[componentName] as Partial<ThemeConfig> | undefined
-
-    // ========== 合并三层配置 ==========
     const merged = mergeThemeConfigs(defaultTheme, globalTheme)
-
-    // ========== 调用 tv() 生成 slot class 函数 ==========
     const tvResult = tv(merged as Parameters<typeof tv>[0])
 
-    // ========== 提取 variant props ==========
     const variantProps: Record<string, unknown> = {}
     if (merged.variants) {
       for (const key of Object.keys(merged.variants)) {
@@ -829,41 +827,31 @@ export function useTheme<T extends ThemeConfig>(
       }
     }
 
-    // 调用 tv 结果获取各 slot 的 class 函数
-    const slotFns = tvResult(variantProps) as Record<string, () => string>
-
-    // ========== Layer 3: 实例级 ui prop 和 class prop 覆盖 ==========
-    const ui = (props.ui ?? {}) as SlotProps<T>
-    const classProp = (props.class ?? '') as string
-
-    // 构建最终的 slots 对象
-    const result: Record<string, () => string> = {}
-
-    for (const slotName of Object.keys(defaultTheme.slots)) {
-      result[slotName] = () => {
-        const base =
-          typeof slotFns[slotName] === 'function'
-            ? slotFns[slotName]()
-            : ((slotFns[slotName] as string) ?? '')
-
-        // ui prop 覆盖对应 slot
-        const uiClass = (ui as Record<string, string>)[slotName] ?? ''
-
-        // class prop 仅作用于 root slot
-        const extraClass = slotName === 'root' ? classProp : ''
-
-        // 通过 cn() 合并（cn 底层调用 tailwind-merge 处理 class 冲突）
-        return cn(base, uiClass, extraClass)
-      }
-    }
-
-    return result
+    return tvResult(variantProps) as Record<string, () => string>
   })
 
+  // 稳定函数引用：setup 阶段创建一次，identity 不变
+  const slots = {} as Record<string, () => string>
+  for (const slotName of Object.keys(defaultTheme.slots)) {
+    slots[slotName] = () => {
+      const fns = _slotFns.value // render 阶段访问 → Vue 追踪依赖
+      const base =
+        typeof fns[slotName] === 'function' ? fns[slotName]() : ((fns[slotName] as string) ?? '')
+
+      // ui prop 覆盖对应 slot
+      const ui = (props.ui ?? {}) as Record<string, string>
+      const uiClass = ui[slotName] ?? ''
+
+      // class prop 仅作用于 root slot
+      const extraClass = slotName === 'root' ? ((props.class ?? '') as string) : ''
+
+      // 通过 cn() 合并（cn 底层调用 tailwind-merge 处理 class 冲突）
+      return cn(base, uiClass, extraClass) ?? ''
+    }
+  }
+
   return {
-    slots: slots as unknown as {
-      value: Record<keyof T['slots'] & string, () => string>
-    },
+    slots: slots as Record<keyof T['slots'] & string, () => string>,
   }
 }
 

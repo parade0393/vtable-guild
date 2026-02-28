@@ -9,5 +9,5 @@ export { resolveThemePreset, resolveTableThemePreset } from './presets'
 export type { ThemePresetName } from './presets'
 
 // ---------- 类型导出 ----------
-export type { TableSlots, TableVariantProps } from './table'
+export type { TableSlots, TableVariantProps, TableThemeConfig } from './table'
 export type { PaginationSlots, PaginationVariantProps } from './pagination'

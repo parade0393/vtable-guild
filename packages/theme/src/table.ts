@@ -10,4 +10,5 @@ export { antdvTableTheme as tableTheme } from './presets/antdv/table'
 export type {
   AntdvTableSlots as TableSlots,
   AntdvTableVariantProps as TableVariantProps,
+  AntdvTableThemeConfig as TableThemeConfig,
 } from './presets/antdv/table'

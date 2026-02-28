@@ -893,17 +893,8 @@ const globalContext = inject<VTableGuildContext | null>(VTABLE_GUILD_INJECTION_K
 const effectivePreset = computed(() => props.themePreset ?? globalContext?.themePreset ?? 'antdv')
 const defaultTheme = computed(() => resolveTableThemePreset(effectivePreset.value) ?? tableTheme)
 
-const themeProps = computed(() => ({
-  size: props.size,
-  bordered: props.bordered,
-  striped: props.striped,
-  hoverable: props.hoverable,
-  ui: props.ui,
-  class: props.class,
-}))
-
 const { leafColumns } = useColumns(() => props.columns)
-const { slots } = useTheme('table', defaultTheme.value, themeProps.value)
+const { slots } = useTheme('table', defaultTheme.value, props)
 </script>
 
 <template>
