@@ -53,25 +53,23 @@ export default defineComponent({
     })
 
     const cellClass = computed(() => {
-      const alignClass =
-        props.column.align === 'center'
-          ? 'text-center'
-          : props.column.align === 'right'
-            ? 'text-right'
-            : 'text-left'
-      return [props.tdClass, alignClass, props.column.className].filter(Boolean).join(' ')
+      return [props.tdClass, props.column.className].filter(Boolean).join(' ')
     })
 
-    const widthStyle = computed(() => {
-      if (!props.column.width) return undefined
-      return {
-        width:
-          typeof props.column.width === 'number' ? `${props.column.width}px` : props.column.width,
-      }
-    })
+    const cellStyle = computed(() => ({
+      textAlign: props.column.align || undefined,
+      ...(props.column.width
+        ? {
+            width:
+              typeof props.column.width === 'number'
+                ? `${props.column.width}px`
+                : props.column.width,
+          }
+        : {}),
+    }))
 
     return () => (
-      <td class={cellClass.value} style={widthStyle.value}>
+      <td class={cellClass.value} style={cellStyle.value}>
         {props.column.ellipsis ? (
           <div class={props.bodyCellEllipsisClass}>{cellContent.value}</div>
         ) : (

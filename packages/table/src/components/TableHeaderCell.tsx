@@ -28,25 +28,23 @@ export default defineComponent({
     })
 
     const cellClass = computed(() => {
-      const alignClass =
-        props.column.align === 'center'
-          ? 'text-center'
-          : props.column.align === 'right'
-            ? 'text-right'
-            : 'text-left'
-      return [props.thClass, alignClass, props.column.className].filter(Boolean).join(' ')
+      return [props.thClass, props.column.className].filter(Boolean).join(' ')
     })
 
-    const widthStyle = computed(() => {
-      if (!props.column.width) return undefined
-      return {
-        width:
-          typeof props.column.width === 'number' ? `${props.column.width}px` : props.column.width,
-      }
-    })
+    const cellStyle = computed(() => ({
+      textAlign: props.column.align || undefined,
+      ...(props.column.width
+        ? {
+            width:
+              typeof props.column.width === 'number'
+                ? `${props.column.width}px`
+                : props.column.width,
+          }
+        : {}),
+    }))
 
     return () => (
-      <th class={cellClass.value} style={widthStyle.value}>
+      <th class={cellClass.value} style={cellStyle.value}>
         <span class={props.headerCellInnerClass}>
           {/* TSX 中 VNode 直接渲染，无需 <component :is> 包裹 */}
           {headerContent.value}

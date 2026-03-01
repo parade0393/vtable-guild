@@ -29,7 +29,7 @@ export const antdvTableTheme = {
     tbody: '',
     tr: 'group/row transition-colors',
     th: [
-      'relative text-left font-semibold',
+      'relative font-semibold',
       'bg-[var(--vtg-table-header-bg)]',
       'text-[color:var(--vtg-table-header-color)]',
       'border-b border-[var(--vtg-table-border-color)]',
