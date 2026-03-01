@@ -6,7 +6,7 @@
  * 保持向后兼容：`import { tableTheme } from '@vtable-guild/theme'`
  * 始终返回当前默认 preset（antdv）的 table 主题。
  */
-export { antdvTableTheme as tableTheme } from './presets/antdv/table'
+export { antdvTableTheme as tableTheme, TABLE_ALIGN_CLASSES } from './presets/antdv/table'
 export type {
   AntdvTableSlots as TableSlots,
   AntdvTableVariantProps as TableVariantProps,

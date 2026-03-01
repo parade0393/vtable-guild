@@ -1,5 +1,7 @@
 import { computed, defineComponent, inject } from 'vue'
 import type { PropType } from 'vue'
+import { cn } from '@vtable-guild/core'
+import { TABLE_ALIGN_CLASSES } from '@vtable-guild/theme'
 
 import { ColumnType } from '../types'
 import { TABLE_CONTEXT_KEY } from '../context'
@@ -53,20 +55,17 @@ export default defineComponent({
     })
 
     const cellClass = computed(() => {
-      return [props.tdClass, props.column.className].filter(Boolean).join(' ')
+      const alignClass = props.column.align ? TABLE_ALIGN_CLASSES[props.column.align] : ''
+      return cn(props.tdClass, alignClass, props.column.className)
     })
 
-    const cellStyle = computed(() => ({
-      textAlign: props.column.align || undefined,
-      ...(props.column.width
-        ? {
-            width:
-              typeof props.column.width === 'number'
-                ? `${props.column.width}px`
-                : props.column.width,
-          }
-        : {}),
-    }))
+    const cellStyle = computed(() => {
+      if (!props.column.width) return undefined
+      return {
+        width:
+          typeof props.column.width === 'number' ? `${props.column.width}px` : props.column.width,
+      }
+    })
 
     return () => (
       <td class={cellClass.value} style={cellStyle.value}>

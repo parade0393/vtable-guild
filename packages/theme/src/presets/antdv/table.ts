@@ -13,6 +13,13 @@ import type { ThemeConfig } from '@vtable-guild/core'
  * - text-[length:var(...)] 用于字号
  * - 不要使用 text-[var(...)]，Tailwind 无法推断意图
  */
+/** 对齐类映射，由 cell 组件消费，同时确保类名进入 theme dist 被 Tailwind 扫描 */
+export const TABLE_ALIGN_CLASSES = {
+  left: 'text-left',
+  center: 'text-center',
+  right: 'text-right',
+} as const
+
 export const antdvTableTheme = {
   slots: {
     root: 'relative w-full',
@@ -29,7 +36,7 @@ export const antdvTableTheme = {
     tbody: '',
     tr: 'group/row transition-colors',
     th: [
-      'relative font-semibold',
+      'relative text-left font-semibold',
       'bg-[var(--vtg-table-header-bg)]',
       'text-[color:var(--vtg-table-header-color)]',
       'border-b border-[var(--vtg-table-border-color)]',

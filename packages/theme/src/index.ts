@@ -1,7 +1,7 @@
 // packages/theme/src/index.ts
 
 // ---------- 主题定义 ----------
-export { tableTheme } from './table'
+export { tableTheme, TABLE_ALIGN_CLASSES } from './table'
 export { paginationTheme } from './pagination'
 
 // ---------- 预设解析 ----------
