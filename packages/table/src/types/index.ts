@@ -6,6 +6,10 @@ export type {
   ColumnType,
   ColumnGroupType,
   ColumnsType,
+  SortOrder,
+  SorterFn,
+  ColumnSorter,
+  ColumnFilterItem,
 } from './column'
 
 export type {
@@ -13,4 +17,8 @@ export type {
   TableBodyCellSlotProps,
   TableHeaderCellSlotProps,
   TableSlotsDecl,
+  CustomFilterDropdownSlotProps,
+  TablePaginationInfo,
+  TableFiltersInfo,
+  TableChangeExtra,
 } from './table'

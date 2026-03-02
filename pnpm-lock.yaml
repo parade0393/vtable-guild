@@ -102,6 +102,12 @@ importers:
         specifier: ^3.5.0
         version: 3.5.26(typescript@5.9.3)
 
+  packages/icons:
+    dependencies:
+      vue:
+        specifier: ^3.5.0
+        version: 3.5.26(typescript@5.9.3)
+
   packages/pagination:
     dependencies:
       '@vtable-guild/core':
@@ -116,6 +122,9 @@ importers:
       '@vtable-guild/core':
         specifier: workspace:*
         version: link:../core
+      '@vtable-guild/icons':
+        specifier: workspace:*
+        version: link:../icons
       '@vtable-guild/pagination':
         specifier: workspace:*
         version: link:../pagination
@@ -137,6 +146,9 @@ importers:
       '@vtable-guild/core':
         specifier: workspace:*
         version: link:../core
+      '@vtable-guild/icons':
+        specifier: workspace:*
+        version: link:../icons
       '@vtable-guild/pagination':
         specifier: workspace:*
         version: link:../pagination

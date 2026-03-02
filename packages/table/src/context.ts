@@ -1,5 +1,5 @@
 import type { InjectionKey, Slots } from 'vue'
-
+import type { ColumnType, SortOrder } from './types'
 /**
  * Table 内部 context，通过 provide/inject 跨层传递。
  *
@@ -21,6 +21,27 @@ export interface TableContext {
    * 用户定义的 empty slot 函数。
    */
   empty?: Slots['empty']
+
+  /** 获取某列的当前排序方向 */
+  getSortOrder?: (column: ColumnType<Record<string, unknown>>) => SortOrder
+  /** 切换某列的排序方向 */
+  toggleSortOrder?: (column: ColumnType<Record<string, unknown>>) => void
+
+  /** 获取某列的当前筛选值 */
+  getFilteredValue?: (column: ColumnType<Record<string, unknown>>) => (string | number | boolean)[]
+  /** 确认筛选 */
+  confirmFilter?: (
+    column: ColumnType<Record<string, unknown>>,
+    values: (string | number | boolean)[],
+  ) => void
+  /** 重置筛选 */
+  resetFilter?: (column: ColumnType<Record<string, unknown>>) => void
+
+  /** 自定义筛选下拉菜单 slot */
+  customFilterDropdown?: Slots['customFilterDropdown']
+
+  /** 表级别 showSorterTooltip 配置 */
+  showSorterTooltip?: boolean
 }
 
 /**

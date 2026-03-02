@@ -52,6 +52,12 @@
   --vtg-table-cell-padding-block-md: 12px;
   --vtg-table-cell-padding-inline-sm: 8px;
   --vtg-table-cell-padding-block-sm: 8px;
+
+  /* 排序 hover 背景 */
+  --vtg-table-header-sort-hover-bg: rgb(0 0 0 / 4%);
+
+  /* 排序图标不活跃色 */
+  --color-sorter-icon: rgb(0 0 0 / 29%);
 }
 
 .dark {
@@ -64,4 +70,10 @@
   --color-default: #303030;
   --color-primary: #1668dc;
   --color-primary-hover: #15417e;
+
+  /* 排序 hover 背景 */
+  --vtg-table-header-sort-hover-bg: rgb(255 255 255 / 4%);
+
+  /* 排序图标不活跃色 */
+  --color-sorter-icon: rgb(255 255 255 / 29%);
 }

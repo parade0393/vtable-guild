@@ -1,9 +1,10 @@
 import { defineConfig } from 'vite'
 import { resolve } from 'node:path'
+import vueJsx from '@vitejs/plugin-vue-jsx'
 import dts from 'vite-plugin-dts'
 
 export default defineConfig({
-  plugins: [dts()],
+  plugins: [vueJsx(), dts()],
   build: {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
@@ -11,7 +12,7 @@ export default defineConfig({
       fileName: () => 'index.mjs',
     },
     rollupOptions: {
-      external: ['vue', 'tailwind-variants', 'tailwind-merge'], // vue 和 tailwind-variants 不打包进产物，由使用方提供
+      external: ['vue', 'tailwind-variants', 'tailwind-merge'],
     },
   },
 })

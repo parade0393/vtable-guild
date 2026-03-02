@@ -1,7 +1,7 @@
 {
-  "name": "@vtable-guild/vtable-guild",
+  "name": "@vtable-guild/icons",
   "version": "0.0.1",
-  "description": "A highly customizable Vue 3 Table component library powered by tailwind-variants",
+  "description": "SVG icon components for vtable-guild",
   "type": "module",
   "files": [
     "dist"
@@ -18,13 +18,6 @@
     "build": "vite build",
     "dev": "vite build --watch",
     "type-check": "vue-tsc --build"
-  },
-  "dependencies": {
-    "@vtable-guild/core": "workspace:*",
-    "@vtable-guild/icons": "workspace:*",
-    "@vtable-guild/theme": "workspace:*",
-    "@vtable-guild/table": "workspace:*",
-    "@vtable-guild/pagination": "workspace:*"
   },
   "peerDependencies": {
     "vue": "^3.5.0"

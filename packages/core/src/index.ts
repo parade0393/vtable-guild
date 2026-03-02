@@ -16,5 +16,8 @@ export type {
 // ---------- Composables ----------
 export { useTheme } from './composables/useTheme'
 
+// ---------- Components ----------
+export { default as Tooltip } from './components/Tooltip'
+
 // ---------- Plugin ----------
 export { createVTableGuild, VTABLE_GUILD_INJECTION_KEY } from './plugin/index'

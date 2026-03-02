@@ -23,6 +23,28 @@ export interface TableHeaderCellSlotProps<TRecord extends Record<string, unknown
 }
 
 /**
+ * customFilterDropdown slot 的参数类型。
+ */
+export interface CustomFilterDropdownSlotProps<TRecord extends Record<string, unknown>> {
+  column: ColumnType<TRecord>
+  selectedKeys: (string | number | boolean)[]
+  setSelectedKeys: (keys: (string | number | boolean)[]) => void
+  confirm: () => void
+  clearFilters: () => void
+}
+
+/**
+ * Table 组件 slots 声明。
+ */
+export interface TableSlotsDecl<TRecord extends Record<string, unknown>> {
+  bodyCell?: (props: TableBodyCellSlotProps<TRecord>) => VNodeChild
+  headerCell?: (props: TableHeaderCellSlotProps<TRecord>) => VNodeChild
+  empty?: () => VNodeChild
+  loading?: () => VNodeChild
+  customFilterDropdown?: (props: CustomFilterDropdownSlotProps<TRecord>) => VNodeChild
+}
+
+/**
  * Table 组件 slots 声明。
  */
 export interface TableSlotsDecl<TRecord extends Record<string, unknown>> {
@@ -61,4 +83,30 @@ export interface TableProps<TRecord extends Record<string, unknown> = Record<str
    * 未传时使用 createVTableGuild 的全局 preset；再未配置则使用 'antdv'。
    */
   themePreset?: ThemePresetName
+
+  /**
+   * 表级别控制是否显示排序 tooltip，默认 true。
+   * 可被列级别 showSorterTooltip 覆盖。
+   */
+  showSorterTooltip?: boolean
+}
+
+// ---- change 事件参数类型 ----
+
+/** change 事件中的 pagination 参数 */
+export interface TablePaginationInfo {
+  current: number
+  pageSize: number
+  total: number
+}
+
+/** change 事件中的 filters 参数 */
+export type TableFiltersInfo = Record<string, (string | number | boolean)[] | null>
+
+/** change 事件中的 extra 参数 */
+export interface TableChangeExtra<TRecord extends Record<string, unknown>> {
+  /** 触发变化的来源 */
+  action: 'paginate' | 'sort' | 'filter'
+  /** 当前显示的数据（经排序/筛选/分页后） */
+  currentDataSource: TRecord[]
 }

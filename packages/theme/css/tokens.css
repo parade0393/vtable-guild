@@ -1,4 +1,7 @@
 @source '../dist';
+@source '../../table/dist';
+@source '../../core/dist';
+@source '../../icons/dist';
 
 /* @vtable-guild/theme/css — tokens.css */
 

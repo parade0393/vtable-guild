@@ -2,12 +2,22 @@ import { computed, defineComponent, inject, provide, type PropType, type SlotsTy
 import { useTheme, VTABLE_GUILD_INJECTION_KEY, type VTableGuildContext } from '@vtable-guild/core'
 import { resolveTableThemePreset, tableTheme, type TableSlots } from '@vtable-guild/theme'
 import type { SlotProps, ThemePresetName } from '@vtable-guild/core'
-import { useColumns } from '../composables'
+import { useColumns, useSorter } from '../composables'
+
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 import TableHeader from './TableHeader'
 import TableBody from './TableBody'
 import TableLoading from './TableLoading'
-import type { ColumnsType, ColumnType, Key } from '../types'
+import type {
+  ColumnsType,
+  ColumnType,
+  Key,
+  TableFiltersInfo,
+  TablePaginationInfo,
+  TableChangeExtra,
+} from '../types'
+
+import type { SorterResult } from '../composables'
 
 export default defineComponent({
   name: 'VTable',
@@ -29,6 +39,15 @@ export default defineComponent({
     },
     class: { type: String, default: undefined },
     themePreset: { type: String as PropType<ThemePresetName>, default: undefined },
+    showSorterTooltip: { type: Boolean, default: true },
+  },
+  emits: {
+    change: (
+      _pagination: TablePaginationInfo,
+      _filters: TableFiltersInfo,
+      _sorter: SorterResult,
+      _extra: TableChangeExtra<Record<string, unknown>>,
+    ) => true,
   },
   slots: Object as SlotsType<{
     bodyCell: {
@@ -44,8 +63,15 @@ export default defineComponent({
     }
     empty: void
     loading: void
+    customFilterDropdown: {
+      column: ColumnType<Record<string, unknown>>
+      selectedKeys: (string | number | boolean)[]
+      setSelectedKeys: (keys: (string | number | boolean)[]) => void
+      confirm: () => void
+      clearFilters: () => void
+    }
   }>,
-  setup(props, { slots }) {
+  setup(props, { slots, emit }) {
     const globalContext = inject<VTableGuildContext | null>(VTABLE_GUILD_INJECTION_KEY, null)
 
     const effectiveThemePreset = computed(
@@ -64,12 +90,38 @@ export default defineComponent({
     // ---- Step 4: 拍平列 ----
     const { leafColumns } = useColumns(() => props.columns)
 
+    // ---- 排序（Step 5 新增） ----
+    const { getSortOrder, toggleSortOrder, sortData } = useSorter({
+      columns: () => leafColumns.value,
+      onSorterChange(sorterResult) {
+        // 构造 change 事件参数
+        const processedData = sortData(props.dataSource)
+        emit(
+          'change',
+          { current: 1, pageSize: processedData.length, total: props.dataSource.length },
+          {},
+          sorterResult,
+          { action: 'sort', currentDataSource: processedData },
+        )
+      },
+    })
+
+    // ---- 处理后数据：排序 → (后续筛选/分页) ----
+    const processedData = computed(() => {
+      let data = props.dataSource
+      data = sortData(data)
+      return data
+    })
+
     // ---- Step 6: 通过 provide 传递 slots 给孙组件 ----
     // ⚠️ 核心修正：scoped slots 不跨层级传播，必须用 provide/inject。
     provide<TableContext>(TABLE_CONTEXT_KEY, {
       bodyCell: slots.bodyCell,
       headerCell: slots.headerCell,
       empty: slots.empty,
+      getSortOrder,
+      toggleSortOrder,
+      showSorterTooltip: props.showSorterTooltip,
     })
 
     return () => (
@@ -84,7 +136,7 @@ export default defineComponent({
               headerCellInnerClass={themeSlots.headerCellInner()}
             />
             <TableBody
-              dataSource={props.dataSource}
+              dataSource={processedData.value}
               columns={leafColumns.value}
               tbodyClass={themeSlots.tbody()}
               rowClass={themeSlots.tr()}

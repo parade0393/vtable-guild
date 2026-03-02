@@ -8,10 +8,19 @@ export type {
   ColumnType,
   ColumnGroupType,
   ColumnsType,
+  SortOrder,
+  SorterFn,
+  ColumnSorter,
+  ColumnFilterItem,
   TableProps,
   TableBodyCellSlotProps,
   TableHeaderCellSlotProps,
   TableSlotsDecl,
+  CustomFilterDropdownSlotProps,
+  TablePaginationInfo,
+  TableFiltersInfo,
+  TableChangeExtra,
 } from './types'
 
 export { useColumns, getByDataIndex } from './composables'
+export type { SorterResult } from './composables'
