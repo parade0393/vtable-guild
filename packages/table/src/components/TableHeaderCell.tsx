@@ -1,4 +1,4 @@
-import { defineComponent, computed, inject, type PropType } from 'vue'
+import { defineComponent, computed, inject, ref, type PropType } from 'vue'
 import { cn, Tooltip } from '@vtable-guild/core'
 import { TABLE_ALIGN_CLASSES } from '@vtable-guild/theme'
 import type { ColumnType, SortOrder } from '../types'
@@ -67,6 +67,8 @@ export default defineComponent({
       }
     })
 
+    const hovered = ref(false)
+
     function handleClick() {
       if (isSortable.value) {
         tableContext.toggleSortOrder?.(props.column)
@@ -90,10 +92,16 @@ export default defineComponent({
           class={cellClass.value}
           style={cellStyle.value}
           onClick={handleClick}
+          onMouseenter={() => {
+            hovered.value = true
+          }}
+          onMouseleave={() => {
+            hovered.value = false
+          }}
           aria-sort={getAriaSortValue(sortOrder.value)}
         >
           {showTooltip.value ? (
-            <Tooltip title={tooltipTitle} placement="top">
+            <Tooltip title={tooltipTitle} placement="top" open={hovered.value}>
               {headerCellInner}
             </Tooltip>
           ) : (
