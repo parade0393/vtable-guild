@@ -4,6 +4,8 @@ import { TABLE_ALIGN_CLASSES } from '@vtable-guild/theme'
 import type { ColumnType, SortOrder } from '../types'
 import { TABLE_CONTEXT_KEY } from '../context'
 import SortButton from './SortButton'
+import FilterIcon from './FilterIcon'
+import FilterDropdown from './FilterDropdown'
 
 const SORT_TOOLTIP_MAP: Record<string, string> = {
   null: '点击升序',
@@ -28,6 +30,7 @@ export default defineComponent({
   setup(props) {
     const tableContext = inject(TABLE_CONTEXT_KEY, {})
 
+    // ---- 排序 ----
     const sortOrder = computed(() => {
       if (!props.column.sorter) return null
       return tableContext.getSortOrder?.(props.column) ?? null
@@ -40,6 +43,45 @@ export default defineComponent({
       return props.column.showSorterTooltip ?? tableContext.showSorterTooltip ?? true
     })
 
+    // ---- 筛选 ----
+    const hasFilters = computed(
+      () => (props.column.filters?.length ?? 0) > 0 || !!props.column.customFilterDropdown,
+    )
+
+    const filteredValue = computed(() => {
+      if (!hasFilters.value) return []
+      return tableContext.getFilteredValue?.(props.column) ?? []
+    })
+
+    const isFiltered = computed(() => filteredValue.value.length > 0)
+
+    const filterDropdownVisible = ref(false)
+    const filterAnchorRef = ref<HTMLElement | null>(null)
+
+    function toggleFilterDropdown(_e: MouseEvent) {
+      filterDropdownVisible.value = !filterDropdownVisible.value
+    }
+
+    function getAnchorRect() {
+      if (!filterAnchorRef.value) return { top: 0, left: 0, right: 0, bottom: 0 }
+      return filterAnchorRef.value.getBoundingClientRect()
+    }
+
+    function handleFilterConfirm(keys: (string | number | boolean)[]) {
+      tableContext.confirmFilter?.(props.column, keys)
+      filterDropdownVisible.value = false
+    }
+
+    function handleFilterReset() {
+      tableContext.resetFilter?.(props.column)
+      filterDropdownVisible.value = false
+    }
+
+    function handleFilterClose() {
+      filterDropdownVisible.value = false
+    }
+
+    // ---- 公共 ----
     const headerContent = computed(() => {
       if (tableContext.headerCell) {
         return tableContext.headerCell({
@@ -67,7 +109,7 @@ export default defineComponent({
       }
     })
 
-    const hovered = ref(false)
+    const sortAreaHovered = ref(false)
 
     function handleClick() {
       if (isSortable.value) {
@@ -76,37 +118,88 @@ export default defineComponent({
     }
 
     return () => {
-      const headerCellInner = isSortable.value ? (
-        <span class="flex items-center justify-between">
-          <span>{headerContent.value}</span>
-          <SortButton sortOrder={sortOrder.value} />
+      const tooltipTitle = SORT_TOOLTIP_MAP[String(sortOrder.value)]
+
+      // 排序区域（标题 + 排序图标）
+      const sorterContent = (
+        <span class="flex flex-auto items-center justify-between min-w-0">
+          <span class="flex-1 min-w-0">{headerContent.value}</span>
+          {isSortable.value && <SortButton sortOrder={sortOrder.value} />}
         </span>
-      ) : (
-        <span class={props.headerCellInnerClass}>{headerContent.value}</span>
       )
 
-      const tooltipTitle = SORT_TOOLTIP_MAP[String(sortOrder.value)]
+      // 排序区域容器（带 hover 事件用于 tooltip）
+      const sortArea = showTooltip.value ? (
+        <span
+          class="flex flex-auto min-w-0"
+          onMouseenter={() => {
+            sortAreaHovered.value = true
+          }}
+          onMouseleave={() => {
+            sortAreaHovered.value = false
+          }}
+        >
+          <Tooltip block title={tooltipTitle} placement="top" open={sortAreaHovered.value}>
+            {sorterContent}
+          </Tooltip>
+        </span>
+      ) : (
+        <span class="flex flex-auto min-w-0">{sorterContent}</span>
+      )
+
+      // customFilterDropdown slot
+      const customFilterDropdownSlot = props.column.customFilterDropdown
+        ? tableContext.customFilterDropdown
+        : undefined
 
       return (
         <th
           class={cellClass.value}
           style={cellStyle.value}
           onClick={handleClick}
-          onMouseenter={() => {
-            hovered.value = true
-          }}
-          onMouseleave={() => {
-            hovered.value = false
-          }}
           aria-sort={getAriaSortValue(sortOrder.value)}
         >
-          {showTooltip.value ? (
-            <Tooltip title={tooltipTitle} placement="top" open={hovered.value}>
-              {headerCellInner}
-            </Tooltip>
-          ) : (
-            headerCellInner
-          )}
+          <span class={cn('flex items-center', props.headerCellInnerClass)}>
+            {sortArea}
+            {hasFilters.value && (
+              <span
+                ref={filterAnchorRef}
+                class="shrink-0 ml-1 self-stretch -my-1 -me-2 flex items-center"
+              >
+                <FilterIcon active={isFiltered.value} onClick={toggleFilterDropdown} />
+              </span>
+            )}
+          </span>
+
+          {/* Filter dropdown */}
+          {filterDropdownVisible.value &&
+            hasFilters.value &&
+            (customFilterDropdownSlot ? (
+              customFilterDropdownSlot({
+                column: props.column,
+                selectedKeys: filteredValue.value,
+                setSelectedKeys: (keys: (string | number | boolean)[]) => {
+                  handleFilterConfirm(keys)
+                },
+                confirm: () => {
+                  handleFilterConfirm(filteredValue.value)
+                  filterDropdownVisible.value = false
+                },
+                clearFilters: () => {
+                  handleFilterReset()
+                },
+              })
+            ) : (
+              <FilterDropdown
+                filters={props.column.filters ?? []}
+                selectedKeys={filteredValue.value}
+                multiple={props.column.filterMultiple !== false}
+                anchorRect={getAnchorRect()}
+                onConfirm={handleFilterConfirm}
+                onReset={handleFilterReset}
+                onClose={handleFilterClose}
+              />
+            ))}
         </th>
       )
     }

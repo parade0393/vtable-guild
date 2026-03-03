@@ -58,7 +58,7 @@ export const antdvTableTheme = {
       'flex items-center justify-center',
       'bg-[rgba(255,255,255,0.65)] backdrop-blur-[1px]',
     ].join(' '),
-    headerCellInner: 'inline-flex items-center gap-1',
+    headerCellInner: 'flex items-center',
     bodyCellEllipsis: 'overflow-hidden text-ellipsis whitespace-nowrap',
   },
   variants: {

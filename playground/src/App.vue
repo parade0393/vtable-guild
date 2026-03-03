@@ -50,6 +50,42 @@ const sortColumns: ColumnType<Record<string, unknown>>[] = [
   },
 ]
 
+// 筛选专属列
+const filterColumns: ColumnType<Record<string, unknown>>[] = [
+  { title: 'Name', dataIndex: 'name', key: 'name', width: 180, sorter: true },
+  {
+    title: 'Age',
+    dataIndex: 'age',
+    key: 'age',
+    align: 'right',
+    width: 120,
+    sorter: (a, b) => (a.age as number) - (b.age as number),
+    filters: [
+      { text: '< 30', value: 'young' },
+      { text: '30 ~ 40', value: 'mid' },
+      { text: '> 40', value: 'senior' },
+    ],
+    onFilter: (value, record) => {
+      const age = record.age as number
+      if (value === 'young') return age < 30
+      if (value === 'mid') return age >= 30 && age <= 40
+      return age > 40
+    },
+  },
+  {
+    title: 'Address',
+    dataIndex: 'address',
+    key: 'address',
+    ellipsis: true,
+    filters: [
+      { text: 'New York', value: 'New York' },
+      { text: 'London', value: 'London' },
+      { text: 'Sidney', value: 'Sidney' },
+    ],
+    onFilter: (value, record) => (record.address as string).includes(value as string),
+  },
+]
+
 const dataSource = ref([
   {
     key: 1,
@@ -68,11 +104,37 @@ const loading = ref(false)
 function toggleLoading() {
   loading.value = !loading.value
 }
+
+function onTableChange(...args: unknown[]) {
+  console.log('[VTable change]', ...args)
+}
 </script>
 
 <template>
   <main class="p-8 space-y-8">
-    <h1 class="text-xl font-semibold text-on-surface">Phase 4 — antdv vs VTable 排序增强对照</h1>
+    <h1 class="text-xl font-semibold text-on-surface">Phase 4 — antdv vs VTable 排序 + 筛选对照</h1>
+
+    <!-- ===== 筛选功能对照 ===== -->
+    <section>
+      <h2 class="text-lg font-medium text-on-surface mb-4">
+        0. 筛选功能对照（Age 分段 + Address 关键字）
+      </h2>
+      <div class="grid grid-cols-2 gap-6">
+        <div class="space-y-2">
+          <h3 class="text-sm text-muted">ant-design-vue</h3>
+          <ATable
+            :columns="filterColumns"
+            :data-source="dataSource"
+            :pagination="false"
+            @change="(...args: unknown[]) => console.log('[ATable change]', ...args)"
+          />
+        </div>
+        <div class="space-y-2">
+          <h3 class="text-sm text-muted">vtable-guild</h3>
+          <VTable :columns="filterColumns" :data-source="dataSource" @change="onTableChange" />
+        </div>
+      </div>
+    </section>
 
     <!-- ===== 排序专属对照 ===== -->
     <section>

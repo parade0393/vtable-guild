@@ -25,6 +25,7 @@ export default defineComponent({
     color: { type: String, default: undefined },
     arrow: { type: Boolean, default: true },
     destroyOnHide: { type: Boolean, default: false },
+    block: { type: Boolean, default: false },
   },
   setup(props, { slots }) {
     const triggerRef = ref<HTMLElement | null>(null)
@@ -166,7 +167,11 @@ export default defineComponent({
           ref={triggerRef}
           onMouseenter={handleMouseEnter}
           onMouseleave={handleMouseLeave}
-          style={{ display: 'inline-flex' }}
+          style={
+            props.block
+              ? { display: 'flex', flex: '1 1 auto', minWidth: 0 }
+              : { display: 'inline-flex' }
+          }
         >
           {slots.default?.()}
         </span>

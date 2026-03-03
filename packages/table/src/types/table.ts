@@ -45,16 +45,6 @@ export interface TableSlotsDecl<TRecord extends Record<string, unknown>> {
 }
 
 /**
- * Table 组件 slots 声明。
- */
-export interface TableSlotsDecl<TRecord extends Record<string, unknown>> {
-  bodyCell?: (props: TableBodyCellSlotProps<TRecord>) => VNodeChild
-  headerCell?: (props: TableHeaderCellSlotProps<TRecord>) => VNodeChild
-  empty?: () => VNodeChild
-  loading?: () => VNodeChild
-}
-
-/**
  * Table 组件 Props。
  */
 export interface TableProps<TRecord extends Record<string, unknown> = Record<string, unknown>> {

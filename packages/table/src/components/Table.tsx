@@ -2,7 +2,7 @@ import { computed, defineComponent, inject, provide, type PropType, type SlotsTy
 import { useTheme, VTABLE_GUILD_INJECTION_KEY, type VTableGuildContext } from '@vtable-guild/core'
 import { resolveTableThemePreset, tableTheme, type TableSlots } from '@vtable-guild/theme'
 import type { SlotProps, ThemePresetName } from '@vtable-guild/core'
-import { useColumns, useSorter } from '../composables'
+import { useColumns, useSorter, useFilter } from '../composables'
 
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 import TableHeader from './TableHeader'
@@ -78,49 +78,69 @@ export default defineComponent({
       () => props.themePreset ?? globalContext?.themePreset ?? 'antdv',
     )
 
-    // ---- Step 2: 根据 preset 获取默认主题 ----
-    // ⚠️ 重要限制：useTheme() 的 defaultTheme 参数为非响应式。
-    // resolveTableThemePreset() 在 setup 阶段调用一次，后续不会因 effectiveThemePreset 变化而更新。
     const defaultTheme = resolveTableThemePreset(effectiveThemePreset.value) ?? tableTheme
 
-    // ---- Step 3: 三层主题合并 ----
-    // 直接传 defineComponent 的 reactive props，useTheme 内部通过闭包懒读取保证响应性
     const { slots: themeSlots } = useTheme('table', defaultTheme, props)
 
-    // ---- Step 4: 拍平列 ----
+    // ---- 拍平列 ----
     const { leafColumns } = useColumns(() => props.columns)
 
-    // ---- 排序（Step 5 新增） ----
-    const { getSortOrder, toggleSortOrder, sortData } = useSorter({
+    // ---- 排序 ----
+    const { getSortOrder, toggleSortOrder, sortData, sorterState } = useSorter({
       columns: () => leafColumns.value,
       onSorterChange(sorterResult) {
-        // 构造 change 事件参数
-        const processedData = sortData(props.dataSource)
+        const processedData = getProcessedData()
         emit(
           'change',
           { current: 1, pageSize: processedData.length, total: props.dataSource.length },
-          {},
+          getAllFilters(),
           sorterResult,
           { action: 'sort', currentDataSource: processedData },
         )
       },
     })
 
-    // ---- 处理后数据：排序 → (后续筛选/分页) ----
-    const processedData = computed(() => {
-      let data = props.dataSource
-      data = sortData(data)
-      return data
+    // ---- 筛选 ----
+    const { getFilteredValue, confirmFilter, resetFilter, getAllFilters, filterData } = useFilter({
+      columns: () => leafColumns.value,
+      onFilterChange(filters) {
+        const processedData = getProcessedData()
+        emit(
+          'change',
+          { current: 1, pageSize: processedData.length, total: props.dataSource.length },
+          filters,
+          {
+            column: sorterState.value.column,
+            columnKey: sorterState.value.columnKey,
+            order: sorterState.value.order,
+            field: sorterState.value.column?.dataIndex,
+          },
+          { action: 'filter', currentDataSource: processedData },
+        )
+      },
     })
 
-    // ---- Step 6: 通过 provide 传递 slots 给孙组件 ----
-    // ⚠️ 核心修正：scoped slots 不跨层级传播，必须用 provide/inject。
+    // ---- 处理后数据：筛选 → 排序 ----
+    function getProcessedData() {
+      let data = props.dataSource
+      data = filterData(data)
+      data = sortData(data)
+      return data
+    }
+
+    const processedData = computed(() => getProcessedData())
+
+    // ---- provide context ----
     provide<TableContext>(TABLE_CONTEXT_KEY, {
       bodyCell: slots.bodyCell,
       headerCell: slots.headerCell,
       empty: slots.empty,
       getSortOrder,
       toggleSortOrder,
+      getFilteredValue,
+      confirmFilter,
+      resetFilter,
+      customFilterDropdown: slots.customFilterDropdown,
       showSorterTooltip: props.showSorterTooltip,
     })
 
