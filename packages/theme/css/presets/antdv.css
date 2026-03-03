@@ -58,6 +58,9 @@
 
   /* 排序图标不活跃色 */
   --color-sorter-icon: rgb(0 0 0 / 29%);
+
+  /* 表头 cell 间分割线 */
+  --vtg-table-header-split-color: rgb(0 0 0 / 6%);
 }
 
 .dark {
@@ -76,4 +79,7 @@
 
   /* 排序图标不活跃色 */
   --color-sorter-icon: rgb(255 255 255 / 29%);
+
+  /* 表头 cell 间分割线 */
+  --vtg-table-header-split-color: rgb(255 255 255 / 6%);
 }

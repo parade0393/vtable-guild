@@ -40,6 +40,11 @@ export const antdvTableTheme = {
       'bg-[var(--vtg-table-header-bg)]',
       'text-[color:var(--vtg-table-header-color)]',
       'border-b border-[var(--vtg-table-border-color)]',
+      // 表头 cell 间分割线（::before 伪元素）
+      'before:absolute before:end-0 before:top-1/2 before:-translate-y-1/2',
+      'before:block before:w-px before:h-[1.6em]',
+      'before:bg-[var(--vtg-table-header-split-color)]',
+      'last:before:bg-transparent',
     ].join(' '),
     td: [
       'align-middle',
@@ -65,7 +70,7 @@ export const antdvTableTheme = {
     bordered: {
       true: {
         table: 'border border-[var(--vtg-table-border-color)]',
-        th: 'border-r border-[var(--vtg-table-border-color)] last:border-r-0',
+        th: 'border-r border-[var(--vtg-table-border-color)] last:border-r-0 before:hidden',
         td: 'border-r border-[var(--vtg-table-border-color)] last:border-r-0',
       },
     },
