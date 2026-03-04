@@ -114,11 +114,16 @@ export default defineComponent({
             style={style}
           >
             {/* Filter items list */}
-            <ul class="max-h-64 overflow-auto py-1 px-0 m-0 list-none min-w-[150px]">
+            <ul class="max-h-64 overflow-auto p-1 m-0 list-none min-w-[120px]">
               {props.filters.map((item) => (
                 <li
                   key={String(item.value)}
-                  class="flex items-center gap-2 px-3 py-1.5 cursor-pointer hover:bg-[color:var(--color-surface-hover)]"
+                  class={[
+                    'flex items-center gap-2 px-3 py-1.5 cursor-pointer rounded-sm',
+                    isSelected(item.value)
+                      ? 'bg-[color:var(--color-control-item-active-bg)] hover:bg-[color:var(--color-control-item-active-hover-bg)]'
+                      : 'hover:bg-[color:var(--color-control-item-hover-bg)]',
+                  ]}
                   onClick={() => toggleItem(item.value)}
                 >
                   <Checkbox checked={isSelected(item.value)} />

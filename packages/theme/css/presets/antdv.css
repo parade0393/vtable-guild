@@ -61,6 +61,16 @@
 
   /* 表头 cell 间分割线 */
   --vtg-table-header-split-color: rgb(0 0 0 / 6%);
+
+  /* 禁用态文字色 */
+  --color-text-disabled: rgb(0 0 0 / 25%);
+
+  /* 筛选下拉选项 hover 背景 */
+  --color-control-item-hover-bg: rgb(0 0 0 / 4%);
+
+  /* 筛选下拉选项选中态背景 */
+  --color-control-item-active-bg: #e6f4ff;
+  --color-control-item-active-hover-bg: #bae0ff;
 }
 
 .dark {
@@ -82,4 +92,14 @@
 
   /* 表头 cell 间分割线 */
   --vtg-table-header-split-color: rgb(255 255 255 / 6%);
+
+  /* 禁用态文字色 */
+  --color-text-disabled: rgb(255 255 255 / 25%);
+
+  /* 筛选下拉选项 hover 背景 */
+  --color-control-item-hover-bg: rgb(255 255 255 / 8%);
+
+  /* 筛选下拉选项选中态背景 */
+  --color-control-item-active-bg: #111a2c;
+  --color-control-item-active-hover-bg: #112545;
 }

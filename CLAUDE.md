@@ -99,3 +99,8 @@ Theme tokens defined as CSS custom properties in `packages/theme/css/`:
 - Table composables: `packages/table/src/composables/`
 - Table types: `packages/table/src/types/`
 - Architecture doc: `docs/architecture.md`
+
+## Visual Verification
+
+- 涉及 UI 的功能新增或问题修复完成后，必须使用 Chrome MCP 在 playground (`pnpm playground`) 进行视觉验证，对齐当前主题预设 (ant-design-vue)
+- playground 以 grid 左右对照布局展示 antdv 原版与 vtable-guild 的效果，借助 Chrome MCP 截图比对即可确认是否对齐

@@ -26,4 +26,8 @@
   --color-default: var(--color-default);
   --color-primary: var(--color-primary);
   --color-primary-hover: var(--color-primary-hover);
+  --color-text-disabled: var(--color-text-disabled);
+  --color-control-item-hover-bg: var(--color-control-item-hover-bg);
+  --color-control-item-active-bg: var(--color-control-item-active-bg);
+  --color-control-item-active-hover-bg: var(--color-control-item-active-hover-bg);
 }
