@@ -7,7 +7,7 @@
  * 3. .dark — 只覆盖语义 token，组件 token 自动跟随
  */
 
-:root {
+[data-vtg-preset='element-plus'] {
   /* ===== 语义 token — element-plus 设计体系值 ===== */
 
   /* 排版 */
@@ -22,6 +22,7 @@
 
   /* 文本 */
   --color-on-surface: #303133;
+  --color-text-regular: #606266;
   --color-muted: #909399;
 
   /* 边框 */
@@ -36,7 +37,7 @@
   --vtg-table-bg: var(--color-surface);
   --vtg-table-header-bg: var(--color-surface);
   --vtg-table-header-color: var(--color-muted);
-  --vtg-table-text-color: var(--color-on-surface);
+  --vtg-table-text-color: var(--color-text-regular);
   --vtg-table-border-color: var(--color-default);
   --vtg-table-row-hover-bg: var(--color-surface-hover);
 
@@ -85,12 +86,14 @@
   --vtg-tooltip-font-size: 12px;
 }
 
-.dark {
+.dark [data-vtg-preset='element-plus'],
+[data-vtg-preset='element-plus'].dark {
   /* ===== 语义 token 暗色值 ===== */
   --color-surface: #141414;
   --color-surface-hover: #1a1a1a;
   --color-elevated: #262626;
   --color-on-surface: #e5eaf3;
+  --color-text-regular: #cfd3dc;
   --color-muted: #a3a6ad;
   --color-default: #363637;
   --color-primary: #409eff;

@@ -320,7 +320,7 @@ const comparisonMode = ref<'antdv' | 'element-plus'>('antdv')
               />
             </ElTable>
           </div>
-          <div class="space-y-2 preset-element-plus">
+          <div class="space-y-2" data-vtg-preset="element-plus">
             <h4 class="text-sm" style="color: #909399">vtable-guild (element-plus preset)</h4>
             <VTable
               :columns="filterColumns"
@@ -353,7 +353,7 @@ const comparisonMode = ref<'antdv' | 'element-plus'>('antdv')
               <ElTableColumn prop="address" label="No Tooltip" sortable />
             </ElTable>
           </div>
-          <div class="space-y-2 preset-element-plus">
+          <div class="space-y-2" data-vtg-preset="element-plus">
             <h4 class="text-sm" style="color: #909399">vtable-guild (element-plus preset)</h4>
             <VTable :columns="sortColumns" :data-source="dataSource" theme-preset="element-plus" />
           </div>
@@ -372,7 +372,7 @@ const comparisonMode = ref<'antdv' | 'element-plus'>('antdv')
               <ElTableColumn prop="address" label="Address" show-overflow-tooltip />
             </ElTable>
           </div>
-          <div class="space-y-2 preset-element-plus">
+          <div class="space-y-2" data-vtg-preset="element-plus">
             <h4 class="text-sm" style="color: #909399">vtable-guild (element-plus preset)</h4>
             <VTable :columns="columns" :data-source="dataSource" theme-preset="element-plus" />
           </div>
@@ -384,7 +384,8 @@ const comparisonMode = ref<'antdv' | 'element-plus'>('antdv')
         <h3 class="text-base font-medium text-on-surface mb-4">3. Size 变体</h3>
         <div class="grid grid-cols-3 gap-4">
           <div
-            class="space-y-2 preset-element-plus"
+            class="space-y-2"
+            data-vtg-preset="element-plus"
             v-for="size in ['lg', 'md', 'sm'] as const"
             :key="size"
           >

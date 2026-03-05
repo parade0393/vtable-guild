@@ -43,6 +43,11 @@ export function createVTableGuild(options: VTableGuildOptions = {}): Plugin {
       }
 
       app.provide(VTABLE_GUILD_INJECTION_KEY, context)
+
+      // Auto-set data-vtg-preset on <html> so the preset CSS variables take effect
+      if (context.themePreset !== 'antdv' && typeof document !== 'undefined') {
+        document.documentElement.setAttribute('data-vtg-preset', context.themePreset)
+      }
     },
   }
 }
