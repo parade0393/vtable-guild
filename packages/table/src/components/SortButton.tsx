@@ -1,6 +1,7 @@
-import { defineComponent, type PropType } from 'vue'
+import { defineComponent, inject, type PropType } from 'vue'
 import { CaretUpIcon, CaretDownIcon } from '@vtable-guild/icons'
 import type { SortOrder } from '../types'
+import { TABLE_CONTEXT_KEY } from '../context'
 
 /**
  * 排序图标组件。
@@ -20,10 +21,13 @@ export default defineComponent({
     sortButtonClass: { type: String, default: '' },
   },
   setup(props) {
+    const tableContext = inject(TABLE_CONTEXT_KEY, {})
+
     return () => (
       <span
         class={[
-          'inline-flex flex-col items-center justify-center text-xs leading-none ml-1',
+          tableContext.subThemeSlots?.value.sortButton ??
+            'inline-flex flex-col items-center justify-center text-xs leading-none ml-1',
           props.sortButtonClass,
         ]}
         aria-hidden="true"
@@ -37,7 +41,7 @@ export default defineComponent({
         />
         <CaretDownIcon
           class={[
-            '-mt-[0.225em]',
+            tableContext.subThemeSlots?.value.sortIconDown ?? '-mt-[0.225em]',
             props.sortOrder === 'descend'
               ? 'text-[color:var(--color-primary)]'
               : 'text-[color:var(--color-sorter-icon)]',

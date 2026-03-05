@@ -4,23 +4,17 @@ import type { ThemePreset } from './types'
 import type { ThemePresetName } from '@vtable-guild/core'
 import type { AntdvTableThemeConfig } from './antdv/table'
 import { antdvTableTheme } from './antdv/table'
-import {
-  ELEMENT_PLUS_THEME_IMPLEMENTED,
-  elementPlusTableThemePlaceholder,
-} from './element-plus/table'
+import { elementPlusTableTheme } from './element-plus/table'
 
 /**
  * 预设注册表。
- *
- * 阶段三 element-plus 未实现时 fallback 到 antdv，
- * 避免选择 element-plus preset 后组件裸奔。
  */
 const presetMap: Record<ThemePresetName, ThemePreset> = {
   antdv: {
     table: antdvTableTheme,
   },
   'element-plus': {
-    table: ELEMENT_PLUS_THEME_IMPLEMENTED ? elementPlusTableThemePlaceholder : antdvTableTheme,
+    table: elementPlusTableTheme,
   },
 }
 
@@ -31,12 +25,6 @@ const presetMap: Record<ThemePresetName, ThemePreset> = {
  * @returns 完整的 ThemePreset 对象
  */
 export function resolveThemePreset(name: ThemePresetName = 'antdv'): ThemePreset {
-  if (name === 'element-plus' && !ELEMENT_PLUS_THEME_IMPLEMENTED) {
-    console.warn(
-      '[vtable-guild] element-plus theme preset is not yet implemented, falling back to antdv.',
-    )
-  }
-
   return presetMap[name] ?? presetMap.antdv
 }
 

@@ -60,6 +60,28 @@ export const antdvTableTheme = {
     ].join(' '),
     headerCellInner: 'flex items-center',
     bodyCellEllipsis: 'overflow-hidden text-ellipsis whitespace-nowrap',
+
+    // ---- 排序相关 ----
+    thSortable: 'cursor-pointer select-none hover:bg-[var(--vtg-table-header-sort-hover-bg)]',
+    sortButton: 'inline-flex flex-col items-center justify-center text-xs leading-none ml-1',
+    sortIconDown: '-mt-[0.225em]',
+    sortAreaWrapper: 'flex flex-auto items-center justify-between min-w-0',
+    sortAreaTitle: 'flex-1 min-w-0',
+
+    // ---- 筛选图标相关 ----
+    filterIconWrapper: 'shrink-0 ml-1 self-stretch -my-1 -me-2 flex items-center',
+    filterIcon:
+      'inline-flex items-center justify-center cursor-pointer transition-colors text-xs px-1 self-stretch rounded-md hover:bg-black/6',
+
+    // ---- 筛选下拉相关 ----
+    filterDropdown: 'rounded-lg bg-[color:var(--color-surface)] shadow-lg text-sm',
+    filterDropdownList: 'max-h-64 overflow-auto p-1 m-0 list-none min-w-[120px]',
+    filterDropdownItem: 'flex items-center gap-2 px-3 py-1.5 cursor-pointer rounded-sm',
+    filterDropdownItemSelected:
+      'bg-[color:var(--color-control-item-active-bg)] hover:bg-[color:var(--color-control-item-active-hover-bg)]',
+    filterDropdownItemHover: 'hover:bg-[color:var(--color-control-item-hover-bg)]',
+    filterDropdownActions:
+      'flex items-center justify-between gap-2 px-2 py-2 border-t border-[color:var(--color-default)]',
   },
   variants: {
     size: {

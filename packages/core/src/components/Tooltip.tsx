@@ -111,7 +111,7 @@ export default defineComponent({
     onBeforeUnmount(() => clearTimers())
 
     const arrowStyle = computed(() => {
-      const bg = props.color || 'rgba(0, 0, 0, 0.85)'
+      const bg = props.color || 'var(--vtg-tooltip-bg, rgba(0, 0, 0, 0.85))'
       switch (props.placement) {
         case 'top':
           return {
@@ -177,7 +177,7 @@ export default defineComponent({
         </span>
       )
 
-      const bg = props.color || 'rgba(0, 0, 0, 0.85)'
+      const bg = props.color || 'var(--vtg-tooltip-bg, rgba(0, 0, 0, 0.85))'
 
       return (
         <>
@@ -207,9 +207,9 @@ export default defineComponent({
                     style={{
                       background: bg,
                       color: '#fff',
-                      borderRadius: '6px',
-                      padding: '6px 8px',
-                      fontSize: '14px',
+                      borderRadius: 'var(--vtg-tooltip-border-radius, 6px)',
+                      padding: 'var(--vtg-tooltip-padding, 6px 8px)',
+                      fontSize: 'var(--vtg-tooltip-font-size, 14px)',
                       maxWidth: '250px',
                       boxShadow: '0 6px 16px rgba(0,0,0,0.08)',
                       position: 'relative',

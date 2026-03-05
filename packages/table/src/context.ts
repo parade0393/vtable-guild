@@ -1,5 +1,23 @@
-import type { InjectionKey, Slots } from 'vue'
+import type { ComputedRef, InjectionKey, Slots } from 'vue'
 import type { ColumnType, SortOrder } from './types'
+
+/** 子组件主题 slot class 映射 */
+export interface SubThemeSlots {
+  thSortable: string
+  sortButton: string
+  sortIconDown: string
+  sortAreaWrapper: string
+  sortAreaTitle: string
+  filterIconWrapper: string
+  filterIcon: string
+  filterDropdown: string
+  filterDropdownList: string
+  filterDropdownItem: string
+  filterDropdownItemSelected: string
+  filterDropdownItemHover: string
+  filterDropdownActions: string
+}
+
 /**
  * Table 内部 context，通过 provide/inject 跨层传递。
  *
@@ -42,6 +60,9 @@ export interface TableContext {
 
   /** 表级别 showSorterTooltip 配置 */
   showSorterTooltip?: boolean
+
+  /** 子组件主题 slot class 映射 */
+  subThemeSlots?: ComputedRef<SubThemeSlots>
 }
 
 /**

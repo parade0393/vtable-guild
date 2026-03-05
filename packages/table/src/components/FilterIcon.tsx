@@ -1,5 +1,6 @@
-import { defineComponent } from 'vue'
+import { defineComponent, inject } from 'vue'
 import { FilterFilledIcon } from '@vtable-guild/icons'
+import { TABLE_CONTEXT_KEY } from '../context'
 
 /**
  * 筛选漏斗图标。
@@ -14,6 +15,8 @@ export default defineComponent({
   },
   emits: ['click'],
   setup(props, { emit }) {
+    const tableContext = inject(TABLE_CONTEXT_KEY, {})
+
     function handleClick(e: MouseEvent) {
       e.stopPropagation()
       emit('click', e)
@@ -22,7 +25,8 @@ export default defineComponent({
     return () => (
       <span
         class={[
-          'inline-flex items-center justify-center cursor-pointer transition-colors text-xs px-1 self-stretch rounded-md hover:bg-black/6',
+          tableContext.subThemeSlots?.value.filterIcon ??
+            'inline-flex items-center justify-center cursor-pointer transition-colors text-xs px-1 self-stretch rounded-md hover:bg-black/6',
           props.active
             ? 'text-[color:var(--color-primary)]'
             : 'text-[color:var(--color-sorter-icon)]',

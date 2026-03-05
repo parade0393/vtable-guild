@@ -71,6 +71,19 @@
   /* 筛选下拉选项选中态背景 */
   --color-control-item-active-bg: #e6f4ff;
   --color-control-item-active-hover-bg: #bae0ff;
+
+  /* ===== 基础组件 token — Button / Checkbox / Tooltip ===== */
+  --vtg-btn-border-radius: 6px;
+  --vtg-btn-height-sm: 24px;
+  --vtg-btn-height-md: 32px;
+  --vtg-btn-padding-sm: 7px;
+  --vtg-btn-padding-md: 15px;
+  --vtg-checkbox-size: 16px;
+  --vtg-checkbox-border-radius: 4px;
+  --vtg-tooltip-bg: rgb(0 0 0 / 85%);
+  --vtg-tooltip-border-radius: 6px;
+  --vtg-tooltip-padding: 6px 8px;
+  --vtg-tooltip-font-size: 14px;
 }
 
 .dark {

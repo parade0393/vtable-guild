@@ -21,7 +21,7 @@ export default defineComponent({
         aria-checked={props.checked}
         aria-disabled={props.disabled}
         class={[
-          'inline-flex items-center justify-center w-4 h-4 rounded-sm border cursor-pointer transition-all shrink-0',
+          'inline-flex items-center justify-center w-[var(--vtg-checkbox-size)] h-[var(--vtg-checkbox-size)] rounded-[var(--vtg-checkbox-border-radius)] border cursor-pointer transition-all shrink-0',
           props.disabled && 'opacity-50 cursor-not-allowed',
           props.checked
             ? 'bg-[color:var(--color-primary)] border-[color:var(--color-primary)]'

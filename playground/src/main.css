@@ -1,2 +1,68 @@
 @import 'tailwindcss';
 @import '@vtable-guild/theme/css';
+
+/*
+ * Element Plus 对照区域 CSS 变量隔离。
+ *
+ * 页面根级 (:root) 使用 antdv preset 变量（由 @vtable-guild/theme/css 引入）。
+ * .preset-element-plus 内部覆盖为 element-plus 设计体系值。
+ */
+.preset-element-plus {
+  /* 排版 */
+  --font-family-base:
+    'Helvetica Neue', helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑',
+    arial, sans-serif;
+
+  /* 表面/背景 */
+  --color-surface: #ffffff;
+  --color-surface-hover: #f5f7fa;
+  --color-elevated: #f5f7fa;
+
+  /* 文本 */
+  --color-on-surface: #303133;
+  --color-muted: #909399;
+
+  /* 边框 */
+  --color-default: #ebeef5;
+
+  /* 主题色 */
+  --color-primary: #409eff;
+  --color-primary-hover: #66b1ff;
+
+  /* 组件 token */
+  --vtg-table-font-family: var(--font-family-base);
+  --vtg-table-bg: var(--color-surface);
+  --vtg-table-header-bg: var(--color-surface);
+  --vtg-table-header-color: var(--color-muted);
+  --vtg-table-text-color: var(--color-on-surface);
+  --vtg-table-border-color: var(--color-default);
+  --vtg-table-row-hover-bg: var(--color-surface-hover);
+  --vtg-table-font-size: 14px;
+  --vtg-table-line-height: 23px;
+  --vtg-table-cell-padding-inline-lg: 12px;
+  --vtg-table-cell-padding-block-lg: 12px;
+  --vtg-table-cell-padding-inline-md: 12px;
+  --vtg-table-cell-padding-block-md: 8px;
+  --vtg-table-cell-padding-inline-sm: 12px;
+  --vtg-table-cell-padding-block-sm: 4px;
+  --vtg-table-header-sort-hover-bg: var(--color-surface-hover);
+  --color-sorter-icon: #c0c4cc;
+  --vtg-table-header-split-color: transparent;
+  --color-text-disabled: #c0c4cc;
+  --color-control-item-hover-bg: #f5f7fa;
+  --color-control-item-active-bg: transparent;
+  --color-control-item-active-hover-bg: #f5f7fa;
+
+  /* 基础组件 token */
+  --vtg-btn-border-radius: 4px;
+  --vtg-btn-height-sm: 24px;
+  --vtg-btn-height-md: 32px;
+  --vtg-btn-padding-sm: 7px;
+  --vtg-btn-padding-md: 15px;
+  --vtg-checkbox-size: 14px;
+  --vtg-checkbox-border-radius: 2px;
+  --vtg-tooltip-bg: #303133;
+  --vtg-tooltip-border-radius: 4px;
+  --vtg-tooltip-padding: 8px 12px;
+  --vtg-tooltip-font-size: 12px;
+}

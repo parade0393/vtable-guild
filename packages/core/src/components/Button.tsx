@@ -21,7 +21,10 @@ export default defineComponent({
     }
 
     return () => {
-      const sizeClass = props.size === 'sm' ? 'h-6 px-[7px] text-xs' : 'h-8 px-4 text-sm'
+      const sizeClass =
+        props.size === 'sm'
+          ? 'h-[var(--vtg-btn-height-sm)] px-[var(--vtg-btn-padding-sm)] text-xs'
+          : 'h-[var(--vtg-btn-height-md)] px-[var(--vtg-btn-padding-md)] text-sm'
 
       const typeClass = (() => {
         switch (props.type) {
@@ -43,7 +46,7 @@ export default defineComponent({
       return (
         <button
           class={[
-            `inline-flex items-center justify-center rounded border transition-all leading-none ${props.disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`,
+            `inline-flex items-center justify-center rounded-[var(--vtg-btn-border-radius)] border transition-all leading-none ${props.disabled ? 'cursor-not-allowed' : 'cursor-pointer'}`,
             sizeClass,
             typeClass,
           ]}

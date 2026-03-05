@@ -6,10 +6,12 @@ import {
   onBeforeUnmount,
   Teleport,
   nextTick,
+  inject,
   type PropType,
 } from 'vue'
 import { Checkbox, Button } from '@vtable-guild/core'
 import type { ColumnFilterItem } from '../types'
+import { TABLE_CONTEXT_KEY } from '../context'
 
 /**
  * 筛选下拉菜单。
@@ -34,6 +36,7 @@ export default defineComponent({
   },
   emits: ['confirm', 'reset', 'close'],
   setup(props, { emit }) {
+    const tableContext = inject(TABLE_CONTEXT_KEY, {})
     const localSelectedKeys = ref<(string | number | boolean)[]>([...props.selectedKeys])
     const dropdownRef = ref<HTMLElement | null>(null)
 
@@ -110,19 +113,30 @@ export default defineComponent({
         <Teleport to="body">
           <div
             ref={dropdownRef}
-            class="rounded-lg bg-[color:var(--color-surface)] shadow-lg text-sm"
+            class={
+              tableContext.subThemeSlots?.value.filterDropdown ??
+              'rounded-lg bg-[color:var(--color-surface)] shadow-lg text-sm'
+            }
             style={style}
           >
             {/* Filter items list */}
-            <ul class="max-h-64 overflow-auto p-1 m-0 list-none min-w-[120px]">
+            <ul
+              class={
+                tableContext.subThemeSlots?.value.filterDropdownList ??
+                'max-h-64 overflow-auto p-1 m-0 list-none min-w-[120px]'
+              }
+            >
               {props.filters.map((item) => (
                 <li
                   key={String(item.value)}
                   class={[
-                    'flex items-center gap-2 px-3 py-1.5 cursor-pointer rounded-sm',
+                    tableContext.subThemeSlots?.value.filterDropdownItem ??
+                      'flex items-center gap-2 px-3 py-1.5 cursor-pointer rounded-sm',
                     isSelected(item.value)
-                      ? 'bg-[color:var(--color-control-item-active-bg)] hover:bg-[color:var(--color-control-item-active-hover-bg)]'
-                      : 'hover:bg-[color:var(--color-control-item-hover-bg)]',
+                      ? (tableContext.subThemeSlots?.value.filterDropdownItemSelected ??
+                        'bg-[color:var(--color-control-item-active-bg)] hover:bg-[color:var(--color-control-item-active-hover-bg)]')
+                      : (tableContext.subThemeSlots?.value.filterDropdownItemHover ??
+                        'hover:bg-[color:var(--color-control-item-hover-bg)]'),
                   ]}
                   onClick={() => toggleItem(item.value)}
                 >
@@ -133,7 +147,12 @@ export default defineComponent({
             </ul>
 
             {/* Action buttons */}
-            <div class="flex items-center justify-between gap-2 px-2 py-2 border-t border-[color:var(--color-default)]">
+            <div
+              class={
+                tableContext.subThemeSlots?.value.filterDropdownActions ??
+                'flex items-center justify-between gap-2 px-2 py-2 border-t border-[color:var(--color-default)]'
+              }
+            >
               <Button
                 type="link"
                 size="sm"

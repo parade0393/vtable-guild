@@ -1,10 +1,117 @@
-/* @vtable-guild/theme/css/presets — Element Plus 预设（占位） */
+/* @vtable-guild/theme/css/presets — Element Plus 预设 */
 
 /*
- * 后续阶段实现。
- * 届时在此定义 element-plus 设计体系的语义 token 值，如：
- *   --color-surface-hover: #f5f7fa;
- *   --color-on-surface: #303133;
- *   --font-family-base: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
- * 组件 token 引用语义 token 的方式与 antdv.css 完全一致。
+ * element-plus preset 自包含：
+ * 1. 语义 token — element-plus 设计体系的精确值
+ * 2. 组件 token — 100% 引用语义 token，无硬编码颜色
+ * 3. .dark — 只覆盖语义 token，组件 token 自动跟随
  */
+
+:root {
+  /* ===== 语义 token — element-plus 设计体系值 ===== */
+
+  /* 排版 */
+  --font-family-base:
+    'Helvetica Neue', helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑',
+    arial, sans-serif;
+
+  /* 表面/背景 */
+  --color-surface: #ffffff;
+  --color-surface-hover: #f5f7fa;
+  --color-elevated: #f5f7fa;
+
+  /* 文本 */
+  --color-on-surface: #303133;
+  --color-muted: #909399;
+
+  /* 边框 */
+  --color-default: #ebeef5;
+
+  /* 主题色 */
+  --color-primary: #409eff;
+  --color-primary-hover: #66b1ff;
+
+  /* ===== 组件 token — 100% 引用语义 token ===== */
+  --vtg-table-font-family: var(--font-family-base);
+  --vtg-table-bg: var(--color-surface);
+  --vtg-table-header-bg: var(--color-surface);
+  --vtg-table-header-color: var(--color-muted);
+  --vtg-table-text-color: var(--color-on-surface);
+  --vtg-table-border-color: var(--color-default);
+  --vtg-table-row-hover-bg: var(--color-surface-hover);
+
+  /* 尺寸类 token */
+  --vtg-table-font-size: 14px;
+  --vtg-table-line-height: 23px;
+
+  /* 三档 size 对应 element-plus 的 large/default/small */
+  --vtg-table-cell-padding-inline-lg: 12px;
+  --vtg-table-cell-padding-block-lg: 12px;
+  --vtg-table-cell-padding-inline-md: 12px;
+  --vtg-table-cell-padding-block-md: 8px;
+  --vtg-table-cell-padding-inline-sm: 12px;
+  --vtg-table-cell-padding-block-sm: 4px;
+
+  /* 排序 hover 背景 */
+  --vtg-table-header-sort-hover-bg: var(--color-surface-hover);
+
+  /* 排序图标不活跃色 */
+  --color-sorter-icon: #c0c4cc;
+
+  /* 表头 cell 间分割线 — element-plus 无分割线 */
+  --vtg-table-header-split-color: transparent;
+
+  /* 禁用态文字色 */
+  --color-text-disabled: #c0c4cc;
+
+  /* 筛选下拉选项 hover 背景 */
+  --color-control-item-hover-bg: #f5f7fa;
+
+  /* 筛选下拉选项选中态背景 — element-plus 用文字高亮而非背景 */
+  --color-control-item-active-bg: transparent;
+  --color-control-item-active-hover-bg: #f5f7fa;
+
+  /* ===== 基础组件 token — Button / Checkbox / Tooltip ===== */
+  --vtg-btn-border-radius: 4px;
+  --vtg-btn-height-sm: 24px;
+  --vtg-btn-height-md: 32px;
+  --vtg-btn-padding-sm: 7px;
+  --vtg-btn-padding-md: 15px;
+  --vtg-checkbox-size: 14px;
+  --vtg-checkbox-border-radius: 2px;
+  --vtg-tooltip-bg: #303133;
+  --vtg-tooltip-border-radius: 4px;
+  --vtg-tooltip-padding: 8px 12px;
+  --vtg-tooltip-font-size: 12px;
+}
+
+.dark {
+  /* ===== 语义 token 暗色值 ===== */
+  --color-surface: #141414;
+  --color-surface-hover: #1a1a1a;
+  --color-elevated: #262626;
+  --color-on-surface: #e5eaf3;
+  --color-muted: #a3a6ad;
+  --color-default: #363637;
+  --color-primary: #409eff;
+  --color-primary-hover: #66b1ff;
+
+  /* 排序 hover 背景 */
+  --vtg-table-header-sort-hover-bg: rgb(255 255 255 / 4%);
+
+  /* 排序图标不活跃色 */
+  --color-sorter-icon: #636466;
+
+  /* 禁用态文字色 */
+  --color-text-disabled: #636466;
+
+  /* 筛选下拉选项 hover 背景 */
+  --color-control-item-hover-bg: rgb(255 255 255 / 6%);
+
+  /* 筛选下拉选项选中态 */
+  --color-control-item-active-bg: transparent;
+  --color-control-item-active-hover-bg: rgb(255 255 255 / 6%);
+
+  /* tooltip */
+  --vtg-tooltip-bg: #303133;
+}

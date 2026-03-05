@@ -29,7 +29,7 @@ export default defineComponent({
       default: undefined,
     },
     loading: { type: Boolean, default: false },
-    size: { type: String as PropType<'sm' | 'md' | 'lg'>, default: 'lg' },
+    size: { type: String as PropType<'sm' | 'md' | 'lg'>, default: undefined },
     bordered: { type: Boolean, default: false },
     striped: { type: Boolean, default: false },
     hoverable: { type: Boolean, default: true },
@@ -131,6 +131,22 @@ export default defineComponent({
     const processedData = computed(() => getProcessedData())
 
     // ---- provide context ----
+    const subThemeSlots = computed(() => ({
+      thSortable: themeSlots.thSortable(),
+      sortButton: themeSlots.sortButton(),
+      sortIconDown: themeSlots.sortIconDown(),
+      sortAreaWrapper: themeSlots.sortAreaWrapper(),
+      sortAreaTitle: themeSlots.sortAreaTitle(),
+      filterIconWrapper: themeSlots.filterIconWrapper(),
+      filterIcon: themeSlots.filterIcon(),
+      filterDropdown: themeSlots.filterDropdown(),
+      filterDropdownList: themeSlots.filterDropdownList(),
+      filterDropdownItem: themeSlots.filterDropdownItem(),
+      filterDropdownItemSelected: themeSlots.filterDropdownItemSelected(),
+      filterDropdownItemHover: themeSlots.filterDropdownItemHover(),
+      filterDropdownActions: themeSlots.filterDropdownActions(),
+    }))
+
     provide<TableContext>(TABLE_CONTEXT_KEY, {
       bodyCell: slots.bodyCell,
       headerCell: slots.headerCell,
@@ -142,6 +158,7 @@ export default defineComponent({
       resetFilter,
       customFilterDropdown: slots.customFilterDropdown,
       showSorterTooltip: props.showSorterTooltip,
+      subThemeSlots,
     })
 
     return () => (

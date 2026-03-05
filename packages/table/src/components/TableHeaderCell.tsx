@@ -96,7 +96,8 @@ export default defineComponent({
     const cellClass = computed(() => {
       const alignClass = props.column.align ? TABLE_ALIGN_CLASSES[props.column.align] : ''
       const sortableClass = isSortable.value
-        ? 'cursor-pointer select-none hover:bg-[var(--vtg-table-header-sort-hover-bg)]'
+        ? (tableContext.subThemeSlots?.value.thSortable ??
+          'cursor-pointer select-none hover:bg-[var(--vtg-table-header-sort-hover-bg)]')
         : ''
       return cn(props.thClass, alignClass, sortableClass, props.column.className)
     })
@@ -121,9 +122,14 @@ export default defineComponent({
       const tooltipTitle = SORT_TOOLTIP_MAP[String(sortOrder.value)]
 
       // 排序区域（标题 + 排序图标）
+      const sortAreaWrapperClass =
+        tableContext.subThemeSlots?.value.sortAreaWrapper ??
+        'flex flex-auto items-center justify-between min-w-0'
+      const sortAreaTitleClass = tableContext.subThemeSlots?.value.sortAreaTitle ?? 'flex-1 min-w-0'
+
       const sorterContent = (
-        <span class="flex flex-auto items-center justify-between min-w-0">
-          <span class="flex-1 min-w-0">{headerContent.value}</span>
+        <span class={sortAreaWrapperClass}>
+          <span class={sortAreaTitleClass}>{headerContent.value}</span>
           {isSortable.value && <SortButton sortOrder={sortOrder.value} />}
         </span>
       )
@@ -164,7 +170,10 @@ export default defineComponent({
             {hasFilters.value && (
               <span
                 ref={filterAnchorRef}
-                class="shrink-0 ml-1 self-stretch -my-1 -me-2 flex items-center"
+                class={
+                  tableContext.subThemeSlots?.value.filterIconWrapper ??
+                  'shrink-0 ml-1 self-stretch -my-1 -me-2 flex items-center'
+                }
               >
                 <FilterIcon active={isFiltered.value} onClick={toggleFilterDropdown} />
               </span>
