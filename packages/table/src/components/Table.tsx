@@ -67,8 +67,15 @@ export default defineComponent({
       column: ColumnType<Record<string, unknown>>
       selectedKeys: (string | number | boolean)[]
       setSelectedKeys: (keys: (string | number | boolean)[]) => void
-      confirm: () => void
-      clearFilters: () => void
+      confirm: (options?: { closeDropdown?: boolean }) => void
+      clearFilters: (options?: { confirm?: boolean; closeDropdown?: boolean }) => void
+      filters: import('../types').ColumnFilterItem[]
+      visible: boolean
+      close: () => void
+    }
+    customFilterIcon: {
+      column: ColumnType<Record<string, unknown>>
+      filtered: boolean
     }
   }>,
   setup(props, { slots, emit }) {
@@ -146,6 +153,7 @@ export default defineComponent({
       filterDropdownItemSelected: themeSlots.filterDropdownItemSelected(),
       filterDropdownItemHover: themeSlots.filterDropdownItemHover(),
       filterDropdownActions: themeSlots.filterDropdownActions(),
+      filterDropdownSearch: themeSlots.filterDropdownSearch(),
     }))
 
     provide<TableContext>(TABLE_CONTEXT_KEY, {
@@ -158,6 +166,7 @@ export default defineComponent({
       confirmFilter,
       resetFilter,
       customFilterDropdown: slots.customFilterDropdown,
+      customFilterIcon: slots.customFilterIcon,
       showSorterTooltip: props.showSorterTooltip ?? effectiveThemePreset.value !== 'element-plus',
       subThemeSlots,
       themePreset: effectiveThemePreset.value,

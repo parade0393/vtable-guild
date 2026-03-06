@@ -20,6 +20,7 @@ export { useTheme } from './composables/useTheme'
 export { default as Tooltip } from './components/Tooltip'
 export { default as Checkbox } from './components/Checkbox'
 export { default as Button } from './components/Button'
+export { default as Input } from './components/Input'
 
 // ---------- Plugin ----------
 export { createVTableGuild, VTABLE_GUILD_INJECTION_KEY } from './plugin/index'

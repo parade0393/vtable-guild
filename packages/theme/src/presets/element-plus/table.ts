@@ -82,6 +82,7 @@ export const elementPlusTableTheme = {
     filterDropdownItemHover: 'hover:bg-[color:var(--color-control-item-hover-bg)]',
     filterDropdownActions:
       'flex items-center justify-between gap-2 px-2 py-2 border-t border-[color:var(--color-default)]',
+    filterDropdownSearch: 'px-2 pt-2 pb-1',
   },
   variants: {
     size: {

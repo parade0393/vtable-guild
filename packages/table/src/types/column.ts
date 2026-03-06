@@ -1,4 +1,5 @@
 import type { VNodeChild } from 'vue'
+import type { CustomFilterDropdownSlotProps } from './table'
 
 /** 行唯一标识 */
 export type Key = string | number
@@ -87,6 +88,51 @@ export interface ColumnType<TRecord extends Record<string, unknown>> {
   customFilterDropdown?: boolean
 
   /**
+   * 筛选搜索框。
+   * - `true`：使用默认搜索（text.includes(input)）
+   * - `(input, filter) => boolean`：自定义搜索函数
+   */
+  filterSearch?: boolean | ((input: string, filter: ColumnFilterItem) => boolean)
+
+  /**
+   * 筛选模式。
+   * - `'menu'`（默认）：平铺列表
+   * - `'tree'`：树形嵌套
+   */
+  filterMode?: 'menu' | 'tree'
+
+  /**
+   * 重置时是否恢复为 defaultFilteredValue 而非清空。
+   */
+  filterResetToDefaultFilteredValue?: boolean
+
+  /**
+   * 受控筛选下拉可见性。
+   */
+  filterDropdownOpen?: boolean
+
+  /**
+   * 筛选下拉可见性变化回调。
+   */
+  onFilterDropdownOpenChange?: (visible: boolean) => void
+
+  /**
+   * 外部控制筛选高亮状态（不影响实际筛选逻辑）。
+   */
+  filtered?: boolean
+
+  /**
+   * 自定义筛选图标渲染函数。
+   */
+  filterIcon?: (opt: { filtered: boolean }) => VNodeChild
+
+  /**
+   * 列级别自定义筛选下拉渲染函数。
+   * 优先级高于 customFilterDropdown slot。
+   */
+  filterDropdown?: (props: CustomFilterDropdownSlotProps<TRecord>) => VNodeChild
+
+  /**
    * 列级别控制是否显示排序 tooltip。
    * 未设置时使用 Table 级别的 showSorterTooltip。
    */
@@ -132,6 +178,14 @@ export interface ColumnGroupType<TRecord extends Record<string, unknown>> extend
   | 'filteredValue'
   | 'defaultFilteredValue'
   | 'customFilterDropdown'
+  | 'filterSearch'
+  | 'filterMode'
+  | 'filterResetToDefaultFilteredValue'
+  | 'filterDropdownOpen'
+  | 'onFilterDropdownOpenChange'
+  | 'filtered'
+  | 'filterIcon'
+  | 'filterDropdown'
 > {
   children: Array<ColumnType<TRecord> | ColumnGroupType<TRecord>>
 }

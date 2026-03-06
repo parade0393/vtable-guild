@@ -87,6 +87,12 @@
   --vtg-tooltip-border-radius: 4px;
   --vtg-tooltip-padding: 8px 12px;
   --vtg-tooltip-font-size: 12px;
+
+  /* Input */
+  --vtg-input-border-radius: 4px;
+  --vtg-input-height: 24px;
+  --vtg-input-padding-inline: 8px;
+  --vtg-input-font-size: 12px;
 }
 
 .dark [data-vtg-preset='element-plus'],

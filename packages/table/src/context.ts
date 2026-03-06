@@ -18,6 +18,7 @@ export interface SubThemeSlots {
   filterDropdownItemSelected: string
   filterDropdownItemHover: string
   filterDropdownActions: string
+  filterDropdownSearch: string
 }
 
 /**
@@ -59,6 +60,9 @@ export interface TableContext {
 
   /** 自定义筛选下拉菜单 slot */
   customFilterDropdown?: Slots['customFilterDropdown']
+
+  /** 自定义筛选图标 slot */
+  customFilterIcon?: Slots['customFilterIcon']
 
   /** 表级别 showSorterTooltip 配置 */
   showSorterTooltip?: boolean

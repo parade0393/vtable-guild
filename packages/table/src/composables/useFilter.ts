@@ -83,7 +83,11 @@ export function useFilter(options: UseFilterOptions) {
    * 重置筛选。
    */
   function resetFilter(column: ColumnType<Record<string, unknown>>): void {
-    confirmFilter(column, [])
+    if (column.filterResetToDefaultFilteredValue && column.defaultFilteredValue) {
+      confirmFilter(column, [...column.defaultFilteredValue])
+    } else {
+      confirmFilter(column, [])
+    }
   }
 
   /**

@@ -1,11 +1,11 @@
 <!-- playground/src/App.vue -->
 <script setup lang="ts">
-import { ref, provide } from 'vue'
+import { ref, provide, h } from 'vue'
 import { Table as ATable } from 'ant-design-vue'
 import { ElTable, ElTableColumn } from 'element-plus'
 import 'element-plus/es/components/table/style/css'
 import 'element-plus/es/components/table-column/style/css'
-import { VTable, type ColumnType } from '@vtable-guild/table'
+import { VTable, type ColumnType, type ColumnFilterItem } from '@vtable-guild/table'
 import { VTABLE_GUILD_INJECTION_KEY, type VTableGuildContext } from '@vtable-guild/core'
 
 const columns: ColumnType<Record<string, unknown>>[] = [
@@ -84,6 +84,64 @@ const filterColumns: ColumnType<Record<string, unknown>>[] = [
     filters: [
       { text: 'New York', value: 'New York' },
       { text: 'London', value: 'London' },
+      { text: 'Sidney', value: 'Sidney' },
+    ],
+    onFilter: (value, record) => (record.address as string).includes(value as string),
+  },
+]
+
+// 筛选增强列 — filterSearch + filterMode: 'tree' + filterResetToDefaultFilteredValue
+const filterAdvancedColumns: ColumnType<Record<string, unknown>>[] = [
+  { title: 'Name', dataIndex: 'name', key: 'name', width: 180 },
+  {
+    title: 'Age (search)',
+    dataIndex: 'age',
+    key: 'age',
+    align: 'right',
+    width: 150,
+    filterSearch: true,
+    filters: [
+      { text: '< 25', value: 'lt25' },
+      { text: '25 ~ 30', value: '25-30' },
+      { text: '30 ~ 35', value: '30-35' },
+      { text: '35 ~ 40', value: '35-40' },
+      { text: '40 ~ 45', value: '40-45' },
+      { text: '> 45', value: 'gt45' },
+    ],
+    onFilter: (value, record) => {
+      const age = record.age as number
+      if (value === 'lt25') return age < 25
+      if (value === '25-30') return age >= 25 && age <= 30
+      if (value === '30-35') return age > 30 && age <= 35
+      if (value === '35-40') return age > 35 && age <= 40
+      if (value === '40-45') return age > 40 && age <= 45
+      return age > 45
+    },
+    defaultFilteredValue: ['30-35'],
+    filterResetToDefaultFilteredValue: true,
+  },
+  {
+    title: 'Address (tree)',
+    dataIndex: 'address',
+    key: 'address',
+    filterMode: 'tree',
+    filters: [
+      {
+        text: 'America',
+        value: 'America',
+        children: [
+          { text: 'New York', value: 'New York' },
+          { text: 'Chicago', value: 'Chicago' },
+        ],
+      },
+      {
+        text: 'Europe',
+        value: 'Europe',
+        children: [
+          { text: 'London', value: 'London' },
+          { text: 'Paris', value: 'Paris' },
+        ],
+      },
       { text: 'Sidney', value: 'Sidney' },
     ],
     onFilter: (value, record) => (record.address as string).includes(value as string),
@@ -169,6 +227,38 @@ const comparisonMode = ref<'antdv' | 'element-plus'>('antdv')
           <div class="space-y-2">
             <h4 class="text-sm text-muted">vtable-guild</h4>
             <VTable :columns="filterColumns" :data-source="dataSource" @change="onTableChange" />
+          </div>
+        </div>
+      </section>
+
+      <!-- 筛选增强对照 — filterSearch + filterMode: 'tree' + customFilterIcon -->
+      <section>
+        <h3 class="text-base font-medium text-on-surface mb-4">
+          0b. 筛选增强（search / tree / resetToDefault / customFilterIcon）
+        </h3>
+        <div class="grid grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <h4 class="text-sm text-muted">vtable-guild — filterSearch + tree</h4>
+            <VTable
+              :columns="filterAdvancedColumns"
+              :data-source="dataSource"
+              @change="onTableChange"
+            >
+              <template #customFilterIcon="{ filtered }">
+                <span :style="{ color: filtered ? '#1677ff' : '#999' }">F</span>
+              </template>
+            </VTable>
+          </div>
+          <div class="space-y-2">
+            <h4 class="text-sm text-muted">说明</h4>
+            <ul class="text-sm text-muted space-y-1 list-disc list-inside">
+              <li>
+                Age 列: filterSearch=true, 6 项可搜索; defaultFilteredValue=['30-35'],
+                filterResetToDefaultFilteredValue=true
+              </li>
+              <li>Address 列: filterMode='tree', 嵌套 children</li>
+              <li>customFilterIcon slot 渲染自定义 "F" 图标</li>
+            </ul>
           </div>
         </div>
       </section>
@@ -324,6 +414,31 @@ const comparisonMode = ref<'antdv' | 'element-plus'>('antdv')
             <h4 class="text-sm" style="color: #909399">vtable-guild (element-plus preset)</h4>
             <VTable
               :columns="filterColumns"
+              :data-source="dataSource"
+              theme-preset="element-plus"
+              @change="onTableChange"
+            />
+          </div>
+        </div>
+      </section>
+
+      <!-- 筛选增强对照 — element-plus preset -->
+      <section>
+        <h3 class="text-base font-medium text-on-surface mb-4">
+          0b. 筛选增强（search / tree / resetToDefault）
+        </h3>
+        <div class="grid grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <h4 class="text-sm text-muted">说明</h4>
+            <ul class="text-sm text-muted space-y-1 list-disc list-inside">
+              <li>Age 列: filterSearch=true, 6 项可搜索; filterResetToDefaultFilteredValue=true</li>
+              <li>Address 列: filterMode='tree', 嵌套 children</li>
+            </ul>
+          </div>
+          <div class="space-y-2" data-vtg-preset="element-plus">
+            <h4 class="text-sm" style="color: #909399">vtable-guild (element-plus preset)</h4>
+            <VTable
+              :columns="filterAdvancedColumns"
               :data-source="dataSource"
               theme-preset="element-plus"
               @change="onTableChange"

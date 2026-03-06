@@ -1,6 +1,6 @@
 import type { ThemePresetName, SlotProps } from '@vtable-guild/core'
 import type { VNodeChild } from 'vue'
-import type { ColumnsType, ColumnType, Key } from './column'
+import type { ColumnsType, ColumnType, ColumnFilterItem, Key } from './column'
 import type { TableSlots } from '@vtable-guild/theme'
 
 /**
@@ -29,8 +29,11 @@ export interface CustomFilterDropdownSlotProps<TRecord extends Record<string, un
   column: ColumnType<TRecord>
   selectedKeys: (string | number | boolean)[]
   setSelectedKeys: (keys: (string | number | boolean)[]) => void
-  confirm: () => void
-  clearFilters: () => void
+  confirm: (options?: { closeDropdown?: boolean }) => void
+  clearFilters: (options?: { confirm?: boolean; closeDropdown?: boolean }) => void
+  filters: ColumnFilterItem[]
+  visible: boolean
+  close: () => void
 }
 
 /**
@@ -42,6 +45,7 @@ export interface TableSlotsDecl<TRecord extends Record<string, unknown>> {
   empty?: () => VNodeChild
   loading?: () => VNodeChild
   customFilterDropdown?: (props: CustomFilterDropdownSlotProps<TRecord>) => VNodeChild
+  customFilterIcon?: (props: { column: ColumnType<TRecord>; filtered: boolean }) => VNodeChild
 }
 
 /**

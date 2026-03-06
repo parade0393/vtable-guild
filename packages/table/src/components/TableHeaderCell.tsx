@@ -1,4 +1,4 @@
-import { defineComponent, computed, inject, ref, type PropType } from 'vue'
+import { defineComponent, computed, inject, ref, watch, type PropType } from 'vue'
 import { cn, Tooltip } from '@vtable-guild/core'
 import { TABLE_ALIGN_CLASSES } from '@vtable-guild/theme'
 import type { ColumnType, SortOrder } from '../types'
@@ -45,7 +45,10 @@ export default defineComponent({
 
     // ---- 筛选 ----
     const hasFilters = computed(
-      () => (props.column.filters?.length ?? 0) > 0 || !!props.column.customFilterDropdown,
+      () =>
+        (props.column.filters?.length ?? 0) > 0 ||
+        !!props.column.customFilterDropdown ||
+        !!props.column.filterDropdown,
     )
 
     const filteredValue = computed(() => {
@@ -53,13 +56,28 @@ export default defineComponent({
       return tableContext.getFilteredValue?.(props.column) ?? []
     })
 
-    const isFiltered = computed(() => filteredValue.value.length > 0)
+    // C1: filtered prop override
+    const isFiltered = computed(() => {
+      if (props.column.filtered !== undefined) return props.column.filtered
+      return filteredValue.value.length > 0
+    })
 
-    const filterDropdownVisible = ref(false)
+    // C2: Controlled dropdown (filterDropdownOpen / onFilterDropdownOpenChange)
+    const isDropdownControlled = computed(() => props.column.filterDropdownOpen !== undefined)
+    const internalVisible = ref(false)
+    const filterDropdownVisible = computed(() =>
+      isDropdownControlled.value ? props.column.filterDropdownOpen! : internalVisible.value,
+    )
+
+    function setDropdownVisible(visible: boolean) {
+      if (!isDropdownControlled.value) internalVisible.value = visible
+      props.column.onFilterDropdownOpenChange?.(visible)
+    }
+
     const filterAnchorRef = ref<HTMLElement | null>(null)
 
     function toggleFilterDropdown(_e: MouseEvent) {
-      filterDropdownVisible.value = !filterDropdownVisible.value
+      setDropdownVisible(!filterDropdownVisible.value)
     }
 
     function getAnchorRect() {
@@ -67,18 +85,28 @@ export default defineComponent({
       return filterAnchorRef.value.getBoundingClientRect()
     }
 
+    // C3: Pending selected keys for slot props
+    const pendingSelectedKeys = ref<(string | number | boolean)[]>([])
+    watch(
+      () => filteredValue.value,
+      (keys) => {
+        pendingSelectedKeys.value = [...keys]
+      },
+      { immediate: true },
+    )
+
     function handleFilterConfirm(keys: (string | number | boolean)[]) {
       tableContext.confirmFilter?.(props.column, keys)
-      filterDropdownVisible.value = false
+      setDropdownVisible(false)
     }
 
     function handleFilterReset() {
       tableContext.resetFilter?.(props.column)
-      filterDropdownVisible.value = false
+      setDropdownVisible(false)
     }
 
     function handleFilterClose() {
-      filterDropdownVisible.value = false
+      setDropdownVisible(false)
     }
 
     // ---- 公共 ----
@@ -120,6 +148,7 @@ export default defineComponent({
 
     return () => {
       const tooltipTitle = SORT_TOOLTIP_MAP[String(sortOrder.value)]
+      const { column } = props
 
       // 排序区域（标题 + 排序图标）
       const sortAreaWrapperClass =
@@ -155,10 +184,115 @@ export default defineComponent({
         <span class={sortAreaOuterClass}>{sorterContent}</span>
       )
 
-      // customFilterDropdown slot
-      const customFilterDropdownSlot = props.column.customFilterDropdown
+      // C4: Filter icon rendering priority
+      // column.filterIcon > tableContext.customFilterIcon slot > default FilterIcon
+      const filterIconContent = (() => {
+        if (column.filterIcon) {
+          return (
+            <span
+              class={
+                tableContext.subThemeSlots?.value.filterIconWrapper ??
+                'shrink-0 ml-1 self-stretch -my-1 -me-2 flex items-center'
+              }
+              ref={filterAnchorRef}
+              onClick={(e: MouseEvent) => {
+                e.stopPropagation()
+                toggleFilterDropdown(e)
+              }}
+              role="button"
+              aria-label="Filter"
+            >
+              {column.filterIcon({ filtered: isFiltered.value })}
+            </span>
+          )
+        }
+        if (tableContext.customFilterIcon) {
+          return (
+            <span
+              class={
+                tableContext.subThemeSlots?.value.filterIconWrapper ??
+                'shrink-0 ml-1 self-stretch -my-1 -me-2 flex items-center'
+              }
+              ref={filterAnchorRef}
+              onClick={(e: MouseEvent) => {
+                e.stopPropagation()
+                toggleFilterDropdown(e)
+              }}
+              role="button"
+              aria-label="Filter"
+            >
+              {tableContext.customFilterIcon({ column, filtered: isFiltered.value })}
+            </span>
+          )
+        }
+        return (
+          <span
+            ref={filterAnchorRef}
+            class={
+              tableContext.subThemeSlots?.value.filterIconWrapper ??
+              'shrink-0 ml-1 self-stretch -my-1 -me-2 flex items-center'
+            }
+          >
+            <FilterIcon active={isFiltered.value} onClick={toggleFilterDropdown} />
+          </span>
+        )
+      })()
+
+      // C5: Shared dropdownSlotProps for custom filter dropdown
+      const dropdownSlotProps = {
+        column,
+        selectedKeys: pendingSelectedKeys.value,
+        setSelectedKeys: (keys: (string | number | boolean)[]) => {
+          pendingSelectedKeys.value = [...keys]
+        },
+        confirm: (opts?: { closeDropdown?: boolean }) => {
+          handleFilterConfirm(pendingSelectedKeys.value)
+          if (opts?.closeDropdown === false) {
+            // Re-open since handleFilterConfirm closes
+            setDropdownVisible(true)
+          }
+        },
+        clearFilters: (opts?: { confirm?: boolean; closeDropdown?: boolean }) => {
+          tableContext.resetFilter?.(column)
+          pendingSelectedKeys.value = []
+          if (opts?.confirm) {
+            handleFilterConfirm([])
+          }
+          if (opts?.closeDropdown !== false) {
+            setDropdownVisible(false)
+          }
+        },
+        filters: column.filters ?? [],
+        visible: filterDropdownVisible.value,
+        close: () => setDropdownVisible(false),
+      }
+
+      // C5: Rendering priority: column.filterDropdown > customFilterDropdown slot > default
+      const customFilterDropdownSlot = column.customFilterDropdown
         ? tableContext.customFilterDropdown
         : undefined
+
+      const filterDropdownContent = (() => {
+        if (column.filterDropdown) {
+          return column.filterDropdown(dropdownSlotProps)
+        }
+        if (customFilterDropdownSlot) {
+          return customFilterDropdownSlot(dropdownSlotProps)
+        }
+        return (
+          <FilterDropdown
+            filters={column.filters ?? []}
+            selectedKeys={filteredValue.value}
+            multiple={column.filterMultiple !== false}
+            anchorRect={getAnchorRect()}
+            filterSearch={column.filterSearch ?? false}
+            filterMode={column.filterMode ?? 'menu'}
+            onConfirm={handleFilterConfirm}
+            onReset={handleFilterReset}
+            onClose={handleFilterClose}
+          />
+        )
+      })()
 
       return (
         <th
@@ -169,48 +303,11 @@ export default defineComponent({
         >
           <span class={cn('flex items-center', props.headerCellInnerClass)}>
             {sortArea}
-            {hasFilters.value && (
-              <span
-                ref={filterAnchorRef}
-                class={
-                  tableContext.subThemeSlots?.value.filterIconWrapper ??
-                  'shrink-0 ml-1 self-stretch -my-1 -me-2 flex items-center'
-                }
-              >
-                <FilterIcon active={isFiltered.value} onClick={toggleFilterDropdown} />
-              </span>
-            )}
+            {hasFilters.value && filterIconContent}
           </span>
 
           {/* Filter dropdown */}
-          {filterDropdownVisible.value &&
-            hasFilters.value &&
-            (customFilterDropdownSlot ? (
-              customFilterDropdownSlot({
-                column: props.column,
-                selectedKeys: filteredValue.value,
-                setSelectedKeys: (keys: (string | number | boolean)[]) => {
-                  handleFilterConfirm(keys)
-                },
-                confirm: () => {
-                  handleFilterConfirm(filteredValue.value)
-                  filterDropdownVisible.value = false
-                },
-                clearFilters: () => {
-                  handleFilterReset()
-                },
-              })
-            ) : (
-              <FilterDropdown
-                filters={props.column.filters ?? []}
-                selectedKeys={filteredValue.value}
-                multiple={props.column.filterMultiple !== false}
-                anchorRect={getAnchorRect()}
-                onConfirm={handleFilterConfirm}
-                onReset={handleFilterReset}
-                onClose={handleFilterClose}
-              />
-            ))}
+          {filterDropdownVisible.value && hasFilters.value && filterDropdownContent}
         </th>
       )
     }

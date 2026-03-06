@@ -1,6 +1,7 @@
 import {
   defineComponent,
   ref,
+  computed,
   watch,
   onMounted,
   onBeforeUnmount,
@@ -8,8 +9,9 @@ import {
   nextTick,
   inject,
   type PropType,
+  type VNode,
 } from 'vue'
-import { Checkbox, Button } from '@vtable-guild/core'
+import { Checkbox, Button, Input } from '@vtable-guild/core'
 import type { ColumnFilterItem } from '../types'
 import { TABLE_CONTEXT_KEY } from '../context'
 
@@ -22,6 +24,8 @@ import { TABLE_CONTEXT_KEY } from '../context'
  * - OK 确认，Reset 重置
  * - 点击外部关闭
  * - 右侧溢出时改用 right 定位
+ * - filterSearch: 搜索框过滤筛选项
+ * - filterMode: 'tree' 支持树形嵌套渲染
  */
 export default defineComponent({
   name: 'FilterDropdown',
@@ -33,12 +37,23 @@ export default defineComponent({
       type: Object as PropType<{ top: number; left: number; right: number; bottom: number }>,
       required: true,
     },
+    filterSearch: {
+      type: [Boolean, Function] as PropType<
+        boolean | ((input: string, filter: ColumnFilterItem) => boolean)
+      >,
+      default: false,
+    },
+    filterMode: {
+      type: String as PropType<'menu' | 'tree'>,
+      default: 'menu',
+    },
   },
   emits: ['confirm', 'reset', 'close'],
   setup(props, { emit }) {
     const tableContext = inject(TABLE_CONTEXT_KEY, {})
     const localSelectedKeys = ref<(string | number | boolean)[]>([...props.selectedKeys])
     const dropdownRef = ref<HTMLElement | null>(null)
+    const searchText = ref('')
 
     // 同步外部 selectedKeys 到本地
     watch(
@@ -48,6 +63,45 @@ export default defineComponent({
       },
     )
 
+    // ---- 搜索过滤 ----
+    function matchesSearch(filter: ColumnFilterItem, input: string): boolean {
+      if (typeof props.filterSearch === 'function') {
+        return props.filterSearch(input, filter)
+      }
+      return filter.text.toLowerCase().includes(input.toLowerCase())
+    }
+
+    function filterItemsFlat(items: ColumnFilterItem[], input: string): ColumnFilterItem[] {
+      return items.filter((item) => matchesSearch(item, input))
+    }
+
+    function filterItemsTree(items: ColumnFilterItem[], input: string): ColumnFilterItem[] {
+      const result: ColumnFilterItem[] = []
+      for (const item of items) {
+        if (item.children?.length) {
+          const filteredChildren = filterItemsTree(item.children, input)
+          if (filteredChildren.length > 0 || matchesSearch(item, input)) {
+            result.push({
+              ...item,
+              children: filteredChildren.length > 0 ? filteredChildren : item.children,
+            })
+          }
+        } else if (matchesSearch(item, input)) {
+          result.push(item)
+        }
+      }
+      return result
+    }
+
+    const filteredFilters = computed(() => {
+      if (!props.filterSearch || !searchText.value) return props.filters
+      if (props.filterMode === 'tree') {
+        return filterItemsTree(props.filters, searchText.value)
+      }
+      return filterItemsFlat(props.filters, searchText.value)
+    })
+
+    // ---- 选中逻辑 ----
     function isSelected(value: string | number | boolean): boolean {
       return localSelectedKeys.value.includes(value)
     }
@@ -92,6 +146,42 @@ export default defineComponent({
       document.removeEventListener('mousedown', handleMouseDown)
     })
 
+    // ---- 渲染筛选项（支持树形递归） ----
+    function renderFilterItem(item: ColumnFilterItem, level: number = 0) {
+      const indentStyle = level > 0 ? { paddingLeft: `${level * 20 + 12}px` } : undefined
+
+      return (
+        <li
+          key={String(item.value)}
+          class={[
+            tableContext.subThemeSlots?.value.filterDropdownItem ??
+              'flex items-center gap-2 px-3 py-1.5 cursor-pointer rounded-sm',
+            isSelected(item.value)
+              ? (tableContext.subThemeSlots?.value.filterDropdownItemSelected ??
+                'bg-[color:var(--color-control-item-active-bg)] hover:bg-[color:var(--color-control-item-active-hover-bg)]')
+              : (tableContext.subThemeSlots?.value.filterDropdownItemHover ??
+                'hover:bg-[color:var(--color-control-item-hover-bg)]'),
+          ]}
+          style={indentStyle}
+          onClick={() => toggleItem(item.value)}
+        >
+          <Checkbox checked={isSelected(item.value)} />
+          <span class="text-[color:var(--color-on-surface)]">{item.text}</span>
+        </li>
+      )
+    }
+
+    function renderFilterItems(items: ColumnFilterItem[], level: number = 0) {
+      const result: VNode[] = []
+      for (const item of items) {
+        result.push(renderFilterItem(item, level))
+        if (props.filterMode === 'tree' && item.children?.length) {
+          result.push(...renderFilterItems(item.children, level + 1))
+        }
+      }
+      return result
+    }
+
     return () => {
       const { anchorRect } = props
       const viewportWidth = window.innerWidth
@@ -119,6 +209,21 @@ export default defineComponent({
             }
             style={style}
           >
+            {/* Search input */}
+            {props.filterSearch && (
+              <div
+                class={tableContext.subThemeSlots?.value.filterDropdownSearch ?? 'px-2 pt-2 pb-1'}
+              >
+                <Input
+                  value={searchText.value}
+                  placeholder="Search filters"
+                  onUpdate:value={(val: string) => {
+                    searchText.value = val
+                  }}
+                />
+              </div>
+            )}
+
             {/* Filter items list */}
             <ul
               class={
@@ -126,24 +231,7 @@ export default defineComponent({
                 'max-h-64 overflow-auto p-1 m-0 list-none min-w-[120px]'
               }
             >
-              {props.filters.map((item) => (
-                <li
-                  key={String(item.value)}
-                  class={[
-                    tableContext.subThemeSlots?.value.filterDropdownItem ??
-                      'flex items-center gap-2 px-3 py-1.5 cursor-pointer rounded-sm',
-                    isSelected(item.value)
-                      ? (tableContext.subThemeSlots?.value.filterDropdownItemSelected ??
-                        'bg-[color:var(--color-control-item-active-bg)] hover:bg-[color:var(--color-control-item-active-hover-bg)]')
-                      : (tableContext.subThemeSlots?.value.filterDropdownItemHover ??
-                        'hover:bg-[color:var(--color-control-item-hover-bg)]'),
-                  ]}
-                  onClick={() => toggleItem(item.value)}
-                >
-                  <Checkbox checked={isSelected(item.value)} />
-                  <span class="text-[color:var(--color-on-surface)]">{item.text}</span>
-                </li>
-              ))}
+              {renderFilterItems(filteredFilters.value)}
             </ul>
 
             {/* Action buttons */}
