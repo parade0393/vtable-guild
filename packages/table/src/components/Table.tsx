@@ -39,7 +39,7 @@ export default defineComponent({
     },
     class: { type: String, default: undefined },
     themePreset: { type: String as PropType<ThemePresetName>, default: undefined },
-    showSorterTooltip: { type: Boolean, default: true },
+    showSorterTooltip: { type: Boolean, default: undefined },
   },
   emits: {
     change: (
@@ -135,6 +135,7 @@ export default defineComponent({
       thSortable: themeSlots.thSortable(),
       sortButton: themeSlots.sortButton(),
       sortIconDown: themeSlots.sortIconDown(),
+      sortAreaOuter: themeSlots.sortAreaOuter(),
       sortAreaWrapper: themeSlots.sortAreaWrapper(),
       sortAreaTitle: themeSlots.sortAreaTitle(),
       filterIconWrapper: themeSlots.filterIconWrapper(),
@@ -157,8 +158,9 @@ export default defineComponent({
       confirmFilter,
       resetFilter,
       customFilterDropdown: slots.customFilterDropdown,
-      showSorterTooltip: props.showSorterTooltip,
+      showSorterTooltip: props.showSorterTooltip ?? effectiveThemePreset.value !== 'element-plus',
       subThemeSlots,
+      themePreset: effectiveThemePreset.value,
     })
 
     return () => (

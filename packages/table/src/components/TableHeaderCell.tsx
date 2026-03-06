@@ -134,10 +134,12 @@ export default defineComponent({
         </span>
       )
 
-      // 排序区域容器（带 hover 事件用于 tooltip）
+      const sortAreaOuterClass =
+        tableContext.subThemeSlots?.value.sortAreaOuter ?? 'flex flex-auto min-w-0'
+
       const sortArea = showTooltip.value ? (
         <span
-          class="flex flex-auto min-w-0"
+          class={sortAreaOuterClass}
           onMouseenter={() => {
             sortAreaHovered.value = true
           }}
@@ -150,7 +152,7 @@ export default defineComponent({
           </Tooltip>
         </span>
       ) : (
-        <span class="flex flex-auto min-w-0">{sorterContent}</span>
+        <span class={sortAreaOuterClass}>{sorterContent}</span>
       )
 
       // customFilterDropdown slot

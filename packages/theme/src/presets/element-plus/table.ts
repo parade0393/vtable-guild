@@ -61,14 +61,15 @@ export const elementPlusTableTheme = {
     bodyCellEllipsis: 'overflow-hidden text-ellipsis whitespace-nowrap',
 
     // ---- 排序相关 ----
-    thSortable: 'cursor-pointer select-none hover:bg-[var(--vtg-table-header-sort-hover-bg)]',
+    thSortable: 'cursor-pointer select-none',
     sortButton: 'inline-flex flex-col items-center justify-center text-xs leading-none ml-1',
-    sortIconDown: '-mt-px',
-    sortAreaWrapper: 'flex flex-auto items-center min-w-0',
+    sortIconDown: '-mt-[6px]',
+    sortAreaOuter: 'flex min-w-0',
+    sortAreaWrapper: 'flex items-center min-w-0',
     sortAreaTitle: 'min-w-0',
 
     // ---- 筛选图标相关 ----
-    filterIconWrapper: 'shrink-0 ml-1 self-stretch -my-1 -me-2 flex items-center',
+    filterIconWrapper: 'shrink-0 flex items-center',
     filterIcon:
       'inline-flex items-center justify-center cursor-pointer transition-colors text-xs px-1 self-stretch',
 

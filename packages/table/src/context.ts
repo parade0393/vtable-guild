@@ -1,4 +1,5 @@
 import type { ComputedRef, InjectionKey, Slots } from 'vue'
+import type { ThemePresetName } from '@vtable-guild/core'
 import type { ColumnType, SortOrder } from './types'
 
 /** 子组件主题 slot class 映射 */
@@ -6,6 +7,7 @@ export interface SubThemeSlots {
   thSortable: string
   sortButton: string
   sortIconDown: string
+  sortAreaOuter: string
   sortAreaWrapper: string
   sortAreaTitle: string
   filterIconWrapper: string
@@ -63,6 +65,9 @@ export interface TableContext {
 
   /** 子组件主题 slot class 映射 */
   subThemeSlots?: ComputedRef<SubThemeSlots>
+
+  /** 当前主题预设名称 */
+  themePreset?: ThemePresetName
 }
 
 /**

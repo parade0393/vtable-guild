@@ -65,6 +65,7 @@ export const antdvTableTheme = {
     thSortable: 'cursor-pointer select-none hover:bg-[var(--vtg-table-header-sort-hover-bg)]',
     sortButton: 'inline-flex flex-col items-center justify-center text-xs leading-none ml-1',
     sortIconDown: '-mt-[0.225em]',
+    sortAreaOuter: 'flex flex-auto min-w-0',
     sortAreaWrapper: 'flex flex-auto items-center justify-between min-w-0',
     sortAreaTitle: 'flex-1 min-w-0',
 

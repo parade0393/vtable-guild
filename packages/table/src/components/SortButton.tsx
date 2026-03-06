@@ -1,5 +1,5 @@
 import { defineComponent, inject, type PropType } from 'vue'
-import { CaretUpIcon, CaretDownIcon } from '@vtable-guild/icons'
+import { CaretUpIcon, CaretDownIcon, ElCaretTopIcon, ElCaretBottomIcon } from '@vtable-guild/icons'
 import type { SortOrder } from '../types'
 import { TABLE_CONTEXT_KEY } from '../context'
 
@@ -22,6 +22,9 @@ export default defineComponent({
   },
   setup(props) {
     const tableContext = inject(TABLE_CONTEXT_KEY, {})
+    const isElementPlus = tableContext.themePreset === 'element-plus'
+    const UpIcon = isElementPlus ? ElCaretTopIcon : CaretUpIcon
+    const DownIcon = isElementPlus ? ElCaretBottomIcon : CaretDownIcon
 
     return () => (
       <span
@@ -32,14 +35,14 @@ export default defineComponent({
         ]}
         aria-hidden="true"
       >
-        <CaretUpIcon
+        <UpIcon
           class={
             props.sortOrder === 'ascend'
               ? 'text-[color:var(--color-primary)]'
               : 'text-[color:var(--color-sorter-icon)]'
           }
         />
-        <CaretDownIcon
+        <DownIcon
           class={[
             tableContext.subThemeSlots?.value.sortIconDown ?? '-mt-[0.225em]',
             props.sortOrder === 'descend'

@@ -1,5 +1,5 @@
 import { defineComponent, inject } from 'vue'
-import { FilterFilledIcon } from '@vtable-guild/icons'
+import { FilterFilledIcon, ElArrowDownIcon } from '@vtable-guild/icons'
 import { TABLE_CONTEXT_KEY } from '../context'
 
 /**
@@ -16,6 +16,8 @@ export default defineComponent({
   emits: ['click'],
   setup(props, { emit }) {
     const tableContext = inject(TABLE_CONTEXT_KEY, {})
+    const IconComponent =
+      tableContext.themePreset === 'element-plus' ? ElArrowDownIcon : FilterFilledIcon
 
     function handleClick(e: MouseEvent) {
       e.stopPropagation()
@@ -35,7 +37,7 @@ export default defineComponent({
         role="button"
         aria-label="Filter"
       >
-        <FilterFilledIcon />
+        <IconComponent />
       </span>
     )
   },
