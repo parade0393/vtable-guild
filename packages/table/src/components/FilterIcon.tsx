@@ -31,7 +31,7 @@ export default defineComponent({
             'inline-flex items-center justify-center cursor-pointer transition-colors text-xs px-1 self-stretch rounded-md hover:bg-black/6',
           props.active
             ? 'text-[color:var(--color-primary)]'
-            : 'text-[color:var(--color-sorter-icon)]',
+            : 'text-[color:var(--color-filter-icon)]',
         ]}
         onClick={handleClick}
         role="button"

@@ -63,7 +63,7 @@ export const elementPlusTableTheme = {
     // ---- 排序相关 ----
     thSortable: 'cursor-pointer select-none',
     sortButton: 'inline-flex flex-col items-center justify-center text-xs leading-none ml-1',
-    sortIconDown: '-mt-[6px]',
+    sortIconDown: '-mt-[5px]',
     sortAreaOuter: 'flex min-w-0',
     sortAreaWrapper: 'flex items-center min-w-0',
     sortAreaTitle: 'min-w-0',
@@ -71,7 +71,7 @@ export const elementPlusTableTheme = {
     // ---- 筛选图标相关 ----
     filterIconWrapper: 'shrink-0 flex items-center',
     filterIcon:
-      'inline-flex items-center justify-center cursor-pointer transition-colors text-xs px-1 self-stretch',
+      'inline-flex items-center justify-center cursor-pointer transition-colors text-sm px-1 self-stretch',
 
     // ---- 筛选下拉相关 ----
     filterDropdown:

@@ -59,6 +59,9 @@
   /* 排序图标不活跃色 */
   --color-sorter-icon: rgb(0 0 0 / 29%);
 
+  /* 筛选图标不活跃色（antdv 中与排序同色） */
+  --color-filter-icon: var(--color-sorter-icon);
+
   /* 表头 cell 间分割线 */
   --vtg-table-header-split-color: rgb(0 0 0 / 6%);
 
@@ -102,6 +105,9 @@
 
   /* 排序图标不活跃色 */
   --color-sorter-icon: rgb(255 255 255 / 29%);
+
+  /* 筛选图标不活跃色 */
+  --color-filter-icon: var(--color-sorter-icon);
 
   /* 表头 cell 间分割线 */
   --vtg-table-header-split-color: rgb(255 255 255 / 6%);
