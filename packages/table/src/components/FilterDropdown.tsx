@@ -241,6 +241,7 @@ export default defineComponent({
                     <SearchIcon />
                   </span>
                   <Input
+                    bare
                     value={searchText.value}
                     placeholder="Search in filters"
                     inputClass={

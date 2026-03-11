@@ -6,6 +6,7 @@ export default defineComponent({
     value: { type: String, default: '' },
     placeholder: { type: String, default: '' },
     disabled: { type: Boolean, default: false },
+    bare: { type: Boolean, default: false },
     inputClass: { type: [String, Array, Object], default: undefined },
   },
   emits: ['update:value', 'change', 'pressEnter'],
@@ -25,12 +26,17 @@ export default defineComponent({
     return () => (
       <input
         class={[
-          'w-full box-border rounded-[var(--vtg-input-border-radius)] h-[var(--vtg-input-height)]',
-          'px-[var(--vtg-input-padding-inline)] text-[length:var(--vtg-input-font-size)]',
-          'font-[family-name:var(--vtg-table-font-family)] leading-[var(--vtg-table-line-height)]',
-          'bg-[color:var(--color-surface)] text-[color:var(--color-on-surface)]',
-          'border border-[color:var(--color-default)] outline-none transition-colors',
-          'focus:border-[color:var(--color-primary)]',
+          !props.bare &&
+            'w-full box-border rounded-[var(--vtg-input-border-radius)] h-[var(--vtg-input-height)]',
+          !props.bare &&
+            'px-[var(--vtg-input-padding-inline)] text-[length:var(--vtg-input-font-size)]',
+          !props.bare &&
+            'font-[family-name:var(--vtg-table-font-family)] leading-[var(--vtg-table-line-height)]',
+          !props.bare && 'bg-[color:var(--color-surface)] text-[color:var(--color-on-surface)]',
+          !props.bare &&
+            'border border-[color:var(--color-default)] outline-none transition-colors',
+          !props.bare && 'focus:border-[color:var(--color-primary)]',
+          props.bare && 'min-w-0 bg-transparent outline-none',
           props.disabled && 'opacity-50 cursor-not-allowed',
           props.inputClass,
         ]}

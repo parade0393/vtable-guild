@@ -91,7 +91,7 @@ export const antdvTableTheme = {
       'flex items-center justify-between gap-2 px-2 py-2 border-t border-[color:var(--color-default)]',
     filterDropdownSearch: 'p-2 border-b border-[color:var(--color-default)]',
     filterDropdownSearchField: [
-      'flex items-center gap-2 px-[11px] h-[32px] min-w-[140px]',
+      'flex items-center gap-1 px-[11px] h-[32px] min-w-[140px]',
       'rounded-[6px] border border-[color:var(--color-default)] bg-[color:var(--color-surface)]',
       'transition-[border-color,box-shadow] hover:border-[#4096ff]',
       'focus-within:border-[#4096ff] focus-within:shadow-[0_0_0_2px_rgba(5,145,255,0.1)]',
@@ -99,7 +99,7 @@ export const antdvTableTheme = {
     filterDropdownSearchIcon:
       'inline-flex shrink-0 items-center justify-center text-[14px] text-black/25',
     filterDropdownSearchInput: [
-      'min-w-0 flex-1 h-[22px] px-0 border-0 bg-transparent rounded-none',
+      'w-auto min-w-[140px] shrink grow-0 basis-auto h-[22px] px-0 border-0 bg-transparent rounded-none',
       'text-[length:14px] leading-[22px] shadow-none',
       'focus:border-transparent',
       'placeholder:text-black/25',
