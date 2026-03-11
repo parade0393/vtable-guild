@@ -78,7 +78,8 @@ export const elementPlusTableTheme = {
       'rounded bg-[color:var(--color-surface)] shadow-lg text-sm border border-[color:var(--color-default)]',
     filterDropdownList: 'max-h-64 overflow-auto p-1.5 m-0 list-none min-w-[120px]',
     filterDropdownItem: 'flex items-center gap-2 px-3 py-1.5 cursor-pointer rounded-sm',
-    filterDropdownItemSelected: 'text-[color:var(--color-primary)] font-medium',
+    filterDropdownItemSelected:
+      'bg-[color:var(--color-control-item-active-bg)] hover:bg-[color:var(--color-control-item-active-hover-bg)] text-[color:var(--color-primary)] font-medium',
     filterDropdownItemHover: 'hover:bg-[color:var(--color-control-item-hover-bg)]',
     filterDropdownActions:
       'flex items-center justify-between gap-2 px-2 py-2 border-t border-[color:var(--color-default)]',

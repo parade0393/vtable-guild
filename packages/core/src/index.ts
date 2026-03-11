@@ -19,6 +19,7 @@ export { useTheme } from './composables/useTheme'
 // ---------- Components ----------
 export { default as Tooltip } from './components/Tooltip'
 export { default as Checkbox } from './components/Checkbox'
+export { default as Radio } from './components/Radio'
 export { default as Button } from './components/Button'
 export { default as Input } from './components/Input'
 

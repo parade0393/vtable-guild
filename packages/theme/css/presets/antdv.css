@@ -83,6 +83,9 @@
   --vtg-btn-padding-md: 15px;
   --vtg-checkbox-size: 16px;
   --vtg-checkbox-border-radius: 4px;
+  --vtg-radio-size: 16px;
+  --vtg-radio-dot-size: 8px;
+  --vtg-radio-border-width: 1px;
   --vtg-tooltip-bg: rgb(0 0 0 / 85%);
   --vtg-tooltip-border-radius: 6px;
   --vtg-tooltip-padding: 6px 8px;

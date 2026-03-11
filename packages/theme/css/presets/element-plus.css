@@ -72,7 +72,7 @@
   --color-control-item-hover-bg: #f5f7fa;
 
   /* 筛选下拉选项选中态背景 — element-plus 用文字高亮而非背景 */
-  --color-control-item-active-bg: transparent;
+  --color-control-item-active-bg: #ecf5ff;
   --color-control-item-active-hover-bg: #f5f7fa;
 
   /* ===== 基础组件 token — Button / Checkbox / Tooltip ===== */
@@ -83,6 +83,9 @@
   --vtg-btn-padding-md: 15px;
   --vtg-checkbox-size: 14px;
   --vtg-checkbox-border-radius: 2px;
+  --vtg-radio-size: 14px;
+  --vtg-radio-dot-size: 6px;
+  --vtg-radio-border-width: 1px;
   --vtg-tooltip-bg: #303133;
   --vtg-tooltip-border-radius: 4px;
   --vtg-tooltip-padding: 8px 12px;
@@ -124,7 +127,7 @@
   --color-control-item-hover-bg: rgb(255 255 255 / 6%);
 
   /* 筛选下拉选项选中态 */
-  --color-control-item-active-bg: transparent;
+  --color-control-item-active-bg: rgb(64 158 255 / 14%);
   --color-control-item-active-hover-bg: rgb(255 255 255 / 6%);
 
   /* tooltip */

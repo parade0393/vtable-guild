@@ -11,22 +11,10 @@ import {
   type PropType,
   type VNode,
 } from 'vue'
-import { Checkbox, Button, Input } from '@vtable-guild/core'
+import { Checkbox, Radio, Button, Input } from '@vtable-guild/core'
 import type { ColumnFilterItem } from '../types'
-import { TABLE_CONTEXT_KEY } from '../context'
+import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 
-/**
- * 筛选下拉菜单。
- *
- * - Teleport to body 避免 overflow 裁切
- * - 通过 anchorRect 定位（由 TableHeaderCell 传入）
- * - 多选使用 Checkbox，单选使用 radio 逻辑
- * - OK 确认，Reset 重置
- * - 点击外部关闭
- * - 右侧溢出时改用 right 定位
- * - filterSearch: 搜索框过滤筛选项
- * - filterMode: 'tree' 支持树形嵌套渲染
- */
 export default defineComponent({
   name: 'FilterDropdown',
   props: {
@@ -50,12 +38,11 @@ export default defineComponent({
   },
   emits: ['confirm', 'reset', 'close'],
   setup(props, { emit }) {
-    const tableContext = inject(TABLE_CONTEXT_KEY, {})
+    const tableContext = inject(TABLE_CONTEXT_KEY, {} as TableContext)
     const localSelectedKeys = ref<(string | number | boolean)[]>([...props.selectedKeys])
     const dropdownRef = ref<HTMLElement | null>(null)
     const searchText = ref('')
 
-    // 同步外部 selectedKeys 到本地
     watch(
       () => props.selectedKeys,
       (keys) => {
@@ -63,7 +50,6 @@ export default defineComponent({
       },
     )
 
-    // ---- 搜索过滤 ----
     function matchesSearch(filter: ColumnFilterItem, input: string): boolean {
       if (typeof props.filterSearch === 'function') {
         return props.filterSearch(input, filter)
@@ -101,7 +87,8 @@ export default defineComponent({
       return filterItemsFlat(props.filters, searchText.value)
     })
 
-    // ---- 选中逻辑 ----
+    const isElementPlusPreset = computed(() => tableContext.themePreset === 'element-plus')
+
     function isSelected(value: string | number | boolean): boolean {
       return localSelectedKeys.value.includes(value)
     }
@@ -114,9 +101,11 @@ export default defineComponent({
         } else {
           localSelectedKeys.value.push(value)
         }
-      } else {
-        // 单选模式
-        localSelectedKeys.value = isSelected(value) ? [] : [value]
+        return
+      }
+
+      if (!isSelected(value)) {
+        localSelectedKeys.value = [value]
       }
     }
 
@@ -129,7 +118,6 @@ export default defineComponent({
       emit('reset')
     }
 
-    // 点击外部关闭
     function handleMouseDown(e: MouseEvent) {
       if (dropdownRef.value && !dropdownRef.value.contains(e.target as Node)) {
         emit('close')
@@ -146,17 +134,33 @@ export default defineComponent({
       document.removeEventListener('mousedown', handleMouseDown)
     })
 
-    // ---- 渲染筛选项（支持树形递归） ----
+    function renderFilterIndicator(selected: boolean) {
+      if (props.multiple) {
+        return <Checkbox checked={selected} />
+      }
+
+      if (!isElementPlusPreset.value) {
+        return <Radio checked={selected} />
+      }
+
+      return null
+    }
+
     function renderFilterItem(item: ColumnFilterItem, level: number = 0) {
+      const selected = isSelected(item.value)
       const indentStyle = level > 0 ? { paddingLeft: `${level * 20 + 12}px` } : undefined
+      const useListRadioSemantics = !props.multiple && isElementPlusPreset.value
 
       return (
         <li
           key={String(item.value)}
+          role={useListRadioSemantics ? 'radio' : undefined}
+          aria-checked={useListRadioSemantics ? selected : undefined}
           class={[
             tableContext.subThemeSlots?.value.filterDropdownItem ??
               'flex items-center gap-2 px-3 py-1.5 cursor-pointer rounded-sm',
-            isSelected(item.value)
+            !props.multiple && isElementPlusPreset.value && 'gap-0',
+            selected
               ? (tableContext.subThemeSlots?.value.filterDropdownItemSelected ??
                 'bg-[color:var(--color-control-item-active-bg)] hover:bg-[color:var(--color-control-item-active-hover-bg)]')
               : (tableContext.subThemeSlots?.value.filterDropdownItemHover ??
@@ -165,7 +169,7 @@ export default defineComponent({
           style={indentStyle}
           onClick={() => toggleItem(item.value)}
         >
-          <Checkbox checked={isSelected(item.value)} />
+          {renderFilterIndicator(selected)}
           <span class="text-[color:var(--color-on-surface)]">{item.text}</span>
         </li>
       )
@@ -209,7 +213,6 @@ export default defineComponent({
             }
             style={style}
           >
-            {/* Search input */}
             {props.filterSearch && (
               <div
                 class={tableContext.subThemeSlots?.value.filterDropdownSearch ?? 'px-2 pt-2 pb-1'}
@@ -224,8 +227,8 @@ export default defineComponent({
               </div>
             )}
 
-            {/* Filter items list */}
             <ul
+              role={!props.multiple && isElementPlusPreset.value ? 'radiogroup' : undefined}
               class={
                 tableContext.subThemeSlots?.value.filterDropdownList ??
                 'max-h-64 overflow-auto p-1 m-0 list-none min-w-[120px]'
@@ -234,7 +237,6 @@ export default defineComponent({
               {renderFilterItems(filteredFilters.value)}
             </ul>
 
-            {/* Action buttons */}
             <div
               class={
                 tableContext.subThemeSlots?.value.filterDropdownActions ??
