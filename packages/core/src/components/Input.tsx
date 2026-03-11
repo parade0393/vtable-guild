@@ -6,6 +6,7 @@ export default defineComponent({
     value: { type: String, default: '' },
     placeholder: { type: String, default: '' },
     disabled: { type: Boolean, default: false },
+    inputClass: { type: [String, Array, Object], default: undefined },
   },
   emits: ['update:value', 'change', 'pressEnter'],
   setup(props, { emit }) {
@@ -26,10 +27,12 @@ export default defineComponent({
         class={[
           'w-full box-border rounded-[var(--vtg-input-border-radius)] h-[var(--vtg-input-height)]',
           'px-[var(--vtg-input-padding-inline)] text-[length:var(--vtg-input-font-size)]',
+          'font-[family-name:var(--vtg-table-font-family)] leading-[var(--vtg-table-line-height)]',
           'bg-[color:var(--color-surface)] text-[color:var(--color-on-surface)]',
           'border border-[color:var(--color-default)] outline-none transition-colors',
           'focus:border-[color:var(--color-primary)]',
           props.disabled && 'opacity-50 cursor-not-allowed',
+          props.inputClass,
         ]}
         type="text"
         value={props.value}

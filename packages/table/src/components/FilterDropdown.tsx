@@ -12,6 +12,7 @@ import {
   type VNode,
 } from 'vue'
 import { Checkbox, Radio, Button, Input } from '@vtable-guild/core'
+import { SearchIcon } from '@vtable-guild/icons'
 import type { ColumnFilterItem } from '../types'
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 
@@ -88,6 +89,13 @@ export default defineComponent({
     })
 
     const isElementPlusPreset = computed(() => tableContext.themePreset === 'element-plus')
+    const hasFilteredResults = computed(() => filteredFilters.value.length > 0)
+    const showSearchEmptyState = computed(
+      () =>
+        Boolean(props.filterSearch) &&
+        searchText.value.trim().length > 0 &&
+        !hasFilteredResults.value,
+    )
 
     function isSelected(value: string | number | boolean): boolean {
       return localSelectedKeys.value.includes(value)
@@ -217,22 +225,45 @@ export default defineComponent({
               <div
                 class={tableContext.subThemeSlots?.value.filterDropdownSearch ?? 'px-2 pt-2 pb-1'}
               >
-                <Input
-                  value={searchText.value}
-                  placeholder="Search filters"
-                  onUpdate:value={(val: string) => {
-                    searchText.value = val
-                  }}
-                />
+                <div
+                  class={
+                    tableContext.subThemeSlots?.value.filterDropdownSearchField ??
+                    'flex items-center gap-2'
+                  }
+                >
+                  <span
+                    class={
+                      tableContext.subThemeSlots?.value.filterDropdownSearchIcon ??
+                      'inline-flex shrink-0 items-center justify-center text-[color:var(--color-muted)]'
+                    }
+                    aria-hidden="true"
+                  >
+                    <SearchIcon />
+                  </span>
+                  <Input
+                    value={searchText.value}
+                    placeholder="Search in filters"
+                    inputClass={
+                      tableContext.subThemeSlots?.value.filterDropdownSearchInput ??
+                      'min-w-0 flex-1'
+                    }
+                    onUpdate:value={(val: string) => {
+                      searchText.value = val
+                    }}
+                  />
+                </div>
               </div>
             )}
 
             <ul
               role={!props.multiple && isElementPlusPreset.value ? 'radiogroup' : undefined}
-              class={
+              class={[
                 tableContext.subThemeSlots?.value.filterDropdownList ??
-                'max-h-64 overflow-auto p-1 m-0 list-none min-w-[120px]'
-              }
+                  'max-h-64 overflow-auto p-1 m-0 list-none min-w-[120px]',
+                showSearchEmptyState.value &&
+                  (tableContext.subThemeSlots?.value.filterDropdownListEmpty ??
+                    'empty:after:block empty:after:py-2 empty:after:text-center empty:after:text-xs empty:after:text-[color:var(--color-muted)] empty:after:content-["Not_Found"]'),
+              ]}
             >
               {renderFilterItems(filteredFilters.value)}
             </ul>

@@ -74,8 +74,12 @@ export const elementPlusTableTheme = {
       'inline-flex items-center justify-center cursor-pointer transition-colors text-sm px-1 self-stretch',
 
     // ---- 筛选下拉相关 ----
-    filterDropdown:
-      'rounded bg-[color:var(--color-surface)] shadow-lg text-sm border border-[color:var(--color-default)]',
+    filterDropdown: [
+      'rounded bg-[color:var(--color-surface)] shadow-lg border border-[color:var(--color-default)]',
+      'font-[family-name:var(--vtg-table-font-family)]',
+      'text-[length:var(--vtg-table-font-size)] leading-[var(--vtg-table-line-height)]',
+      'text-[color:var(--vtg-table-text-color)]',
+    ].join(' '),
     filterDropdownList: 'max-h-64 overflow-auto p-1.5 m-0 list-none min-w-[120px]',
     filterDropdownItem: 'flex items-center gap-2 px-3 py-1.5 cursor-pointer rounded-sm',
     filterDropdownItemSelected:
@@ -84,6 +88,14 @@ export const elementPlusTableTheme = {
     filterDropdownActions:
       'flex items-center justify-between gap-2 px-2 py-2 border-t border-[color:var(--color-default)]',
     filterDropdownSearch: 'px-2 pt-2 pb-1',
+    filterDropdownSearchField:
+      'flex items-center gap-2 rounded-[var(--vtg-input-border-radius)] border border-[color:var(--color-default)] bg-[color:var(--color-surface)] px-2',
+    filterDropdownSearchIcon:
+      'inline-flex shrink-0 items-center justify-center text-[12px] text-[color:var(--color-muted)]',
+    filterDropdownSearchInput:
+      'min-w-0 flex-1 border-0 bg-transparent px-0 shadow-none focus:border-transparent placeholder:text-[color:var(--color-muted)]',
+    filterDropdownListEmpty:
+      'empty:after:block empty:after:py-3 empty:after:text-center empty:after:text-[length:12px] empty:after:text-[color:var(--color-muted)] empty:after:content-["Not_Found"]',
   },
   variants: {
     size: {

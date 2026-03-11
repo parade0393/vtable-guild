@@ -75,15 +75,37 @@ export const antdvTableTheme = {
       'inline-flex items-center justify-center cursor-pointer transition-colors text-xs px-1 self-stretch rounded-md hover:bg-black/6',
 
     // ---- 筛选下拉相关 ----
-    filterDropdown: 'rounded-lg bg-[color:var(--color-surface)] shadow-lg text-sm',
-    filterDropdownList: 'max-h-64 overflow-auto p-1 m-0 list-none min-w-[120px]',
-    filterDropdownItem: 'flex items-center gap-2 px-3 py-1.5 cursor-pointer rounded-sm',
+    filterDropdown: [
+      'rounded-[6px] bg-[color:var(--color-surface)]',
+      'font-[family-name:var(--vtg-table-font-family)]',
+      'text-[length:var(--vtg-table-font-size)] leading-[var(--vtg-table-line-height)]',
+      'text-[color:var(--vtg-table-text-color)]',
+      'shadow-[0_6px_16px_0_rgba(0,0,0,0.08),0_3px_6px_-4px_rgba(0,0,0,0.12),0_9px_28px_8px_rgba(0,0,0,0.05)]',
+    ].join(' '),
+    filterDropdownList: 'max-h-[264px] overflow-auto p-1 m-0 list-none min-w-[120px]',
+    filterDropdownItem: 'flex items-center gap-2 px-3 py-[5px] cursor-pointer rounded-sm',
     filterDropdownItemSelected:
       'bg-[color:var(--color-control-item-active-bg)] hover:bg-[color:var(--color-control-item-active-hover-bg)]',
     filterDropdownItemHover: 'hover:bg-[color:var(--color-control-item-hover-bg)]',
     filterDropdownActions:
       'flex items-center justify-between gap-2 px-2 py-2 border-t border-[color:var(--color-default)]',
-    filterDropdownSearch: 'px-2 pt-2 pb-1',
+    filterDropdownSearch: 'p-2 border-b border-[color:var(--color-default)]',
+    filterDropdownSearchField: [
+      'flex items-center gap-2 px-[11px] h-[32px] min-w-[140px]',
+      'rounded-[6px] border border-[color:var(--color-default)] bg-[color:var(--color-surface)]',
+      'transition-[border-color,box-shadow] hover:border-[#4096ff]',
+      'focus-within:border-[#4096ff] focus-within:shadow-[0_0_0_2px_rgba(5,145,255,0.1)]',
+    ].join(' '),
+    filterDropdownSearchIcon:
+      'inline-flex shrink-0 items-center justify-center text-[14px] text-black/25',
+    filterDropdownSearchInput: [
+      'min-w-0 flex-1 h-[22px] px-0 border-0 bg-transparent rounded-none',
+      'text-[length:14px] leading-[22px] shadow-none',
+      'focus:border-transparent',
+      'placeholder:text-black/25',
+    ].join(' '),
+    filterDropdownListEmpty:
+      'empty:after:block empty:after:py-2 empty:after:text-center empty:after:text-[length:12px] empty:after:text-black/25 empty:after:content-["Not_Found"]',
   },
   variants: {
     size: {

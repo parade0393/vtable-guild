@@ -154,6 +154,10 @@ export default defineComponent({
       filterDropdownItemHover: themeSlots.filterDropdownItemHover(),
       filterDropdownActions: themeSlots.filterDropdownActions(),
       filterDropdownSearch: themeSlots.filterDropdownSearch(),
+      filterDropdownSearchField: themeSlots.filterDropdownSearchField(),
+      filterDropdownSearchIcon: themeSlots.filterDropdownSearchIcon(),
+      filterDropdownSearchInput: themeSlots.filterDropdownSearchInput(),
+      filterDropdownListEmpty: themeSlots.filterDropdownListEmpty(),
     }))
 
     provide<TableContext>(TABLE_CONTEXT_KEY, {

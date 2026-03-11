@@ -19,6 +19,10 @@ export interface SubThemeSlots {
   filterDropdownItemHover: string
   filterDropdownActions: string
   filterDropdownSearch: string
+  filterDropdownSearchField: string
+  filterDropdownSearchIcon: string
+  filterDropdownSearchInput: string
+  filterDropdownListEmpty: string
 }
 
 /**
