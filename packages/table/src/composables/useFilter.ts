@@ -56,6 +56,40 @@ export function useFilter(options: UseFilterOptions) {
     return innerFilterState[String(key)] ?? []
   }
 
+  function normalizeFilterValues(
+    values: (string | number | boolean)[],
+  ): (string | number | boolean)[] {
+    return [...values]
+  }
+
+  /**
+   * 获取所有列的筛选状态（用于 change 事件参数）。
+   * 可选地用最新交互值覆盖某一列，避免受控模式下回调读取到旧的 filteredValue。
+   */
+  function buildFiltersSnapshot(
+    overrideColumn?: ColumnType<Record<string, unknown>>,
+    overrideValues?: (string | number | boolean)[],
+  ): FiltersRecord {
+    const filters: FiltersRecord = {}
+    const overrideKey = overrideColumn ? getColumnKey(overrideColumn) : undefined
+
+    for (const col of columns()) {
+      const key = getColumnKey(col)
+      if (key === undefined) continue
+
+      const values =
+        overrideKey !== undefined &&
+        String(key) === String(overrideKey) &&
+        overrideValues !== undefined
+          ? normalizeFilterValues(overrideValues)
+          : getFilteredValue(col)
+
+      filters[String(key)] = values.length > 0 ? values : null
+    }
+
+    return filters
+  }
+
   /**
    * 确认筛选。
    */
@@ -76,7 +110,7 @@ export function useFilter(options: UseFilterOptions) {
     }
 
     // 触发回调
-    onFilterChange?.(getAllFilters())
+    onFilterChange?.(buildFiltersSnapshot(column, values))
   }
 
   /**
@@ -94,14 +128,7 @@ export function useFilter(options: UseFilterOptions) {
    * 获取所有列的筛选状态（用于 change 事件参数）。
    */
   function getAllFilters(): FiltersRecord {
-    const filters: FiltersRecord = {}
-    for (const col of columns()) {
-      const key = getColumnKey(col)
-      if (key === undefined) continue
-      const values = getFilteredValue(col)
-      filters[String(key)] = values.length > 0 ? values : null
-    }
-    return filters
+    return buildFiltersSnapshot()
   }
 
   /**
