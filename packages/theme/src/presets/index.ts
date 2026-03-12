@@ -1,10 +1,17 @@
 // packages/theme/src/presets/index.ts
 
-import type { ThemePreset } from './types'
-import type { ThemePresetName } from '@vtable-guild/core'
+import type { BuiltInLocaleName, ThemePreset } from './types'
+import type {
+  LocaleName,
+  ThemePresetName,
+  VTableGuildLocale,
+  VTableGuildTableLocale,
+} from '@vtable-guild/core'
 import type { AntdvTableThemeConfig } from './antdv/table'
 import { antdvTableTheme } from './antdv/table'
+import { antdvTableEnUSLocale, antdvTableLocale } from './antdv/table-locale'
 import { elementPlusTableTheme } from './element-plus/table'
+import { elementPlusTableEnUSLocale, elementPlusTableLocale } from './element-plus/table-locale'
 
 /**
  * 预设注册表。
@@ -12,9 +19,19 @@ import { elementPlusTableTheme } from './element-plus/table'
 const presetMap: Record<ThemePresetName, ThemePreset> = {
   antdv: {
     table: antdvTableTheme,
+    tableLocale: antdvTableLocale,
+    locales: {
+      'zh-CN': { table: antdvTableLocale },
+      'en-US': { table: antdvTableEnUSLocale },
+    },
   },
   'element-plus': {
     table: elementPlusTableTheme,
+    tableLocale: elementPlusTableLocale,
+    locales: {
+      'zh-CN': { table: elementPlusTableLocale },
+      'en-US': { table: elementPlusTableEnUSLocale },
+    },
   },
 }
 
@@ -41,4 +58,22 @@ export function resolveTableThemePreset(name: ThemePresetName = 'antdv'): AntdvT
   return resolveThemePreset(name).table as AntdvTableThemeConfig
 }
 
-export type { ThemePresetName } from './types'
+export function resolveTableLocalePreset(name: ThemePresetName = 'antdv'): VTableGuildTableLocale {
+  return resolveThemePreset(name).tableLocale
+}
+
+export function resolveBuiltInTableLocale(
+  name: ThemePresetName = 'antdv',
+  localeName: LocaleName = 'zh-CN',
+): VTableGuildTableLocale | undefined {
+  return resolveThemePreset(name).locales[localeName as BuiltInLocaleName]?.table
+}
+
+export function resolveBuiltInLocale(
+  name: ThemePresetName = 'antdv',
+  localeName: LocaleName = 'zh-CN',
+): VTableGuildLocale | undefined {
+  return resolveThemePreset(name).locales[localeName as BuiltInLocaleName]
+}
+
+export type { BuiltInLocaleName, ThemePresetName } from './types'

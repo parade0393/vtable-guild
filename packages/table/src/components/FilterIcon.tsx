@@ -1,6 +1,6 @@
 import { defineComponent, inject } from 'vue'
 import { FilterFilledIcon, ElArrowDownIcon } from '@vtable-guild/icons'
-import { TABLE_CONTEXT_KEY } from '../context'
+import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 
 /**
  * 筛选漏斗图标。
@@ -15,9 +15,7 @@ export default defineComponent({
   },
   emits: ['click'],
   setup(props, { emit }) {
-    const tableContext = inject(TABLE_CONTEXT_KEY, {})
-    const IconComponent =
-      tableContext.themePreset === 'element-plus' ? ElArrowDownIcon : FilterFilledIcon
+    const tableContext = inject(TABLE_CONTEXT_KEY, {} as TableContext)
 
     function handleClick(e: MouseEvent) {
       e.stopPropagation()
@@ -35,9 +33,13 @@ export default defineComponent({
         ]}
         onClick={handleClick}
         role="button"
-        aria-label="Filter"
+        aria-label={tableContext.locale?.value.header.filterTriggerAriaLabel ?? 'Filter'}
       >
-        <IconComponent />
+        {tableContext.themePreset?.value === 'element-plus' ? (
+          <ElArrowDownIcon />
+        ) : (
+          <FilterFilledIcon />
+        )}
       </span>
     )
   },

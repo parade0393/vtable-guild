@@ -1,7 +1,23 @@
 import { computed, defineComponent, inject, provide, type PropType, type SlotsType } from 'vue'
-import { useTheme, VTABLE_GUILD_INJECTION_KEY, type VTableGuildContext } from '@vtable-guild/core'
-import { resolveTableThemePreset, tableTheme, type TableSlots } from '@vtable-guild/theme'
-import type { SlotProps, ThemePresetName } from '@vtable-guild/core'
+import {
+  mergeDeep,
+  useTheme,
+  VTABLE_GUILD_INJECTION_KEY,
+  type DeepPartial,
+  type LocaleName,
+  type LocaleRegistry,
+  type SlotProps,
+  type ThemePresetName,
+  type VTableGuildContext,
+  type VTableGuildTableLocale,
+} from '@vtable-guild/core'
+import {
+  resolveBuiltInTableLocale,
+  resolveTableLocalePreset,
+  resolveTableThemePreset,
+  tableTheme,
+  type TableSlots,
+} from '@vtable-guild/theme'
 import { useColumns, useSorter, useFilter } from '../composables'
 
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
@@ -40,6 +56,18 @@ export default defineComponent({
     class: { type: String, default: undefined },
     themePreset: { type: String as PropType<ThemePresetName>, default: undefined },
     showSorterTooltip: { type: Boolean, default: undefined },
+    locale: {
+      type: String as PropType<LocaleName>,
+      default: undefined,
+    },
+    locales: {
+      type: Object as PropType<LocaleRegistry>,
+      default: undefined,
+    },
+    localeOverrides: {
+      type: Object as PropType<DeepPartial<VTableGuildTableLocale>>,
+      default: undefined,
+    },
   },
   emits: {
     change: (
@@ -85,9 +113,32 @@ export default defineComponent({
       () => props.themePreset ?? globalContext?.themePreset ?? 'antdv',
     )
 
-    const defaultTheme = resolveTableThemePreset(effectiveThemePreset.value) ?? tableTheme
+    const defaultTheme = computed(
+      () => resolveTableThemePreset(effectiveThemePreset.value) ?? tableTheme,
+    )
 
     const { slots: themeSlots } = useTheme('table', defaultTheme, props)
+
+    const effectiveLocaleName = computed(() => props.locale ?? globalContext?.locale ?? 'zh-CN')
+
+    const effectiveLocales = computed(() => ({
+      ...(globalContext?.locales ?? {}),
+      ...(props.locales ?? {}),
+    }))
+
+    const tableLocale = computed<VTableGuildTableLocale>(() => {
+      const defaultLocale = resolveTableLocalePreset(effectiveThemePreset.value)
+      const builtInLocale =
+        resolveBuiltInTableLocale(effectiveThemePreset.value, effectiveLocaleName.value) ??
+        defaultLocale
+      const registeredLocale = effectiveLocales.value[effectiveLocaleName.value]?.table
+      const mergedBase = mergeDeep(defaultLocale, registeredLocale ?? builtInLocale)
+
+      return mergeDeep(
+        mergedBase,
+        mergeDeep(globalContext?.localeOverrides?.table ?? {}, props.localeOverrides),
+      )
+    })
 
     // ---- 拍平列 ----
     const { leafColumns } = useColumns(() => props.columns)
@@ -173,7 +224,9 @@ export default defineComponent({
       customFilterIcon: slots.customFilterIcon,
       showSorterTooltip: props.showSorterTooltip ?? effectiveThemePreset.value !== 'element-plus',
       subThemeSlots,
-      themePreset: effectiveThemePreset.value,
+      themePreset: effectiveThemePreset,
+      localeName: effectiveLocaleName,
+      locale: tableLocale,
     })
 
     return () => (
@@ -200,9 +253,7 @@ export default defineComponent({
           </table>
 
           {props.loading && (
-            <TableLoading loadingClass={themeSlots.loading()}>
-              {slots.loading?.() ?? 'Loading...'}
-            </TableLoading>
+            <TableLoading loadingClass={themeSlots.loading()}>{slots.loading?.()}</TableLoading>
           )}
         </div>
       </div>

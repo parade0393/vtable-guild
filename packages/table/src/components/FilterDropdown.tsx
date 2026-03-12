@@ -88,7 +88,8 @@ export default defineComponent({
       return filterItemsFlat(props.filters, searchText.value)
     })
 
-    const isElementPlusPreset = computed(() => tableContext.themePreset === 'element-plus')
+    const isElementPlusPreset = computed(() => tableContext.themePreset?.value === 'element-plus')
+    const filterDropdownLocale = computed(() => tableContext.locale?.value.filterDropdown)
     const hasFilteredResults = computed(() => filteredFilters.value.length > 0)
     const showSearchEmptyState = computed(
       () =>
@@ -243,7 +244,9 @@ export default defineComponent({
                   <Input
                     bare
                     value={searchText.value}
-                    placeholder="Search in filters"
+                    placeholder={
+                      filterDropdownLocale.value?.searchPlaceholder ?? 'Search in filters'
+                    }
                     inputClass={
                       tableContext.subThemeSlots?.value.filterDropdownSearchInput ??
                       'min-w-0 flex-1'
@@ -258,15 +261,22 @@ export default defineComponent({
 
             <ul
               role={!props.multiple && isElementPlusPreset.value ? 'radiogroup' : undefined}
-              class={[
+              class={
                 tableContext.subThemeSlots?.value.filterDropdownList ??
-                  'max-h-64 overflow-auto p-1 m-0 list-none min-w-[120px]',
-                showSearchEmptyState.value &&
-                  (tableContext.subThemeSlots?.value.filterDropdownListEmpty ??
-                    'empty:after:block empty:after:py-2 empty:after:text-center empty:after:text-xs empty:after:text-[color:var(--color-muted)] empty:after:content-["Not_Found"]'),
-              ]}
+                'max-h-64 overflow-auto p-1 m-0 list-none min-w-[120px]'
+              }
             >
               {renderFilterItems(filteredFilters.value)}
+              {showSearchEmptyState.value && (
+                <li
+                  class={
+                    tableContext.subThemeSlots?.value.filterDropdownListEmpty ??
+                    'px-3 py-2 text-center text-xs text-[color:var(--color-muted)] select-none cursor-default'
+                  }
+                >
+                  {filterDropdownLocale.value?.emptyText ?? 'Not Found'}
+                </li>
+              )}
             </ul>
 
             <div
@@ -281,10 +291,10 @@ export default defineComponent({
                 disabled={localSelectedKeys.value.length === 0}
                 onClick={handleReset}
               >
-                Reset
+                {filterDropdownLocale.value?.resetText ?? 'Reset'}
               </Button>
               <Button type="primary" size="sm" onClick={handleConfirm}>
-                OK
+                {filterDropdownLocale.value?.confirmText ?? 'OK'}
               </Button>
             </div>
           </div>

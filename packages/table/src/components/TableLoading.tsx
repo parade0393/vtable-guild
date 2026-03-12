@@ -1,4 +1,5 @@
-import { defineComponent } from 'vue'
+import { defineComponent, inject } from 'vue'
+import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 
 export default defineComponent({
   name: 'TableLoading',
@@ -6,6 +7,12 @@ export default defineComponent({
     loadingClass: { type: String, required: true },
   },
   setup(props, { slots }) {
-    return () => <div class={props.loadingClass}>{slots.default?.() ?? 'Loading...'}</div>
+    const tableContext = inject(TABLE_CONTEXT_KEY, {} as TableContext)
+
+    return () => (
+      <div class={props.loadingClass}>
+        {slots.default?.() ?? tableContext.locale?.value.loading.text ?? 'Loading...'}
+      </div>
+    )
   },
 })

@@ -1,4 +1,11 @@
-import type { ThemePresetName, SlotProps } from '@vtable-guild/core'
+import type {
+  DeepPartial,
+  LocaleName,
+  LocaleRegistry,
+  ThemePresetName,
+  SlotProps,
+  VTableGuildTableLocale,
+} from '@vtable-guild/core'
 import type { VNodeChild } from 'vue'
 import type { ColumnsType, ColumnType, ColumnFilterItem, Key } from './column'
 import type { TableSlots } from '@vtable-guild/theme'
@@ -83,6 +90,15 @@ export interface TableProps<TRecord extends Record<string, unknown> = Record<str
    * 可被列级别 showSorterTooltip 覆盖。
    */
   showSorterTooltip?: boolean
+
+  /** 当前激活语言标识，默认继承 provider/plugin，否则为 'zh-CN'。 */
+  locale?: LocaleName
+
+  /** 当前实例注册的语言包映射。 */
+  locales?: LocaleRegistry
+
+  /** 表级 locale 局部覆写，优先级高于全局 provider / plugin。 */
+  localeOverrides?: DeepPartial<VTableGuildTableLocale>
 }
 
 // ---- change 事件参数类型 ----

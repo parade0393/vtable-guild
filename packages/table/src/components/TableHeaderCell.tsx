@@ -2,16 +2,10 @@ import { defineComponent, computed, inject, ref, watch, type PropType } from 'vu
 import { cn, Tooltip } from '@vtable-guild/core'
 import { TABLE_ALIGN_CLASSES } from '@vtable-guild/theme'
 import type { ColumnType, SortOrder } from '../types'
-import { TABLE_CONTEXT_KEY } from '../context'
+import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 import SortButton from './SortButton'
 import FilterIcon from './FilterIcon'
 import FilterDropdown from './FilterDropdown'
-
-const SORT_TOOLTIP_MAP: Record<string, string> = {
-  null: '点击升序',
-  ascend: '点击降序',
-  descend: '取消排序',
-}
 
 function getAriaSortValue(order: SortOrder): 'ascending' | 'descending' | undefined {
   if (order === 'ascend') return 'ascending'
@@ -28,7 +22,7 @@ export default defineComponent({
     headerCellInnerClass: { type: String, required: true },
   },
   setup(props) {
-    const tableContext = inject(TABLE_CONTEXT_KEY, {})
+    const tableContext = inject(TABLE_CONTEXT_KEY, {} as TableContext)
 
     // ---- 排序 ----
     const sortOrder = computed(() => {
@@ -147,7 +141,13 @@ export default defineComponent({
     }
 
     return () => {
-      const tooltipTitle = SORT_TOOLTIP_MAP[String(sortOrder.value)]
+      const tableLocale = tableContext.locale?.value
+      const tooltipTitle =
+        sortOrder.value === null
+          ? (tableLocale?.header.sortTriggerAsc ?? '点击升序')
+          : sortOrder.value === 'ascend'
+            ? (tableLocale?.header.sortTriggerDesc ?? '点击降序')
+            : (tableLocale?.header.cancelSort ?? '取消排序')
       const { column } = props
 
       // 排序区域（标题 + 排序图标）
@@ -200,7 +200,7 @@ export default defineComponent({
                 toggleFilterDropdown(e)
               }}
               role="button"
-              aria-label="Filter"
+              aria-label={tableLocale?.header.filterTriggerAriaLabel ?? 'Filter'}
             >
               {column.filterIcon({ filtered: isFiltered.value })}
             </span>
@@ -219,7 +219,7 @@ export default defineComponent({
                 toggleFilterDropdown(e)
               }}
               role="button"
-              aria-label="Filter"
+              aria-label={tableLocale?.header.filterTriggerAriaLabel ?? 'Filter'}
             >
               {tableContext.customFilterIcon({ column, filtered: isFiltered.value })}
             </span>

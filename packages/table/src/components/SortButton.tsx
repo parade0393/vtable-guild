@@ -1,7 +1,7 @@
 import { defineComponent, inject, type PropType } from 'vue'
 import { CaretUpIcon, CaretDownIcon, ElCaretTopIcon, ElCaretBottomIcon } from '@vtable-guild/icons'
 import type { SortOrder } from '../types'
-import { TABLE_CONTEXT_KEY } from '../context'
+import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 
 /**
  * 排序图标组件。
@@ -21,10 +21,7 @@ export default defineComponent({
     sortButtonClass: { type: String, default: '' },
   },
   setup(props) {
-    const tableContext = inject(TABLE_CONTEXT_KEY, {})
-    const isElementPlus = tableContext.themePreset === 'element-plus'
-    const UpIcon = isElementPlus ? ElCaretTopIcon : CaretUpIcon
-    const DownIcon = isElementPlus ? ElCaretBottomIcon : CaretDownIcon
+    const tableContext = inject(TABLE_CONTEXT_KEY, {} as TableContext)
 
     return () => (
       <span
@@ -35,21 +32,42 @@ export default defineComponent({
         ]}
         aria-hidden="true"
       >
-        <UpIcon
-          class={
-            props.sortOrder === 'ascend'
-              ? 'text-[color:var(--color-primary)]'
-              : 'text-[color:var(--color-sorter-icon)]'
-          }
-        />
-        <DownIcon
-          class={[
-            tableContext.subThemeSlots?.value.sortIconDown ?? '-mt-[0.225em]',
-            props.sortOrder === 'descend'
-              ? 'text-[color:var(--color-primary)]'
-              : 'text-[color:var(--color-sorter-icon)]',
-          ]}
-        />
+        {tableContext.themePreset?.value === 'element-plus' ? (
+          <ElCaretTopIcon
+            class={
+              props.sortOrder === 'ascend'
+                ? 'text-[color:var(--color-primary)]'
+                : 'text-[color:var(--color-sorter-icon)]'
+            }
+          />
+        ) : (
+          <CaretUpIcon
+            class={
+              props.sortOrder === 'ascend'
+                ? 'text-[color:var(--color-primary)]'
+                : 'text-[color:var(--color-sorter-icon)]'
+            }
+          />
+        )}
+        {tableContext.themePreset?.value === 'element-plus' ? (
+          <ElCaretBottomIcon
+            class={[
+              tableContext.subThemeSlots?.value.sortIconDown ?? '-mt-[0.225em]',
+              props.sortOrder === 'descend'
+                ? 'text-[color:var(--color-primary)]'
+                : 'text-[color:var(--color-sorter-icon)]',
+            ]}
+          />
+        ) : (
+          <CaretDownIcon
+            class={[
+              tableContext.subThemeSlots?.value.sortIconDown ?? '-mt-[0.225em]',
+              props.sortOrder === 'descend'
+                ? 'text-[color:var(--color-primary)]'
+                : 'text-[color:var(--color-sorter-icon)]',
+            ]}
+          />
+        )}
       </span>
     )
   },

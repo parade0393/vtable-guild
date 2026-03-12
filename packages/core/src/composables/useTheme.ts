@@ -1,6 +1,6 @@
 // packages/core/src/composables/useTheme.ts
 
-import { computed, inject } from 'vue'
+import { computed, inject, unref, type MaybeRef } from 'vue'
 import { cn } from '../utils/tv'
 import { tv } from '../utils/tv'
 import { VTABLE_GUILD_INJECTION_KEY } from '../plugin/index'
@@ -44,7 +44,7 @@ import type { ThemeConfig, VTableGuildContext } from '../utils/types'
  */
 export function useTheme<T extends ThemeConfig>(
   componentName: string,
-  defaultTheme: T,
+  defaultTheme: MaybeRef<T>,
   props: Record<string, unknown>,
 ) {
   // ========== Layer 2: 通过 inject 获取全局配置 ==========
@@ -53,8 +53,9 @@ export function useTheme<T extends ThemeConfig>(
   // 内部 computed：缓存 merge + tv() 的计算结果
   // 仅在 variant props 变化时重算，ui/class 变化不触发
   const _slotFns = computed(() => {
+    const resolvedDefaultTheme = unref(defaultTheme)
     const globalTheme = globalContext?.theme?.[componentName] as Partial<ThemeConfig> | undefined
-    const merged = mergeThemeConfigs(defaultTheme, globalTheme)
+    const merged = mergeThemeConfigs(resolvedDefaultTheme, globalTheme)
     const tvResult = tv(merged as Parameters<typeof tv>[0])
 
     const variantProps: Record<string, unknown> = {}
@@ -71,7 +72,7 @@ export function useTheme<T extends ThemeConfig>(
 
   // 稳定函数引用：setup 阶段创建一次，identity 不变
   const slots = {} as Record<string, () => string>
-  for (const slotName of Object.keys(defaultTheme.slots)) {
+  for (const slotName of Object.keys(unref(defaultTheme).slots)) {
     slots[slotName] = () => {
       const fns = _slotFns.value // render 阶段访问 → Vue 追踪依赖
       const base =

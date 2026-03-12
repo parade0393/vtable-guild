@@ -1,4 +1,11 @@
-import type { ThemeConfig, ThemePresetName } from '@vtable-guild/core'
+import type {
+  ThemeConfig,
+  ThemePresetName,
+  VTableGuildLocale,
+  VTableGuildTableLocale,
+} from '@vtable-guild/core'
+
+export type BuiltInLocaleName = 'zh-CN' | 'en-US'
 
 /**
  * 主题预设接口。
@@ -8,6 +15,8 @@ import type { ThemeConfig, ThemePresetName } from '@vtable-guild/core'
  */
 export interface ThemePreset {
   table: ThemeConfig
+  tableLocale: VTableGuildTableLocale
+  locales: Record<BuiltInLocaleName, VTableGuildLocale>
 }
 
 export type { ThemePresetName }

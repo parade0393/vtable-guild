@@ -1,5 +1,5 @@
 import type { ComputedRef, InjectionKey, Slots } from 'vue'
-import type { ThemePresetName } from '@vtable-guild/core'
+import type { LocaleName, ThemePresetName, VTableGuildTableLocale } from '@vtable-guild/core'
 import type { ColumnType, SortOrder } from './types'
 
 /** 子组件主题 slot class 映射 */
@@ -75,7 +75,13 @@ export interface TableContext {
   subThemeSlots?: ComputedRef<SubThemeSlots>
 
   /** 当前主题预设名称 */
-  themePreset?: ThemePresetName
+  themePreset?: ComputedRef<ThemePresetName>
+
+  /** 当前激活语言标识 */
+  localeName?: ComputedRef<LocaleName>
+
+  /** 表格最终生效 locale */
+  locale?: ComputedRef<VTableGuildTableLocale>
 }
 
 /**

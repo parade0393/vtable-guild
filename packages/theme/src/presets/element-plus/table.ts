@@ -95,7 +95,7 @@ export const elementPlusTableTheme = {
     filterDropdownSearchInput:
       'min-w-0 flex-1 border-0 bg-transparent px-0 shadow-none focus:border-transparent placeholder:text-[color:var(--color-muted)]',
     filterDropdownListEmpty:
-      'empty:after:block empty:after:py-3 empty:after:text-center empty:after:text-[length:12px] empty:after:text-[color:var(--color-muted)] empty:after:content-["Not_Found"]',
+      'px-3 py-3 text-center text-[length:12px] leading-5 text-[color:var(--color-muted)] select-none cursor-default',
   },
   variants: {
     size: {

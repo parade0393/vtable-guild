@@ -34,6 +34,15 @@ export interface ThemeConfig {
  */
 export type SlotProps<T extends ThemeConfig> = Partial<Record<keyof T['slots'] & string, string>>
 
+/** 深度可选，用于 locale / theme 局部覆盖。 */
+export type DeepPartial<T> = {
+  [K in keyof T]?: T[K] extends Array<infer U>
+    ? Array<DeepPartial<U>>
+    : T[K] extends Record<string, unknown>
+      ? DeepPartial<T[K]>
+      : T[K]
+}
+
 // ---------- 主题预设相关 ----------
 
 /**
@@ -46,6 +55,43 @@ export type ThemePresetName = 'antdv' | 'element-plus'
 
 // ---------- 插件配置相关 ----------
 
+export interface VTableGuildTableHeaderLocale {
+  sortTriggerAsc: string
+  sortTriggerDesc: string
+  cancelSort: string
+  filterTriggerAriaLabel: string
+}
+
+export interface VTableGuildTableFilterDropdownLocale {
+  searchPlaceholder: string
+  emptyText: string
+  resetText: string
+  confirmText: string
+}
+
+export interface VTableGuildTableEmptyLocale {
+  text: string
+}
+
+export interface VTableGuildTableLoadingLocale {
+  text: string
+}
+
+export interface VTableGuildTableLocale {
+  header: VTableGuildTableHeaderLocale
+  filterDropdown: VTableGuildTableFilterDropdownLocale
+  empty: VTableGuildTableEmptyLocale
+  loading: VTableGuildTableLoadingLocale
+}
+
+export interface VTableGuildLocale {
+  table: VTableGuildTableLocale
+}
+
+export type LocaleName = string
+export type LocaleRegistry = Record<LocaleName, VTableGuildLocale>
+export type VTableGuildThemeOverrides = Record<string, Partial<ThemeConfig>>
+
 /**
  * createVTableGuild() 的配置参数。
  */
@@ -53,7 +99,13 @@ export interface VTableGuildOptions {
   /** 全局主题预设，默认 'antdv' */
   themePreset?: ThemePresetName
   /** 全局主题覆盖，key 为组件名（如 'table'、'pagination'） */
-  theme?: Record<string, Partial<ThemeConfig>>
+  theme?: VTableGuildThemeOverrides
+  /** 当前激活语言标识，默认 'zh-CN' */
+  locale?: LocaleName
+  /** 用户注册的语言包映射 */
+  locales?: LocaleRegistry
+  /** 当前激活语言包的局部覆写 */
+  localeOverrides?: DeepPartial<VTableGuildLocale>
 }
 
 /**
@@ -61,5 +113,8 @@ export interface VTableGuildOptions {
  */
 export interface VTableGuildContext {
   themePreset: ThemePresetName
-  theme: Record<string, Partial<ThemeConfig>>
+  theme: VTableGuildThemeOverrides
+  locale: LocaleName
+  locales: LocaleRegistry
+  localeOverrides: DeepPartial<VTableGuildLocale>
 }

@@ -1,5 +1,5 @@
 import { defineComponent, inject } from 'vue'
-import { TABLE_CONTEXT_KEY } from '../context'
+import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 
 export default defineComponent({
   name: 'TableEmpty',
@@ -9,13 +9,15 @@ export default defineComponent({
     tdClass: { type: String, required: true },
   },
   setup(props) {
-    const tableContext = inject(TABLE_CONTEXT_KEY, {})
+    const tableContext = inject(TABLE_CONTEXT_KEY, {} as TableContext)
 
     return () => (
       <tr>
         <td class={[props.tdClass, props.emptyClass]} colspan={props.colSpan}>
           {/* 优先使用用户自定义 empty slot */}
-          {tableContext.empty ? tableContext.empty() : 'No Data'}
+          {tableContext.empty
+            ? tableContext.empty()
+            : (tableContext.locale?.value.empty.text ?? 'No Data')}
         </td>
       </tr>
     )

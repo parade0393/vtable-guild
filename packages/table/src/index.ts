@@ -21,6 +21,7 @@ export type {
   TableFiltersInfo,
   TableChangeExtra,
 } from './types'
+export type { VTableGuildTableLocale } from '@vtable-guild/core'
 
 export { useColumns, getByDataIndex } from './composables'
 export type { SorterResult } from './composables'

@@ -105,7 +105,7 @@ export const antdvTableTheme = {
       'placeholder:text-black/25',
     ].join(' '),
     filterDropdownListEmpty:
-      'empty:after:block empty:after:py-2 empty:after:text-center empty:after:text-[length:12px] empty:after:text-black/25 empty:after:content-["Not_Found"]',
+      'px-3 py-2 text-center text-[length:12px] leading-5 text-black/25 select-none cursor-default',
   },
   variants: {
     size: {

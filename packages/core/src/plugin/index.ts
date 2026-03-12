@@ -1,6 +1,6 @@
 // packages/core/src/plugin/index.ts
 
-import type { InjectionKey, Plugin } from 'vue'
+import { reactive, type InjectionKey, type Plugin } from 'vue'
 import type { VTableGuildOptions, VTableGuildContext } from '../utils/types'
 
 /**
@@ -10,6 +10,17 @@ import type { VTableGuildOptions, VTableGuildContext } from '../utils/types'
  * 导出供 useTheme 中 inject 使用。
  */
 export const VTABLE_GUILD_INJECTION_KEY: InjectionKey<VTableGuildContext> = Symbol('vtable-guild')
+
+export function syncDocumentPresetAttr(themePreset: VTableGuildContext['themePreset']) {
+  if (typeof document === 'undefined') return
+
+  if (themePreset === 'antdv') {
+    document.documentElement.removeAttribute('data-vtg-preset')
+    return
+  }
+
+  document.documentElement.setAttribute('data-vtg-preset', themePreset)
+}
 
 /**
  * 创建 vtable-guild 的 Vue 插件。
@@ -37,17 +48,17 @@ export const VTABLE_GUILD_INJECTION_KEY: InjectionKey<VTableGuildContext> = Symb
 export function createVTableGuild(options: VTableGuildOptions = {}): Plugin {
   return {
     install(app) {
-      const context: VTableGuildContext = {
+      const context = reactive({
         themePreset: options.themePreset ?? 'antdv',
         theme: options.theme ?? {},
-      }
+        locale: options.locale ?? 'zh-CN',
+        locales: options.locales ?? {},
+        localeOverrides: options.localeOverrides ?? {},
+      }) as VTableGuildContext
 
       app.provide(VTABLE_GUILD_INJECTION_KEY, context)
 
-      // Auto-set data-vtg-preset on <html> so the preset CSS variables take effect
-      if (context.themePreset !== 'antdv' && typeof document !== 'undefined') {
-        document.documentElement.setAttribute('data-vtg-preset', context.themePreset)
-      }
+      syncDocumentPresetAttr(context.themePreset)
     },
   }
 }
