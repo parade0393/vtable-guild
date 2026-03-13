@@ -25,11 +25,7 @@ export default defineComponent({
 
     return () => (
       <span
-        class={[
-          tableContext.subThemeSlots?.value.sortButton ??
-            'inline-flex flex-col items-center justify-center text-xs leading-none ml-1',
-          props.sortButtonClass,
-        ]}
+        class={[tableContext.subThemeSlots?.value.sortButton, props.sortButtonClass]}
         aria-hidden="true"
       >
         {h((tableContext.presetConfig?.value ?? tablePresetConfigs.antdv).sortAscIcon, {
@@ -40,7 +36,7 @@ export default defineComponent({
         })}
         {h((tableContext.presetConfig?.value ?? tablePresetConfigs.antdv).sortDescIcon, {
           class: [
-            tableContext.subThemeSlots?.value.sortIconDown ?? '-mt-[0.225em]',
+            tableContext.subThemeSlots?.value.sortIconDown,
             props.sortOrder === 'descend'
               ? 'text-[color:var(--color-primary)]'
               : 'text-[color:var(--color-sorter-icon)]',

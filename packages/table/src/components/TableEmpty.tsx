@@ -17,7 +17,7 @@ export default defineComponent({
           {/* 优先使用用户自定义 empty slot */}
           {tableContext.empty
             ? tableContext.empty()
-            : (tableContext.locale?.value.empty.text ?? 'No Data')}
+            : (tableContext.locale?.value.empty.text ?? '暂无数据')}
         </td>
       </tr>
     )

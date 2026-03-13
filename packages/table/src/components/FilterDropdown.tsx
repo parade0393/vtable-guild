@@ -168,14 +168,11 @@ export default defineComponent({
           role={useListRadioSemantics ? 'radio' : undefined}
           aria-checked={useListRadioSemantics ? selected : undefined}
           class={[
-            tableContext.subThemeSlots?.value.filterDropdownItem ??
-              'flex items-center gap-2 px-3 py-1.5 cursor-pointer rounded-sm',
+            tableContext.subThemeSlots?.value.filterDropdownItem,
             !props.multiple && isHighlightMode.value && 'gap-0',
             selected
-              ? (tableContext.subThemeSlots?.value.filterDropdownItemSelected ??
-                'bg-[color:var(--color-control-item-active-bg)] hover:bg-[color:var(--color-control-item-active-hover-bg)]')
-              : (tableContext.subThemeSlots?.value.filterDropdownItemHover ??
-                'hover:bg-[color:var(--color-control-item-hover-bg)]'),
+              ? tableContext.subThemeSlots?.value.filterDropdownItemSelected
+              : tableContext.subThemeSlots?.value.filterDropdownItemHover,
           ]}
           style={indentStyle}
           onClick={() => toggleItem(item.value)}
@@ -218,27 +215,14 @@ export default defineComponent({
         <Teleport to="body">
           <div
             ref={dropdownRef}
-            class={
-              tableContext.subThemeSlots?.value.filterDropdown ??
-              'rounded-lg bg-[color:var(--color-surface)] shadow-lg text-sm'
-            }
+            class={tableContext.subThemeSlots?.value.filterDropdown}
             style={style}
           >
             {props.filterSearch && (
-              <div
-                class={tableContext.subThemeSlots?.value.filterDropdownSearch ?? 'px-2 pt-2 pb-1'}
-              >
-                <div
-                  class={
-                    tableContext.subThemeSlots?.value.filterDropdownSearchField ??
-                    'flex items-center gap-2'
-                  }
-                >
+              <div class={tableContext.subThemeSlots?.value.filterDropdownSearch}>
+                <div class={tableContext.subThemeSlots?.value.filterDropdownSearchField}>
                   <span
-                    class={
-                      tableContext.subThemeSlots?.value.filterDropdownSearchIcon ??
-                      'inline-flex shrink-0 items-center justify-center text-[color:var(--color-muted)]'
-                    }
+                    class={tableContext.subThemeSlots?.value.filterDropdownSearchIcon}
                     aria-hidden="true"
                   >
                     <SearchIcon />
@@ -246,13 +230,8 @@ export default defineComponent({
                   <Input
                     bare
                     value={searchText.value}
-                    placeholder={
-                      filterDropdownLocale.value?.searchPlaceholder ?? 'Search in filters'
-                    }
-                    inputClass={
-                      tableContext.subThemeSlots?.value.filterDropdownSearchInput ??
-                      'min-w-0 flex-1'
-                    }
+                    placeholder={filterDropdownLocale.value?.searchPlaceholder ?? '在筛选项中搜索'}
+                    inputClass={tableContext.subThemeSlots?.value.filterDropdownSearchInput}
                     onUpdate:value={(val: string) => {
                       searchText.value = val
                     }}
@@ -263,40 +242,27 @@ export default defineComponent({
 
             <ul
               role={!props.multiple && isHighlightMode.value ? 'radiogroup' : undefined}
-              class={
-                tableContext.subThemeSlots?.value.filterDropdownList ??
-                'max-h-64 overflow-auto p-1 m-0 list-none min-w-[120px]'
-              }
+              class={tableContext.subThemeSlots?.value.filterDropdownList}
             >
               {renderFilterItems(filteredFilters.value)}
               {showSearchEmptyState.value && (
-                <li
-                  class={
-                    tableContext.subThemeSlots?.value.filterDropdownListEmpty ??
-                    'px-3 py-2 text-center text-xs text-[color:var(--color-muted)] select-none cursor-default'
-                  }
-                >
+                <li class={tableContext.subThemeSlots?.value.filterDropdownListEmpty}>
                   {filterDropdownLocale.value?.emptyText ?? 'Not Found'}
                 </li>
               )}
             </ul>
 
-            <div
-              class={
-                tableContext.subThemeSlots?.value.filterDropdownActions ??
-                'flex items-center justify-between gap-2 px-2 py-2 border-t border-[color:var(--color-default)]'
-              }
-            >
+            <div class={tableContext.subThemeSlots?.value.filterDropdownActions}>
               <Button
                 type="link"
                 size="sm"
                 disabled={localSelectedKeys.value.length === 0}
                 onClick={handleReset}
               >
-                {filterDropdownLocale.value?.resetText ?? 'Reset'}
+                {filterDropdownLocale.value?.resetText ?? '重置'}
               </Button>
               <Button type="primary" size="sm" onClick={handleConfirm}>
-                {filterDropdownLocale.value?.confirmText ?? 'OK'}
+                {filterDropdownLocale.value?.confirmText ?? '确 定'}
               </Button>
             </div>
           </div>

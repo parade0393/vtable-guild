@@ -26,15 +26,14 @@ export default defineComponent({
     return () => (
       <span
         class={[
-          tableContext.subThemeSlots?.value.filterIcon ??
-            'inline-flex items-center justify-center cursor-pointer transition-colors text-xs px-1 self-stretch rounded-md hover:bg-black/6',
+          tableContext.subThemeSlots?.value.filterIcon,
           props.active
             ? 'text-[color:var(--color-primary)]'
             : 'text-[color:var(--color-filter-icon)]',
         ]}
         onClick={handleClick}
         role="button"
-        aria-label={tableContext.locale?.value.header.filterTriggerAriaLabel ?? 'Filter'}
+        aria-label={tableContext.locale?.value.header.filterTriggerAriaLabel ?? '筛选'}
       >
         {h((tableContext.presetConfig?.value ?? tablePresetConfigs.antdv).filterIcon)}
       </span>

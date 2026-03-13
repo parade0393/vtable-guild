@@ -11,7 +11,7 @@ export default defineComponent({
 
     return () => (
       <div class={props.loadingClass}>
-        {slots.default?.() ?? tableContext.locale?.value.loading.text ?? 'Loading...'}
+        {slots.default?.() ?? tableContext.locale?.value.loading.text ?? '加载中...'}
       </div>
     )
   },

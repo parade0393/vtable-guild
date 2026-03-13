@@ -117,10 +117,7 @@ export default defineComponent({
 
     const cellClass = computed(() => {
       const alignClass = props.column.align ? TABLE_ALIGN_CLASSES[props.column.align] : ''
-      const sortableClass = isSortable.value
-        ? (tableContext.subThemeSlots?.value.thSortable ??
-          'cursor-pointer select-none hover:bg-[var(--vtg-table-header-sort-hover-bg)]')
-        : ''
+      const sortableClass = isSortable.value ? tableContext.subThemeSlots?.value.thSortable : ''
       return cn(props.thClass, alignClass, sortableClass, props.column.className)
     })
 
@@ -151,10 +148,8 @@ export default defineComponent({
       const { column } = props
 
       // 排序区域（标题 + 排序图标）
-      const sortAreaWrapperClass =
-        tableContext.subThemeSlots?.value.sortAreaWrapper ??
-        'flex flex-auto items-center justify-between min-w-0'
-      const sortAreaTitleClass = tableContext.subThemeSlots?.value.sortAreaTitle ?? 'flex-1 min-w-0'
+      const sortAreaWrapperClass = tableContext.subThemeSlots?.value.sortAreaWrapper
+      const sortAreaTitleClass = tableContext.subThemeSlots?.value.sortAreaTitle
 
       const sorterContent = (
         <span class={sortAreaWrapperClass}>
@@ -163,8 +158,7 @@ export default defineComponent({
         </span>
       )
 
-      const sortAreaOuterClass =
-        tableContext.subThemeSlots?.value.sortAreaOuter ?? 'flex flex-auto min-w-0'
+      const sortAreaOuterClass = tableContext.subThemeSlots?.value.sortAreaOuter
 
       const sortArea = showTooltip.value ? (
         <span
@@ -190,17 +184,14 @@ export default defineComponent({
         if (column.filterIcon) {
           return (
             <span
-              class={
-                tableContext.subThemeSlots?.value.filterIconWrapper ??
-                'shrink-0 ml-1 self-stretch -my-1 -me-2 flex items-center'
-              }
+              class={tableContext.subThemeSlots?.value.filterIconWrapper}
               ref={filterAnchorRef}
               onClick={(e: MouseEvent) => {
                 e.stopPropagation()
                 toggleFilterDropdown(e)
               }}
               role="button"
-              aria-label={tableLocale?.header.filterTriggerAriaLabel ?? 'Filter'}
+              aria-label={tableLocale?.header.filterTriggerAriaLabel ?? '筛选'}
             >
               {column.filterIcon({ filtered: isFiltered.value })}
             </span>
@@ -209,30 +200,21 @@ export default defineComponent({
         if (tableContext.customFilterIcon) {
           return (
             <span
-              class={
-                tableContext.subThemeSlots?.value.filterIconWrapper ??
-                'shrink-0 ml-1 self-stretch -my-1 -me-2 flex items-center'
-              }
+              class={tableContext.subThemeSlots?.value.filterIconWrapper}
               ref={filterAnchorRef}
               onClick={(e: MouseEvent) => {
                 e.stopPropagation()
                 toggleFilterDropdown(e)
               }}
               role="button"
-              aria-label={tableLocale?.header.filterTriggerAriaLabel ?? 'Filter'}
+              aria-label={tableLocale?.header.filterTriggerAriaLabel ?? '筛选'}
             >
               {tableContext.customFilterIcon({ column, filtered: isFiltered.value })}
             </span>
           )
         }
         return (
-          <span
-            ref={filterAnchorRef}
-            class={
-              tableContext.subThemeSlots?.value.filterIconWrapper ??
-              'shrink-0 ml-1 self-stretch -my-1 -me-2 flex items-center'
-            }
-          >
+          <span ref={filterAnchorRef} class={tableContext.subThemeSlots?.value.filterIconWrapper}>
             <FilterIcon active={isFiltered.value} onClick={toggleFilterDropdown} />
           </span>
         )
