@@ -7,7 +7,6 @@ import {
   type LocaleName,
   type LocaleRegistry,
   type SlotProps,
-  type ThemePresetName,
   type VTableGuildContext,
   type VTableGuildTableLocale,
 } from '@vtable-guild/core'
@@ -21,6 +20,7 @@ import {
 import { useColumns, useSorter, useFilter } from '../composables'
 
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
+import { resolveTablePresetConfig } from '../preset-config'
 import TableHeader from './TableHeader'
 import TableBody from './TableBody'
 import TableLoading from './TableLoading'
@@ -54,7 +54,6 @@ export default defineComponent({
       default: undefined,
     },
     class: { type: String, default: undefined },
-    themePreset: { type: String as PropType<ThemePresetName>, default: undefined },
     showSorterTooltip: { type: Boolean, default: undefined },
     locale: {
       type: String as PropType<LocaleName>,
@@ -109,9 +108,7 @@ export default defineComponent({
   setup(props, { slots, emit }) {
     const globalContext = inject<VTableGuildContext | null>(VTABLE_GUILD_INJECTION_KEY, null)
 
-    const effectiveThemePreset = computed(
-      () => props.themePreset ?? globalContext?.themePreset ?? 'antdv',
-    )
+    const effectiveThemePreset = computed(() => globalContext?.themePreset ?? 'antdv')
 
     const defaultTheme = computed(
       () => resolveTableThemePreset(effectiveThemePreset.value) ?? tableTheme,
@@ -128,11 +125,14 @@ export default defineComponent({
 
     const tableLocale = computed<VTableGuildTableLocale>(() => {
       const defaultLocale = resolveTableLocalePreset(effectiveThemePreset.value)
-      const builtInLocale =
-        resolveBuiltInTableLocale(effectiveThemePreset.value, effectiveLocaleName.value) ??
-        defaultLocale
+      const builtInLocale = resolveBuiltInTableLocale(
+        effectiveThemePreset.value,
+        effectiveLocaleName.value,
+      )
       const registeredLocale = effectiveLocales.value[effectiveLocaleName.value]?.table
-      const mergedBase = mergeDeep(defaultLocale, registeredLocale ?? builtInLocale)
+
+      // default → builtIn → registered: builtIn always participates
+      const mergedBase = mergeDeep(mergeDeep(defaultLocale, builtInLocale), registeredLocale)
 
       return mergeDeep(
         mergedBase,
@@ -211,6 +211,8 @@ export default defineComponent({
       filterDropdownListEmpty: themeSlots.filterDropdownListEmpty(),
     }))
 
+    const presetConfig = computed(() => resolveTablePresetConfig(effectiveThemePreset.value))
+
     provide<TableContext>(TABLE_CONTEXT_KEY, {
       bodyCell: slots.bodyCell,
       headerCell: slots.headerCell,
@@ -222,9 +224,11 @@ export default defineComponent({
       resetFilter,
       customFilterDropdown: slots.customFilterDropdown,
       customFilterIcon: slots.customFilterIcon,
-      showSorterTooltip: props.showSorterTooltip ?? effectiveThemePreset.value !== 'element-plus',
+      showSorterTooltip: computed(
+        () => props.showSorterTooltip ?? presetConfig.value.showSorterTooltip,
+      ),
       subThemeSlots,
-      themePreset: effectiveThemePreset,
+      presetConfig,
       localeName: effectiveLocaleName,
       locale: tableLocale,
     })

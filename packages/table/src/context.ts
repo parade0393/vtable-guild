@@ -1,6 +1,7 @@
 import type { ComputedRef, InjectionKey, Slots } from 'vue'
-import type { LocaleName, ThemePresetName, VTableGuildTableLocale } from '@vtable-guild/core'
+import type { LocaleName, VTableGuildTableLocale } from '@vtable-guild/core'
 import type { ColumnType, SortOrder } from './types'
+import type { TablePresetConfig } from './preset-config'
 
 /** 子组件主题 slot class 映射 */
 export interface SubThemeSlots {
@@ -69,13 +70,13 @@ export interface TableContext {
   customFilterIcon?: Slots['customFilterIcon']
 
   /** 表级别 showSorterTooltip 配置 */
-  showSorterTooltip?: boolean
+  showSorterTooltip?: ComputedRef<boolean>
 
   /** 子组件主题 slot class 映射 */
   subThemeSlots?: ComputedRef<SubThemeSlots>
 
-  /** 当前主题预设名称 */
-  themePreset?: ComputedRef<ThemePresetName>
+  /** 当前主题预设行为配置 */
+  presetConfig?: ComputedRef<TablePresetConfig>
 
   /** 当前激活语言标识 */
   localeName?: ComputedRef<LocaleName>

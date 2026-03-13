@@ -34,7 +34,7 @@ export default defineComponent({
 
     const showTooltip = computed(() => {
       if (!isSortable.value) return false
-      return props.column.showSorterTooltip ?? tableContext.showSorterTooltip ?? true
+      return props.column.showSorterTooltip ?? tableContext.showSorterTooltip?.value ?? true
     })
 
     // ---- 筛选 ----

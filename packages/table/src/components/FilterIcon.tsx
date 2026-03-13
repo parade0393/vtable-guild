@@ -1,12 +1,13 @@
-import { defineComponent, inject } from 'vue'
-import { FilterFilledIcon, ElArrowDownIcon } from '@vtable-guild/icons'
+import { defineComponent, h, inject } from 'vue'
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
+import { tablePresetConfigs } from '../preset-config'
 
 /**
  * 筛选漏斗图标。
  *
  * - active = true 时高亮为 primary 色
  * - 点击时 stopPropagation 避免触发 th 的排序
+ * - 图标由 presetConfig 提供，不再硬编码 preset 名称判断
  */
 export default defineComponent({
   name: 'FilterIcon',
@@ -35,11 +36,7 @@ export default defineComponent({
         role="button"
         aria-label={tableContext.locale?.value.header.filterTriggerAriaLabel ?? 'Filter'}
       >
-        {tableContext.themePreset?.value === 'element-plus' ? (
-          <ElArrowDownIcon />
-        ) : (
-          <FilterFilledIcon />
-        )}
+        {h((tableContext.presetConfig?.value ?? tablePresetConfigs.antdv).filterIcon)}
       </span>
     )
   },

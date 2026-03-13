@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import { inject, provide, reactive } from 'vue'
 import { ElTable, ElTableColumn } from 'element-plus'
 import 'element-plus/es/components/table/style/css'
 import 'element-plus/es/components/table-column/style/css'
 import { VTable } from '@vtable-guild/table'
+import { VTABLE_GUILD_INJECTION_KEY, type VTableGuildContext } from '@vtable-guild/core'
 import {
   cityFilters,
   dataSource,
@@ -17,7 +19,28 @@ import {
 } from '../filterMatrixShared'
 
 const state = useFilterMatrixState()
-const elementThemePreset = 'element-plus'
+
+const parentContext = inject<VTableGuildContext | null>(VTABLE_GUILD_INJECTION_KEY, null)
+provide(
+  VTABLE_GUILD_INJECTION_KEY,
+  reactive({
+    get themePreset() {
+      return 'element-plus' as const
+    },
+    get theme() {
+      return parentContext?.theme ?? {}
+    },
+    get locale() {
+      return parentContext?.locale ?? 'zh-CN'
+    },
+    get locales() {
+      return parentContext?.locales ?? {}
+    },
+    get localeOverrides() {
+      return parentContext?.localeOverrides ?? {}
+    },
+  }) as VTableGuildContext,
+)
 </script>
 
 <template>
@@ -95,7 +118,6 @@ const elementThemePreset = 'element-plus'
           <VTable
             :columns="state.vtableMultiColumns"
             :data-source="dataSource"
-            :theme-preset="elementThemePreset"
             @change="state.onVTableChange"
           />
         </article>
@@ -149,7 +171,6 @@ const elementThemePreset = 'element-plus'
           <VTable
             :columns="state.vtableSingleColumns"
             :data-source="dataSource"
-            :theme-preset="elementThemePreset"
             @change="state.onVTableChange"
           />
         </article>
@@ -231,7 +252,6 @@ const elementThemePreset = 'element-plus'
           <VTable
             :columns="state.vtableControlledColumns"
             :data-source="dataSource"
-            :theme-preset="elementThemePreset"
             @change="state.onVTableControlledChange"
           />
         </article>
@@ -278,7 +298,6 @@ const elementThemePreset = 'element-plus'
           <VTable
             :columns="state.vtableDefaultResetColumns"
             :data-source="dataSource"
-            :theme-preset="elementThemePreset"
             @change="state.onVTableChange"
           />
         </article>
@@ -323,7 +342,6 @@ const elementThemePreset = 'element-plus'
           <VTable
             :columns="state.vtableSearchColumns"
             :data-source="dataSource"
-            :theme-preset="elementThemePreset"
             @change="state.onVTableChange"
           />
         </article>
@@ -368,7 +386,6 @@ const elementThemePreset = 'element-plus'
           <VTable
             :columns="state.vtableTreeColumns"
             :data-source="dataSource"
-            :theme-preset="elementThemePreset"
             @change="state.onVTableChange"
           />
         </article>
@@ -411,7 +428,6 @@ const elementThemePreset = 'element-plus'
           <VTable
             :columns="state.vtableTableIconColumns"
             :data-source="dataSource"
-            :theme-preset="elementThemePreset"
             @change="state.onVTableChange"
           >
             <template #customFilterIcon="{ filtered }">
@@ -460,7 +476,6 @@ const elementThemePreset = 'element-plus'
           <VTable
             :columns="state.vtableColumnIconColumns"
             :data-source="dataSource"
-            :theme-preset="elementThemePreset"
             @change="state.onVTableChange"
           />
         </article>
@@ -505,7 +520,6 @@ const elementThemePreset = 'element-plus'
           <VTable
             :columns="state.vtableTableDropdownColumns"
             :data-source="dataSource"
-            :theme-preset="elementThemePreset"
             @change="state.onVTableChange"
           >
             <template
@@ -587,7 +601,6 @@ const elementThemePreset = 'element-plus'
           <VTable
             :columns="state.vtableColumnDropdownColumns"
             :data-source="dataSource"
-            :theme-preset="elementThemePreset"
             @change="state.onVTableChange"
           />
         </article>
@@ -640,7 +653,6 @@ const elementThemePreset = 'element-plus'
           <VTable
             :columns="state.vtableControlledOpenColumns"
             :data-source="dataSource"
-            :theme-preset="elementThemePreset"
             @change="state.onVTableChange"
           />
         </article>
@@ -690,7 +702,6 @@ const elementThemePreset = 'element-plus'
           <VTable
             :columns="state.vtableFilteredOverrideColumns"
             :data-source="dataSource"
-            :theme-preset="elementThemePreset"
             @change="state.onVTableChange"
           />
         </article>

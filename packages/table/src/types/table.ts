@@ -2,7 +2,6 @@ import type {
   DeepPartial,
   LocaleName,
   LocaleRegistry,
-  ThemePresetName,
   SlotProps,
   VTableGuildTableLocale,
 } from '@vtable-guild/core'
@@ -79,11 +78,6 @@ export interface TableProps<TRecord extends Record<string, unknown> = Record<str
   ui?: SlotProps<{ slots: Record<TableSlots, string> }>
   /** 根元素自定义 class */
   class?: string
-  /**
-   * 实例级 preset override。
-   * 未传时使用 createVTableGuild 的全局 preset；再未配置则使用 'antdv'。
-   */
-  themePreset?: ThemePresetName
 
   /**
    * 表级别控制是否显示排序 tooltip，默认 true。

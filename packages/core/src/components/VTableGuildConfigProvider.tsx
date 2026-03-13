@@ -1,29 +1,21 @@
-import {
-  computed,
-  defineComponent,
-  inject,
-  onBeforeUnmount,
-  provide,
-  reactive,
-  watchEffect,
-} from 'vue'
+import { computed, defineComponent, inject, provide, reactive } from 'vue'
 import type { PropType } from 'vue'
 import type {
   DeepPartial,
   LocaleName,
   LocaleRegistry,
-  ThemePresetName,
+  ThemeConfig,
   VTableGuildContext,
   VTableGuildLocale,
   VTableGuildThemeOverrides,
 } from '../utils/types'
 import { mergeDeep } from '../utils/mergeDeep'
-import { VTABLE_GUILD_INJECTION_KEY, syncDocumentPresetAttr } from '../plugin/index'
+import { mergeThemeConfigs } from '../composables/useTheme'
+import { VTABLE_GUILD_INJECTION_KEY } from '../plugin/index'
 
 export default defineComponent({
   name: 'VTableGuildConfigProvider',
   props: {
-    themePreset: { type: String as PropType<ThemePresetName>, default: undefined },
     theme: {
       type: Object as PropType<VTableGuildThemeOverrides>,
       default: undefined,
@@ -44,10 +36,19 @@ export default defineComponent({
   setup(props, { slots }) {
     const parentContext = inject<VTableGuildContext | null>(VTABLE_GUILD_INJECTION_KEY, null)
 
-    const mergedTheme = computed(() => ({
-      ...(parentContext?.theme ?? {}),
-      ...(props.theme ?? {}),
-    }))
+    const mergedTheme = computed<VTableGuildThemeOverrides>(() => {
+      const parent = parentContext?.theme ?? {}
+      const child = props.theme ?? {}
+      if (!Object.keys(child).length) return parent
+      const keys = new Set([...Object.keys(parent), ...Object.keys(child)])
+      const result: VTableGuildThemeOverrides = {}
+      for (const key of keys) {
+        const b = parent[key]
+        const o = child[key]
+        result[key] = b && o ? mergeThemeConfigs(b as ThemeConfig, o) : (o ?? b!)
+      }
+      return result
+    })
 
     const mergedLocales = computed(() => ({
       ...(parentContext?.locales ?? {}),
@@ -64,7 +65,7 @@ export default defineComponent({
 
     const context = reactive({
       get themePreset() {
-        return props.themePreset ?? parentContext?.themePreset ?? 'antdv'
+        return parentContext?.themePreset ?? 'antdv'
       },
       get theme() {
         return mergedTheme.value
@@ -81,14 +82,6 @@ export default defineComponent({
     }) as VTableGuildContext
 
     provide(VTABLE_GUILD_INJECTION_KEY, context)
-
-    watchEffect(() => {
-      syncDocumentPresetAttr(context.themePreset)
-    })
-
-    onBeforeUnmount(() => {
-      syncDocumentPresetAttr(parentContext?.themePreset ?? 'antdv')
-    })
 
     return () => slots.default?.()
   },

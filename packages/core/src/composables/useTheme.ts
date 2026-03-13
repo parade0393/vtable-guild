@@ -107,14 +107,14 @@ export function useTheme<T extends ThemeConfig>(
  * - compoundVariants: 追加（用户规则在后，优先级更高）
  * - compoundSlots:   追加（同上）
  */
-function mergeThemeConfigs(base: ThemeConfig, override?: Partial<ThemeConfig>): ThemeConfig {
+export function mergeThemeConfigs(base: ThemeConfig, override?: Partial<ThemeConfig>): ThemeConfig {
   if (!override) return base
 
   return {
     // ---- slots: cn() 智能合并 ----
     // 示例：base.th = 'px-4 text-left', override.th = 'px-6'
     //     → cn('px-4 text-left', 'px-6') → 'text-left px-6'
-    slots: mergeSlots(base.slots, override.slots),
+    slots: mergeSlots(base.slots ?? {}, override.slots),
 
     // ---- variants: 深合并 ----
     // 示例：base.variants.size.sm = { th: 'px-2' },

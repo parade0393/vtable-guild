@@ -88,7 +88,9 @@ export default defineComponent({
       return filterItemsFlat(props.filters, searchText.value)
     })
 
-    const isElementPlusPreset = computed(() => tableContext.themePreset?.value === 'element-plus')
+    const isHighlightMode = computed(
+      () => tableContext.presetConfig?.value.filterSingleSelectMode === 'highlight',
+    )
     const filterDropdownLocale = computed(() => tableContext.locale?.value.filterDropdown)
     const hasFilteredResults = computed(() => filteredFilters.value.length > 0)
     const showSearchEmptyState = computed(
@@ -148,7 +150,7 @@ export default defineComponent({
         return <Checkbox checked={selected} />
       }
 
-      if (!isElementPlusPreset.value) {
+      if (!isHighlightMode.value) {
         return <Radio checked={selected} />
       }
 
@@ -158,7 +160,7 @@ export default defineComponent({
     function renderFilterItem(item: ColumnFilterItem, level: number = 0) {
       const selected = isSelected(item.value)
       const indentStyle = level > 0 ? { paddingLeft: `${level * 20 + 12}px` } : undefined
-      const useListRadioSemantics = !props.multiple && isElementPlusPreset.value
+      const useListRadioSemantics = !props.multiple && isHighlightMode.value
 
       return (
         <li
@@ -168,7 +170,7 @@ export default defineComponent({
           class={[
             tableContext.subThemeSlots?.value.filterDropdownItem ??
               'flex items-center gap-2 px-3 py-1.5 cursor-pointer rounded-sm',
-            !props.multiple && isElementPlusPreset.value && 'gap-0',
+            !props.multiple && isHighlightMode.value && 'gap-0',
             selected
               ? (tableContext.subThemeSlots?.value.filterDropdownItemSelected ??
                 'bg-[color:var(--color-control-item-active-bg)] hover:bg-[color:var(--color-control-item-active-hover-bg)]')
@@ -260,7 +262,7 @@ export default defineComponent({
             )}
 
             <ul
-              role={!props.multiple && isElementPlusPreset.value ? 'radiogroup' : undefined}
+              role={!props.multiple && isHighlightMode.value ? 'radiogroup' : undefined}
               class={
                 tableContext.subThemeSlots?.value.filterDropdownList ??
                 'max-h-64 overflow-auto p-1 m-0 list-none min-w-[120px]'

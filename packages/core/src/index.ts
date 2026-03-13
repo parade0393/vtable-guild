@@ -23,7 +23,7 @@ export type {
 } from './utils/types'
 
 // ---------- Composables ----------
-export { useTheme } from './composables/useTheme'
+export { useTheme, mergeThemeConfigs } from './composables/useTheme'
 export { mergeDeep } from './utils/mergeDeep'
 
 // ---------- Components ----------
