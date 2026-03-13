@@ -17,7 +17,7 @@ import {
   tableTheme,
   type TableSlots,
 } from '@vtable-guild/theme'
-import { useColumns, useSorter, useFilter } from '../composables'
+import { useColumns, useSorter, useFilter, useSelection } from '../composables'
 
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 import { resolveTablePresetConfig } from '../preset-config'
@@ -28,8 +28,8 @@ import type {
   ColumnsType,
   ColumnType,
   Key,
+  RowSelection,
   TableFiltersInfo,
-  TablePaginationInfo,
   TableChangeExtra,
 } from '../types'
 
@@ -67,10 +67,13 @@ export default defineComponent({
       type: Object as PropType<DeepPartial<VTableGuildTableLocale>>,
       default: undefined,
     },
+    rowSelection: {
+      type: Object as PropType<RowSelection>,
+      default: undefined,
+    },
   },
   emits: {
     change: (
-      _pagination: TablePaginationInfo,
       _filters: TableFiltersInfo,
       _sorter: SorterResult,
       _extra: TableChangeExtra<Record<string, unknown>>,
@@ -148,13 +151,10 @@ export default defineComponent({
       columns: () => leafColumns.value,
       onSorterChange(sorterResult) {
         const processedData = getProcessedData()
-        emit(
-          'change',
-          { current: 1, pageSize: processedData.length, total: props.dataSource.length },
-          getAllFilters(),
-          sorterResult,
-          { action: 'sort', currentDataSource: processedData },
-        )
+        emit('change', getAllFilters(), sorterResult, {
+          action: 'sort',
+          currentDataSource: processedData,
+        })
       },
     })
 
@@ -165,7 +165,6 @@ export default defineComponent({
         const processedData = getProcessedData()
         emit(
           'change',
-          { current: 1, pageSize: processedData.length, total: props.dataSource.length },
           filters,
           {
             column: sorterState.value.column,
@@ -187,6 +186,56 @@ export default defineComponent({
     }
 
     const processedData = computed(() => getProcessedData())
+
+    // ---- 行选择 ----
+    function getRowKeyFn(record: Record<string, unknown>, index: number): Key {
+      if (typeof props.rowKey === 'function') return props.rowKey(record)
+      if (typeof props.rowKey === 'string' && props.rowKey in record) {
+        return record[props.rowKey] as Key
+      }
+      return index
+    }
+
+    const {
+      selectedKeySet: _selectedKeySet,
+      isSelected: selIsSelected,
+      isDisabled: selIsDisabled,
+      toggleRow: selToggleRow,
+      toggleAll: selToggleAll,
+      allCheckedState: selAllCheckedState,
+    } = useSelection({
+      rowSelection: () => props.rowSelection,
+      getRowKey: getRowKeyFn,
+      data: () => processedData.value,
+      onSelectionChange() {
+        emit(
+          'change',
+          getAllFilters(),
+          {
+            column: sorterState.value.column,
+            columnKey: sorterState.value.columnKey,
+            order: sorterState.value.order,
+            field: sorterState.value.column?.dataIndex,
+          },
+          { action: 'select', currentDataSource: processedData.value },
+        )
+      },
+    })
+
+    // ---- displayColumns：选择列 + 原始列 ----
+    const SELECTION_COLUMN_KEY = '__vtg_selection__'
+
+    const displayColumns = computed(() => {
+      const sel = props.rowSelection
+      if (!sel) return leafColumns.value
+      const selColumn: ColumnType<Record<string, unknown>> = {
+        key: SELECTION_COLUMN_KEY,
+        title: '',
+        width: sel.columnWidth ?? 48,
+        align: 'center',
+      }
+      return [selColumn, ...leafColumns.value]
+    })
 
     // ---- provide context ----
     const subThemeSlots = computed(() => ({
@@ -231,6 +280,13 @@ export default defineComponent({
       presetConfig,
       localeName: effectiveLocaleName,
       locale: tableLocale,
+      rowSelection: () => props.rowSelection,
+      isSelected: selIsSelected,
+      isDisabledRow: selIsDisabled,
+      toggleRow: selToggleRow,
+      toggleAll: selToggleAll,
+      allCheckedState: () => selAllCheckedState.value,
+      getRowKey: getRowKeyFn,
     })
 
     return () => (
@@ -238,7 +294,7 @@ export default defineComponent({
         <div class={themeSlots.wrapper()}>
           <table class={themeSlots.table()}>
             <TableHeader
-              columns={leafColumns.value}
+              columns={displayColumns.value}
               theadClass={themeSlots.thead()}
               rowClass={themeSlots.tr()}
               thClass={themeSlots.th()}
@@ -246,7 +302,7 @@ export default defineComponent({
             />
             <TableBody
               dataSource={processedData.value}
-              columns={leafColumns.value}
+              columns={displayColumns.value}
               tbodyClass={themeSlots.tbody()}
               rowClass={themeSlots.tr()}
               tdClass={themeSlots.td()}

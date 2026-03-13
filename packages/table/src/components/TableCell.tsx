@@ -6,6 +6,8 @@ import { TABLE_ALIGN_CLASSES } from '@vtable-guild/theme'
 import { ColumnType } from '../types'
 import { TABLE_CONTEXT_KEY } from '../context'
 import { getByDataIndex } from '../composables'
+import SelectionCheckbox from './SelectionCheckbox'
+import SelectionRadio from './SelectionRadio'
 
 export default defineComponent({
   name: 'TableCell',
@@ -67,14 +69,53 @@ export default defineComponent({
       }
     })
 
-    return () => (
-      <td class={cellClass.value} style={cellStyle.value}>
-        {props.column.ellipsis ? (
-          <div class={props.bodyCellEllipsisClass}>{cellContent.value}</div>
-        ) : (
-          cellContent.value
-        )}
-      </td>
-    )
+    return () => {
+      // ---- 选择列单元格 ----
+      if (props.column.key === '__vtg_selection__') {
+        const sel = tableContext.rowSelection?.()
+        const isRadio = sel?.type === 'radio'
+        const key = tableContext.getRowKey?.(props.record, props.rowIndex)
+        const checked = key !== undefined && (tableContext.isSelected?.(key) ?? false)
+        const disabled = tableContext.isDisabledRow?.(props.record) ?? false
+
+        const cellSelClass = cn(props.tdClass, 'text-center', props.column.className)
+        const cellSelStyle = props.column.width
+          ? {
+              width:
+                typeof props.column.width === 'number'
+                  ? `${props.column.width}px`
+                  : props.column.width,
+            }
+          : undefined
+
+        return (
+          <td class={cellSelClass} style={cellSelStyle}>
+            {isRadio ? (
+              <SelectionRadio
+                checked={checked}
+                disabled={disabled}
+                onChange={() => tableContext.toggleRow?.(props.record, props.rowIndex)}
+              />
+            ) : (
+              <SelectionCheckbox
+                checked={checked}
+                disabled={disabled}
+                onChange={() => tableContext.toggleRow?.(props.record, props.rowIndex)}
+              />
+            )}
+          </td>
+        )
+      }
+
+      return (
+        <td class={cellClass.value} style={cellStyle.value}>
+          {props.column.ellipsis ? (
+            <div class={props.bodyCellEllipsisClass}>{cellContent.value}</div>
+          ) : (
+            cellContent.value
+          )}
+        </td>
+      )
+    }
   },
 })

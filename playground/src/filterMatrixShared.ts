@@ -46,10 +46,7 @@ export interface FilterMatrixState {
     _pagination: unknown,
     filters: Record<string, FilterValue[] | null>,
   ) => void
-  onVTableControlledChange: (
-    _pagination: unknown,
-    filters: Record<string, FilterValue[] | null>,
-  ) => void
+  onVTableControlledChange: (filters: Record<string, FilterValue[] | null>) => void
   onElementControlledFilterChange: (filters: Record<string, FilterValue[]>) => void
   antMultiColumns: TableColumnType<DemoRow>[]
   antSingleColumns: TableColumnType<DemoRow>[]
@@ -437,10 +434,7 @@ export function useFilterMatrixState(): FilterMatrixState {
     syncControlledTeam(filters.team)
   }
 
-  function onVTableControlledChange(
-    _pagination: unknown,
-    filters: Record<string, FilterValue[] | null>,
-  ) {
+  function onVTableControlledChange(filters: Record<string, FilterValue[] | null>) {
     console.log(filters)
     syncControlledTeam(filters.team)
   }

@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { ref, computed } from 'vue'
 import { ConfigProvider as AConfigProvider, Table as ATable } from 'ant-design-vue'
 import { VTable } from '@vtable-guild/table'
+import type { RowSelection } from '@vtable-guild/table'
 import {
   dataSource,
   isSelected,
@@ -8,12 +10,80 @@ import {
   toggleKeys,
   useFilterMatrixState,
 } from '../filterMatrixShared'
+import type { DemoRow } from '../filterMatrixShared'
 
 defineProps<{
   locale: Record<string, unknown>
 }>()
 
 const state = useFilterMatrixState()
+
+// ---- Selection demo state ----
+const selectionColumns = [
+  { title: 'Name', dataIndex: 'name', key: 'name', width: 160 },
+  { title: 'Age', dataIndex: 'age', key: 'age', width: 100 },
+  { title: 'City', dataIndex: 'city', key: 'city', width: 140 },
+  { title: 'Address', dataIndex: 'address', key: 'address', ellipsis: true },
+]
+
+// Checkbox uncontrolled
+const antCheckboxSelection = {
+  type: 'checkbox' as const,
+  onChange: (keys: unknown[], rows: unknown[]) => {
+    console.log('[antdv checkbox]', keys, rows)
+  },
+  getCheckboxProps: (record: DemoRow) => ({
+    disabled: record.name === 'Ren Moss',
+  }),
+}
+const vtableCheckboxSelection: RowSelection<DemoRow> = {
+  type: 'checkbox',
+  defaultSelectedRowKeys: [],
+  onChange: (keys, rows) => {
+    console.log('[vtable checkbox]', keys, rows)
+  },
+  getCheckboxProps: (record) => ({
+    disabled: (record as DemoRow).name === 'Ren Moss',
+  }),
+}
+
+// Radio uncontrolled
+const antRadioSelection = {
+  type: 'radio' as const,
+  onChange: (keys: unknown[], rows: unknown[]) => {
+    console.log('[antdv radio]', keys, rows)
+  },
+}
+const vtableRadioSelection: RowSelection<DemoRow> = {
+  type: 'radio',
+  defaultSelectedRowKeys: [],
+  onChange: (keys, rows) => {
+    console.log('[vtable radio]', keys, rows)
+  },
+}
+
+// Controlled checkbox
+const controlledKeys = ref<(string | number)[]>([1, 3])
+const antControlledSelection = computed(() => ({
+  type: 'checkbox' as const,
+  selectedRowKeys: controlledKeys.value,
+  onChange: (keys: (string | number)[]) => {
+    controlledKeys.value = [...keys]
+  },
+  getCheckboxProps: (record: DemoRow) => ({
+    disabled: record.name === 'Ren Moss',
+  }),
+}))
+const vtableControlledSelection = computed<RowSelection<DemoRow>>(() => ({
+  type: 'checkbox',
+  selectedRowKeys: controlledKeys.value,
+  onChange: (keys) => {
+    controlledKeys.value = [...keys]
+  },
+  getCheckboxProps: (record) => ({
+    disabled: (record as DemoRow).name === 'Ren Moss',
+  }),
+}))
 </script>
 
 <template>
@@ -676,6 +746,139 @@ const state = useFilterMatrixState()
               :columns="state.vtableFilteredOverrideColumns"
               :data-source="dataSource"
               @change="state.onVTableChange"
+            />
+          </article>
+        </div>
+      </section>
+
+      <!-- ===== Selection Cases ===== -->
+      <section class="play-case">
+        <div class="play-case__header">
+          <div>
+            <p class="play-case__index">13</p>
+            <h2>Checkbox 行选择</h2>
+          </div>
+          <p class="play-case__desc">验证点：全选/半选态、禁用行、取消全选</p>
+        </div>
+        <div class="play-compare-grid">
+          <article class="play-panel">
+            <div class="play-panel__head">
+              <div>
+                <span class="play-badge">reference</span>
+                <h3>ant-design-vue</h3>
+              </div>
+              <p>rowSelection checkbox</p>
+            </div>
+            <ATable
+              :columns="selectionColumns"
+              :data-source="dataSource"
+              :row-selection="antCheckboxSelection"
+              row-key="key"
+              size="middle"
+            />
+          </article>
+          <article class="play-panel play-panel--accent">
+            <div class="play-panel__head">
+              <div>
+                <span class="play-badge play-badge--accent">vtable-guild</span>
+                <h3>antdv preset</h3>
+              </div>
+              <p>rowSelection checkbox</p>
+            </div>
+            <VTable
+              :columns="selectionColumns"
+              :data-source="dataSource"
+              :row-selection="vtableCheckboxSelection"
+              row-key="key"
+            />
+          </article>
+        </div>
+      </section>
+
+      <section class="play-case">
+        <div class="play-case__header">
+          <div>
+            <p class="play-case__index">14</p>
+            <h2>Radio 单选</h2>
+          </div>
+          <p class="play-case__desc">验证点：单选切换、表头无全选框</p>
+        </div>
+        <div class="play-compare-grid">
+          <article class="play-panel">
+            <div class="play-panel__head">
+              <div>
+                <span class="play-badge">reference</span>
+                <h3>ant-design-vue</h3>
+              </div>
+              <p>rowSelection radio</p>
+            </div>
+            <ATable
+              :columns="selectionColumns"
+              :data-source="dataSource"
+              :row-selection="antRadioSelection"
+              row-key="key"
+              size="middle"
+            />
+          </article>
+          <article class="play-panel play-panel--accent">
+            <div class="play-panel__head">
+              <div>
+                <span class="play-badge play-badge--accent">vtable-guild</span>
+                <h3>antdv preset</h3>
+              </div>
+              <p>rowSelection radio</p>
+            </div>
+            <VTable
+              :columns="selectionColumns"
+              :data-source="dataSource"
+              :row-selection="vtableRadioSelection"
+              row-key="key"
+            />
+          </article>
+        </div>
+      </section>
+
+      <section class="play-case">
+        <div class="play-case__header">
+          <div>
+            <p class="play-case__index">15</p>
+            <h2>受控 Checkbox 选择</h2>
+          </div>
+          <p class="play-case__desc">验证点：selectedRowKeys 双向同步、禁用行</p>
+        </div>
+        <p class="play-inline-note">
+          两侧共享 controlledKeys = [{{ controlledKeys.join(', ') }}]，点击任一侧均同步。
+        </p>
+        <div class="play-compare-grid">
+          <article class="play-panel">
+            <div class="play-panel__head">
+              <div>
+                <span class="play-badge">reference</span>
+                <h3>ant-design-vue</h3>
+              </div>
+              <p>controlled checkbox</p>
+            </div>
+            <ATable
+              :columns="selectionColumns"
+              :data-source="dataSource"
+              :row-selection="antControlledSelection"
+              row-key="key"
+              size="middle"
+            />
+          </article>
+          <article class="play-panel play-panel--accent">
+            <div class="play-panel__head">
+              <div>
+                <span class="play-badge play-badge--accent">vtable-guild</span>
+                <h3>antdv preset</h3>
+              </div>
+              <p>controlled checkbox</p>
+            </div>
+            <VTable
+              :columns="selectionColumns"
+              :data-source="dataSource"
+              :row-selection="vtableControlledSelection"
+              row-key="key"
             />
           </article>
         </div>

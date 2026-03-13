@@ -9,6 +9,23 @@ import type { VNodeChild } from 'vue'
 import type { ColumnsType, ColumnType, ColumnFilterItem, Key } from './column'
 import type { TableSlots } from '@vtable-guild/theme'
 
+// ---- 行选择类型 ----
+
+export type RowSelectionType = 'checkbox' | 'radio'
+
+export interface RowSelection<TRecord = Record<string, unknown>> {
+  type?: RowSelectionType
+  selectedRowKeys?: Key[]
+  defaultSelectedRowKeys?: Key[]
+  onChange?: (selectedRowKeys: Key[], selectedRows: TRecord[]) => void
+  onSelect?: (record: TRecord, selected: boolean, selectedRows: TRecord[]) => void
+  onSelectAll?: (selected: boolean, selectedRows: TRecord[], changeRows: TRecord[]) => void
+  getCheckboxProps?: (record: TRecord) => { disabled?: boolean; name?: string }
+  columnWidth?: number | string
+  fixed?: boolean | 'left' | 'right'
+  checkStrictly?: boolean
+}
+
 /**
  * bodyCell slot 的参数类型。
  */
@@ -93,16 +110,12 @@ export interface TableProps<TRecord extends Record<string, unknown> = Record<str
 
   /** 表级 locale 局部覆写，优先级高于全局 provider / plugin。 */
   localeOverrides?: DeepPartial<VTableGuildTableLocale>
+
+  /** 行选择配置 */
+  rowSelection?: RowSelection<TRecord>
 }
 
 // ---- change 事件参数类型 ----
-
-/** change 事件中的 pagination 参数 */
-export interface TablePaginationInfo {
-  current: number
-  pageSize: number
-  total: number
-}
 
 /** change 事件中的 filters 参数 */
 export type TableFiltersInfo = Record<string, (string | number | boolean)[] | null>
@@ -110,7 +123,7 @@ export type TableFiltersInfo = Record<string, (string | number | boolean)[] | nu
 /** change 事件中的 extra 参数 */
 export interface TableChangeExtra<TRecord extends Record<string, unknown>> {
   /** 触发变化的来源 */
-  action: 'paginate' | 'sort' | 'filter'
-  /** 当前显示的数据（经排序/筛选/分页后） */
+  action: 'sort' | 'filter' | 'select'
+  /** 当前显示的数据（经排序/筛选后） */
   currentDataSource: TRecord[]
 }

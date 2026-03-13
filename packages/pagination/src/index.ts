@@ -1,2 +1,0 @@
-// @vtable-guild/pagination
-export {}

@@ -17,9 +17,10 @@ export type {
   TableHeaderCellSlotProps,
   TableSlotsDecl,
   CustomFilterDropdownSlotProps,
-  TablePaginationInfo,
   TableFiltersInfo,
   TableChangeExtra,
+  RowSelection,
+  RowSelectionType,
 } from './types'
 export type { VTableGuildTableLocale } from '@vtable-guild/core'
 

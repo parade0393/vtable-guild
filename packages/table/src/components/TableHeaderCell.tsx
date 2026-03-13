@@ -6,6 +6,7 @@ import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 import SortButton from './SortButton'
 import FilterIcon from './FilterIcon'
 import FilterDropdown from './FilterDropdown'
+import SelectionCheckbox from './SelectionCheckbox'
 
 function getAriaSortValue(order: SortOrder): 'ascending' | 'descending' | undefined {
   if (order === 'ascend') return 'ascending'
@@ -138,6 +139,37 @@ export default defineComponent({
     }
 
     return () => {
+      // ---- 选择列表头 ----
+      if (props.column.key === '__vtg_selection__') {
+        const sel = tableContext.rowSelection?.()
+        const isRadio = sel?.type === 'radio'
+
+        const cellSelClass = cn(props.thClass, 'text-center', props.column.className)
+        const cellSelStyle = props.column.width
+          ? {
+              width:
+                typeof props.column.width === 'number'
+                  ? `${props.column.width}px`
+                  : props.column.width,
+            }
+          : undefined
+
+        if (isRadio) {
+          return <th class={cellSelClass} style={cellSelStyle} />
+        }
+
+        const state = tableContext.allCheckedState?.() ?? 'none'
+        return (
+          <th class={cellSelClass} style={cellSelStyle}>
+            <SelectionCheckbox
+              checked={state === 'all'}
+              indeterminate={state === 'partial'}
+              onChange={(checked: boolean) => tableContext.toggleAll?.(checked)}
+            />
+          </th>
+        )
+      }
+
       const tableLocale = tableContext.locale?.value
       const tooltipTitle =
         sortOrder.value === null

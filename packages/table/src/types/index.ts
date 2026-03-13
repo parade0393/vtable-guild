@@ -18,7 +18,8 @@ export type {
   TableHeaderCellSlotProps,
   TableSlotsDecl,
   CustomFilterDropdownSlotProps,
-  TablePaginationInfo,
   TableFiltersInfo,
   TableChangeExtra,
+  RowSelection,
+  RowSelectionType,
 } from './table'

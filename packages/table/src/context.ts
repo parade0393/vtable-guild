@@ -1,6 +1,6 @@
 import type { ComputedRef, InjectionKey, Slots } from 'vue'
 import type { LocaleName, VTableGuildTableLocale } from '@vtable-guild/core'
-import type { ColumnType, SortOrder } from './types'
+import type { ColumnType, Key, RowSelection, SortOrder } from './types'
 import type { TablePresetConfig } from './preset-config'
 
 /** 子组件主题 slot class 映射 */
@@ -83,6 +83,22 @@ export interface TableContext {
 
   /** 表格最终生效 locale */
   locale?: ComputedRef<VTableGuildTableLocale>
+
+  // ---- 行选择 ----
+  /** 行选择配置 */
+  rowSelection?: () => RowSelection | undefined
+  /** 判断某行是否选中 */
+  isSelected?: (key: Key) => boolean
+  /** 判断某行是否禁用 */
+  isDisabledRow?: (record: Record<string, unknown>) => boolean
+  /** 切换某行选中状态 */
+  toggleRow?: (record: Record<string, unknown>, index: number) => void
+  /** 全选/取消全选 */
+  toggleAll?: (selected: boolean) => void
+  /** 全选状态 */
+  allCheckedState?: () => 'all' | 'partial' | 'none'
+  /** 获取行 key */
+  getRowKey?: (record: Record<string, unknown>, index: number) => Key
 }
 
 /**
