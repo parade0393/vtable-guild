@@ -98,7 +98,7 @@ export type VTableGuildThemeOverrides = Record<string, Partial<ThemeConfig>>
 export interface VTableGuildOptions {
   /** 全局主题预设，默认 'antdv' */
   themePreset?: ThemePresetName
-  /** 全局主题覆盖，key 为组件名（如 'table'、'pagination'） */
+  /** 全局主题覆盖，key 为组件名（如 'table'） */
   theme?: VTableGuildThemeOverrides
   /** 当前激活语言标识，默认 'zh-CN' */
   locale?: LocaleName

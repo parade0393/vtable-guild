@@ -25,14 +25,13 @@ Turborepo 的角色：
 
 ## 2. 不用 Turborepo 时会遇到什么问题
 
-假设我们的 vtable-guild 有 5 个包，依赖关系如下：
+假设我们的 vtable-guild 有 4 个包，依赖关系如下：
 
 ```
 core（无上游依赖）
 theme → core
-pagination → core
-table → core, theme, pagination
-vtable-guild → core, theme, table, pagination
+table → core, theme
+vtable-guild → core, theme, table
 ```
 
 ### 痛点 1：手动管理构建顺序
@@ -43,14 +42,14 @@ vtable-guild → core, theme, table, pagination
 # 必须严格按顺序执行，否则 import 会找不到产物
 cd packages/core && pnpm build
 cd packages/theme && pnpm build
-cd packages/pagination && pnpm build
 cd packages/table && pnpm build
 cd packages/vtable-guild && pnpm build
 ```
 
 问题：
+
 - 手动维护顺序，包越多越容易出错
-- theme 和 pagination 其实可以并行（都只依赖 core），但手动脚本做不到
+- theme 其实不依赖 table，手动脚本难以最大化并行
 - 新增一个包时，要记得更新构建脚本的顺序
 
 ### 痛点 2：每次都全量构建
@@ -61,12 +60,11 @@ cd packages/vtable-guild && pnpm build
 # 不用 turbo：所有包都重新构建
 core     — 没改，但还是构建了（浪费）
 theme    — 改了，需要构建 ✓
-pagination — 没改，但还是构建了（浪费）
 table    — 依赖 theme，需要重新构建 ✓
 vtable-guild — 依赖 table，需要重新构建 ✓
 ```
 
-5 个包全部重新构建。如果每个包构建要 3 秒，就是 15 秒。
+4 个包全部重新构建。如果每个包构建要 3 秒，就是 12 秒。
 
 ### 痛点 3：CI 重复劳动
 
@@ -81,14 +79,13 @@ vtable-guild — 依赖 table，需要重新构建 ✓
   "scripts": {
     "build:core": "cd packages/core && pnpm build",
     "build:theme": "cd packages/theme && pnpm build",
-    "build:pagination": "cd packages/pagination && pnpm build",
     "build:table": "cd packages/table && pnpm build",
     "build:vtable-guild": "cd packages/vtable-guild && pnpm build",
-    "build": "pnpm build:core && pnpm build:theme && pnpm build:pagination && pnpm build:table && pnpm build:vtable-guild",
+    "build": "pnpm build:core && pnpm build:theme && pnpm build:table && pnpm build:vtable-guild",
     "test:core": "cd packages/core && pnpm test",
     "test:theme": "...",
     // ... 每个包每个任务都要写一遍
-  }
+  },
 }
 ```
 
@@ -107,8 +104,8 @@ turbo run build
 
 # Turborepo 自动推导出：
 # 1. core（无依赖，最先构建）
-# 2. theme + pagination（都只依赖 core，并行构建）
-# 3. table（依赖 core + theme + pagination，等它们完成后构建）
+# 2. theme（依赖 core，等 core 完成后构建）
+# 3. table（依赖 core + theme，等它们完成后构建）
 # 4. vtable-guild（依赖所有包，最后构建）
 ```
 
@@ -118,9 +115,9 @@ turbo run build
 {
   "tasks": {
     "build": {
-      "dependsOn": ["^build"]  // ^ = 先构建上游依赖
-    }
-  }
+      "dependsOn": ["^build"], // ^ = 先构建上游依赖
+    },
+  },
 }
 ```
 
@@ -129,6 +126,7 @@ turbo run build
 ### 解决方案 2：智能缓存
 
 Turborepo 对每个任务计算一个 hash，基于：
+
 - 源文件内容
 - 依赖包的构建产物
 - 环境变量
@@ -142,18 +140,16 @@ turbo run build
 # 第一次：
 #  core     — cache miss, 构建 (2.1s)
 #  theme    — cache miss, 构建 (1.8s)
-#  pagination — cache miss, 构建 (1.5s)
 #  table    — cache miss, 构建 (3.2s)
 #  vtable-guild — cache miss, 构建 (0.8s)
-#  Total: 5.3s（theme 和 pagination 并行）
+#  Total: 7.9s
 
 # 改了 theme/src/table.ts 后再次构建：
 #  core       — cache hit, 跳过 ✓
 #  theme      — cache miss, 重新构建
-#  pagination — cache hit, 跳过 ✓
 #  table      — cache miss, 重新构建（因为依赖 theme 变了）
 #  vtable-guild — cache miss, 重新构建
-#  Total: 3.5s
+#  Total: 5.8s
 
 # 什么都没改再构建：
 #  全部 cache hit
@@ -167,7 +163,7 @@ Turborepo 在拓扑约束内尽可能并行执行：
 ```
 时间线：
   t=0s   [core build]
-  t=2s   [theme build] [pagination build]  ← 并行
+  t=2s   [theme build]
   t=4s   [table build]
   t=7s   [vtable-guild build]
 ```
@@ -191,8 +187,8 @@ pnpm type-check   # turbo run type-check — 类型检查所有包
     "build": "turbo run build",
     "test": "turbo run test",
     "lint": "turbo run lint",
-    "type-check": "turbo run type-check"
-  }
+    "type-check": "turbo run type-check",
+  },
 }
 ```
 
@@ -210,32 +206,32 @@ pnpm type-check   # turbo run type-check — 类型检查所有包
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**"],
     },
     "dev": {
       "dependsOn": ["^build"],
       "cache": false,
-      "persistent": true
+      "persistent": true,
     },
     "test": {
-      "dependsOn": ["build"]
+      "dependsOn": ["build"],
     },
     "lint": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build"],
     },
     "type-check": {
-      "dependsOn": ["^build"]
-    }
-  }
+      "dependsOn": ["^build"],
+    },
+  },
 }
 ```
 
 ### `dependsOn` 的两种写法
 
-| 写法 | 含义 | 示例 |
-|------|------|------|
-| `"^build"` | 先构建**上游依赖包**的 build | table 的 build 会等 core、theme、pagination 的 build 完成 |
-| `"build"` | 先执行**同一个包**的 build | table 的 test 会等 table 自己的 build 完成 |
+| 写法       | 含义                         | 示例                                          |
+| ---------- | ---------------------------- | --------------------------------------------- |
+| `"^build"` | 先构建**上游依赖包**的 build | table 的 build 会等 core、theme 的 build 完成 |
+| `"build"`  | 先执行**同一个包**的 build   | table 的 test 会等 table 自己的 build 完成    |
 
 ### `outputs`
 
@@ -268,10 +264,12 @@ pnpm -r --filter=./packages/* run build
 ```
 
 **优点**：
+
 - 零额外依赖
 - pnpm 自带拓扑排序
 
 **缺点**：
+
 - 无缓存——每次全量构建
 - 并行控制有限（`--workspace-concurrency` 只能控制并发数，不能按依赖图并行）
 - 无法跨 CI 共享缓存
@@ -287,6 +285,7 @@ npx nx run-many --target=build
 ```
 
 **优点**：
+
 - 拓扑排序 + 缓存 + 并行（与 turbo 相同）
 - 内置代码生成器（`nx generate`）
 - 内置依赖图可视化（`nx graph`）
@@ -294,6 +293,7 @@ npx nx run-many --target=build
 - 插件生态丰富（@nx/vite, @nx/eslint 等）
 
 **缺点**：
+
 - 配置更重——`nx.json` + `project.json`（每个包一个）
 - 学习曲线更陡
 - 对项目结构有更多约定（推荐 apps/ + libs/ 结构）
@@ -310,9 +310,11 @@ npx lerna run build
 ```
 
 **优点**：
+
 - 历史悠久，文档多
 
 **缺点**：
+
 - 现代版本底层就是 Nx，不如直接用 Nx
 - 旧版本无缓存、无并行优化
 - 社区已转向 turbo/nx
@@ -329,9 +331,11 @@ run-s "build:core" "build:table"  # 串行
 ```
 
 **优点**：
+
 - 极简，无额外概念
 
 **缺点**：
+
 - 手动维护顺序和并行关系
 - 无缓存
 - 无拓扑感知——你得自己算哪些能并行
@@ -343,22 +347,22 @@ run-s "build:core" "build:table"  # 串行
 
 ## 6. 方案对比总结
 
-| 特性 | Turborepo | Nx | pnpm -r | npm-run-all2 |
-|------|-----------|-----|---------|--------------|
-| 拓扑排序 | 自动 | 自动 | 自动 | 手动 |
-| 并行执行 | 按依赖图最大化 | 按依赖图最大化 | 有限 | 手动指定 |
-| 本地缓存 | 有 | 有 | 无 | 无 |
-| 远程缓存 | 有（Vercel） | 有（Nx Cloud） | 无 | 无 |
-| 配置复杂度 | 低（一个 turbo.json） | 中高 | 零 | 低 |
-| 学习成本 | 低 | 中高 | 零 | 零 |
-| 新增包成本 | 零配置 | 需加 project.json | 零 | 需改脚本 |
-| 包体大小 | 小（~10MB） | 大（~50MB+） | 已有 | 已有 |
+| 特性       | Turborepo             | Nx                | pnpm -r | npm-run-all2 |
+| ---------- | --------------------- | ----------------- | ------- | ------------ |
+| 拓扑排序   | 自动                  | 自动              | 自动    | 手动         |
+| 并行执行   | 按依赖图最大化        | 按依赖图最大化    | 有限    | 手动指定     |
+| 本地缓存   | 有                    | 有                | 无      | 无           |
+| 远程缓存   | 有（Vercel）          | 有（Nx Cloud）    | 无      | 无           |
+| 配置复杂度 | 低（一个 turbo.json） | 中高              | 零      | 低           |
+| 学习成本   | 低                    | 中高              | 零      | 零           |
+| 新增包成本 | 零配置                | 需加 project.json | 零      | 需改脚本     |
+| 包体大小   | 小（~10MB）           | 大（~50MB+）      | 已有    | 已有         |
 
 ---
 
 ## 7. 为什么 vtable-guild 选择 Turborepo
 
-1. **5 个包，依赖关系明确**——turbo 的拓扑排序和并行能力刚好够用
+1. **4 个包，依赖关系明确**——turbo 的拓扑排序和并行能力刚好够用
 2. **配置极简**——一个 `turbo.json` 搞定，不需要 Nx 那套 project.json
 3. **缓存收益明显**——开发时频繁构建，cache hit 能省大量时间
 4. **零侵入**——不改变现有工具链（pnpm + Vite + ESLint），只在上层编排
@@ -367,4 +371,4 @@ run-s "build:core" "build:table"  # 串行
 
 不选 Nx 的原因：项目规模不大，Nx 的高级功能（分布式执行、代码生成器）用不上，配置负担不值得。
 
-不选纯 pnpm -r 的原因：没有缓存，5 个包每次全量构建体验差。
+不选纯 pnpm -r 的原因：没有缓存，4 个包每次全量构建体验差。

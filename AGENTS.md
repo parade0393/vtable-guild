@@ -13,7 +13,7 @@
 
 This repository is a `pnpm` + Turborepo monorepo.
 
-- `packages/*`: publishable libraries (`core`, `icons`, `table`, `pagination`, `theme`, `vtable-guild`), with source in `src/` and outputs in `dist/`.
+- `packages/*`: publishable libraries (`core`, `icons`, `table`, `theme`, `vtable-guild`), with source in `src/` and outputs in `dist/`.
 - `playground/`: local Vite app for manual validation and screenshots.
 - `docs/`: architecture and phase guides.
 

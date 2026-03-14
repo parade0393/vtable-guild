@@ -16,7 +16,6 @@ export default defineConfig({
         '@vtable-guild/core',
         '@vtable-guild/theme',
         '@vtable-guild/table',
-        '@vtable-guild/pagination',
         'tailwind-variants',
       ],
     },

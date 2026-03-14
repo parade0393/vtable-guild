@@ -14,7 +14,7 @@
 
 - `pnpm build` 全部通过
 - `@vtable-guild/core` 已具备 `useTheme`、`createVTableGuild`
-- `@vtable-guild/theme` 已具备 `table.ts` 和 `pagination.ts`
+- `@vtable-guild/theme` 已具备 `table.ts`
 - `playground/` 可运行（`pnpm playground`）
 
 ---
@@ -377,13 +377,11 @@ export type {
 ```typescript
 // packages/theme/src/index.ts
 export { tableTheme } from './table'
-export { paginationTheme } from './pagination'
 
 export { resolveThemePreset, resolveTableThemePreset } from './presets'
 export type { ThemePresetName } from './presets'
 
 export type { TableSlots, TableVariantProps } from './table'
-export type { PaginationSlots, PaginationVariantProps } from './pagination'
 ```
 
 ---

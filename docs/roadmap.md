@@ -40,24 +40,20 @@
 
 ### 1.6 创建 `packages/table` 子包骨架
 
-- [ ] 同上结构，含 Vue SFC 支持，peerDependencies 含 core/theme/pagination
+- [ ] 同上结构，含 Vue SFC 支持，peerDependencies 含 core/theme
 
-### 1.7 创建 `packages/pagination` 子包骨架
+### 1.7 创建 `packages/vtable-guild` 聚合入口包
 
-- [ ] 同上结构，含 Vue SFC 支持，peerDependencies 含 core
-
-### 1.8 创建 `packages/vtable-guild` 聚合入口包
-
-- [ ] dependencies 引用上述四个子包
+- [ ] dependencies 引用上述三个子包
 - [ ] `src/index.ts` re-export 所有子包
 
-### 1.9 验证
+### 1.8 验证
 
 - [ ] `pnpm install` 无报错，workspace 协议解析正确
 - [ ] `pnpm build`（turbo）能成功构建所有子包，拓扑顺序正确
 - [ ] 子包之间的 import 能正确解析（TypeScript 无报错）
 
-**阶段产出**：5 个子包骨架 + turborepo 编排 + TypeScript 项目引用，`pnpm build` 全部通过。
+**阶段产出**：4 个子包骨架 + turborepo 编排 + TypeScript 项目引用，`pnpm build` 全部通过。
 
 ---
 
@@ -88,7 +84,6 @@
 ### 2.4 `@vtable-guild/theme` — 默认主题文件
 
 - [ ] `src/table.ts`：Table 主题（slots, variants, defaultVariants）
-- [ ] `src/pagination.ts`：Pagination 主题
 - [ ] `src/index.ts`：统一导出
 
 ### 2.5 Playground 开发环境
@@ -168,32 +163,21 @@
 - [ ] 支持 `filters`, `onFilter`, `filterMultiple`, `filterMode`
 - [ ] 支持 `customFilterDropdown` slot
 
-### 4.3 分页
-
-- [ ] `@vtable-guild/pagination` 完整实现
-  - `Pagination.vue` 主组件
-  - `PaginationItem.vue`, `PaginationPrev.vue`, `PaginationNext.vue`
-  - `PaginationJumper.vue`, `PaginationSizeChanger.vue`
-  - `usePagination` composable
-- [ ] Table 集成分页：`pagination` prop，支持 `position`, `hideOnSinglePage`
-- [ ] `usePagination` (table 侧)：数据切片 + 分页状态联动
-
-### 4.4 行选择
+### 4.3 行选择
 
 - [ ] `useSelection` composable：管理选中状态（checkbox/radio）
 - [ ] `SelectionCheckbox.vue`, `SelectionRadio.vue`
 - [ ] 支持 `rowSelection` prop 全部配置项
 - [ ] 支持 `selectedRowKeys` v-model 模式
 
-### 4.5 验证
+### 4.4 验证
 
 - [ ] 排序：点击表头排序，受控/非受控模式均正常
 - [ ] 筛选：下拉菜单筛选数据，自定义筛选 UI 正常
-- [ ] 分页：翻页、跳页、切换 pageSize 正常
 - [ ] 选择：checkbox/radio 选择，全选/反选正常
-- [ ] `change` 事件正确携带 pagination/filters/sorter 信息
+- [ ] `change` 事件正确携带 filters/sorter 信息
 
-**阶段产出**：功能完整的交互式 Table，覆盖排序/筛选/分页/选择。
+**阶段产出**：功能完整的交互式 Table，覆盖排序/筛选/选择。
 
 ---
 
@@ -284,7 +268,6 @@
 - [ ] `@vtable-guild/core`：useTheme 合并逻辑、tv 封装、plugin 注入
 - [ ] `@vtable-guild/theme`：主题对象结构校验
 - [ ] `@vtable-guild/table`：各 composable 的状态管理逻辑
-- [ ] `@vtable-guild/pagination`：分页计算逻辑
 
 ### 7.3 组件测试
 

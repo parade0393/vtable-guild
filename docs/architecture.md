@@ -14,33 +14,33 @@ vtable-guild 是一个 Vue 3 Table 组件库，目标：
 
 ### 2.1 已完成（状态良好）
 
-| 类别 | 内容 |
-|------|------|
-| 包管理 | pnpm + `pnpm-workspace.yaml`（声明 `packages/*` 和 `site`） |
+| 类别     | 内容                                                                 |
+| -------- | -------------------------------------------------------------------- |
+| 包管理   | pnpm + `pnpm-workspace.yaml`（声明 `packages/*` 和 `site`）          |
 | 引擎锁定 | node ^20.19.0 \|\| >=22.12.0, pnpm >=10.28.0, `preinstall` 强制 pnpm |
-| 代码规范 | ESLint 9 flat config + vue-ts + prettier skip-formatting |
-| 样式规范 | Stylelint + BEM pattern + Vue deep/global 支持 |
-| 格式化 | Prettier（无分号、单引号、100 字宽） |
-| 编辑器 | EditorConfig + VSCode settings/extensions |
-| Git 规范 | husky pre-commit(lint-staged) + commit-msg(commitlint) + commitizen |
-| 换行符 | `.gitattributes` 强制 LF |
-| 核心依赖 | Vue 3.5, Tailwind CSS 4, tailwind-variants 3, @tailwindcss/vite |
-| JSX | @vitejs/plugin-vue-jsx |
+| 代码规范 | ESLint 9 flat config + vue-ts + prettier skip-formatting             |
+| 样式规范 | Stylelint + BEM pattern + Vue deep/global 支持                       |
+| 格式化   | Prettier（无分号、单引号、100 字宽）                                 |
+| 编辑器   | EditorConfig + VSCode settings/extensions                            |
+| Git 规范 | husky pre-commit(lint-staged) + commit-msg(commitlint) + commitizen  |
+| 换行符   | `.gitattributes` 强制 LF                                             |
+| 核心依赖 | Vue 3.5, Tailwind CSS 4, tailwind-variants 3, @tailwindcss/vite      |
+| JSX      | @vitejs/plugin-vue-jsx                                               |
 
 ### 2.2 欠缺项
 
-| # | 项目 | 优先级 | 说明 |
-|---|------|--------|------|
-| 1 | Monorepo 任务编排 | P0 | 需安装 turborepo，配置 `turbo.json`，根 scripts 改为 turbo 命令 |
-| 2 | 子包结构与构建 | P0 | `packages/` 为空，需创建各子包的 package.json + vite.config.ts (lib mode) |
-| 3 | TypeScript monorepo 适配 | P0 | 需创建 `tsconfig.base.json`，各子包独立 tsconfig 继承 base |
-| 4 | 测试框架 | P0 | 需安装 vitest + @vue/test-utils + happy-dom，配置 workspace 模式 |
-| 5 | VitePress 文档站 | P1 | `site/` 为空，需初始化 VitePress，支持组件 demo 嵌入 |
-| 6 | Changesets 版本管理 | P1 | 多包独立版本管理与发布流程 |
-| 7 | Playground 开发环境 | P1 | 根目录 Vite 应用改造为 playground，引用本地 packages 调试 |
-| 8 | tailwind-variants 依赖位置 | P1 | 应从根 devDeps 移至 `@vtable-guild/core` 的 dependencies |
-| 9 | ESLint/Stylelint monorepo 适配 | P2 | 确认 lint 规则覆盖 `packages/**` |
-| 10 | CI/CD | P2 | GitHub Actions: PR 触发 lint+test+build，main 合并后自动发布 |
+| #   | 项目                           | 优先级 | 说明                                                                      |
+| --- | ------------------------------ | ------ | ------------------------------------------------------------------------- |
+| 1   | Monorepo 任务编排              | P0     | 需安装 turborepo，配置 `turbo.json`，根 scripts 改为 turbo 命令           |
+| 2   | 子包结构与构建                 | P0     | `packages/` 为空，需创建各子包的 package.json + vite.config.ts (lib mode) |
+| 3   | TypeScript monorepo 适配       | P0     | 需创建 `tsconfig.base.json`，各子包独立 tsconfig 继承 base                |
+| 4   | 测试框架                       | P0     | 需安装 vitest + @vue/test-utils + happy-dom，配置 workspace 模式          |
+| 5   | VitePress 文档站               | P1     | `site/` 为空，需初始化 VitePress，支持组件 demo 嵌入                      |
+| 6   | Changesets 版本管理            | P1     | 多包独立版本管理与发布流程                                                |
+| 7   | Playground 开发环境            | P1     | 根目录 Vite 应用改造为 playground，引用本地 packages 调试                 |
+| 8   | tailwind-variants 依赖位置     | P1     | 应从根 devDeps 移至 `@vtable-guild/core` 的 dependencies                  |
+| 9   | ESLint/Stylelint monorepo 适配 | P2     | 确认 lint 规则覆盖 `packages/**`                                          |
+| 10  | CI/CD                          | P2     | GitHub Actions: PR 触发 lint+test+build，main 合并后自动发布              |
 
 ---
 
@@ -69,7 +69,6 @@ packages/
 ├── theme/                         # @vtable-guild/theme
 │   ├── src/
 │   │   ├── table.ts               # Table 主题定义
-│   │   ├── pagination.ts          # Pagination 主题
 │   │   ├── checkbox.ts            # Checkbox 主题（row selection）
 │   │   ├── radio.ts               # Radio 主题（row selection）
 │   │   ├── dropdown.ts            # Dropdown 主题（filter）
@@ -111,7 +110,6 @@ packages/
 │   │   │   ├── useColumns.ts      # 列定义解析、合并
 │   │   │   ├── useSorter.ts       # 排序状态管理
 │   │   │   ├── useFilter.ts       # 筛选状态管理
-│   │   │   ├── usePagination.ts   # 分页状态管理
 │   │   │   ├── useSelection.ts    # 行选择状态管理
 │   │   │   ├── useExpand.ts       # 展开行状态管理
 │   │   │   ├── useScroll.ts       # 滚动/固定列/固定表头
@@ -133,24 +131,6 @@ packages/
 │   ├── vite.config.ts
 │   └── tsconfig.json
 │
-├── pagination/                    # @vtable-guild/pagination
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── Pagination.vue
-│   │   │   ├── PaginationItem.vue
-│   │   │   ├── PaginationPrev.vue
-│   │   │   ├── PaginationNext.vue
-│   │   │   ├── PaginationJumper.vue
-│   │   │   └── PaginationSizeChanger.vue
-│   │   ├── composables/
-│   │   │   └── usePagination.ts
-│   │   ├── types/
-│   │   │   └── index.ts
-│   │   └── index.ts
-│   ├── package.json
-│   ├── vite.config.ts
-│   └── tsconfig.json
-│
 └── vtable-guild/                  # @vtable-guild/vtable-guild（聚合入口）
     ├── src/
     │   └── index.ts               # re-export 所有子包
@@ -164,17 +144,12 @@ packages/
 ```
 @vtable-guild/vtable-guild (聚合入口，用户默认安装)
   ├── @vtable-guild/table
-  ├── @vtable-guild/pagination
   ├── @vtable-guild/theme
   └── @vtable-guild/core
 
 @vtable-guild/table
   ├── @vtable-guild/core       (peerDependency)
-  ├── @vtable-guild/theme      (peerDependency)
-  └── @vtable-guild/pagination (peerDependency)
-
-@vtable-guild/pagination
-  └── @vtable-guild/core       (peerDependency)
+  └── @vtable-guild/theme      (peerDependency)
 
 @vtable-guild/theme
   └── @vtable-guild/core       (peerDependency)
@@ -186,13 +161,12 @@ packages/
 
 ### 3.2 各包职责
 
-| 包名 | 职责 | 用户何时直接安装 |
-|------|------|-----------------|
-| `@vtable-guild/core` | tv() 封装、主题合并逻辑、Vue 插件、公共类型和工具 | 想自己组装或开发新组件时 |
-| `@vtable-guild/theme` | 所有组件的默认 tailwind-variants 主题定义（纯数据，无 Vue 依赖） | 想 fork 主题做深度定制时 |
-| `@vtable-guild/table` | Table 及其子组件的 Vue SFC + composables + 类型 | 只需要 Table 功能时 |
-| `@vtable-guild/pagination` | Pagination 组件（Table 内部使用，也可独立使用） | 只需要分页功能时 |
-| `@vtable-guild/vtable-guild` | 聚合入口，re-export 所有包 | 大多数用户的默认选择 |
+| 包名                         | 职责                                                             | 用户何时直接安装         |
+| ---------------------------- | ---------------------------------------------------------------- | ------------------------ |
+| `@vtable-guild/core`         | tv() 封装、主题合并逻辑、Vue 插件、公共类型和工具                | 想自己组装或开发新组件时 |
+| `@vtable-guild/theme`        | 所有组件的默认 tailwind-variants 主题定义（纯数据，无 Vue 依赖） | 想 fork 主题做深度定制时 |
+| `@vtable-guild/table`        | Table 及其子组件的 Vue SFC + composables + 类型                  | 只需要 Table 功能时      |
+| `@vtable-guild/vtable-guild` | 聚合入口，re-export 所有包                                       | 大多数用户的默认选择     |
 
 ---
 
@@ -208,12 +182,12 @@ Layer 2: createVTableGuild({ theme: { table: { ... } } }) 全局配置
 Layer 3: <VTable :ui="{ th: '...' }" class="..." /> 实例级（最高优先级）
 ```
 
-| 层级 | 作用域 | 机制 |
-|------|--------|------|
-| 默认主题 (`theme/*.ts`) | 组件默认样式 | slots + variants + compoundVariants + defaultVariants |
-| 全局配置 (Vue plugin) | 应用级覆盖 | 同结构对象，通过 provide/inject 注入，tailwind-merge 合并 |
-| `ui` prop | 实例级，任意 slot | 对象，key 为 slot 名 |
-| `class` prop | 实例级，仅 root slot | Tailwind class 字符串 |
+| 层级                    | 作用域               | 机制                                                      |
+| ----------------------- | -------------------- | --------------------------------------------------------- |
+| 默认主题 (`theme/*.ts`) | 组件默认样式         | slots + variants + compoundVariants + defaultVariants     |
+| 全局配置 (Vue plugin)   | 应用级覆盖           | 同结构对象，通过 provide/inject 注入，tailwind-merge 合并 |
+| `ui` prop               | 实例级，任意 slot    | 对象，key 为 slot 名                                      |
+| `class` prop            | 实例级，仅 root slot | Tailwind class 字符串                                     |
 
 ### 4.2 主题文件规范
 
@@ -310,27 +284,26 @@ const { slots } = useTheme('table', tableTheme, props)
 
 ## 5. ant-design-vue Table 功能对照清单
 
-| 功能 | ant-design-vue 对应 | 优先级 |
-|------|---------------------|--------|
-| 基础表格渲染 | `dataSource` + `columns` | P0 |
-| 列定义 | `title`, `dataIndex`, `key`, `width`, `align`, `ellipsis` | P0 |
-| 自定义渲染 | `bodyCell`, `headerCell` slots / `customRender` | P0 |
-| 排序 | `sorter`, `sortOrder`, `defaultSortOrder`, `sortDirections` | P0 |
-| 筛选 | `filters`, `onFilter`, `filterMode`, `customFilterDropdown` | P0 |
-| 分页 | `pagination` prop, 位置/隐藏/页码配置 | P0 |
-| 行选择 | `rowSelection` (checkbox/radio), `selectedRowKeys` | P0 |
-| 加载状态 | `loading` prop | P0 |
-| 空状态 | `emptyText` slot | P0 |
-| 固定表头 | `scroll.y` | P1 |
-| 固定列 | column `fixed: 'left' \| 'right'` + `scroll.x` | P1 |
-| 展开行 | `expandedRowRender`, `expandedRowKeys`, `expandRowByClick` | P1 |
-| 声明式列 | `<VTableColumn>`, `<VTableColumnGroup>` | P1 |
-| 汇总行 | `<VTableSummary>` | P1 |
-| 表头/表尾 | `title`, `footer` slots | P1 |
-| 树形数据 | `childrenColumnName`, `indentSize`, `checkStrictly` | P2 |
-| 列拖拽调整宽度 | `resizable`, `minWidth`, `maxWidth`, `resizeColumn` event | P2 |
-| 虚拟滚动 | `virtual` prop + `scroll.y` | P2 |
-| 响应式列 | column `responsive: Breakpoint[]` | P2 |
-| 粘性表头 | `sticky` prop | P2 |
-| 自定义行属性 | `customRow` | P2 |
-| 自定义单元格属性 | `customCell`, `customHeaderCell` | P2 |
+| 功能             | ant-design-vue 对应                                         | 优先级 |
+| ---------------- | ----------------------------------------------------------- | ------ |
+| 基础表格渲染     | `dataSource` + `columns`                                    | P0     |
+| 列定义           | `title`, `dataIndex`, `key`, `width`, `align`, `ellipsis`   | P0     |
+| 自定义渲染       | `bodyCell`, `headerCell` slots / `customRender`             | P0     |
+| 排序             | `sorter`, `sortOrder`, `defaultSortOrder`, `sortDirections` | P0     |
+| 筛选             | `filters`, `onFilter`, `filterMode`, `customFilterDropdown` | P0     |
+| 行选择           | `rowSelection` (checkbox/radio), `selectedRowKeys`          | P0     |
+| 加载状态         | `loading` prop                                              | P0     |
+| 空状态           | `emptyText` slot                                            | P0     |
+| 固定表头         | `scroll.y`                                                  | P1     |
+| 固定列           | column `fixed: 'left' \| 'right'` + `scroll.x`              | P1     |
+| 展开行           | `expandedRowRender`, `expandedRowKeys`, `expandRowByClick`  | P1     |
+| 声明式列         | `<VTableColumn>`, `<VTableColumnGroup>`                     | P1     |
+| 汇总行           | `<VTableSummary>`                                           | P1     |
+| 表头/表尾        | `title`, `footer` slots                                     | P1     |
+| 树形数据         | `childrenColumnName`, `indentSize`, `checkStrictly`         | P2     |
+| 列拖拽调整宽度   | `resizable`, `minWidth`, `maxWidth`, `resizeColumn` event   | P2     |
+| 虚拟滚动         | `virtual` prop + `scroll.y`                                 | P2     |
+| 响应式列         | column `responsive: Breakpoint[]`                           | P2     |
+| 粘性表头         | `sticky` prop                                               | P2     |
+| 自定义行属性     | `customRow`                                                 | P2     |
+| 自定义单元格属性 | `customCell`, `customHeaderCell`                            | P2     |

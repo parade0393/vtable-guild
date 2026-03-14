@@ -18,7 +18,6 @@ export default defineConfig({
         '@vtable-guild/core',
         '@vtable-guild/icons',
         '@vtable-guild/theme',
-        '@vtable-guild/pagination',
         'tailwind-variants',
       ],
     },

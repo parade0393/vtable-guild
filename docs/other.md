@@ -8,7 +8,6 @@
 export * from '@vtable-guild/core'
 export * from '@vtable-guild/theme'
 export * from '@vtable-guild/table'
-export * from '@vtable-guild/pagination'
 ```
 
 `@vtable-guild/xxx` **不是路径别名**，而是各子包 `package.json` 中 `name` 字段的真实包名。能被识别依赖两套机制协同工作：
@@ -23,8 +22,7 @@ export * from '@vtable-guild/pagination'
 "dependencies": {
     "@vtable-guild/core": "workspace:*",
     "@vtable-guild/theme": "workspace:*",
-    "@vtable-guild/table": "workspace:*",
-    "@vtable-guild/pagination": "workspace:*"
+    "@vtable-guild/table": "workspace:*"
 }
 ```
 
@@ -38,8 +36,7 @@ export * from '@vtable-guild/pagination'
 "references": [
     { "path": "../core" },
     { "path": "../theme" },
-    { "path": "../table" },
-    { "path": "../pagination" }
+    { "path": "../table" }
 ]
 ```
 
@@ -63,12 +60,7 @@ pnpm workspace 的符号链接让**模块解析**生效，TypeScript project ref
     "outDir": "./dist",
     "rootDir": "./src"
   },
-  "references": [
-    { "path": "../core" },
-    { "path": "../theme" },
-    { "path": "../table" },
-    { "path": "../pagination" }
-  ]
+  "references": [{ "path": "../core" }, { "path": "../theme" }, { "path": "../table" }]
 }
 ```
 
@@ -90,7 +82,7 @@ pnpm workspace 的符号链接让**模块解析**生效，TypeScript project ref
 
 1. **类型解析** — 当 `vtable-guild` 中写 `import { x } from '@vtable-guild/core'` 时，TypeScript 通过 references 找到 core 的 tsconfig，再定位到 core 编译出的 `.d.ts` 文件来提供类型信息。
 
-2. **增量构建** — 运行 `tsc --build` 时，TypeScript 会按 references 的拓扑顺序依次构建（先 core → 再 theme → 再 table/pagination → 最后 vtable-guild），且只重新编译发生变化的项目。
+2. **增量构建** — 运行 `tsc --build` 时，TypeScript 会按 references 的拓扑顺序依次构建（先 core → 再 theme → 再 table → 最后 vtable-guild），且只重新编译发生变化的项目。
 
 3. **边界隔离** — 配合 `composite: true`，每个子包只能看到自己 `include` 范围内的源码，不能随意跨包访问未声明引用的项目文件。
 

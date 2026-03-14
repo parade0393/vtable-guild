@@ -10,6 +10,7 @@
 ### 1.1 为什么先做这一步
 
 当前根 `package.json` 混合了两类依赖：
+
 - **monorepo 根应有的**：构建工具、lint 工具、husky 等 devDependencies
 - **不应在根的**：`tailwind-variants`（应在 core 包的 dependencies）、`pinia`/`vue-router`（应在 playground）
 
@@ -25,7 +26,6 @@
 // - "vue-router"     → 后续放入 playground
 // - "@vueuse/core"   → 后续按需放入具体子包
 // - "vue"            → 后续作为子包的 peerDependency
-
 // 移除根 devDependencies 中的：
 // - "tailwind-variants" → 放入 packages/core 的 dependencies
 ```
@@ -72,9 +72,9 @@ pnpm remove vue vue-router pinia @vueuse/core tailwind-variants -w
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "types": ["vite/client"]
+    "types": ["vite/client"],
   },
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules", "dist"],
 }
 ```
 
@@ -90,10 +90,9 @@ pnpm remove vue vue-router pinia @vueuse/core tailwind-variants -w
     { "path": "./packages/core" },
     { "path": "./packages/theme" },
     { "path": "./packages/table" },
-    { "path": "./packages/pagination" },
     { "path": "./packages/vtable-guild" },
-    { "path": "./tsconfig.node.json" }
-  ]
+    { "path": "./tsconfig.node.json" },
+  ],
 }
 ```
 
@@ -122,27 +121,28 @@ pnpm add -Dw turbo
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**"],
     },
     "dev": {
       "dependsOn": ["^build"],
       "cache": false,
-      "persistent": true
+      "persistent": true,
     },
     "test": {
-      "dependsOn": ["build"]
+      "dependsOn": ["build"],
     },
     "lint": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build"],
     },
     "type-check": {
-      "dependsOn": ["^build"]
-    }
-  }
+      "dependsOn": ["^build"],
+    },
+  },
 }
 ```
 
 **关键说明**：
+
 - `"dependsOn": ["^build"]` — `^` 表示先构建上游依赖包。例如 build table 之前，先 build core 和 theme
 - `"outputs": ["dist/**"]` — turbo 缓存 dist 目录，未变更时跳过构建
 - `"persistent": true` — dev 任务是长驻进程（watch 模式），不会被 turbo 杀掉
@@ -161,8 +161,8 @@ pnpm add -Dw turbo
     "prepare": "husky",
     "preinstall": "npx only-allow pnpm",
     "commit": "git-cz",
-    "commitlint": "commitlint --edit"
-  }
+    "commitlint": "commitlint --edit",
+  },
 }
 ```
 
@@ -198,23 +198,23 @@ mkdir -p packages/core/src/plugin
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs"
-    }
+      "import": "./dist/index.mjs",
+    },
   },
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "vite build",
     "dev": "vite build --watch",
-    "type-check": "vue-tsc --build"
+    "type-check": "vue-tsc --build",
   },
   "dependencies": {
-    "tailwind-variants": "^3.2.2"
+    "tailwind-variants": "^3.2.2",
   },
   "peerDependencies": {
-    "vue": "^3.5.0"
+    "vue": "^3.5.0",
   },
-  "license": "MIT"
+  "license": "MIT",
 }
 ```
 
@@ -234,13 +234,14 @@ mkdir -p packages/core/src/plugin
     "composite": true,
     "outDir": "./dist",
     "rootDir": "./src",
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo"
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts"],
 }
 ```
 
 **关键说明**：
+
 - `"composite": true` — 启用项目引用（project references），turbo + tsc --build 需要
 - `"extends": "../../tsconfig.base.json"` — 继承公共配置
 
@@ -265,6 +266,7 @@ export default defineConfig({
 ```
 
 **关键说明**：
+
 - `formats: ['es']` — 只输出 ESM（现代项目不需要 CJS）
 - `external` — vue 和 tailwind-variants 不打包进产物，由使用方提供
 - 后续需要 `.d.ts` 生成时，可加 `vite-plugin-dts`
@@ -299,20 +301,20 @@ mkdir -p packages/theme/src
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs"
-    }
+      "import": "./dist/index.mjs",
+    },
   },
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "vite build",
     "dev": "vite build --watch",
-    "type-check": "vue-tsc --build"
+    "type-check": "vue-tsc --build",
   },
   "peerDependencies": {
-    "@vtable-guild/core": "workspace:*"
+    "@vtable-guild/core": "workspace:*",
   },
-  "license": "MIT"
+  "license": "MIT",
 }
 ```
 
@@ -325,12 +327,10 @@ mkdir -p packages/theme/src
     "composite": true,
     "outDir": "./dist",
     "rootDir": "./src",
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo"
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
   },
   "include": ["src/**/*.ts"],
-  "references": [
-    { "path": "../core" }
-  ]
+  "references": [{ "path": "../core" }],
 }
 ```
 
@@ -385,23 +385,22 @@ mkdir -p packages/table/src/types
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs"
-    }
+      "import": "./dist/index.mjs",
+    },
   },
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "vite build",
     "dev": "vite build --watch",
-    "type-check": "vue-tsc --build"
+    "type-check": "vue-tsc --build",
   },
   "peerDependencies": {
     "@vtable-guild/core": "workspace:*",
     "@vtable-guild/theme": "workspace:*",
-    "@vtable-guild/pagination": "workspace:*",
-    "vue": "^3.5.0"
+    "vue": "^3.5.0",
   },
-  "license": "MIT"
+  "license": "MIT",
 }
 ```
 
@@ -414,14 +413,10 @@ mkdir -p packages/table/src/types
     "composite": true,
     "outDir": "./dist",
     "rootDir": "./src",
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo"
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
   },
   "include": ["src/**/*.ts", "src/**/*.vue"],
-  "references": [
-    { "path": "../core" },
-    { "path": "../theme" },
-    { "path": "../pagination" }
-  ]
+  "references": [{ "path": "../core" }, { "path": "../theme" }],
 }
 ```
 
@@ -442,19 +437,14 @@ export default defineConfig({
       fileName: () => 'index.mjs',
     },
     rollupOptions: {
-      external: [
-        'vue',
-        '@vtable-guild/core',
-        '@vtable-guild/theme',
-        '@vtable-guild/pagination',
-        'tailwind-variants',
-      ],
+      external: ['vue', '@vtable-guild/core', '@vtable-guild/theme', 'tailwind-variants'],
     },
   },
 })
 ```
 
 **关键说明**：
+
 - 需要 `vue()` 和 `vueJsx()` 插件来处理 `.vue` 和 `.tsx` 文件
 - 这两个插件已在根 devDependencies 中，pnpm workspace 会自动提升
 
@@ -467,109 +457,15 @@ export {}
 
 ---
 
-## Step 7：创建 `packages/pagination`
+## Step 7：创建 `packages/vtable-guild`（聚合入口）
 
 ### 7.1 创建目录
-
-```bash
-mkdir -p packages/pagination/src/components
-mkdir -p packages/pagination/src/composables
-mkdir -p packages/pagination/src/types
-```
-
-### 7.2 `packages/pagination/package.json`
-
-```jsonc
-{
-  "name": "@vtable-guild/pagination",
-  "version": "0.0.1",
-  "description": "Pagination component for vtable-guild",
-  "type": "module",
-  "files": ["dist"],
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs"
-    }
-  },
-  "main": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
-  "scripts": {
-    "build": "vite build",
-    "dev": "vite build --watch",
-    "type-check": "vue-tsc --build"
-  },
-  "peerDependencies": {
-    "@vtable-guild/core": "workspace:*",
-    "vue": "^3.5.0"
-  },
-  "license": "MIT"
-}
-```
-
-### 7.3 `packages/pagination/tsconfig.json`
-
-```jsonc
-{
-  "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "composite": true,
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo"
-  },
-  "include": ["src/**/*.ts", "src/**/*.vue"],
-  "references": [
-    { "path": "../core" }
-  ]
-}
-```
-
-### 7.4 `packages/pagination/vite.config.ts`
-
-```typescript
-import { defineConfig } from 'vite'
-import { resolve } from 'node:path'
-import vue from '@vitejs/plugin-vue'
-import vueJsx from '@vitejs/plugin-vue-jsx'
-
-export default defineConfig({
-  plugins: [vue(), vueJsx()],
-  build: {
-    lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
-      formats: ['es'],
-      fileName: () => 'index.mjs',
-    },
-    rollupOptions: {
-      external: [
-        'vue',
-        '@vtable-guild/core',
-        'tailwind-variants',
-      ],
-    },
-  },
-})
-```
-
-### 7.5 `packages/pagination/src/index.ts`
-
-```typescript
-// @vtable-guild/pagination
-export {}
-```
-
----
-
-## Step 8：创建 `packages/vtable-guild`（聚合入口）
-
-### 8.1 创建目录
 
 ```bash
 mkdir -p packages/vtable-guild/src
 ```
 
-### 8.2 `packages/vtable-guild/package.json`
+### 7.2 `packages/vtable-guild/package.json`
 
 ```jsonc
 {
@@ -581,34 +477,34 @@ mkdir -p packages/vtable-guild/src
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs"
-    }
+      "import": "./dist/index.mjs",
+    },
   },
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "vite build",
     "dev": "vite build --watch",
-    "type-check": "vue-tsc --build"
+    "type-check": "vue-tsc --build",
   },
   "dependencies": {
     "@vtable-guild/core": "workspace:*",
     "@vtable-guild/theme": "workspace:*",
     "@vtable-guild/table": "workspace:*",
-    "@vtable-guild/pagination": "workspace:*"
   },
   "peerDependencies": {
-    "vue": "^3.5.0"
+    "vue": "^3.5.0",
   },
-  "license": "MIT"
+  "license": "MIT",
 }
 ```
 
 **关键说明**：
+
 - 聚合包用 `dependencies`（不是 peer），这样用户安装一个包就自动拉取所有子包
 - `workspace:*` — pnpm workspace 协议，开发时链接本地包，发布时自动替换为真实版本号
 
-### 8.3 `packages/vtable-guild/tsconfig.json`
+### 7.3 `packages/vtable-guild/tsconfig.json`
 
 ```jsonc
 {
@@ -617,19 +513,14 @@ mkdir -p packages/vtable-guild/src
     "composite": true,
     "outDir": "./dist",
     "rootDir": "./src",
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo"
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
   },
   "include": ["src/**/*.ts"],
-  "references": [
-    { "path": "../core" },
-    { "path": "../theme" },
-    { "path": "../table" },
-    { "path": "../pagination" }
-  ]
+  "references": [{ "path": "../core" }, { "path": "../theme" }, { "path": "../table" }],
 }
 ```
 
-### 8.4 `packages/vtable-guild/vite.config.ts`
+### 7.4 `packages/vtable-guild/vite.config.ts`
 
 ```typescript
 import { defineConfig } from 'vite'
@@ -648,7 +539,6 @@ export default defineConfig({
         '@vtable-guild/core',
         '@vtable-guild/theme',
         '@vtable-guild/table',
-        '@vtable-guild/pagination',
         'tailwind-variants',
       ],
     },
@@ -656,46 +546,47 @@ export default defineConfig({
 })
 ```
 
-### 8.5 `packages/vtable-guild/src/index.ts`
+### 7.5 `packages/vtable-guild/src/index.ts`
 
 ```typescript
 // @vtable-guild/vtable-guild — 聚合入口
 export * from '@vtable-guild/core'
 export * from '@vtable-guild/theme'
 export * from '@vtable-guild/table'
-export * from '@vtable-guild/pagination'
 ```
 
 ---
 
-## Step 9：安装依赖并验证
+## Step 8：安装依赖并验证
 
-### 9.1 安装
+### 8.1 安装
 
 ```bash
 pnpm install
 ```
 
 预期结果：
+
 - 无报错
 - `packages/core/node_modules/tailwind-variants` 存在
 - 各子包之间通过 workspace 软链接互相引用
 
-### 9.2 验证构建
+### 8.2 验证构建
 
 ```bash
 pnpm build
 ```
 
 预期结果（turbo 输出）：
+
 ```
- Tasks:    5 successful, 5 total
- Cached:   0 cached, 5 total
+ Tasks:    4 successful, 4 total
+ Cached:   0 cached, 4 total
 ```
 
-构建顺序应为：`core` → `theme` + `pagination`（并行）→ `table` → `vtable-guild`
+构建顺序应为：`core` → `theme`（并行）→ `table` → `vtable-guild`
 
-### 9.3 验证产物
+### 8.3 验证产物
 
 检查每个子包的 `dist/` 目录：
 
@@ -703,11 +594,10 @@ pnpm build
 ls packages/core/dist/        # 应有 index.mjs
 ls packages/theme/dist/        # 应有 index.mjs
 ls packages/table/dist/        # 应有 index.mjs
-ls packages/pagination/dist/   # 应有 index.mjs
 ls packages/vtable-guild/dist/ # 应有 index.mjs
 ```
 
-### 9.4 验证 TypeScript
+### 8.4 验证 TypeScript
 
 ```bash
 # 在任意子包中测试 import 是否有类型提示
@@ -749,12 +639,6 @@ vtable-guild/
 │   │   ├── vite.config.ts                [新增]
 │   │   └── src/index.ts                  [新增]
 │   │
-│   ├── pagination/
-│   │   ├── package.json                  [新增]
-│   │   ├── tsconfig.json                 [新增]
-│   │   ├── vite.config.ts                [新增]
-│   │   └── src/index.ts                  [新增]
-│   │
 │   └── vtable-guild/
 │       ├── package.json                  [新增]
 │       ├── tsconfig.json                 [新增]
@@ -762,7 +646,7 @@ vtable-guild/
 │       └── src/index.ts                  [新增]
 ```
 
-共 **新增 20 个文件**，**修改 4 个文件**。
+共 **新增 16 个文件**，**修改 4 个文件**。
 
 ---
 
@@ -786,4 +670,4 @@ pnpm workspace 会将根 devDependencies 提升到根 node_modules。子包的 v
 
 ### Q: turbo 的 `^build` 是什么意思？
 
-`^` 前缀表示"先构建上游依赖"。例如 `@vtable-guild/table` 的 build 任务声明了 `dependsOn: ["^build"]`，turbo 会先构建它依赖的 core、theme、pagination，再构建 table。
+`^` 前缀表示"先构建上游依赖"。例如 `@vtable-guild/table` 的 build 任务声明了 `dependsOn: ["^build"]`，turbo 会先构建它依赖的 core、theme，再构建 table。

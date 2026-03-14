@@ -8,16 +8,14 @@ vtable-guild is a Vue 3 Table component library with flexible theme customizatio
 
 ## Monorepo Structure
 
-pnpm workspaces + Turborepo. Six packages with this dependency graph:
+pnpm workspaces + Turborepo. Five packages with this dependency graph:
 
 ```
 @vtable-guild/vtable-guild (aggregation entry, re-exports all)
   ├── @vtable-guild/table (main table component + composables)
   │   ├── @vtable-guild/core (peer)
   │   ├── @vtable-guild/icons (peer)
-  │   ├── @vtable-guild/theme (peer)
-  │   └── @vtable-guild/pagination (peer)
-  ├── @vtable-guild/pagination → core (peer)
+  │   └── @vtable-guild/theme (peer)
   ├── @vtable-guild/theme → core (peer)
   ├── @vtable-guild/icons
   └── @vtable-guild/core (tailwind-variants, tailwind-merge, vue as peer)
@@ -26,7 +24,6 @@ pnpm workspaces + Turborepo. Six packages with this dependency graph:
 - **core**: `tv()` wrapper, `cn()` class merging, `useTheme()` composable, Vue plugin (`createVTableGuild`), base UI components (Tooltip, Button, Checkbox), prop helpers
 - **theme**: Pure data objects defining tailwind-variants theme configs + CSS variable tokens. Presets: `antdv` (default), `element-plus`
 - **table**: `VTable` component (TSX) with sub-components, composables (`useSorter`, `useFilter`, `useColumns`), and types
-- **pagination**: Standalone pagination component
 - **icons**: SVG icon Vue components
 - **vtable-guild**: Aggregation package that re-exports everything
 
@@ -61,7 +58,7 @@ Layers merge via `useTheme()` composable using `cn()` (tailwind-merge) for confl
 - All table sub-components are written in **TSX** (not Vue SFC)
 - State managed via composables: `useSorter()`, `useFilter()`, `useColumns()`
 - Supports both **controlled** (`column.sortOrder`) and **uncontrolled** (`column.defaultSortOrder`) modes
-- Single `change` event emitted with `(pagination, filters, sorter, extra)` — mirrors ant-design-vue API
+- Single `change` event emitted with `(filters, sorter, extra)` — mirrors ant-design-vue API
 - Cross-component data via `provide/inject` with `TABLE_CONTEXT_KEY`
 - Data pipeline: `dataSource → filterData() → sortData() → processedData`
 
@@ -92,7 +89,7 @@ Theme tokens defined as CSS custom properties in `packages/theme/css/`:
 
 ## Key File Locations
 
-- Theme definitions: `packages/theme/src/table.ts`, `packages/theme/src/pagination.ts`
+- Theme definitions: `packages/theme/src/table.ts`
 - Theme presets CSS: `packages/theme/css/presets/antdv.css`
 - Core utilities: `packages/core/src/utils/tv.ts` (tv wrapper), `packages/core/src/utils/cn.ts`
 - Plugin setup: `packages/core/src/plugin/index.ts`

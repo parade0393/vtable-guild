@@ -21,7 +21,7 @@
 
 - `pnpm build` 全部通过（5 个包）
 - `@vtable-guild/core` 已具备 `useTheme`、`createVTableGuild`、`tv`、`cn`
-- `@vtable-guild/theme` 已具备 `table.ts`（语义化 token 主题）和 `pagination.ts`
+- `@vtable-guild/theme` 已具备 `table.ts`（语义化 token 主题）
 - `playground/` 可运行（`pnpm playground`），三层主题合并验证通过
 
 ---
@@ -169,7 +169,7 @@ export type ThemePresetName = 'antdv' | 'element-plus'
 export interface VTableGuildOptions {
   /** 全局主题预设，默认 'antdv' */
   themePreset?: ThemePresetName
-  /** 全局主题覆盖，key 为组件名（如 'table'、'pagination'） */
+  /** 全局主题覆盖，key 为组件名（如 'table'） */
   theme?: Record<string, Partial<ThemeConfig>>
 }
 
@@ -300,7 +300,7 @@ import type { ThemeConfig, ThemePresetName } from '@vtable-guild/core'
  * 主题预设接口。
  *
  * 每个 preset 导出一个 ThemePreset 对象，包含各组件的主题配置。
- * 当前仅 table，后续阶段增加 pagination 等。
+ * 当前仅 table。
  */
 export interface ThemePreset {
   table: ThemeConfig
@@ -801,7 +801,6 @@ export type {
 
 // ---------- 主题定义 ----------
 export { tableTheme } from './table'
-export { paginationTheme } from './pagination'
 
 // ---------- 预设解析 ----------
 export { resolveThemePreset, resolveTableThemePreset } from './presets'
@@ -809,7 +808,6 @@ export type { ThemePresetName } from './presets'
 
 // ---------- 类型导出 ----------
 export type { TableSlots, TableVariantProps, TableThemeConfig } from './table'
-export type { PaginationSlots, PaginationVariantProps } from './pagination'
 ```
 
 #### 7.4 修改 `packages/theme/package.json` — CSS 导出路径
