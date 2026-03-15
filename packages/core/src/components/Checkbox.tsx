@@ -28,7 +28,7 @@ const defaultCheckboxTheme = {
     },
     indeterminate: {
       true: {
-        root: 'bg-[color:var(--color-primary)] border-[color:var(--color-primary)]',
+        root: '',
       },
     },
     disabled: {
@@ -85,13 +85,12 @@ export default defineComponent({
             boxSizing: 'border-box',
             position: 'absolute',
             top: '50%',
-            insetInlineStart: '21.5%',
+            left: '22%',
             width: '5.71px',
             height: '9.14px',
-            borderBottom: '2px solid #fff',
-            borderRight: '2px solid #fff',
+            borderBottom: '2px solid var(--vtg-checkbox-check-color, #fff)',
+            borderRight: '2px solid var(--vtg-checkbox-check-color, #fff)',
             transform: 'rotate(45deg) scale(1) translate(-50%, -50%)',
-            transformOrigin: 'top left',
           }}
         />
         {/* Indeterminate: solid square (antdv ::after style) */}
@@ -104,7 +103,7 @@ export default defineComponent({
             left: '50%',
             width: '8px',
             height: '8px',
-            backgroundColor: '#fff',
+            backgroundColor: 'var(--vtg-checkbox-indeterminate-color, var(--color-primary))',
             transform: 'translate(-50%, -50%)',
             borderRadius: '1px',
           }}

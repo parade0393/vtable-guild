@@ -96,6 +96,8 @@
   --vtg-btn-padding-md: 15px;
   --vtg-checkbox-size: 14px;
   --vtg-checkbox-border-radius: 2px;
+  --vtg-checkbox-check-color: #ffffff;
+  --vtg-checkbox-indeterminate-color: #ffffff;
   --vtg-radio-size: 14px;
   --vtg-radio-dot-size: 6px;
   --vtg-radio-border-width: 1px;

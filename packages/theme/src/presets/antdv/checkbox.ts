@@ -31,7 +31,7 @@ export const antdvCheckboxTheme = {
     },
     indeterminate: {
       true: {
-        root: 'bg-[color:var(--color-primary)] border-[color:var(--color-primary)]',
+        root: '',
       },
     },
     disabled: {
