@@ -12,7 +12,7 @@ import type { ThemeConfig } from '@vtable-guild/core'
 export const elementPlusCheckboxTheme = {
   slots: {
     root: [
-      'inline-flex items-center justify-center',
+      'relative inline-flex items-center justify-center',
       'w-[var(--vtg-checkbox-size)] h-[var(--vtg-checkbox-size)]',
       'rounded-[var(--vtg-checkbox-border-radius)]',
       'border border-[color:var(--color-border,#dcdfe6)]',

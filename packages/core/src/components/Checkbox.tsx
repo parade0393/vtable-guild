@@ -10,7 +10,7 @@ import type { ThemeConfig, SlotProps } from '../utils/types'
 const defaultCheckboxTheme = {
   slots: {
     root: [
-      'inline-flex items-center justify-center',
+      'relative inline-flex items-center justify-center',
       'w-[var(--vtg-checkbox-size)] h-[var(--vtg-checkbox-size)]',
       'rounded-[var(--vtg-checkbox-border-radius)]',
       'border border-[color:var(--color-border,#d9d9d9)]',
@@ -77,15 +77,38 @@ export default defineComponent({
         class={themeSlots.root()}
         onClick={handleClick}
       >
-        {props.indeterminate && !props.checked ? (
-          <svg viewBox="0 0 1024 1024" width="12" height="12" fill="#fff" aria-hidden="true">
-            <path d="M872 474H152c-4.4 0-8 3.6-8 8v60c0 4.4 3.6 8 8 8h720c4.4 0 8-3.6 8-8v-60c0-4.4-3.6-8-8-8z" />
-          </svg>
-        ) : props.checked ? (
-          <svg viewBox="64 64 896 896" width="12" height="12" fill="#fff" aria-hidden="true">
-            <path d="M912 190h-69.9c-9.8 0-19.1 4.5-25.1 12.2L404.7 724.5 207 474a32 32 0 00-25.1-12.2H112c-6.7 0-10.4 7.7-6.3 12.9l273.9 347c12.8 16.2 37.4 16.2 50.3 0l488.4-618.9c4.1-5.1.4-12.8-6.3-12.8z" />
-          </svg>
-        ) : null}
+        {/* Checked: border-based checkmark (antdv ::after style) */}
+        <span
+          aria-hidden="true"
+          style={{
+            display: props.checked ? 'block' : 'none',
+            boxSizing: 'border-box',
+            position: 'absolute',
+            top: '50%',
+            insetInlineStart: '21.5%',
+            width: '5.71px',
+            height: '9.14px',
+            borderBottom: '2px solid #fff',
+            borderRight: '2px solid #fff',
+            transform: 'rotate(45deg) scale(1) translate(-50%, -50%)',
+            transformOrigin: 'top left',
+          }}
+        />
+        {/* Indeterminate: solid square (antdv ::after style) */}
+        <span
+          aria-hidden="true"
+          style={{
+            display: props.indeterminate && !props.checked ? 'block' : 'none',
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            width: '8px',
+            height: '8px',
+            backgroundColor: '#fff',
+            transform: 'translate(-50%, -50%)',
+            borderRadius: '1px',
+          }}
+        />
       </span>
     )
   },
