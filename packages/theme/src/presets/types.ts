@@ -15,6 +15,11 @@ export type BuiltInLocaleName = 'zh-CN' | 'en-US'
  */
 export interface ThemePreset {
   table: ThemeConfig
+  button?: ThemeConfig
+  checkbox?: ThemeConfig
+  radio?: ThemeConfig
+  input?: ThemeConfig
+  tooltip?: ThemeConfig
   tableLocale: VTableGuildTableLocale
   locales: Record<BuiltInLocaleName, VTableGuildLocale>
 }

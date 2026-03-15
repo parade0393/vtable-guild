@@ -8,10 +8,25 @@ import type {
   VTableGuildTableLocale,
 } from '@vtable-guild/core'
 import type { AntdvTableThemeConfig } from './antdv/table'
+import type { AntdvButtonThemeConfig } from './antdv/button'
+import type { AntdvCheckboxThemeConfig } from './antdv/checkbox'
+import type { AntdvRadioThemeConfig } from './antdv/radio'
+import type { AntdvInputThemeConfig } from './antdv/input'
+import type { AntdvTooltipThemeConfig } from './antdv/tooltip'
 import { antdvTableTheme } from './antdv/table'
 import { antdvTableEnUSLocale, antdvTableLocale } from './antdv/table-locale'
+import { antdvButtonTheme } from './antdv/button'
+import { antdvCheckboxTheme } from './antdv/checkbox'
+import { antdvRadioTheme } from './antdv/radio'
+import { antdvInputTheme } from './antdv/input'
+import { antdvTooltipTheme } from './antdv/tooltip'
 import { elementPlusTableTheme } from './element-plus/table'
 import { elementPlusTableEnUSLocale, elementPlusTableLocale } from './element-plus/table-locale'
+import { elementPlusButtonTheme } from './element-plus/button'
+import { elementPlusCheckboxTheme } from './element-plus/checkbox'
+import { elementPlusRadioTheme } from './element-plus/radio'
+import { elementPlusInputTheme } from './element-plus/input'
+import { elementPlusTooltipTheme } from './element-plus/tooltip'
 
 /**
  * 预设注册表。
@@ -19,6 +34,11 @@ import { elementPlusTableEnUSLocale, elementPlusTableLocale } from './element-pl
 const presetMap: Record<ThemePresetName, ThemePreset> = {
   antdv: {
     table: antdvTableTheme,
+    button: antdvButtonTheme,
+    checkbox: antdvCheckboxTheme,
+    radio: antdvRadioTheme,
+    input: antdvInputTheme,
+    tooltip: antdvTooltipTheme,
     tableLocale: antdvTableLocale,
     locales: {
       'zh-CN': { table: antdvTableLocale },
@@ -27,6 +47,11 @@ const presetMap: Record<ThemePresetName, ThemePreset> = {
   },
   'element-plus': {
     table: elementPlusTableTheme,
+    button: elementPlusButtonTheme,
+    checkbox: elementPlusCheckboxTheme,
+    radio: elementPlusRadioTheme,
+    input: elementPlusInputTheme,
+    tooltip: elementPlusTooltipTheme,
     tableLocale: elementPlusTableLocale,
     locales: {
       'zh-CN': { table: elementPlusTableLocale },
@@ -56,6 +81,30 @@ export function resolveThemePreset(name: ThemePresetName = 'antdv'): ThemePreset
  */
 export function resolveTableThemePreset(name: ThemePresetName = 'antdv'): AntdvTableThemeConfig {
   return resolveThemePreset(name).table as AntdvTableThemeConfig
+}
+
+export function resolveButtonThemePreset(name: ThemePresetName = 'antdv'): AntdvButtonThemeConfig {
+  return (resolveThemePreset(name).button ?? antdvButtonTheme) as AntdvButtonThemeConfig
+}
+
+export function resolveCheckboxThemePreset(
+  name: ThemePresetName = 'antdv',
+): AntdvCheckboxThemeConfig {
+  return (resolveThemePreset(name).checkbox ?? antdvCheckboxTheme) as AntdvCheckboxThemeConfig
+}
+
+export function resolveRadioThemePreset(name: ThemePresetName = 'antdv'): AntdvRadioThemeConfig {
+  return (resolveThemePreset(name).radio ?? antdvRadioTheme) as AntdvRadioThemeConfig
+}
+
+export function resolveInputThemePreset(name: ThemePresetName = 'antdv'): AntdvInputThemeConfig {
+  return (resolveThemePreset(name).input ?? antdvInputTheme) as AntdvInputThemeConfig
+}
+
+export function resolveTooltipThemePreset(
+  name: ThemePresetName = 'antdv',
+): AntdvTooltipThemeConfig {
+  return (resolveThemePreset(name).tooltip ?? antdvTooltipTheme) as AntdvTooltipThemeConfig
 }
 
 export function resolveTableLocalePreset(name: ThemePresetName = 'antdv'): VTableGuildTableLocale {

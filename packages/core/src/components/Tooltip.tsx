@@ -10,6 +10,31 @@ import {
   type VNodeChild,
   nextTick,
 } from 'vue'
+import { useTheme } from '../composables/useTheme'
+import type { ThemeConfig, SlotProps } from '../utils/types'
+
+/**
+ * 默认 Tooltip 主题（antdv 预设）。
+ *
+ * 与 packages/theme/src/presets/antdv/tooltip.ts 保持一致。
+ * 仅包含视觉样式，定位逻辑保留 inline style。
+ */
+const defaultTooltipTheme = {
+  slots: {
+    content: [
+      'text-white max-w-[250px] break-words relative',
+      'text-[length:var(--vtg-tooltip-font-size)]',
+      'bg-[color:var(--vtg-tooltip-bg)]',
+      'rounded-[var(--vtg-tooltip-border-radius)]',
+      'p-[var(--vtg-tooltip-padding)]',
+      'shadow-[0_6px_16px_0_rgba(0,0,0,0.08),0_3px_6px_-4px_rgba(0,0,0,0.12),0_9px_28px_8px_rgba(0,0,0,0.05)]',
+    ].join(' '),
+    arrow: 'absolute w-2 h-2 rotate-45 bg-[color:var(--vtg-tooltip-bg)]',
+  },
+  defaultVariants: {},
+} as const satisfies ThemeConfig
+
+type TooltipSlots = keyof typeof defaultTooltipTheme.slots
 
 export default defineComponent({
   name: 'VTooltip',
@@ -26,8 +51,15 @@ export default defineComponent({
     arrow: { type: Boolean, default: true },
     destroyOnHide: { type: Boolean, default: false },
     block: { type: Boolean, default: false },
+    ui: {
+      type: Object as PropType<SlotProps<{ slots: Record<TooltipSlots, string> }>>,
+      default: undefined,
+    },
+    class: { type: String, default: undefined },
   },
   setup(props, { slots }) {
+    const { slots: themeSlots } = useTheme('tooltip', defaultTooltipTheme, props)
+
     const triggerRef = ref<HTMLElement | null>(null)
     const tooltipRef = ref<HTMLElement | null>(null)
     const internalOpen = ref(false)
@@ -110,44 +142,18 @@ export default defineComponent({
 
     onBeforeUnmount(() => clearTimers())
 
-    const arrowStyle = computed(() => {
-      const bg = props.color || 'var(--vtg-tooltip-bg, rgba(0, 0, 0, 0.85))'
+    const arrowPositionStyle = computed(() => {
       switch (props.placement) {
         case 'top':
-          return {
-            bottom: '-4px',
-            left: '50%',
-            transform: 'translateX(-50%) rotate(45deg)',
-            background: bg,
-          }
+          return { bottom: '-4px', left: '50%', transform: 'translateX(-50%) rotate(45deg)' }
         case 'bottom':
-          return {
-            top: '-4px',
-            left: '50%',
-            transform: 'translateX(-50%) rotate(45deg)',
-            background: bg,
-          }
+          return { top: '-4px', left: '50%', transform: 'translateX(-50%) rotate(45deg)' }
         case 'left':
-          return {
-            right: '-4px',
-            top: '50%',
-            transform: 'translateY(-50%) rotate(45deg)',
-            background: bg,
-          }
+          return { right: '-4px', top: '50%', transform: 'translateY(-50%) rotate(45deg)' }
         case 'right':
-          return {
-            left: '-4px',
-            top: '50%',
-            transform: 'translateY(-50%) rotate(45deg)',
-            background: bg,
-          }
+          return { left: '-4px', top: '50%', transform: 'translateY(-50%) rotate(45deg)' }
         default:
-          return {
-            bottom: '-4px',
-            left: '50%',
-            transform: 'translateX(-50%) rotate(45deg)',
-            background: bg,
-          }
+          return { bottom: '-4px', left: '50%', transform: 'translateX(-50%) rotate(45deg)' }
       }
     })
 
@@ -177,8 +183,6 @@ export default defineComponent({
         </span>
       )
 
-      const bg = props.color || 'var(--vtg-tooltip-bg, rgba(0, 0, 0, 0.85))'
-
       return (
         <>
           {triggerNode}
@@ -204,26 +208,16 @@ export default defineComponent({
                   }}
                 >
                   <div
-                    style={{
-                      background: bg,
-                      color: '#fff',
-                      borderRadius: 'var(--vtg-tooltip-border-radius, 6px)',
-                      padding: 'var(--vtg-tooltip-padding, 6px 8px)',
-                      fontSize: 'var(--vtg-tooltip-font-size, 14px)',
-                      maxWidth: '250px',
-                      boxShadow: '0 6px 16px rgba(0,0,0,0.08)',
-                      position: 'relative',
-                      wordWrap: 'break-word',
-                    }}
+                    class={themeSlots.content()}
+                    style={props.color ? { background: props.color } : undefined}
                   >
                     {titleContent}
                     {props.arrow && (
                       <div
+                        class={themeSlots.arrow()}
                         style={{
-                          position: 'absolute',
-                          width: '8px',
-                          height: '8px',
-                          ...arrowStyle.value,
+                          ...arrowPositionStyle.value,
+                          ...(props.color ? { background: props.color } : {}),
                         }}
                       />
                     )}

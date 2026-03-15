@@ -1,4 +1,50 @@
-import { defineComponent } from 'vue'
+import { defineComponent, type PropType } from 'vue'
+import { useTheme } from '../composables/useTheme'
+import type { ThemeConfig, SlotProps } from '../utils/types'
+
+/**
+ * 默认 Checkbox 主题（antdv 预设）。
+ *
+ * 与 packages/theme/src/presets/antdv/checkbox.ts 保持一致。
+ */
+const defaultCheckboxTheme = {
+  slots: {
+    root: [
+      'inline-flex items-center justify-center',
+      'w-[var(--vtg-checkbox-size)] h-[var(--vtg-checkbox-size)]',
+      'rounded-[var(--vtg-checkbox-border-radius)]',
+      'border border-[color:var(--color-border,#d9d9d9)]',
+      'bg-[color:var(--color-surface)]',
+      'cursor-pointer transition-all duration-300 shrink-0',
+      'hover:border-[color:var(--color-primary)]',
+    ].join(' '),
+    indicator: '',
+  },
+  variants: {
+    checked: {
+      true: {
+        root: 'bg-[color:var(--color-primary)] border-[color:var(--color-primary)] hover:bg-[color:var(--color-primary-hover)] hover:border-transparent',
+      },
+    },
+    indeterminate: {
+      true: {
+        root: 'bg-[color:var(--color-primary)] border-[color:var(--color-primary)]',
+      },
+    },
+    disabled: {
+      true: {
+        root: 'bg-[color:var(--color-bg-disabled,rgba(0,0,0,0.04))] border-[color:var(--color-border,#d9d9d9)] cursor-not-allowed hover:border-[color:var(--color-border,#d9d9d9)]',
+      },
+    },
+  },
+  defaultVariants: {
+    checked: false,
+    indeterminate: false,
+    disabled: false,
+  },
+} as const satisfies ThemeConfig
+
+type CheckboxSlots = keyof typeof defaultCheckboxTheme.slots
 
 export default defineComponent({
   name: 'VCheckbox',
@@ -6,9 +52,16 @@ export default defineComponent({
     checked: { type: Boolean, default: false },
     disabled: { type: Boolean, default: false },
     indeterminate: { type: Boolean, default: false },
+    ui: {
+      type: Object as PropType<SlotProps<{ slots: Record<CheckboxSlots, string> }>>,
+      default: undefined,
+    },
+    class: { type: String, default: undefined },
   },
   emits: ['update:checked', 'change'],
   setup(props, { emit }) {
+    const { slots: themeSlots } = useTheme('checkbox', defaultCheckboxTheme, props)
+
     function handleClick(e: MouseEvent) {
       if (props.disabled) return
       const next = !props.checked
@@ -21,13 +74,7 @@ export default defineComponent({
         role="checkbox"
         aria-checked={props.indeterminate ? 'mixed' : props.checked}
         aria-disabled={props.disabled}
-        class={[
-          'inline-flex items-center justify-center w-[var(--vtg-checkbox-size)] h-[var(--vtg-checkbox-size)] rounded-[var(--vtg-checkbox-border-radius)] border cursor-pointer transition-all shrink-0',
-          props.disabled && 'opacity-50 cursor-not-allowed',
-          props.checked || props.indeterminate
-            ? 'bg-[color:var(--color-primary)] border-[color:var(--color-primary)]'
-            : 'bg-[color:var(--color-surface)] border-[color:var(--color-default)]',
-        ]}
+        class={themeSlots.root()}
         onClick={handleClick}
       >
         {props.indeterminate && !props.checked ? (

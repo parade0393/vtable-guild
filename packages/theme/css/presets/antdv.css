@@ -27,10 +27,12 @@
 
   /* 边框 */
   --color-default: #f0f0f0;
+  --color-border: #d9d9d9;
 
   /* 主题色 */
   --color-primary: #1677ff;
   --color-primary-hover: #4096ff;
+  --color-primary-active: #0958d9;
 
   /* ===== 组件 token — 100% 引用语义 token ===== */
   --vtg-table-font-family: var(--font-family-base);
@@ -68,6 +70,12 @@
   /* 禁用态文字色 */
   --color-text-disabled: rgb(0 0 0 / 25%);
 
+  /* 禁用态背景 */
+  --color-bg-disabled: rgb(0 0 0 / 4%);
+
+  /* placeholder 色 */
+  --color-text-placeholder: rgb(0 0 0 / 25%);
+
   /* 筛选下拉选项 hover 背景 */
   --color-control-item-hover-bg: rgb(0 0 0 / 4%);
 
@@ -77,6 +85,7 @@
 
   /* ===== 基础组件 token — Button / Checkbox / Tooltip ===== */
   --vtg-btn-border-radius: 6px;
+  --vtg-btn-border-radius-sm: 4px;
   --vtg-btn-height-sm: 24px;
   --vtg-btn-height-md: 32px;
   --vtg-btn-padding-sm: 7px;
@@ -106,8 +115,10 @@
   --color-on-surface: rgb(255 255 255 / 85%);
   --color-muted: rgb(255 255 255 / 45%);
   --color-default: #303030;
+  --color-border: #424242;
   --color-primary: #1668dc;
   --color-primary-hover: #15417e;
+  --color-primary-active: #1554ad;
 
   /* 排序 hover 背景 */
   --vtg-table-header-sort-hover-bg: rgb(255 255 255 / 4%);
@@ -123,6 +134,12 @@
 
   /* 禁用态文字色 */
   --color-text-disabled: rgb(255 255 255 / 25%);
+
+  /* 禁用态背景 */
+  --color-bg-disabled: rgb(255 255 255 / 8%);
+
+  /* placeholder 色 */
+  --color-text-placeholder: rgb(255 255 255 / 25%);
 
   /* 筛选下拉选项 hover 背景 */
   --color-control-item-hover-bg: rgb(255 255 255 / 8%);

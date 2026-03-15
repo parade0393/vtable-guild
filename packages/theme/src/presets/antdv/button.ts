@@ -1,13 +1,16 @@
-import { defineComponent, type PropType } from 'vue'
-import { useTheme } from '../composables/useTheme'
-import type { ThemeConfig, SlotProps } from '../utils/types'
+import type { ThemeConfig } from '@vtable-guild/core'
 
 /**
- * 默认 Button 主题（antdv 预设）。
+ * Ant Design Vue Button 主题。
  *
- * 与 packages/theme/src/presets/antdv/button.ts 保持一致。
+ * 精确对齐 antdv Button 组件样式：
+ * - transition: 0.2s cubic-bezier(0.645, 0.045, 0.355, 1)
+ * - font-weight: 400 (normal)
+ * - leading: 1.5714
+ * - box-shadow: 0 2px 0 rgba(0,0,0,0.02)
+ * - disabled: 统一灰底灰字灰边，无 opacity
  */
-const defaultButtonTheme = {
+export const antdvButtonTheme = {
   slots: {
     root: 'inline-flex items-center justify-center border font-normal transition-all duration-200 ease-[cubic-bezier(0.645,0.045,0.355,1)] leading-[1.5714] cursor-pointer',
     inner: '',
@@ -75,39 +78,5 @@ const defaultButtonTheme = {
   },
 } as const satisfies ThemeConfig
 
-type ButtonSlots = keyof typeof defaultButtonTheme.slots
-
-export default defineComponent({
-  name: 'VButton',
-  props: {
-    type: {
-      type: String as PropType<'default' | 'primary' | 'link'>,
-      default: 'default',
-    },
-    size: {
-      type: String as PropType<'sm' | 'md'>,
-      default: 'md',
-    },
-    disabled: { type: Boolean, default: false },
-    ui: {
-      type: Object as PropType<SlotProps<{ slots: Record<ButtonSlots, string> }>>,
-      default: undefined,
-    },
-    class: { type: String, default: undefined },
-  },
-  emits: ['click'],
-  setup(props, { emit, slots }) {
-    const { slots: themeSlots } = useTheme('button', defaultButtonTheme, props)
-
-    function handleClick(e: MouseEvent) {
-      if (props.disabled) return
-      emit('click', e)
-    }
-
-    return () => (
-      <button class={themeSlots.root()} disabled={props.disabled} onClick={handleClick}>
-        {slots.default?.()}
-      </button>
-    )
-  },
-})
+export type AntdvButtonSlots = keyof typeof antdvButtonTheme.slots
+export type AntdvButtonThemeConfig = typeof antdvButtonTheme
