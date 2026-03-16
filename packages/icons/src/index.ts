@@ -1,5 +1,6 @@
 export { default as CaretUpIcon } from './CaretUpIcon'
 export { default as CaretDownIcon } from './CaretDownIcon'
+export { default as CaretRightIcon } from './CaretRightIcon'
 export { default as FilterFilledIcon } from './FilterFilledIcon'
 export { default as SearchIcon } from './SearchIcon'
 export { default as ElCaretTopIcon } from './ElCaretTopIcon'

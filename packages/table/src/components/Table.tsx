@@ -258,6 +258,15 @@ export default defineComponent({
       filterDropdownSearchIcon: themeSlots.filterDropdownSearchIcon(),
       filterDropdownSearchInput: themeSlots.filterDropdownSearchInput(),
       filterDropdownListEmpty: themeSlots.filterDropdownListEmpty(),
+      filterDropdownSwitcher: themeSlots.filterDropdownSwitcher(),
+      filterDropdownSwitcherExpanded: themeSlots.filterDropdownSwitcherExpanded(),
+      filterDropdownSwitcherCollapsed: themeSlots.filterDropdownSwitcherCollapsed(),
+      filterDropdownSwitcherNoop: themeSlots.filterDropdownSwitcherNoop(),
+      filterDropdownContentWrapper: themeSlots.filterDropdownContentWrapper(),
+      filterDropdownTreeList: themeSlots.filterDropdownTreeList(),
+      filterDropdownTreeItem: themeSlots.filterDropdownTreeItem(),
+      filterDropdownTreeContentWrapper: themeSlots.filterDropdownTreeContentWrapper(),
+      filterDropdownTreeCheckAll: themeSlots.filterDropdownTreeCheckAll(),
     }))
 
     const presetConfig = computed(() => resolveTablePresetConfig(effectiveThemePreset.value))

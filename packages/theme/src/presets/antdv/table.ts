@@ -83,10 +83,24 @@ export const antdvTableTheme = {
       'shadow-[0_6px_16px_0_rgba(0,0,0,0.08),0_3px_6px_-4px_rgba(0,0,0,0.12),0_9px_28px_8px_rgba(0,0,0,0.05)]',
     ].join(' '),
     filterDropdownList: 'max-h-[264px] overflow-auto p-1 m-0 list-none min-w-[120px]',
-    filterDropdownItem: 'flex items-center gap-2 px-3 py-[5px] cursor-pointer rounded-sm',
+    filterDropdownItem: 'flex items-center cursor-pointer',
     filterDropdownItemSelected:
       'bg-[color:var(--color-control-item-active-bg)] hover:bg-[color:var(--color-control-item-active-hover-bg)]',
     filterDropdownItemHover: 'hover:bg-[color:var(--color-control-item-hover-bg)]',
+    // 树形筛选 switcher 图标
+    filterDropdownSwitcher:
+      'inline-flex items-center justify-center w-6 h-6 cursor-pointer text-[10px] text-[color:var(--color-muted)] transition-transform duration-200',
+    filterDropdownSwitcherExpanded: 'rotate-0',
+    filterDropdownSwitcherCollapsed: '-rotate-90',
+    filterDropdownSwitcherNoop: 'cursor-default invisible',
+    // 内容包裹层（checkbox + 文字），hover/selected 仅在此
+    filterDropdownContentWrapper: 'flex items-center gap-2 px-3 py-[5px] rounded-sm flex-1 min-w-0',
+    filterDropdownTreeList:
+      'max-h-[264px] overflow-auto m-0 list-none min-w-[120px] pt-2 pr-2 pb-0 pl-2 [--vtg-table-filter-tree-indent-size:24px]',
+    filterDropdownTreeItem: 'flex items-start cursor-pointer pb-1',
+    filterDropdownTreeContentWrapper:
+      'flex min-h-6 flex-1 min-w-0 items-center gap-2 rounded-[4px] px-1 py-0',
+    filterDropdownTreeCheckAll: 'flex items-start pb-1',
     filterDropdownActions:
       'flex items-center justify-between gap-2 px-2 py-2 border-t border-[color:var(--color-default)]',
     filterDropdownSearch: 'p-2 border-b border-[color:var(--color-default)]',

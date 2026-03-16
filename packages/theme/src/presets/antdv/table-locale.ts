@@ -12,6 +12,7 @@ export const antdvTableLocale = {
     emptyText: 'Not Found',
     resetText: '重置',
     confirmText: '确 定',
+    selectAllText: '全选',
   },
   empty: {
     text: '暂无数据',
@@ -33,6 +34,7 @@ export const antdvTableEnUSLocale = {
     emptyText: 'Not Found',
     resetText: 'Reset',
     confirmText: 'OK',
+    selectAllText: 'Select all items',
   },
   empty: {
     text: 'No Data',

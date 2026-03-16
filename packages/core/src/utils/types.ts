@@ -67,6 +67,7 @@ export interface VTableGuildTableFilterDropdownLocale {
   emptyText: string
   resetText: string
   confirmText: string
+  selectAllText: string
 }
 
 export interface VTableGuildTableEmptyLocale {

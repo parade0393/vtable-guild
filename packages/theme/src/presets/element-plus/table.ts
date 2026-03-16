@@ -81,10 +81,24 @@ export const elementPlusTableTheme = {
       'text-[color:var(--vtg-table-text-color)]',
     ].join(' '),
     filterDropdownList: 'max-h-64 overflow-auto p-1.5 m-0 list-none min-w-[120px]',
-    filterDropdownItem: 'flex items-center gap-2 px-3 py-1.5 cursor-pointer rounded-sm',
+    filterDropdownItem: 'flex items-center cursor-pointer',
     filterDropdownItemSelected:
       'bg-[color:var(--color-control-item-active-bg)] hover:bg-[color:var(--color-control-item-active-hover-bg)] text-[color:var(--color-primary)] font-medium',
     filterDropdownItemHover: 'hover:bg-[color:var(--color-control-item-hover-bg)]',
+    // 树形筛选 switcher 图标
+    filterDropdownSwitcher:
+      'inline-flex items-center justify-center w-6 h-6 cursor-pointer text-xs text-[color:var(--color-muted)] transition-transform duration-200',
+    filterDropdownSwitcherExpanded: 'rotate-0',
+    filterDropdownSwitcherCollapsed: '-rotate-90',
+    filterDropdownSwitcherNoop: 'cursor-default invisible',
+    // 内容包裹层（checkbox + 文字），hover/selected 仅在此
+    filterDropdownContentWrapper: 'flex items-center gap-2 px-3 py-1.5 rounded-sm flex-1 min-w-0',
+    filterDropdownTreeList:
+      'max-h-64 overflow-auto p-1.5 m-0 list-none min-w-[120px] [--vtg-table-filter-tree-indent-size:24px]',
+    filterDropdownTreeItem: 'flex items-center cursor-pointer',
+    filterDropdownTreeContentWrapper:
+      'flex items-center gap-2 px-3 py-1.5 rounded-sm flex-1 min-w-0',
+    filterDropdownTreeCheckAll: 'flex items-center cursor-pointer',
     filterDropdownActions:
       'flex items-center justify-between gap-2 px-2 py-2 border-t border-[color:var(--color-default)]',
     filterDropdownSearch: 'px-2 pt-2 pb-1',

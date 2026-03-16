@@ -12,9 +12,36 @@ import {
   type VNode,
 } from 'vue'
 import { Checkbox, Radio, Button, Input } from '@vtable-guild/core'
-import { SearchIcon } from '@vtable-guild/icons'
+import { SearchIcon, CaretDownIcon } from '@vtable-guild/icons'
 import type { ColumnFilterItem } from '../types'
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
+
+/** Recursively collect all values (parent + leaf), matching antdv flattenKeys */
+function flattenValues(items: ColumnFilterItem[]): (string | number | boolean)[] {
+  const result: (string | number | boolean)[] = []
+  for (const item of items) {
+    result.push(item.value)
+    if (item.children?.length) {
+      result.push(...flattenValues(item.children))
+    }
+  }
+  return result
+}
+
+/** Bottom-up reconciliation: if all children selected → add parent; otherwise → remove parent */
+function reconcileParents(items: ColumnFilterItem[], keySet: Set<string | number | boolean>): void {
+  for (const item of items) {
+    if (item.children?.length) {
+      reconcileParents(item.children, keySet)
+      const allChildrenSelected = item.children.every((child) => keySet.has(child.value))
+      if (allChildrenSelected) {
+        keySet.add(item.value)
+      } else {
+        keySet.delete(item.value)
+      }
+    }
+  }
+}
 
 export default defineComponent({
   name: 'FilterDropdown',
@@ -43,6 +70,36 @@ export default defineComponent({
     const localSelectedKeys = ref<(string | number | boolean)[]>([...props.selectedKeys])
     const dropdownRef = ref<HTMLElement | null>(null)
     const searchText = ref('')
+
+    // 展开/折叠状态（默认全部展开）
+    const expandedKeys = ref<Set<string | number | boolean>>(new Set())
+
+    // 初始化：收集所有父节点值
+    onMounted(() => {
+      function collectParentKeys(items: ColumnFilterItem[]): (string | number | boolean)[] {
+        const keys: (string | number | boolean)[] = []
+        for (const item of items) {
+          if (item.children?.length) {
+            keys.push(item.value)
+            keys.push(...collectParentKeys(item.children))
+          }
+        }
+        return keys
+      }
+      expandedKeys.value = new Set(collectParentKeys(props.filters))
+    })
+
+    function toggleExpand(value: string | number | boolean) {
+      if (expandedKeys.value.has(value)) {
+        expandedKeys.value.delete(value)
+      } else {
+        expandedKeys.value.add(value)
+      }
+    }
+
+    function isExpanded(value: string | number | boolean): boolean {
+      return expandedKeys.value.has(value)
+    }
 
     watch(
       () => props.selectedKeys,
@@ -104,13 +161,37 @@ export default defineComponent({
       return localSelectedKeys.value.includes(value)
     }
 
-    function toggleItem(value: string | number | boolean) {
+    function toggleItem(value: string | number | boolean, item?: ColumnFilterItem) {
       if (props.multiple) {
-        const idx = localSelectedKeys.value.indexOf(value)
-        if (idx > -1) {
-          localSelectedKeys.value.splice(idx, 1)
+        if (props.filterMode === 'tree' && item) {
+          const keySet = new Set(localSelectedKeys.value)
+          const isTreeParent = Boolean(item.children?.length)
+
+          if (isTreeParent) {
+            const allDescendants = flattenValues([item])
+            const allSelected = allDescendants.every((v) => keySet.has(v))
+            if (allSelected) {
+              allDescendants.forEach((v) => keySet.delete(v))
+            } else {
+              allDescendants.forEach((v) => keySet.add(v))
+            }
+          } else {
+            if (keySet.has(value)) {
+              keySet.delete(value)
+            } else {
+              keySet.add(value)
+            }
+          }
+
+          reconcileParents(props.filters, keySet)
+          localSelectedKeys.value = Array.from(keySet)
         } else {
-          localSelectedKeys.value.push(value)
+          const idx = localSelectedKeys.value.indexOf(value)
+          if (idx > -1) {
+            localSelectedKeys.value.splice(idx, 1)
+          } else {
+            localSelectedKeys.value.push(value)
+          }
         }
         return
       }
@@ -129,6 +210,29 @@ export default defineComponent({
       emit('reset')
     }
 
+    const isTreeMultiple = computed(() => props.filterMode === 'tree' && props.multiple)
+
+    const allFlatValues = computed(() =>
+      isTreeMultiple.value ? flattenValues(filteredFilters.value) : [],
+    )
+
+    const selectAllState = computed(() => {
+      const total = allFlatValues.value.length
+      if (total === 0) return 'none' as const
+      const count = allFlatValues.value.filter((v) => localSelectedKeys.value.includes(v)).length
+      if (count === 0) return 'none' as const
+      if (count === total) return 'all' as const
+      return 'partial' as const
+    })
+
+    function toggleSelectAll() {
+      if (selectAllState.value === 'all') {
+        localSelectedKeys.value = []
+      } else {
+        localSelectedKeys.value = [...allFlatValues.value]
+      }
+    }
+
     function handleMouseDown(e: MouseEvent) {
       if (dropdownRef.value && !dropdownRef.value.contains(e.target as Node)) {
         emit('close')
@@ -145,9 +249,9 @@ export default defineComponent({
       document.removeEventListener('mousedown', handleMouseDown)
     })
 
-    function renderFilterIndicator(selected: boolean) {
+    function renderFilterIndicator(selected: boolean, indeterminate?: boolean) {
       if (props.multiple) {
-        return <Checkbox checked={selected} />
+        return <Checkbox checked={selected} indeterminate={indeterminate} />
       }
 
       if (!isHighlightMode.value) {
@@ -159,26 +263,84 @@ export default defineComponent({
 
     function renderFilterItem(item: ColumnFilterItem, level: number = 0) {
       const selected = isSelected(item.value)
-      const indentStyle = level > 0 ? { paddingLeft: `${level * 20 + 12}px` } : undefined
+      const isTreeParent = Boolean(item.children?.length)
+      const expanded = isExpanded(item.value)
       const useListRadioSemantics = !props.multiple && isHighlightMode.value
+
+      let indeterminate = false
+      if (isTreeMultiple.value && isTreeParent) {
+        const descendants = flattenValues(item.children!)
+        const anySelected = descendants.some((v) => localSelectedKeys.value.includes(v))
+        indeterminate = !selected && anySelected
+      }
+
+      const SwitcherIcon = () => {
+        if (!isTreeParent) {
+          return (
+            <span
+              class={[
+                tableContext.subThemeSlots?.value.filterDropdownSwitcher,
+                tableContext.subThemeSlots?.value.filterDropdownSwitcherNoop,
+              ]}
+              aria-hidden="true"
+            />
+          )
+        }
+
+        return (
+          <span
+            class={[
+              tableContext.subThemeSlots?.value.filterDropdownSwitcher,
+              expanded
+                ? tableContext.subThemeSlots?.value.filterDropdownSwitcherExpanded
+                : tableContext.subThemeSlots?.value.filterDropdownSwitcherCollapsed,
+            ]}
+            onClick={(e: MouseEvent) => {
+              e.stopPropagation()
+              toggleExpand(item.value)
+            }}
+            aria-label={expanded ? 'Collapse' : 'Expand'}
+          >
+            <CaretDownIcon />
+          </span>
+        )
+      }
+
+      const isTree = props.filterMode === 'tree'
+      const itemClass = isTree
+        ? tableContext.subThemeSlots?.value.filterDropdownTreeItem
+        : tableContext.subThemeSlots?.value.filterDropdownItem
+      const contentWrapperClass = isTree
+        ? tableContext.subThemeSlots?.value.filterDropdownTreeContentWrapper
+        : tableContext.subThemeSlots?.value.filterDropdownContentWrapper
+      const itemPadding = isTree
+        ? {
+            paddingLeft: `calc(var(--vtg-table-filter-tree-indent-size, 24px) * ${level})`,
+          }
+        : undefined
 
       return (
         <li
           key={String(item.value)}
           role={useListRadioSemantics ? 'radio' : undefined}
           aria-checked={useListRadioSemantics ? selected : undefined}
-          class={[
-            tableContext.subThemeSlots?.value.filterDropdownItem,
-            !props.multiple && isHighlightMode.value && 'gap-0',
-            selected
-              ? tableContext.subThemeSlots?.value.filterDropdownItemSelected
-              : tableContext.subThemeSlots?.value.filterDropdownItemHover,
-          ]}
-          style={indentStyle}
-          onClick={() => toggleItem(item.value)}
+          class={[itemClass, !props.multiple && isHighlightMode.value && 'gap-0']}
+          style={itemPadding}
         >
-          {renderFilterIndicator(selected)}
-          <span class="text-[color:var(--color-on-surface)]">{item.text}</span>
+          {isTree && <SwitcherIcon />}
+
+          <div
+            class={[
+              contentWrapperClass,
+              selected
+                ? tableContext.subThemeSlots?.value.filterDropdownItemSelected
+                : tableContext.subThemeSlots?.value.filterDropdownItemHover,
+            ]}
+            onClick={() => toggleItem(item.value, item)}
+          >
+            {renderFilterIndicator(selected, indeterminate)}
+            <span class="text-[color:var(--color-on-surface)]">{item.text}</span>
+          </div>
         </li>
       )
     }
@@ -187,8 +349,14 @@ export default defineComponent({
       const result: VNode[] = []
       for (const item of items) {
         result.push(renderFilterItem(item, level))
-        if (props.filterMode === 'tree' && item.children?.length) {
-          result.push(...renderFilterItems(item.children, level + 1))
+        if (item.children?.length) {
+          if (props.filterMode === 'tree') {
+            if (isExpanded(item.value)) {
+              result.push(...renderFilterItems(item.children, level + 1))
+            }
+          } else {
+            result.push(...renderFilterItems(item.children, level + 1))
+          }
         }
       }
       return result
@@ -199,6 +367,13 @@ export default defineComponent({
       const viewportWidth = window.innerWidth
       const dropdownMinWidth = 150
       const overflowRight = anchorRect.left + dropdownMinWidth > viewportWidth
+      const isTree = props.filterMode === 'tree'
+      const listClass = isTree
+        ? tableContext.subThemeSlots?.value.filterDropdownTreeList
+        : tableContext.subThemeSlots?.value.filterDropdownList
+      const contentWrapperClass = isTree
+        ? tableContext.subThemeSlots?.value.filterDropdownTreeContentWrapper
+        : tableContext.subThemeSlots?.value.filterDropdownContentWrapper
 
       const style: Record<string, string> = {
         position: 'fixed',
@@ -242,8 +417,32 @@ export default defineComponent({
 
             <ul
               role={!props.multiple && isHighlightMode.value ? 'radiogroup' : undefined}
-              class={tableContext.subThemeSlots?.value.filterDropdownList}
+              class={listClass}
             >
+              {isTreeMultiple.value && (
+                <li
+                  key="__vtg_select_all__"
+                  class={tableContext.subThemeSlots?.value.filterDropdownTreeCheckAll}
+                >
+                  <div
+                    class={[
+                      contentWrapperClass,
+                      selectAllState.value === 'all'
+                        ? tableContext.subThemeSlots?.value.filterDropdownItemSelected
+                        : tableContext.subThemeSlots?.value.filterDropdownItemHover,
+                    ]}
+                    onClick={toggleSelectAll}
+                  >
+                    <Checkbox
+                      checked={selectAllState.value === 'all'}
+                      indeterminate={selectAllState.value === 'partial'}
+                    />
+                    <span class="text-[color:var(--color-on-surface)]">
+                      {filterDropdownLocale.value?.selectAllText ?? '全选'}
+                    </span>
+                  </div>
+                </li>
+              )}
               {renderFilterItems(filteredFilters.value)}
               {showSearchEmptyState.value && (
                 <li class={tableContext.subThemeSlots?.value.filterDropdownListEmpty}>

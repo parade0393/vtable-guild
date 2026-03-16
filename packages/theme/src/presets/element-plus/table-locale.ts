@@ -12,6 +12,7 @@ export const elementPlusTableLocale = {
     emptyText: '暂无匹配数据',
     resetText: '重置',
     confirmText: '确定',
+    selectAllText: '全选',
   },
   empty: {
     text: '暂无数据',
@@ -33,6 +34,7 @@ export const elementPlusTableEnUSLocale = {
     emptyText: 'No matching data',
     resetText: 'Reset',
     confirmText: 'Confirm',
+    selectAllText: 'Select all items',
   },
   empty: {
     text: 'No Data',
