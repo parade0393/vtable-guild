@@ -63,8 +63,12 @@ export default defineComponent({
       type: String as PropType<'menu' | 'tree'>,
       default: 'menu',
     },
+    expandedKeys: {
+      type: Object as PropType<Set<string | number | boolean> | null>,
+      default: null,
+    },
   },
-  emits: ['confirm', 'reset', 'close'],
+  emits: ['confirm', 'reset', 'close', 'update:expandedKeys'],
   setup(props, { emit }) {
     const tableContext = inject(TABLE_CONTEXT_KEY, {} as TableContext)
     const localSelectedKeys = ref<(string | number | boolean)[]>([...props.selectedKeys])
@@ -72,33 +76,39 @@ export default defineComponent({
     const searchText = ref('')
 
     // 展开/折叠状态（默认全部展开）
-    const expandedKeys = ref<Set<string | number | boolean>>(new Set())
+    const localExpandedKeys = ref<Set<string | number | boolean>>(new Set())
 
-    // 初始化：收集所有父节点值
+    // 初始化：如果父级传入了持久化的 expandedKeys 则使用，否则全部展开
     onMounted(() => {
-      function collectParentKeys(items: ColumnFilterItem[]): (string | number | boolean)[] {
-        const keys: (string | number | boolean)[] = []
-        for (const item of items) {
-          if (item.children?.length) {
-            keys.push(item.value)
-            keys.push(...collectParentKeys(item.children))
+      if (props.expandedKeys) {
+        localExpandedKeys.value = new Set(props.expandedKeys)
+      } else {
+        function collectParentKeys(items: ColumnFilterItem[]): (string | number | boolean)[] {
+          const keys: (string | number | boolean)[] = []
+          for (const item of items) {
+            if (item.children?.length) {
+              keys.push(item.value)
+              keys.push(...collectParentKeys(item.children))
+            }
           }
+          return keys
         }
-        return keys
+        localExpandedKeys.value = new Set(collectParentKeys(props.filters))
+        emit('update:expandedKeys', localExpandedKeys.value)
       }
-      expandedKeys.value = new Set(collectParentKeys(props.filters))
     })
 
     function toggleExpand(value: string | number | boolean) {
-      if (expandedKeys.value.has(value)) {
-        expandedKeys.value.delete(value)
+      if (localExpandedKeys.value.has(value)) {
+        localExpandedKeys.value.delete(value)
       } else {
-        expandedKeys.value.add(value)
+        localExpandedKeys.value.add(value)
       }
+      emit('update:expandedKeys', localExpandedKeys.value)
     }
 
     function isExpanded(value: string | number | boolean): boolean {
-      return expandedKeys.value.has(value)
+      return localExpandedKeys.value.has(value)
     }
 
     watch(
@@ -319,16 +329,37 @@ export default defineComponent({
           }
         : undefined
 
+      if (isTree) {
+        return (
+          <li
+            key={String(item.value)}
+            class={itemClass}
+            style={itemPadding}
+            onClick={() => toggleItem(item.value, item)}
+          >
+            <SwitcherIcon />
+            <span class="mt-1 mr-2 shrink-0">{renderFilterIndicator(selected, indeterminate)}</span>
+            <div
+              class={[
+                contentWrapperClass,
+                selected
+                  ? tableContext.subThemeSlots?.value.filterDropdownTreeItemSelected
+                  : tableContext.subThemeSlots?.value.filterDropdownItemHover,
+              ]}
+            >
+              <span class="text-[color:var(--color-on-surface)]">{item.text}</span>
+            </div>
+          </li>
+        )
+      }
+
       return (
         <li
           key={String(item.value)}
           role={useListRadioSemantics ? 'radio' : undefined}
           aria-checked={useListRadioSemantics ? selected : undefined}
           class={[itemClass, !props.multiple && isHighlightMode.value && 'gap-0']}
-          style={itemPadding}
         >
-          {isTree && <SwitcherIcon />}
-
           <div
             class={[
               contentWrapperClass,
@@ -415,41 +446,56 @@ export default defineComponent({
               </div>
             )}
 
-            <ul
-              role={!props.multiple && isHighlightMode.value ? 'radiogroup' : undefined}
-              class={listClass}
-            >
-              {isTreeMultiple.value && (
-                <li
-                  key="__vtg_select_all__"
-                  class={tableContext.subThemeSlots?.value.filterDropdownTreeCheckAll}
-                >
+            {isTree ? (
+              <div class={tableContext.subThemeSlots?.value.filterDropdownTreeWrapper}>
+                {isTreeMultiple.value && (
                   <div
-                    class={[
-                      contentWrapperClass,
-                      selectAllState.value === 'all'
-                        ? tableContext.subThemeSlots?.value.filterDropdownItemSelected
-                        : tableContext.subThemeSlots?.value.filterDropdownItemHover,
-                    ]}
+                    key="__vtg_select_all__"
+                    class={tableContext.subThemeSlots?.value.filterDropdownTreeCheckAll}
                     onClick={toggleSelectAll}
                   >
-                    <Checkbox
-                      checked={selectAllState.value === 'all'}
-                      indeterminate={selectAllState.value === 'partial'}
-                    />
-                    <span class="text-[color:var(--color-on-surface)]">
-                      {filterDropdownLocale.value?.selectAllText ?? '全选'}
+                    <span class="mt-1 mr-2 shrink-0">
+                      <Checkbox
+                        checked={selectAllState.value === 'all'}
+                        indeterminate={selectAllState.value === 'partial'}
+                      />
                     </span>
+                    <div
+                      class={[
+                        contentWrapperClass,
+                        selectAllState.value === 'all'
+                          ? tableContext.subThemeSlots?.value.filterDropdownTreeItemSelected
+                          : tableContext.subThemeSlots?.value.filterDropdownItemHover,
+                      ]}
+                    >
+                      <span class="text-[color:var(--color-on-surface)]">
+                        {filterDropdownLocale.value?.selectAllText ?? '全选'}
+                      </span>
+                    </div>
                   </div>
-                </li>
-              )}
-              {renderFilterItems(filteredFilters.value)}
-              {showSearchEmptyState.value && (
-                <li class={tableContext.subThemeSlots?.value.filterDropdownListEmpty}>
-                  {filterDropdownLocale.value?.emptyText ?? 'Not Found'}
-                </li>
-              )}
-            </ul>
+                )}
+                <ul class={listClass}>
+                  {renderFilterItems(filteredFilters.value)}
+                  {showSearchEmptyState.value && (
+                    <li class={tableContext.subThemeSlots?.value.filterDropdownListEmpty}>
+                      {filterDropdownLocale.value?.emptyText ?? 'Not Found'}
+                    </li>
+                  )}
+                </ul>
+              </div>
+            ) : (
+              <ul
+                role={!props.multiple && isHighlightMode.value ? 'radiogroup' : undefined}
+                class={listClass}
+              >
+                {renderFilterItems(filteredFilters.value)}
+                {showSearchEmptyState.value && (
+                  <li class={tableContext.subThemeSlots?.value.filterDropdownListEmpty}>
+                    {filterDropdownLocale.value?.emptyText ?? 'Not Found'}
+                  </li>
+                )}
+              </ul>
+            )}
 
             <div class={tableContext.subThemeSlots?.value.filterDropdownActions}>
               <Button

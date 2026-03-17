@@ -1,4 +1,14 @@
-import { defineComponent, computed, inject, ref, watch, type PropType } from 'vue'
+import {
+  defineComponent,
+  computed,
+  inject,
+  ref,
+  watch,
+  onBeforeUnmount,
+  nextTick,
+  Teleport,
+  type PropType,
+} from 'vue'
 import { cn, Tooltip } from '@vtable-guild/core'
 import { TABLE_ALIGN_CLASSES } from '@vtable-guild/theme'
 import type { ColumnType, SortOrder } from '../types'
@@ -70,10 +80,43 @@ export default defineComponent({
     }
 
     const filterAnchorRef = ref<HTMLElement | null>(null)
+    const customDropdownRef = ref<HTMLElement | null>(null)
 
     function toggleFilterDropdown(_e: MouseEvent) {
       setDropdownVisible(!filterDropdownVisible.value)
     }
+
+    // 自定义下拉菜单的外部点击关闭
+    function handleCustomDropdownMouseDown(e: MouseEvent) {
+      if (
+        customDropdownRef.value &&
+        !customDropdownRef.value.contains(e.target as Node) &&
+        !filterAnchorRef.value?.contains(e.target as Node)
+      ) {
+        setDropdownVisible(false)
+      }
+    }
+
+    // 判断是否使用自定义下拉（column.filterDropdown 或 customFilterDropdown slot）
+    const isCustomDropdown = computed(
+      () =>
+        !!props.column.filterDropdown ||
+        (!!props.column.customFilterDropdown && !!tableContext.customFilterDropdown),
+    )
+
+    watch(filterDropdownVisible, (visible) => {
+      if (visible && isCustomDropdown.value) {
+        nextTick(() => {
+          document.addEventListener('mousedown', handleCustomDropdownMouseDown)
+        })
+      } else {
+        document.removeEventListener('mousedown', handleCustomDropdownMouseDown)
+      }
+    })
+
+    onBeforeUnmount(() => {
+      document.removeEventListener('mousedown', handleCustomDropdownMouseDown)
+    })
 
     function getAnchorRect() {
       if (!filterAnchorRef.value) return { top: 0, left: 0, right: 0, bottom: 0 }
@@ -82,6 +125,9 @@ export default defineComponent({
 
     // C3: Pending selected keys for slot props
     const pendingSelectedKeys = ref<(string | number | boolean)[]>([])
+
+    // 树形筛选展开/折叠持久化（跨 dropdown open/close）
+    const treeExpandedKeys = ref<Set<string | number | boolean> | null>(null)
     watch(
       () => filteredValue.value,
       (keys) => {
@@ -218,6 +264,7 @@ export default defineComponent({
             <span
               class={tableContext.subThemeSlots?.value.filterIconWrapper}
               ref={filterAnchorRef}
+              onMousedown={(e: MouseEvent) => e.stopPropagation()}
               onClick={(e: MouseEvent) => {
                 e.stopPropagation()
                 toggleFilterDropdown(e)
@@ -234,6 +281,7 @@ export default defineComponent({
             <span
               class={tableContext.subThemeSlots?.value.filterIconWrapper}
               ref={filterAnchorRef}
+              onMousedown={(e: MouseEvent) => e.stopPropagation()}
               onClick={(e: MouseEvent) => {
                 e.stopPropagation()
                 toggleFilterDropdown(e)
@@ -246,7 +294,11 @@ export default defineComponent({
           )
         }
         return (
-          <span ref={filterAnchorRef} class={tableContext.subThemeSlots?.value.filterIconWrapper}>
+          <span
+            ref={filterAnchorRef}
+            class={tableContext.subThemeSlots?.value.filterIconWrapper}
+            onMousedown={(e: MouseEvent) => e.stopPropagation()}
+          >
             <FilterIcon active={isFiltered.value} onClick={toggleFilterDropdown} />
           </span>
         )
@@ -287,12 +339,40 @@ export default defineComponent({
         : undefined
 
       const filterDropdownContent = (() => {
-        if (column.filterDropdown) {
-          return column.filterDropdown(dropdownSlotProps)
+        const customContent = column.filterDropdown
+          ? column.filterDropdown(dropdownSlotProps)
+          : customFilterDropdownSlot
+            ? customFilterDropdownSlot(dropdownSlotProps)
+            : null
+
+        if (customContent) {
+          const anchorRect = getAnchorRect()
+          const viewportWidth = window.innerWidth
+          const dropdownMinWidth = 150
+          const overflowRight = anchorRect.left + dropdownMinWidth > viewportWidth
+          const posStyle: Record<string, string> = {
+            position: 'fixed',
+            top: `${anchorRect.bottom + 4}px`,
+            zIndex: '1050',
+          }
+          if (overflowRight) {
+            posStyle.right = `${viewportWidth - anchorRect.right}px`
+          } else {
+            posStyle.left = `${anchorRect.left}px`
+          }
+          return (
+            <Teleport to="body">
+              <div
+                ref={customDropdownRef}
+                class={tableContext.subThemeSlots?.value.filterDropdown}
+                style={posStyle}
+              >
+                {customContent}
+              </div>
+            </Teleport>
+          )
         }
-        if (customFilterDropdownSlot) {
-          return customFilterDropdownSlot(dropdownSlotProps)
-        }
+
         return (
           <FilterDropdown
             filters={column.filters ?? []}
@@ -301,9 +381,13 @@ export default defineComponent({
             anchorRect={getAnchorRect()}
             filterSearch={column.filterSearch ?? false}
             filterMode={column.filterMode ?? 'menu'}
+            expandedKeys={treeExpandedKeys.value}
             onConfirm={handleFilterConfirm}
             onReset={handleFilterReset}
             onClose={handleFilterClose}
+            onUpdate:expandedKeys={(keys: Set<string | number | boolean>) => {
+              treeExpandedKeys.value = keys
+            }}
           />
         )
       })()

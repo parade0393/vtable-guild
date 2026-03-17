@@ -663,7 +663,8 @@ export function useFilterMatrixState(): FilterMatrixState {
       dataIndex: 'status',
       key: 'column-dropdown',
       filters: statusFilters,
-      customFilterDropdown: true,
+      filterDropdown: (props) =>
+        renderChoiceDropdown(props, 'Status / column api', statusFilters, false),
       onFilter: matchField('status'),
     }),
   )

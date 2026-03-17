@@ -93,11 +93,14 @@ export const elementPlusTableTheme = {
     filterDropdownSwitcherNoop: 'cursor-default invisible',
     // 内容包裹层（checkbox + 文字），hover/selected 仅在此
     filterDropdownContentWrapper: 'flex items-center gap-2 px-3 py-1.5 rounded-sm flex-1 min-w-0',
+    filterDropdownTreeWrapper: 'p-1.5',
     filterDropdownTreeList:
-      'max-h-64 overflow-auto p-1.5 m-0 list-none min-w-[120px] [--vtg-table-filter-tree-indent-size:24px]',
+      'max-h-64 overflow-x-hidden overflow-y-auto m-0 p-0 list-none [--vtg-table-filter-tree-indent-size:24px]',
     filterDropdownTreeItem: 'flex items-center cursor-pointer',
     filterDropdownTreeContentWrapper:
       'flex items-center gap-2 px-3 py-1.5 rounded-sm flex-1 min-w-0',
+    filterDropdownTreeItemSelected:
+      'bg-[color:var(--color-control-item-active-bg)] hover:bg-[color:var(--color-control-item-active-hover-bg)] text-[color:var(--color-primary)] font-medium',
     filterDropdownTreeCheckAll: 'flex items-center cursor-pointer',
     filterDropdownActions:
       'flex items-center justify-between gap-2 px-2 py-2 border-t border-[color:var(--color-default)]',

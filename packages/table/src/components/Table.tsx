@@ -263,9 +263,11 @@ export default defineComponent({
       filterDropdownSwitcherCollapsed: themeSlots.filterDropdownSwitcherCollapsed(),
       filterDropdownSwitcherNoop: themeSlots.filterDropdownSwitcherNoop(),
       filterDropdownContentWrapper: themeSlots.filterDropdownContentWrapper(),
+      filterDropdownTreeWrapper: themeSlots.filterDropdownTreeWrapper(),
       filterDropdownTreeList: themeSlots.filterDropdownTreeList(),
       filterDropdownTreeItem: themeSlots.filterDropdownTreeItem(),
       filterDropdownTreeContentWrapper: themeSlots.filterDropdownTreeContentWrapper(),
+      filterDropdownTreeItemSelected: themeSlots.filterDropdownTreeItemSelected(),
       filterDropdownTreeCheckAll: themeSlots.filterDropdownTreeCheckAll(),
     }))
 

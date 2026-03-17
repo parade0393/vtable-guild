@@ -28,9 +28,11 @@ export interface SubThemeSlots {
   filterDropdownSwitcherCollapsed: string
   filterDropdownSwitcherNoop: string
   filterDropdownContentWrapper: string
+  filterDropdownTreeWrapper: string
   filterDropdownTreeList: string
   filterDropdownTreeItem: string
   filterDropdownTreeContentWrapper: string
+  filterDropdownTreeItemSelected: string
   filterDropdownTreeCheckAll: string
   filterDropdownListEmpty: string
 }
