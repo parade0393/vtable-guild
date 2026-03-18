@@ -114,6 +114,12 @@
   --vtg-input-padding-inline: 8px;
   --vtg-input-font-size: 12px;
 
+  /* Loading overlay */
+  --vtg-table-loading-overlay-bg: rgb(255 255 255 / 90%);
+
+  /* Striped 行背景（区别于 hover） */
+  --vtg-table-row-striped-bg: #fafafa;
+
   /* Scrollbar */
   --vtg-scrollbar-thumb-bg: rgb(144 147 153 / 30%);
   --vtg-scrollbar-thumb-hover-bg: rgb(144 147 153 / 50%);
@@ -169,4 +175,10 @@
   --vtg-tooltip-bg: #303133;
   --vtg-table-row-selected-bg: #18222c;
   --vtg-table-row-selected-hover-bg: #1d3043;
+
+  /* Loading overlay */
+  --vtg-table-loading-overlay-bg: rgb(20 20 20 / 90%);
+
+  /* Striped 行背景 */
+  --vtg-table-row-striped-bg: #1d1d1d;
 }

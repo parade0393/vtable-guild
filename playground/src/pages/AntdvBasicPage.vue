@@ -245,6 +245,7 @@ const compactRows = computed(() => dataSource.slice(0, 4))
             </div>
             <ATable
               bordered
+              striped
               :columns="baseColumns"
               :data-source="compactRows"
               :pagination="false"

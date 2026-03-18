@@ -44,7 +44,7 @@
   --vtg-table-row-hover-bg: var(--color-surface-hover);
   --vtg-table-row-selected-bg: #e6f4ff;
   --vtg-table-row-selected-hover-bg: #bae0ff;
-  --vtg-table-loading-overlay-bg: rgb(255 255 255 / 50%);
+  --vtg-table-loading-overlay-bg: rgb(255 255 255 / 40%);
   --vtg-table-empty-margin-block: 32px;
   --vtg-table-empty-image-height: 40px;
   --vtg-table-empty-image-margin-bottom: 8px;

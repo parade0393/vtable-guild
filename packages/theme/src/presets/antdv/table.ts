@@ -172,12 +172,17 @@ export const antdvTableTheme = {
     },
     striped: {
       true: {
-        td: 'odd:group-even/row:bg-[rgba(0,0,0,0.02)]',
+        td: 'group-even/row:bg-[rgba(0,0,0,0.02)]',
       },
     },
     hoverable: {
       true: {
         td: 'group-hover/row:bg-[var(--vtg-table-row-hover-bg)]',
+      },
+    },
+    loading: {
+      true: {
+        table: 'opacity-50 pointer-events-none select-none',
       },
     },
   },

@@ -8,7 +8,6 @@ import {
   ElCaretBottomIcon,
   ElArrowDownIcon,
   AntdvEmptyIcon,
-  ElEmptyIcon,
   AntdvSpinIndicator,
   ElLoadingIcon,
 } from '@vtable-guild/icons'
@@ -19,7 +18,7 @@ export interface TablePresetConfig {
   filterIcon: Component
   filterSingleSelectMode: 'radio' | 'highlight'
   showSorterTooltip: boolean
-  emptyIcon: Component
+  emptyIcon?: Component
   loadingIcon: Component
 }
 
@@ -39,7 +38,6 @@ export const tablePresetConfigs: Record<ThemePresetName, TablePresetConfig> = {
     filterIcon: ElArrowDownIcon,
     filterSingleSelectMode: 'highlight',
     showSorterTooltip: false,
-    emptyIcon: ElEmptyIcon,
     loadingIcon: ElLoadingIcon,
   },
 }

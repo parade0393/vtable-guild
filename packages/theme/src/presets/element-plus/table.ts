@@ -51,11 +51,11 @@ export const elementPlusTableTheme = {
       'text-[color:var(--vtg-table-text-color)]',
       'border-b border-[var(--vtg-table-border-color)]',
     ].join(' '),
-    empty: 'py-16 text-center text-[color:var(--color-muted)]',
+    empty: 'py-5 text-center text-[color:var(--color-muted)]',
     loading: [
       'absolute inset-0 z-[2]',
       'flex items-center justify-center',
-      'bg-[rgba(255,255,255,0.9)]',
+      'bg-[color:var(--vtg-table-loading-overlay-bg)]',
     ].join(' '),
     headerCellInner: 'flex items-center',
     bodyCellEllipsis: 'overflow-hidden text-ellipsis whitespace-nowrap',
@@ -116,11 +116,11 @@ export const elementPlusTableTheme = {
     // ---- 空状态相关 ----
     emptyWrapper: 'flex flex-col items-center justify-center',
     emptyIcon: 'mb-2',
-    emptyText: 'm-0 text-[color:var(--color-muted)] text-sm',
+    emptyText: 'm-0 text-[color:var(--color-muted)] text-sm leading-[60px]',
 
     // ---- 加载状态相关 ----
     loadingSpinner:
-      'inline-flex items-center justify-center text-[color:var(--color-primary)] animate-spin',
+      'inline-flex items-center justify-center text-[length:42px] text-[color:var(--color-primary)] animate-spin',
 
     // ---- 行选中背景 ----
     tdSelected: 'bg-[var(--vtg-table-row-selected-bg)]',
@@ -154,7 +154,7 @@ export const elementPlusTableTheme = {
     },
     striped: {
       true: {
-        td: 'odd:group-even/row:bg-[var(--color-surface-hover)]',
+        td: 'group-even/row:bg-[var(--vtg-table-row-striped-bg)]',
       },
     },
     hoverable: {

@@ -12,9 +12,9 @@ export default defineComponent({
           r="20"
           fill="none"
           stroke="currentColor"
-          stroke-width="4"
+          stroke-width="2"
           stroke-linecap="round"
-          stroke-dasharray="80 40"
+          stroke-dasharray="90 150"
         />
       </svg>
     )
