@@ -13,6 +13,12 @@ import type { TableSlots } from '@vtable-guild/theme'
 
 export type RowSelectionType = 'checkbox' | 'radio'
 
+export interface SelectionItem {
+  key: string
+  text: string | VNodeChild
+  onSelect?: (changeableRowKeys: Key[]) => void
+}
+
 export interface RowSelection<TRecord = Record<string, unknown>> {
   type?: RowSelectionType
   selectedRowKeys?: Key[]
@@ -24,6 +30,10 @@ export interface RowSelection<TRecord = Record<string, unknown>> {
   columnWidth?: number | string
   fixed?: boolean | 'left' | 'right'
   checkStrictly?: boolean
+  /** 自定义选择项。true 显示默认项，数组显示自定义项 */
+  selections?: boolean | SelectionItem[]
+  /** 隐藏全选 checkbox 及自定义选择下拉 */
+  hideSelectAll?: boolean
 }
 
 /**

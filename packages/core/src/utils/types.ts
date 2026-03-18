@@ -78,11 +78,18 @@ export interface VTableGuildTableLoadingLocale {
   text: string
 }
 
+export interface VTableGuildTableSelectionLocale {
+  selectAll: string
+  selectInvert: string
+  selectNone: string
+}
+
 export interface VTableGuildTableLocale {
   header: VTableGuildTableHeaderLocale
   filterDropdown: VTableGuildTableFilterDropdownLocale
   empty: VTableGuildTableEmptyLocale
   loading: VTableGuildTableLoadingLocale
+  selection: VTableGuildTableSelectionLocale
 }
 
 export interface VTableGuildLocale {

@@ -138,6 +138,37 @@ export function useSelection(options: UseSelectionOptions) {
     return 'partial'
   })
 
+  /** 反选当前可见可选行 */
+  function invertSelection(): void {
+    const sel = rowSelection()
+    if (!sel) return
+    const selectableRows = getSelectableRows()
+    const nextKeys = new Set(selectedKeySet.value)
+    selectableRows.forEach((record, _i) => {
+      const realIndex = data().indexOf(record)
+      const key = getRowKey(record, realIndex)
+      if (nextKeys.has(key)) {
+        nextKeys.delete(key)
+      } else {
+        nextKeys.add(key)
+      }
+    })
+    applyKeys(nextKeys, true)
+  }
+
+  /** 清空所有选中 */
+  function clearSelection(): void {
+    applyKeys(new Set<Key>(), true)
+  }
+
+  /** 获取所有可选行的 key */
+  function getChangeableRowKeys(): Key[] {
+    return getSelectableRows().map((record) => {
+      const realIndex = data().indexOf(record)
+      return getRowKey(record, realIndex)
+    })
+  }
+
   return {
     selectedKeySet,
     isSelected,
@@ -145,5 +176,8 @@ export function useSelection(options: UseSelectionOptions) {
     toggleRow,
     toggleAll,
     allCheckedState,
+    invertSelection,
+    clearSelection,
+    getChangeableRowKeys,
   }
 }

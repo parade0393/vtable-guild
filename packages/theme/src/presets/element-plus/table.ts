@@ -80,7 +80,7 @@ export const elementPlusTableTheme = {
       'text-[length:var(--vtg-table-font-size)] leading-[var(--vtg-table-line-height)]',
       'text-[color:var(--vtg-table-text-color)]',
     ].join(' '),
-    filterDropdownList: 'max-h-64 overflow-auto p-1.5 m-0 list-none min-w-[120px]',
+    filterDropdownList: 'p-1.5 m-0 list-none min-w-[120px]',
     filterDropdownItem: 'flex items-center cursor-pointer',
     filterDropdownItemSelected:
       'bg-[color:var(--color-control-item-active-bg)] hover:bg-[color:var(--color-control-item-active-hover-bg)] text-[color:var(--color-primary)] font-medium',
@@ -94,8 +94,7 @@ export const elementPlusTableTheme = {
     // 内容包裹层（checkbox + 文字），hover/selected 仅在此
     filterDropdownContentWrapper: 'flex items-center gap-2 px-3 py-1.5 rounded-sm flex-1 min-w-0',
     filterDropdownTreeWrapper: 'p-1.5',
-    filterDropdownTreeList:
-      'max-h-64 overflow-x-hidden overflow-y-auto m-0 p-0 list-none [--vtg-table-filter-tree-indent-size:24px]',
+    filterDropdownTreeList: 'm-0 p-0 list-none [--vtg-table-filter-tree-indent-size:24px]',
     filterDropdownTreeItem: 'flex items-center cursor-pointer',
     filterDropdownTreeContentWrapper:
       'flex items-center gap-2 px-3 py-1.5 rounded-sm flex-1 min-w-0',
@@ -113,6 +112,31 @@ export const elementPlusTableTheme = {
       'min-w-0 flex-1 border-0 bg-transparent px-0 shadow-none focus:border-transparent placeholder:text-[color:var(--color-muted)]',
     filterDropdownListEmpty:
       'px-3 py-3 text-center text-[length:12px] leading-5 text-[color:var(--color-muted)] select-none cursor-default',
+
+    // ---- 空状态相关 ----
+    emptyWrapper: 'flex flex-col items-center justify-center',
+    emptyIcon: 'mb-2',
+    emptyText: 'text-[color:var(--color-muted)] text-sm',
+
+    // ---- 加载状态相关 ----
+    loadingSpinner: 'text-[color:var(--color-primary)] animate-spin',
+
+    // ---- 行选中背景 ----
+    tdSelected: 'bg-[var(--vtg-table-row-selected-bg)]',
+    tdSelectedHover: 'group-hover/row:bg-[var(--vtg-table-row-selected-hover-bg)]',
+
+    // ---- 选择下拉相关 ----
+    selectionDropdown: [
+      'rounded bg-[color:var(--color-surface)] shadow-lg border border-[color:var(--color-default)]',
+      'font-[family-name:var(--vtg-table-font-family)]',
+      'text-[length:var(--vtg-table-font-size)] leading-[var(--vtg-table-line-height)]',
+      'text-[color:var(--vtg-table-text-color)]',
+      'p-1 min-w-[120px]',
+    ].join(' '),
+    selectionDropdownItem:
+      'flex items-center cursor-pointer px-3 py-1.5 rounded-sm hover:bg-[color:var(--color-control-item-hover-bg)]',
+    selectionExtra:
+      'inline-flex items-center justify-center cursor-pointer ml-1 text-xs text-[color:var(--color-muted)] hover:text-[color:var(--color-primary)] transition-colors',
   },
   variants: {
     size: {

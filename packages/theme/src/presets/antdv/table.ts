@@ -82,7 +82,7 @@ export const antdvTableTheme = {
       'text-[color:var(--vtg-table-text-color)]',
       'shadow-[0_6px_16px_0_rgba(0,0,0,0.08),0_3px_6px_-4px_rgba(0,0,0,0.12),0_9px_28px_8px_rgba(0,0,0,0.05)]',
     ].join(' '),
-    filterDropdownList: 'max-h-[264px] overflow-auto p-1 m-0 list-none min-w-[120px]',
+    filterDropdownList: 'p-1 m-0 list-none min-w-[120px]',
     filterDropdownItem: 'flex items-center cursor-pointer',
     filterDropdownItemSelected:
       'bg-[color:var(--color-control-item-active-bg)] hover:bg-[color:var(--color-control-item-active-hover-bg)]',
@@ -96,8 +96,7 @@ export const antdvTableTheme = {
     // 内容包裹层（checkbox + 文字），hover/selected 仅在此
     filterDropdownContentWrapper: 'flex items-center gap-2 px-3 py-[5px] rounded-sm flex-1 min-w-0',
     filterDropdownTreeWrapper: 'pt-2 px-2 pb-0',
-    filterDropdownTreeList:
-      'max-h-[264px] overflow-x-hidden overflow-y-auto m-0 p-0 list-none [--vtg-table-filter-tree-indent-size:24px]',
+    filterDropdownTreeList: 'm-0 p-0 list-none [--vtg-table-filter-tree-indent-size:24px]',
     filterDropdownTreeItem: 'flex items-start cursor-pointer pb-1',
     filterDropdownTreeContentWrapper:
       'flex min-h-6 flex-1 min-w-0 items-center gap-2 rounded-[6px] px-1 py-0',
@@ -123,6 +122,32 @@ export const antdvTableTheme = {
     ].join(' '),
     filterDropdownListEmpty:
       'px-3 py-2 text-center text-[length:12px] leading-5 text-black/25 select-none cursor-default',
+
+    // ---- 空状态相关 ----
+    emptyWrapper: 'flex flex-col items-center justify-center',
+    emptyIcon: 'mb-2',
+    emptyText: 'text-[color:rgba(0,0,0,0.25)] text-sm',
+
+    // ---- 加载状态相关 ----
+    loadingSpinner: 'text-[color:var(--color-primary)] animate-spin',
+
+    // ---- 行选中背景 ----
+    tdSelected: 'bg-[var(--vtg-table-row-selected-bg)]',
+    tdSelectedHover: 'group-hover/row:bg-[var(--vtg-table-row-selected-hover-bg)]',
+
+    // ---- 选择下拉相关 ----
+    selectionDropdown: [
+      'rounded-[6px] bg-[color:var(--color-surface)]',
+      'font-[family-name:var(--vtg-table-font-family)]',
+      'text-[length:var(--vtg-table-font-size)] leading-[var(--vtg-table-line-height)]',
+      'text-[color:var(--vtg-table-text-color)]',
+      'shadow-[0_6px_16px_0_rgba(0,0,0,0.08),0_3px_6px_-4px_rgba(0,0,0,0.12),0_9px_28px_8px_rgba(0,0,0,0.05)]',
+      'p-1 min-w-[120px]',
+    ].join(' '),
+    selectionDropdownItem:
+      'flex items-center cursor-pointer px-3 py-[5px] rounded-sm hover:bg-[color:var(--color-control-item-hover-bg)]',
+    selectionExtra:
+      'inline-flex items-center justify-center cursor-pointer ml-1 text-[10px] text-[color:var(--vtg-table-header-color)] hover:text-[color:var(--color-primary)] transition-colors',
   },
   variants: {
     size: {

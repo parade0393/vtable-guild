@@ -774,7 +774,7 @@ const vtableControlledSelection = computed<RowSelection<DemoRow>>(() => ({
               :data-source="dataSource"
               :row-selection="antCheckboxSelection"
               row-key="key"
-              size="middle"
+              :pagination="false"
             />
           </article>
           <article class="play-panel play-panel--accent">
@@ -817,7 +817,7 @@ const vtableControlledSelection = computed<RowSelection<DemoRow>>(() => ({
               :data-source="dataSource"
               :row-selection="antRadioSelection"
               row-key="key"
-              size="middle"
+              :pagination="false"
             />
           </article>
           <article class="play-panel play-panel--accent">
@@ -863,7 +863,7 @@ const vtableControlledSelection = computed<RowSelection<DemoRow>>(() => ({
               :data-source="dataSource"
               :row-selection="antControlledSelection"
               row-key="key"
-              size="middle"
+              :pagination="false"
             />
           </article>
           <article class="play-panel play-panel--accent">

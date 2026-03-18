@@ -20,6 +20,7 @@ export interface ThemePreset {
   radio?: ThemeConfig
   input?: ThemeConfig
   tooltip?: ThemeConfig
+  scrollbar?: ThemeConfig
   tableLocale: VTableGuildTableLocale
   locales: Record<BuiltInLocaleName, VTableGuildLocale>
 }

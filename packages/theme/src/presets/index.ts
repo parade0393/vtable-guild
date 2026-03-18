@@ -13,6 +13,7 @@ import type { AntdvCheckboxThemeConfig } from './antdv/checkbox'
 import type { AntdvRadioThemeConfig } from './antdv/radio'
 import type { AntdvInputThemeConfig } from './antdv/input'
 import type { AntdvTooltipThemeConfig } from './antdv/tooltip'
+import type { AntdvScrollbarThemeConfig } from './antdv/scrollbar'
 import { antdvTableTheme } from './antdv/table'
 import { antdvTableEnUSLocale, antdvTableLocale } from './antdv/table-locale'
 import { antdvButtonTheme } from './antdv/button'
@@ -20,6 +21,7 @@ import { antdvCheckboxTheme } from './antdv/checkbox'
 import { antdvRadioTheme } from './antdv/radio'
 import { antdvInputTheme } from './antdv/input'
 import { antdvTooltipTheme } from './antdv/tooltip'
+import { antdvScrollbarTheme } from './antdv/scrollbar'
 import { elementPlusTableTheme } from './element-plus/table'
 import { elementPlusTableEnUSLocale, elementPlusTableLocale } from './element-plus/table-locale'
 import { elementPlusButtonTheme } from './element-plus/button'
@@ -27,6 +29,7 @@ import { elementPlusCheckboxTheme } from './element-plus/checkbox'
 import { elementPlusRadioTheme } from './element-plus/radio'
 import { elementPlusInputTheme } from './element-plus/input'
 import { elementPlusTooltipTheme } from './element-plus/tooltip'
+import { elementPlusScrollbarTheme } from './element-plus/scrollbar'
 
 /**
  * 预设注册表。
@@ -39,6 +42,7 @@ const presetMap: Record<ThemePresetName, ThemePreset> = {
     radio: antdvRadioTheme,
     input: antdvInputTheme,
     tooltip: antdvTooltipTheme,
+    scrollbar: antdvScrollbarTheme,
     tableLocale: antdvTableLocale,
     locales: {
       'zh-CN': { table: antdvTableLocale },
@@ -52,6 +56,7 @@ const presetMap: Record<ThemePresetName, ThemePreset> = {
     radio: elementPlusRadioTheme,
     input: elementPlusInputTheme,
     tooltip: elementPlusTooltipTheme,
+    scrollbar: elementPlusScrollbarTheme,
     tableLocale: elementPlusTableLocale,
     locales: {
       'zh-CN': { table: elementPlusTableLocale },
@@ -105,6 +110,12 @@ export function resolveTooltipThemePreset(
   name: ThemePresetName = 'antdv',
 ): AntdvTooltipThemeConfig {
   return (resolveThemePreset(name).tooltip ?? antdvTooltipTheme) as AntdvTooltipThemeConfig
+}
+
+export function resolveScrollbarThemePreset(
+  name: ThemePresetName = 'antdv',
+): AntdvScrollbarThemeConfig {
+  return (resolveThemePreset(name).scrollbar ?? antdvScrollbarTheme) as AntdvScrollbarThemeConfig
 }
 
 export function resolveTableLocalePreset(name: ThemePresetName = 'antdv'): VTableGuildTableLocale {

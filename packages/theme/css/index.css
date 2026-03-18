@@ -10,6 +10,17 @@
  */
 @import './tokens.css';
 @import './presets/antdv.css';
+@import './transitions.css';
+
+/* Hide native scrollbar — used by Scrollbar component */
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
 
 /* Tooltip transition */
 .vtg-tooltip-enter-active,

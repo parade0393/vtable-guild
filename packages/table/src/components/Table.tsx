@@ -203,6 +203,9 @@ export default defineComponent({
       toggleRow: selToggleRow,
       toggleAll: selToggleAll,
       allCheckedState: selAllCheckedState,
+      invertSelection: selInvertSelection,
+      clearSelection: selClearSelection,
+      getChangeableRowKeys: selGetChangeableRowKeys,
     } = useSelection({
       rowSelection: () => props.rowSelection,
       getRowKey: getRowKeyFn,
@@ -269,6 +272,15 @@ export default defineComponent({
       filterDropdownTreeContentWrapper: themeSlots.filterDropdownTreeContentWrapper(),
       filterDropdownTreeItemSelected: themeSlots.filterDropdownTreeItemSelected(),
       filterDropdownTreeCheckAll: themeSlots.filterDropdownTreeCheckAll(),
+      emptyWrapper: themeSlots.emptyWrapper(),
+      emptyIcon: themeSlots.emptyIcon(),
+      emptyText: themeSlots.emptyText(),
+      loadingSpinner: themeSlots.loadingSpinner(),
+      tdSelected: themeSlots.tdSelected(),
+      tdSelectedHover: themeSlots.tdSelectedHover(),
+      selectionDropdown: themeSlots.selectionDropdown(),
+      selectionDropdownItem: themeSlots.selectionDropdownItem(),
+      selectionExtra: themeSlots.selectionExtra(),
     }))
 
     const presetConfig = computed(() => resolveTablePresetConfig(effectiveThemePreset.value))
@@ -298,6 +310,9 @@ export default defineComponent({
       toggleAll: selToggleAll,
       allCheckedState: () => selAllCheckedState.value,
       getRowKey: getRowKeyFn,
+      invertSelection: selInvertSelection,
+      clearSelection: selClearSelection,
+      getChangeableRowKeys: selGetChangeableRowKeys,
     })
 
     return () => (

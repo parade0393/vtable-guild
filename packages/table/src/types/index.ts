@@ -22,4 +22,5 @@ export type {
   TableChangeExtra,
   RowSelection,
   RowSelectionType,
+  SelectionItem,
 } from './table'

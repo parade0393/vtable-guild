@@ -20,6 +20,7 @@ export type {
   VTableGuildTableFilterDropdownLocale,
   VTableGuildTableEmptyLocale,
   VTableGuildTableLoadingLocale,
+  VTableGuildTableSelectionLocale,
 } from './utils/types'
 
 // ---------- Composables ----------
@@ -32,6 +33,7 @@ export { default as Checkbox } from './components/Checkbox'
 export { default as Radio } from './components/Radio'
 export { default as Button } from './components/Button'
 export { default as Input } from './components/Input'
+export { default as Scrollbar } from './components/Scrollbar'
 export { default as VTableGuildConfigProvider } from './components/VTableGuildConfigProvider'
 
 // ---------- Plugin ----------

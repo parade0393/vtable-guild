@@ -6,12 +6,13 @@ import {
   onMounted,
   onBeforeUnmount,
   Teleport,
+  Transition,
   nextTick,
   inject,
   type PropType,
   type VNode,
 } from 'vue'
-import { Checkbox, Radio, Button, Input } from '@vtable-guild/core'
+import { Checkbox, Radio, Button, Input, Scrollbar } from '@vtable-guild/core'
 import { SearchIcon, CaretDownIcon } from '@vtable-guild/icons'
 import type { ColumnFilterItem } from '../types'
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
@@ -67,6 +68,10 @@ export default defineComponent({
       type: Object as PropType<Set<string | number | boolean> | null>,
       default: null,
     },
+    visible: {
+      type: Boolean,
+      default: true,
+    },
   },
   emits: ['confirm', 'reset', 'close', 'update:expandedKeys'],
   setup(props, { emit }) {
@@ -109,6 +114,46 @@ export default defineComponent({
 
     function isExpanded(value: string | number | boolean): boolean {
       return localExpandedKeys.value.has(value)
+    }
+
+    // Tree expand/collapse JS animation hooks
+    function onTreeBeforeEnter(el: Element) {
+      const s = (el as HTMLElement).style
+      s.height = '0'
+      s.overflow = 'hidden'
+      s.opacity = '0'
+    }
+    function onTreeEnter(el: Element, done: () => void) {
+      const htmlEl = el as HTMLElement
+      const targetHeight = htmlEl.scrollHeight
+      const s = htmlEl.style
+      s.transition = 'height 0.2s ease, opacity 0.2s ease'
+      // force reflow
+      void htmlEl.offsetHeight
+      s.height = `${targetHeight}px`
+      s.opacity = '1'
+      htmlEl.addEventListener('transitionend', done, { once: true })
+    }
+    function onTreeAfterEnter(el: Element) {
+      ;(el as HTMLElement).style.cssText = ''
+    }
+    function onTreeBeforeLeave(el: Element) {
+      const htmlEl = el as HTMLElement
+      const s = htmlEl.style
+      s.height = `${htmlEl.scrollHeight}px`
+      s.overflow = 'hidden'
+    }
+    function onTreeLeave(el: Element, done: () => void) {
+      const htmlEl = el as HTMLElement
+      const s = htmlEl.style
+      s.transition = 'height 0.15s ease, opacity 0.15s ease'
+      void htmlEl.offsetHeight
+      s.height = '0'
+      s.opacity = '0'
+      htmlEl.addEventListener('transitionend', done, { once: true })
+    }
+    function onTreeAfterLeave(el: Element) {
+      ;(el as HTMLElement).style.cssText = ''
     }
 
     watch(
@@ -244,19 +289,29 @@ export default defineComponent({
     }
 
     function handleMouseDown(e: MouseEvent) {
+      if (!props.visible) return
       if (dropdownRef.value && !dropdownRef.value.contains(e.target as Node)) {
         emit('close')
       }
     }
 
+    function handleScroll(e: Event) {
+      if (!props.visible) return
+      // Ignore scroll events from within the dropdown itself (e.g. Scrollbar)
+      if (dropdownRef.value?.contains(e.target as Node)) return
+      emit('close')
+    }
+
     onMounted(() => {
       nextTick(() => {
         document.addEventListener('mousedown', handleMouseDown)
+        window.addEventListener('scroll', handleScroll, true)
       })
     })
 
     onBeforeUnmount(() => {
       document.removeEventListener('mousedown', handleMouseDown)
+      window.removeEventListener('scroll', handleScroll, true)
     })
 
     function renderFilterIndicator(selected: boolean, indeterminate?: boolean) {
@@ -382,9 +437,23 @@ export default defineComponent({
         result.push(renderFilterItem(item, level))
         if (item.children?.length) {
           if (props.filterMode === 'tree') {
-            if (isExpanded(item.value)) {
-              result.push(...renderFilterItems(item.children, level + 1))
-            }
+            result.push(
+              <Transition
+                css={false}
+                onBeforeEnter={onTreeBeforeEnter}
+                onEnter={onTreeEnter}
+                onAfterEnter={onTreeAfterEnter}
+                onBeforeLeave={onTreeBeforeLeave}
+                onLeave={onTreeLeave}
+                onAfterLeave={onTreeAfterLeave}
+              >
+                {isExpanded(item.value) && (
+                  <div key={`tree-${item.value}`}>
+                    {renderFilterItems(item.children, level + 1)}
+                  </div>
+                )}
+              </Transition>,
+            )
           } else {
             result.push(...renderFilterItems(item.children, level + 1))
           }
@@ -419,98 +488,108 @@ export default defineComponent({
 
       return (
         <Teleport to="body">
-          <div
-            ref={dropdownRef}
-            class={tableContext.subThemeSlots?.value.filterDropdown}
-            style={style}
-          >
-            {props.filterSearch && (
-              <div class={tableContext.subThemeSlots?.value.filterDropdownSearch}>
-                <div class={tableContext.subThemeSlots?.value.filterDropdownSearchField}>
-                  <span
-                    class={tableContext.subThemeSlots?.value.filterDropdownSearchIcon}
-                    aria-hidden="true"
-                  >
-                    <SearchIcon />
-                  </span>
-                  <Input
-                    bare
-                    value={searchText.value}
-                    placeholder={filterDropdownLocale.value?.searchPlaceholder ?? '在筛选项中搜索'}
-                    inputClass={tableContext.subThemeSlots?.value.filterDropdownSearchInput}
-                    onUpdate:value={(val: string) => {
-                      searchText.value = val
-                    }}
-                  />
-                </div>
-              </div>
-            )}
-
-            {isTree ? (
-              <div class={tableContext.subThemeSlots?.value.filterDropdownTreeWrapper}>
-                {isTreeMultiple.value && (
-                  <div
-                    key="__vtg_select_all__"
-                    class={tableContext.subThemeSlots?.value.filterDropdownTreeCheckAll}
-                    onClick={toggleSelectAll}
-                  >
-                    <span class="mt-1 mr-2 shrink-0">
-                      <Checkbox
-                        checked={selectAllState.value === 'all'}
-                        indeterminate={selectAllState.value === 'partial'}
-                      />
-                    </span>
-                    <div
-                      class={[
-                        contentWrapperClass,
-                        selectAllState.value === 'all'
-                          ? tableContext.subThemeSlots?.value.filterDropdownTreeItemSelected
-                          : tableContext.subThemeSlots?.value.filterDropdownItemHover,
-                      ]}
-                    >
-                      <span class="text-[color:var(--color-on-surface)]">
-                        {filterDropdownLocale.value?.selectAllText ?? '全选'}
+          <Transition name="vtg-dropdown">
+            {props.visible && (
+              <div
+                ref={dropdownRef}
+                class={tableContext.subThemeSlots?.value.filterDropdown}
+                style={style}
+              >
+                {props.filterSearch && (
+                  <div class={tableContext.subThemeSlots?.value.filterDropdownSearch}>
+                    <div class={tableContext.subThemeSlots?.value.filterDropdownSearchField}>
+                      <span
+                        class={tableContext.subThemeSlots?.value.filterDropdownSearchIcon}
+                        aria-hidden="true"
+                      >
+                        <SearchIcon />
                       </span>
+                      <Input
+                        bare
+                        value={searchText.value}
+                        placeholder={
+                          filterDropdownLocale.value?.searchPlaceholder ?? '在筛选项中搜索'
+                        }
+                        inputClass={tableContext.subThemeSlots?.value.filterDropdownSearchInput}
+                        onUpdate:value={(val: string) => {
+                          searchText.value = val
+                        }}
+                      />
                     </div>
                   </div>
                 )}
-                <ul class={listClass}>
-                  {renderFilterItems(filteredFilters.value)}
-                  {showSearchEmptyState.value && (
-                    <li class={tableContext.subThemeSlots?.value.filterDropdownListEmpty}>
-                      {filterDropdownLocale.value?.emptyText ?? 'Not Found'}
-                    </li>
-                  )}
-                </ul>
-              </div>
-            ) : (
-              <ul
-                role={!props.multiple && isHighlightMode.value ? 'radiogroup' : undefined}
-                class={listClass}
-              >
-                {renderFilterItems(filteredFilters.value)}
-                {showSearchEmptyState.value && (
-                  <li class={tableContext.subThemeSlots?.value.filterDropdownListEmpty}>
-                    {filterDropdownLocale.value?.emptyText ?? 'Not Found'}
-                  </li>
-                )}
-              </ul>
-            )}
 
-            <div class={tableContext.subThemeSlots?.value.filterDropdownActions}>
-              <Button
-                type="link"
-                size="sm"
-                disabled={localSelectedKeys.value.length === 0}
-                onClick={handleReset}
-              >
-                {filterDropdownLocale.value?.resetText ?? '重置'}
-              </Button>
-              <Button type="primary" size="sm" onClick={handleConfirm}>
-                {filterDropdownLocale.value?.confirmText ?? '确 定'}
-              </Button>
-            </div>
-          </div>
+                {isTree ? (
+                  <div class={tableContext.subThemeSlots?.value.filterDropdownTreeWrapper}>
+                    {isTreeMultiple.value && (
+                      <div
+                        key="__vtg_select_all__"
+                        class={tableContext.subThemeSlots?.value.filterDropdownTreeCheckAll}
+                        onClick={toggleSelectAll}
+                      >
+                        <span class="mt-1 mr-2 shrink-0">
+                          <Checkbox
+                            checked={selectAllState.value === 'all'}
+                            indeterminate={selectAllState.value === 'partial'}
+                          />
+                        </span>
+                        <div
+                          class={[
+                            contentWrapperClass,
+                            selectAllState.value === 'all'
+                              ? tableContext.subThemeSlots?.value.filterDropdownTreeItemSelected
+                              : tableContext.subThemeSlots?.value.filterDropdownItemHover,
+                          ]}
+                        >
+                          <span class="text-[color:var(--color-on-surface)]">
+                            {filterDropdownLocale.value?.selectAllText ?? '全选'}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    <Scrollbar maxHeight="264px">
+                      <ul class={listClass}>
+                        {renderFilterItems(filteredFilters.value)}
+                        {showSearchEmptyState.value && (
+                          <li class={tableContext.subThemeSlots?.value.filterDropdownListEmpty}>
+                            {filterDropdownLocale.value?.emptyText ?? 'Not Found'}
+                          </li>
+                        )}
+                      </ul>
+                    </Scrollbar>
+                  </div>
+                ) : (
+                  <Scrollbar maxHeight="264px">
+                    <ul
+                      role={!props.multiple && isHighlightMode.value ? 'radiogroup' : undefined}
+                      class={listClass}
+                    >
+                      {renderFilterItems(filteredFilters.value)}
+                      {showSearchEmptyState.value && (
+                        <li class={tableContext.subThemeSlots?.value.filterDropdownListEmpty}>
+                          {filterDropdownLocale.value?.emptyText ?? 'Not Found'}
+                        </li>
+                      )}
+                    </ul>
+                  </Scrollbar>
+                )}
+
+                <div class={tableContext.subThemeSlots?.value.filterDropdownActions}>
+                  <Button
+                    type="link"
+                    size="sm"
+                    disabled={localSelectedKeys.value.length === 0}
+                    onClick={handleReset}
+                  >
+                    {filterDropdownLocale.value?.resetText ?? '重置'}
+                  </Button>
+                  <Button type="primary" size="sm" onClick={handleConfirm}>
+                    {filterDropdownLocale.value?.confirmText ?? '确 定'}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </Transition>
         </Teleport>
       )
     }

@@ -20,6 +20,11 @@ export const antdvTableLocale = {
   loading: {
     text: '加载中...',
   },
+  selection: {
+    selectAll: '全选当页',
+    selectInvert: '反选当页',
+    selectNone: '清空所有',
+  },
 } as const satisfies VTableGuildTableLocale
 
 export const antdvTableEnUSLocale = {
@@ -41,5 +46,10 @@ export const antdvTableEnUSLocale = {
   },
   loading: {
     text: 'Loading...',
+  },
+  selection: {
+    selectAll: 'Select current page',
+    selectInvert: 'Invert current page',
+    selectNone: 'Clear all',
   },
 } as const satisfies VTableGuildTableLocale

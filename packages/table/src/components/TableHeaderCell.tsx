@@ -17,6 +17,9 @@ import SortButton from './SortButton'
 import FilterIcon from './FilterIcon'
 import FilterDropdown from './FilterDropdown'
 import SelectionCheckbox from './SelectionCheckbox'
+import SelectionDropdown from './SelectionDropdown'
+import { DownOutlinedIcon } from '@vtable-guild/icons'
+import type { SelectionItem } from '../types'
 
 function getAriaSortValue(order: SortOrder): 'ascending' | 'descending' | undefined {
   if (order === 'ascend') return 'ascending'
@@ -176,6 +179,24 @@ export default defineComponent({
       }
     })
 
+    // ---- 选择下拉 ----
+    const selectionDropdownVisible = ref(false)
+    const selectionAnchorRef = ref<HTMLElement | null>(null)
+
+    function getSelectionAnchorRect() {
+      if (!selectionAnchorRef.value) return { top: 0, left: 0, right: 0, bottom: 0 }
+      return selectionAnchorRef.value.getBoundingClientRect()
+    }
+
+    function toggleSelectionDropdown(e: MouseEvent) {
+      e.stopPropagation()
+      selectionDropdownVisible.value = !selectionDropdownVisible.value
+    }
+
+    function closeSelectionDropdown() {
+      selectionDropdownVisible.value = false
+    }
+
     const sortAreaHovered = ref(false)
 
     function handleClick() {
@@ -204,14 +225,70 @@ export default defineComponent({
           return <th class={cellSelClass} style={cellSelStyle} />
         }
 
+        const hideSelectAll = sel?.hideSelectAll === true
+        const hasSelections = sel?.selections !== undefined && sel.selections !== false
+
+        if (hideSelectAll) {
+          return <th class={cellSelClass} style={cellSelStyle} />
+        }
+
         const state = tableContext.allCheckedState?.() ?? 'none'
+
+        // Build selection items for dropdown
+        let selectionItems: SelectionItem[] = []
+        if (hasSelections) {
+          const tableLocale = tableContext.locale?.value
+          if (sel?.selections === true) {
+            selectionItems = [
+              {
+                key: '__vtg_select_all__',
+                text: tableLocale?.selection?.selectAll ?? '全选当页',
+                onSelect: () => tableContext.toggleAll?.(true),
+              },
+              {
+                key: '__vtg_select_invert__',
+                text: tableLocale?.selection?.selectInvert ?? '反选当页',
+                onSelect: () => tableContext.invertSelection?.(),
+              },
+              {
+                key: '__vtg_select_none__',
+                text: tableLocale?.selection?.selectNone ?? '清空所有',
+                onSelect: () => tableContext.clearSelection?.(),
+              },
+            ]
+          } else if (Array.isArray(sel?.selections)) {
+            selectionItems = sel.selections as SelectionItem[]
+          }
+        }
+
         return (
           <th class={cellSelClass} style={cellSelStyle}>
-            <SelectionCheckbox
-              checked={state === 'all'}
-              indeterminate={state === 'partial'}
-              onChange={(checked: boolean) => tableContext.toggleAll?.(checked)}
-            />
+            <span class="inline-flex items-center justify-center">
+              <SelectionCheckbox
+                checked={state === 'all'}
+                indeterminate={state === 'partial'}
+                onChange={(checked: boolean) => tableContext.toggleAll?.(checked)}
+              />
+              {hasSelections && (
+                <span
+                  ref={selectionAnchorRef}
+                  class={tableContext.subThemeSlots?.value.selectionExtra}
+                  onClick={toggleSelectionDropdown}
+                  role="button"
+                  aria-label="Selection options"
+                >
+                  <DownOutlinedIcon />
+                </span>
+              )}
+            </span>
+            {hasSelections && (
+              <SelectionDropdown
+                items={selectionItems}
+                anchorRect={getSelectionAnchorRect()}
+                visible={selectionDropdownVisible.value}
+                onClose={closeSelectionDropdown}
+              />
+            )}
           </th>
         )
       }
@@ -382,6 +459,7 @@ export default defineComponent({
             filterSearch={column.filterSearch ?? false}
             filterMode={column.filterMode ?? 'menu'}
             expandedKeys={treeExpandedKeys.value}
+            visible={filterDropdownVisible.value}
             onConfirm={handleFilterConfirm}
             onReset={handleFilterReset}
             onClose={handleFilterClose}
@@ -405,7 +483,7 @@ export default defineComponent({
           </span>
 
           {/* Filter dropdown */}
-          {filterDropdownVisible.value && hasFilters.value && filterDropdownContent}
+          {hasFilters.value && filterDropdownContent}
         </th>
       )
     }

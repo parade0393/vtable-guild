@@ -42,6 +42,8 @@
   --vtg-table-text-color: var(--color-on-surface);
   --vtg-table-border-color: var(--color-default);
   --vtg-table-row-hover-bg: var(--color-surface-hover);
+  --vtg-table-row-selected-bg: #e6f4ff;
+  --vtg-table-row-selected-hover-bg: #bae0ff;
 
   /* 尺寸类 token（亮暗一致，不映射语义 token） */
   --vtg-table-font-size: 14px;
@@ -107,6 +109,12 @@
   --vtg-input-height: 24px;
   --vtg-input-padding-inline: 7px;
   --vtg-input-font-size: 14px;
+
+  /* Scrollbar */
+  --vtg-scrollbar-thumb-bg: rgb(0 0 0 / 15%);
+  --vtg-scrollbar-thumb-hover-bg: rgb(0 0 0 / 25%);
+  --vtg-scrollbar-thumb-width: 6px;
+  --vtg-scrollbar-thumb-radius: 3px;
 }
 
 .dark {
@@ -149,4 +157,6 @@
   /* 筛选下拉选项选中态背景 */
   --color-control-item-active-bg: #111a2c;
   --color-control-item-active-hover-bg: #112545;
+  --vtg-table-row-selected-bg: #111a2c;
+  --vtg-table-row-selected-hover-bg: #112545;
 }

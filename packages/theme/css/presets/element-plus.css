@@ -46,6 +46,8 @@
   --vtg-table-text-color: var(--color-text-regular);
   --vtg-table-border-color: var(--color-default);
   --vtg-table-row-hover-bg: var(--color-surface-hover);
+  --vtg-table-row-selected-bg: #ecf5ff;
+  --vtg-table-row-selected-hover-bg: #d9ecff;
 
   /* 尺寸类 token */
   --vtg-table-font-size: 14px;
@@ -111,6 +113,12 @@
   --vtg-input-height: 24px;
   --vtg-input-padding-inline: 8px;
   --vtg-input-font-size: 12px;
+
+  /* Scrollbar */
+  --vtg-scrollbar-thumb-bg: rgb(144 147 153 / 30%);
+  --vtg-scrollbar-thumb-hover-bg: rgb(144 147 153 / 50%);
+  --vtg-scrollbar-thumb-width: 6px;
+  --vtg-scrollbar-thumb-radius: 4px;
 }
 
 .dark [data-vtg-preset='element-plus'],
@@ -159,4 +167,6 @@
 
   /* tooltip */
   --vtg-tooltip-bg: #303133;
+  --vtg-table-row-selected-bg: #18222c;
+  --vtg-table-row-selected-hover-bg: #1d3043;
 }

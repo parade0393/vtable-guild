@@ -35,6 +35,15 @@ export interface SubThemeSlots {
   filterDropdownTreeItemSelected: string
   filterDropdownTreeCheckAll: string
   filterDropdownListEmpty: string
+  emptyWrapper: string
+  emptyIcon: string
+  emptyText: string
+  loadingSpinner: string
+  tdSelected: string
+  tdSelectedHover: string
+  selectionDropdown: string
+  selectionDropdownItem: string
+  selectionExtra: string
 }
 
 /**
@@ -110,6 +119,12 @@ export interface TableContext {
   allCheckedState?: () => 'all' | 'partial' | 'none'
   /** 获取行 key */
   getRowKey?: (record: Record<string, unknown>, index: number) => Key
+  /** 反选当前可见可选行 */
+  invertSelection?: () => void
+  /** 清空所有选中 */
+  clearSelection?: () => void
+  /** 获取所有可选行的 key */
+  getChangeableRowKeys?: () => Key[]
 }
 
 /**

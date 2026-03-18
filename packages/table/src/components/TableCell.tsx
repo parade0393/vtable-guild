@@ -56,9 +56,20 @@ export default defineComponent({
       return text.value ?? ''
     })
 
+    const isRowSelected = computed(() => {
+      const key = tableContext.getRowKey?.(props.record, props.rowIndex)
+      if (key === undefined) return false
+      return tableContext.isSelected?.(key) ?? false
+    })
+
     const cellClass = computed(() => {
       const alignClass = props.column.align ? TABLE_ALIGN_CLASSES[props.column.align] : ''
-      return cn(props.tdClass, alignClass, props.column.className)
+      const subThemeSlots = tableContext.subThemeSlots?.value
+      const selectedClasses =
+        isRowSelected.value && subThemeSlots
+          ? cn(subThemeSlots.tdSelected, subThemeSlots.tdSelectedHover)
+          : ''
+      return cn(props.tdClass, alignClass, props.column.className, selectedClasses)
     })
 
     const cellStyle = computed(() => {
@@ -78,7 +89,17 @@ export default defineComponent({
         const checked = key !== undefined && (tableContext.isSelected?.(key) ?? false)
         const disabled = tableContext.isDisabledRow?.(props.record) ?? false
 
-        const cellSelClass = cn(props.tdClass, 'text-center', props.column.className)
+        const subThemeSlots = tableContext.subThemeSlots?.value
+        const selectedClasses =
+          checked && subThemeSlots
+            ? cn(subThemeSlots.tdSelected, subThemeSlots.tdSelectedHover)
+            : ''
+        const cellSelClass = cn(
+          props.tdClass,
+          'text-center',
+          props.column.className,
+          selectedClasses,
+        )
         const cellSelStyle = props.column.width
           ? {
               width:

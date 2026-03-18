@@ -7,6 +7,7 @@ export { checkboxTheme } from './checkbox'
 export { radioTheme } from './radio'
 export { inputTheme } from './input'
 export { tooltipTheme } from './tooltip'
+export { scrollbarTheme } from './scrollbar'
 
 // ---------- 预设解析 ----------
 export {
@@ -20,6 +21,7 @@ export {
   resolveRadioThemePreset,
   resolveInputThemePreset,
   resolveTooltipThemePreset,
+  resolveScrollbarThemePreset,
 } from './presets'
 export type { BuiltInLocaleName, ThemePresetName } from './presets'
 
@@ -30,3 +32,4 @@ export type { CheckboxSlots, CheckboxThemeConfig } from './checkbox'
 export type { RadioSlots, RadioThemeConfig } from './radio'
 export type { InputSlots, InputThemeConfig } from './input'
 export type { TooltipSlots, TooltipThemeConfig } from './tooltip'
+export type { ScrollbarSlots, ScrollbarThemeConfig } from './scrollbar'
