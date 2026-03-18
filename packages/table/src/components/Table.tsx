@@ -338,9 +338,12 @@ export default defineComponent({
             />
           </table>
 
-          {props.loading && (
-            <TableLoading loadingClass={themeSlots.loading()}>{slots.loading?.()}</TableLoading>
-          )}
+          {props.loading &&
+            (slots.loading ? (
+              <TableLoading loadingClass={themeSlots.loading()}>{slots.loading()}</TableLoading>
+            ) : (
+              <TableLoading loadingClass={themeSlots.loading()} />
+            ))}
         </div>
       </div>
     )

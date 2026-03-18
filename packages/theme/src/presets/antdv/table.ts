@@ -52,11 +52,11 @@ export const antdvTableTheme = {
       'text-[color:var(--vtg-table-text-color)]',
       'border-b border-[var(--vtg-table-border-color)]',
     ].join(' '),
-    empty: 'py-16 text-center text-[color:rgba(0,0,0,0.25)]',
+    empty: 'text-center text-[color:var(--color-text-disabled)]',
     loading: [
-      'absolute inset-0 z-[2]',
+      'absolute inset-0 z-[4]',
       'flex items-center justify-center',
-      'bg-[rgba(255,255,255,0.65)] backdrop-blur-[1px]',
+      'bg-[color:var(--vtg-table-loading-overlay-bg)]',
     ].join(' '),
     headerCellInner: 'flex items-center',
     bodyCellEllipsis: 'overflow-hidden text-ellipsis whitespace-nowrap',
@@ -124,12 +124,20 @@ export const antdvTableTheme = {
       'px-3 py-2 text-center text-[length:12px] leading-5 text-black/25 select-none cursor-default',
 
     // ---- 空状态相关 ----
-    emptyWrapper: 'flex flex-col items-center justify-center',
-    emptyIcon: 'mb-2',
-    emptyText: 'text-[color:rgba(0,0,0,0.25)] text-sm',
+    emptyWrapper:
+      'my-[var(--vtg-table-empty-margin-block)] flex flex-col items-center justify-center text-center',
+    emptyIcon: [
+      'mb-[var(--vtg-table-empty-image-margin-bottom)]',
+      'h-[var(--vtg-table-empty-image-height)]',
+      'opacity-[var(--vtg-table-empty-image-opacity)]',
+      '[&>svg]:mx-auto [&>svg]:h-full [&>svg]:w-auto',
+    ].join(' '),
+    emptyText:
+      'm-0 text-[length:var(--vtg-table-font-size)] leading-[var(--vtg-table-line-height)] text-[color:var(--color-text-disabled)]',
 
     // ---- 加载状态相关 ----
-    loadingSpinner: 'text-[color:var(--color-primary)] animate-spin',
+    loadingSpinner:
+      'inline-flex items-center justify-center text-[length:20px] leading-none text-[color:var(--color-primary)]',
 
     // ---- 行选中背景 ----
     tdSelected: 'bg-[var(--vtg-table-row-selected-bg)]',

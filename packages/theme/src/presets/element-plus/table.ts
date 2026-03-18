@@ -116,10 +116,11 @@ export const elementPlusTableTheme = {
     // ---- 空状态相关 ----
     emptyWrapper: 'flex flex-col items-center justify-center',
     emptyIcon: 'mb-2',
-    emptyText: 'text-[color:var(--color-muted)] text-sm',
+    emptyText: 'm-0 text-[color:var(--color-muted)] text-sm',
 
     // ---- 加载状态相关 ----
-    loadingSpinner: 'text-[color:var(--color-primary)] animate-spin',
+    loadingSpinner:
+      'inline-flex items-center justify-center text-[color:var(--color-primary)] animate-spin',
 
     // ---- 行选中背景 ----
     tdSelected: 'bg-[var(--vtg-table-row-selected-bg)]',

@@ -23,13 +23,14 @@ export default defineComponent({
               tableContext.empty()
             ) : (
               <div class={subThemeSlots?.emptyWrapper}>
-                {presetConfig?.emptyIcon &&
-                  h(resolveDynamicComponent(presetConfig.emptyIcon) as Component, {
-                    class: subThemeSlots?.emptyIcon,
-                  })}
-                <span class={subThemeSlots?.emptyText}>
+                {presetConfig?.emptyIcon && (
+                  <div class={subThemeSlots?.emptyIcon}>
+                    {h(resolveDynamicComponent(presetConfig.emptyIcon) as Component)}
+                  </div>
+                )}
+                <p class={subThemeSlots?.emptyText}>
                   {tableContext.locale?.value.empty.text ?? '暂无数据'}
-                </span>
+                </p>
               </div>
             )}
           </td>

@@ -7,9 +7,9 @@ import {
   ElCaretTopIcon,
   ElCaretBottomIcon,
   ElArrowDownIcon,
-  EmptyIcon,
+  AntdvEmptyIcon,
   ElEmptyIcon,
-  SpinIcon,
+  AntdvSpinIndicator,
   ElLoadingIcon,
 } from '@vtable-guild/icons'
 
@@ -30,8 +30,8 @@ export const tablePresetConfigs: Record<ThemePresetName, TablePresetConfig> = {
     filterIcon: FilterFilledIcon,
     filterSingleSelectMode: 'radio',
     showSorterTooltip: true,
-    emptyIcon: EmptyIcon,
-    loadingIcon: SpinIcon,
+    emptyIcon: AntdvEmptyIcon,
+    loadingIcon: AntdvSpinIndicator,
   },
   'element-plus': {
     sortAscIcon: ElCaretTopIcon,

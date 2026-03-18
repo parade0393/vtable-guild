@@ -20,11 +20,11 @@ export default defineComponent({
 
       return (
         <div class={props.loadingClass}>
-          {presetConfig?.loadingIcon &&
-            h(resolveDynamicComponent(presetConfig.loadingIcon) as Component, {
-              class: subThemeSlots?.loadingSpinner,
-              style: { fontSize: '32px' },
-            })}
+          {presetConfig?.loadingIcon && (
+            <div class={subThemeSlots?.loadingSpinner}>
+              {h(resolveDynamicComponent(presetConfig.loadingIcon) as Component)}
+            </div>
+          )}
         </div>
       )
     }
