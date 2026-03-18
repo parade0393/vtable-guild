@@ -1,22 +1,28 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, provide, ref, watch } from 'vue'
+import { RouterLink, RouterView } from 'vue-router'
 import { VTableGuildConfigProvider } from '@vtable-guild/core'
+import type { ThemePresetName } from '@vtable-guild/core'
 import type { BuiltInLocaleName } from '@vtable-guild/theme'
 import zhCN from 'ant-design-vue/es/locale/zh_CN'
 import enUS from 'ant-design-vue/es/locale/en_US'
-import AntdvComparisonPage from './pages/AntdvComparisonPage.vue'
-import ElementPlusComparisonPage from './pages/ElementPlusComparisonPage.vue'
+import PlaygroundPresetScope from './components/PlaygroundPresetScope.vue'
+import { PLAYGROUND_CONTEXT_KEY } from './playgroundContext'
 
-type PlaygroundPage = 'antdv' | 'element-plus'
-
-const currentPage = ref<PlaygroundPage>('antdv')
+const currentPreset = ref<ThemePresetName>('antdv')
 const currentLocale = ref<BuiltInLocaleName>('zh-CN')
 const currentAntdvLocale = computed(() => (currentLocale.value === 'en-US' ? enUS : zhCN))
 
-function syncHtmlPreset(page: PlaygroundPage) {
+provide(PLAYGROUND_CONTEXT_KEY, {
+  preset: currentPreset,
+  locale: currentLocale,
+  antLocale: currentAntdvLocale,
+})
+
+function syncHtmlPreset(preset: ThemePresetName) {
   if (typeof document === 'undefined') return
 
-  if (page === 'element-plus') {
+  if (preset === 'element-plus') {
     document.documentElement.setAttribute('data-vtg-preset', 'element-plus')
     return
   }
@@ -24,7 +30,7 @@ function syncHtmlPreset(page: PlaygroundPage) {
   document.documentElement.removeAttribute('data-vtg-preset')
 }
 
-watch(currentPage, syncHtmlPreset, { immediate: true })
+watch(currentPreset, syncHtmlPreset, { immediate: true })
 watch(
   currentLocale,
   (locale) => {
@@ -46,50 +52,59 @@ onBeforeUnmount(() => {
     <header class="play-nav">
       <div>
         <p class="play-nav__eyebrow">Playground pages</p>
-        <h1>筛选矩阵分屏对照</h1>
+        <h1>功能矩阵路由实验场</h1>
       </div>
-      <div class="play-tabs" role="tablist" aria-label="Comparison pages">
-        <button
-          type="button"
-          class="play-tab"
-          :class="{ 'is-active': currentPage === 'antdv' }"
-          @click="currentPage = 'antdv'"
-        >
-          ant-design-vue
-        </button>
-        <button
-          type="button"
-          class="play-tab play-tab--element"
-          :class="{ 'is-active': currentPage === 'element-plus' }"
-          @click="currentPage = 'element-plus'"
-        >
-          element-plus
-        </button>
-      </div>
-      <div class="play-locale-switch" role="group" aria-label="Locale switch">
-        <span class="play-locale-switch__label">Locale</span>
-        <button
-          type="button"
-          class="play-locale-pill"
-          :class="{ 'is-active': currentLocale === 'zh-CN' }"
-          @click="currentLocale = 'zh-CN'"
-        >
-          中文
-        </button>
-        <button
-          type="button"
-          class="play-locale-pill"
-          :class="{ 'is-active': currentLocale === 'en-US' }"
-          @click="currentLocale = 'en-US'"
-        >
-          English
-        </button>
+      <nav class="play-tabs" aria-label="Feature routes">
+        <RouterLink class="play-tab" active-class="is-active" to="/basic">基础</RouterLink>
+        <RouterLink class="play-tab" active-class="is-active" to="/filter">筛选</RouterLink>
+        <RouterLink class="play-tab" active-class="is-active" to="/selection">选择</RouterLink>
+        <RouterLink class="play-tab" active-class="is-active" to="/sort">排序</RouterLink>
+      </nav>
+      <div class="play-nav__controls">
+        <div class="play-tabs" role="tablist" aria-label="Preset switch">
+          <button
+            type="button"
+            class="play-tab"
+            :class="{ 'is-active': currentPreset === 'antdv' }"
+            @click="currentPreset = 'antdv'"
+          >
+            ant-design-vue
+          </button>
+          <button
+            type="button"
+            class="play-tab play-tab--element"
+            :class="{ 'is-active': currentPreset === 'element-plus' }"
+            @click="currentPreset = 'element-plus'"
+          >
+            element-plus
+          </button>
+        </div>
+        <div class="play-locale-switch" role="group" aria-label="Locale switch">
+          <span class="play-locale-switch__label">Locale</span>
+          <button
+            type="button"
+            class="play-locale-pill"
+            :class="{ 'is-active': currentLocale === 'zh-CN' }"
+            @click="currentLocale = 'zh-CN'"
+          >
+            中文
+          </button>
+          <button
+            type="button"
+            class="play-locale-pill"
+            :class="{ 'is-active': currentLocale === 'en-US' }"
+            @click="currentLocale = 'en-US'"
+          >
+            English
+          </button>
+        </div>
       </div>
     </header>
 
     <VTableGuildConfigProvider :locale="currentLocale">
-      <AntdvComparisonPage v-if="currentPage === 'antdv'" :locale="currentAntdvLocale" />
-      <ElementPlusComparisonPage v-else />
+      <PlaygroundPresetScope :preset="currentPreset">
+        <RouterView />
+      </PlaygroundPresetScope>
     </VTableGuildConfigProvider>
   </div>
 </template>
@@ -117,7 +132,7 @@ onBeforeUnmount(() => {
 
 .play-nav {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, auto) minmax(320px, auto);
   gap: 24px;
   align-items: end;
   margin-bottom: 18px;
@@ -150,6 +165,12 @@ onBeforeUnmount(() => {
   gap: 10px;
 }
 
+.play-nav__controls {
+  display: grid;
+  gap: 14px;
+  justify-items: end;
+}
+
 .play-locale-switch {
   display: flex;
   align-items: center;
@@ -166,6 +187,9 @@ onBeforeUnmount(() => {
 }
 
 .play-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid rgb(39 45 39 / 16%);
   border-radius: 999px;
   padding: 11px 16px;
@@ -173,6 +197,7 @@ onBeforeUnmount(() => {
   color: var(--play-ink);
   font-size: 0.92rem;
   cursor: pointer;
+  text-decoration: none;
   transition:
     transform 0.18s ease,
     background-color 0.18s ease,
@@ -549,6 +574,10 @@ onBeforeUnmount(() => {
   .play-case__header,
   .play-hero {
     grid-template-columns: 1fr;
+  }
+
+  .play-nav__controls {
+    justify-items: start;
   }
 
   .play-panel__head {

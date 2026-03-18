@@ -8,11 +8,12 @@
   },
   "dependencies": {
     "@vtable-guild/core": "workspace:*",
-    "@vtable-guild/theme": "workspace:*",
     "@vtable-guild/table": "workspace:*",
+    "@vtable-guild/theme": "workspace:*",
     "ant-design-vue": "^4.2.6",
     "element-plus": "^2.9.0",
-    "vue": "^3.5.0"
+    "vue": "^3.5.0",
+    "vue-router": "^4.6.4"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.18",

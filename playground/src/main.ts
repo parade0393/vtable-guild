@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import './main.css'
 import { createVTableGuild } from '@vtable-guild/core'
+import { router } from './router'
 
 // Playground CSS 入口（Tailwind + 语义化 token）
 
@@ -14,4 +15,5 @@ const vtg = createVTableGuild({
 })
 
 app.use(vtg)
+app.use(router)
 app.mount('#app')
