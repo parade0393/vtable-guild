@@ -53,10 +53,10 @@ export default defineComponent({
       const atStart = tableContext.scrollState?.value?.atStart ?? true
       const atEnd = tableContext.scrollState?.value?.atEnd ?? true
       if (info.isLastLeft) {
-        classes.push(atStart ? sub.fixedShadowHidden : sub.fixedShadowLeft)
+        classes.push(atStart ? sub.fixedShadowLeftHidden : sub.fixedShadowLeft)
       }
       if (info.isFirstRight) {
-        classes.push(atEnd ? sub.fixedShadowHidden : sub.fixedShadowRight)
+        classes.push(atEnd ? sub.fixedShadowRightHidden : sub.fixedShadowRight)
       }
       return classes.join(' ')
     })

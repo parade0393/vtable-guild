@@ -53,7 +53,8 @@ export interface SubThemeSlots {
   fixedCell: string
   fixedShadowLeft: string
   fixedShadowRight: string
-  fixedShadowHidden: string
+  fixedShadowLeftHidden: string
+  fixedShadowRightHidden: string
   expandIcon: string
   expandedRow: string
   expandedRowCell: string

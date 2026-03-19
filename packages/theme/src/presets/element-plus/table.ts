@@ -165,13 +165,17 @@ export const elementPlusTableTheme = {
       'after:absolute after:top-0 after:bottom-[-1px] after:right-0 after:w-[30px]',
       'after:translate-x-full after:pointer-events-none',
       'after:shadow-[inset_10px_0_8px_-8px_rgba(0,0,0,0.06)]',
+      'before:!bg-transparent',
     ].join(' '),
     fixedShadowRight: [
-      'before:absolute before:top-0 before:bottom-[-1px] before:left-0 before:w-[30px]',
-      'before:-translate-x-full before:pointer-events-none',
-      'before:shadow-[inset_-10px_0_8px_-8px_rgba(0,0,0,0.06)]',
+      'after:absolute after:top-0 after:bottom-[-1px] after:left-0 after:w-[30px]',
+      'after:-translate-x-full after:pointer-events-none',
+      'after:shadow-[inset_-10px_0_8px_-8px_rgba(0,0,0,0.06)]',
+      'before:!bg-transparent',
     ].join(' '),
-    fixedShadowHidden: 'after:shadow-none before:shadow-none',
+    fixedShadowLeftHidden: 'after:shadow-none before:!bg-transparent',
+    fixedShadowRightHidden:
+      'after:shadow-none before:!bg-transparent border-l border-[var(--vtg-table-border-color)]',
 
     // ---- 展开行 ----
     expandIcon: '',
