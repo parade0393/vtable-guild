@@ -1,7 +1,9 @@
 import type { ComputedRef, InjectionKey, Slots } from 'vue'
 import type { LocaleName, VTableGuildTableLocale } from '@vtable-guild/core'
 import type { ColumnType, Key, RowSelection, SortOrder } from './types'
+import type { Expandable } from './types/table'
 import type { TablePresetConfig } from './preset-config'
+import type { FixedOffset } from './composables/useScroll'
 
 /** 子组件主题 slot class 映射 */
 export interface SubThemeSlots {
@@ -44,6 +46,18 @@ export interface SubThemeSlots {
   selectionDropdown: string
   selectionDropdownItem: string
   selectionExtra: string
+  summaryRow: string
+  summaryCell: string
+  headerWrapper: string
+  bodyWrapper: string
+  fixedCell: string
+  fixedShadowLeft: string
+  fixedShadowRight: string
+  fixedShadowHidden: string
+  expandIcon: string
+  expandedRow: string
+  expandedRowCell: string
+  resizeHandle: string
 }
 
 /**
@@ -125,6 +139,34 @@ export interface TableContext {
   clearSelection?: () => void
   /** 获取所有可选行的 key */
   getChangeableRowKeys?: () => Key[]
+
+  // ---- 固定列/表头 ----
+  /** 固定列偏移量映射 */
+  fixedOffsets?: ComputedRef<Map<Key, FixedOffset>>
+  /** 滚动状态（是否在起始/末端） */
+  scrollState?: ComputedRef<{ atStart: boolean; atEnd: boolean }>
+
+  // ---- 展开行 ----
+  /** 展开行配置 */
+  expandable?: () => Expandable | undefined
+  /** 判断某行是否展开 */
+  isExpanded?: (key: Key) => boolean
+  /** 切换展开状态 */
+  toggleExpand?: (record: Record<string, unknown>, index: number) => void
+  /** 判断行是否可展开 */
+  isRowExpandable?: (record: Record<string, unknown>) => boolean
+
+  // ---- 列宽调整 ----
+  /** 列宽覆写映射 */
+  columnWidths?: Record<string, number>
+  /** 启动列宽拖拽 */
+  startResize?: (
+    column: ColumnType<Record<string, unknown>>,
+    colIndex: number,
+    event: PointerEvent,
+  ) => void
+  /** 是否正在拖拽 */
+  isResizing?: () => boolean
 }
 
 /**

@@ -6,8 +6,10 @@ import { TABLE_ALIGN_CLASSES } from '@vtable-guild/theme'
 import { ColumnType } from '../types'
 import { TABLE_CONTEXT_KEY } from '../context'
 import { getByDataIndex } from '../composables'
+import { getColumnKey } from '../composables/useSorter'
 import SelectionCheckbox from './SelectionCheckbox'
 import SelectionRadio from './SelectionRadio'
+import ExpandIcon from './ExpandIcon'
 
 export default defineComponent({
   name: 'TableCell',
@@ -15,6 +17,7 @@ export default defineComponent({
     record: { type: Object as PropType<Record<string, unknown>>, required: true },
     rowIndex: { type: Number, required: true },
     column: { type: Object as PropType<ColumnType<Record<string, unknown>>>, required: true },
+    colIndex: { type: Number, required: true },
     tdClass: { type: String, required: true },
     bodyCellEllipsisClass: { type: String, required: true },
   },
@@ -24,6 +27,39 @@ export default defineComponent({
     const tableContext = inject(TABLE_CONTEXT_KEY, {})
 
     const text = computed(() => getByDataIndex(props.record, props.column.dataIndex))
+
+    // ---- 固定列 ----
+    const fixedInfo = computed(() => {
+      if (!props.column.fixed) return null
+      const key = getColumnKey(props.column) ?? props.colIndex
+      return tableContext.fixedOffsets?.value?.get(key) ?? null
+    })
+
+    const fixedStyle = computed(() => {
+      const info = fixedInfo.value
+      if (!info) return undefined
+      const style: Record<string, string> = { position: 'sticky', zIndex: '2' }
+      if (info.left !== undefined) style.left = `${info.left}px`
+      if (info.right !== undefined) style.right = `${info.right}px`
+      return style
+    })
+
+    const fixedClass = computed(() => {
+      const info = fixedInfo.value
+      if (!info) return ''
+      const sub = tableContext.subThemeSlots?.value
+      if (!sub) return ''
+      const classes: string[] = []
+      const atStart = tableContext.scrollState?.value?.atStart ?? true
+      const atEnd = tableContext.scrollState?.value?.atEnd ?? true
+      if (info.isLastLeft) {
+        classes.push(atStart ? sub.fixedShadowHidden : sub.fixedShadowLeft)
+      }
+      if (info.isFirstRight) {
+        classes.push(atEnd ? sub.fixedShadowHidden : sub.fixedShadowRight)
+      }
+      return classes.join(' ')
+    })
 
     /**
      * 计算最终渲染内容。
@@ -69,15 +105,25 @@ export default defineComponent({
         isRowSelected.value && subThemeSlots
           ? cn(subThemeSlots.tdSelected, subThemeSlots.tdSelectedHover)
           : ''
-      return cn(props.tdClass, alignClass, props.column.className, selectedClasses)
+      return cn(
+        props.tdClass,
+        alignClass,
+        props.column.className,
+        selectedClasses,
+        fixedClass.value,
+      )
     })
 
     const cellStyle = computed(() => {
-      if (!props.column.width) return undefined
-      return {
-        width:
-          typeof props.column.width === 'number' ? `${props.column.width}px` : props.column.width,
+      const base: Record<string, string> = {}
+      const resizedWidth =
+        tableContext.columnWidths?.[String(getColumnKey(props.column) ?? props.colIndex)]
+      const w = resizedWidth ?? props.column.width
+      if (w) {
+        base.width = typeof w === 'number' ? `${w}px` : w
       }
+      const fixed = fixedStyle.value
+      return fixed ? { ...base, ...fixed } : Object.keys(base).length ? base : undefined
     })
 
     return () => {
@@ -99,15 +145,19 @@ export default defineComponent({
           'text-center',
           props.column.className,
           selectedClasses,
+          fixedClass.value,
         )
-        const cellSelStyle = props.column.width
-          ? {
-              width:
-                typeof props.column.width === 'number'
-                  ? `${props.column.width}px`
-                  : props.column.width,
-            }
-          : undefined
+        const cellSelStyle = (() => {
+          const base: Record<string, string> = {}
+          if (props.column.width) {
+            base.width =
+              typeof props.column.width === 'number'
+                ? `${props.column.width}px`
+                : props.column.width
+          }
+          const fixed = fixedStyle.value
+          return fixed ? { ...base, ...fixed } : Object.keys(base).length ? base : undefined
+        })()
 
         return (
           <td class={cellSelClass} style={cellSelStyle}>
@@ -124,6 +174,58 @@ export default defineComponent({
                 onChange={() => tableContext.toggleRow?.(props.record, props.rowIndex)}
               />
             )}
+          </td>
+        )
+      }
+
+      // ---- 展开列单元格 ----
+      if (props.column.key === '__vtg_expand__') {
+        const exp = tableContext.expandable?.()
+        const key = tableContext.getRowKey?.(props.record, props.rowIndex)
+        const expanded = key !== undefined && (tableContext.isExpanded?.(key) ?? false)
+        const canExpand = tableContext.isRowExpandable?.(props.record) ?? false
+
+        const expandCellClass = cn(
+          props.tdClass,
+          'text-center',
+          props.column.className,
+          fixedClass.value,
+        )
+        const expandCellStyle = (() => {
+          const base: Record<string, string> = {}
+          if (props.column.width) {
+            base.width =
+              typeof props.column.width === 'number'
+                ? `${props.column.width}px`
+                : props.column.width
+          }
+          const fixed = fixedStyle.value
+          return fixed ? { ...base, ...fixed } : Object.keys(base).length ? base : undefined
+        })()
+
+        // Custom expand icon
+        if (exp?.expandIcon) {
+          return (
+            <td class={expandCellClass} style={expandCellStyle}>
+              {exp.expandIcon({
+                expanded,
+                record: props.record,
+                onExpand: (_record, e) => {
+                  e.stopPropagation()
+                  tableContext.toggleExpand?.(props.record, props.rowIndex)
+                },
+              })}
+            </td>
+          )
+        }
+
+        return (
+          <td class={expandCellClass} style={expandCellStyle}>
+            <ExpandIcon
+              expanded={expanded}
+              expandable={canExpand}
+              onClick={() => tableContext.toggleExpand?.(props.record, props.rowIndex)}
+            />
           </td>
         )
       }

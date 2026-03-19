@@ -27,5 +27,10 @@ export const router = createRouter({
       name: 'sort',
       component: () => import('./pages/SortPage.vue'),
     },
+    {
+      path: '/advanced',
+      name: 'advanced',
+      component: () => import('./pages/AdvancedPage.vue'),
+    },
   ],
 })

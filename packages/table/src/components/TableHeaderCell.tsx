@@ -18,8 +18,11 @@ import FilterIcon from './FilterIcon'
 import FilterDropdown from './FilterDropdown'
 import SelectionCheckbox from './SelectionCheckbox'
 import SelectionDropdown from './SelectionDropdown'
+import ResizeHandle from './ResizeHandle'
 import { DownOutlinedIcon } from '@vtable-guild/icons'
 import type { SelectionItem } from '../types'
+
+import { getColumnKey } from '../composables/useSorter'
 
 function getAriaSortValue(order: SortOrder): 'ascending' | 'descending' | undefined {
   if (order === 'ascend') return 'ascending'
@@ -153,6 +156,39 @@ export default defineComponent({
       setDropdownVisible(false)
     }
 
+    // ---- 固定列 ----
+    const fixedInfo = computed(() => {
+      if (!props.column.fixed) return null
+      const key = getColumnKey(props.column) ?? props.index
+      return tableContext.fixedOffsets?.value?.get(key) ?? null
+    })
+
+    const fixedStyle = computed(() => {
+      const info = fixedInfo.value
+      if (!info) return undefined
+      const style: Record<string, string> = { position: 'sticky', zIndex: '2' }
+      if (info.left !== undefined) style.left = `${info.left}px`
+      if (info.right !== undefined) style.right = `${info.right}px`
+      return style
+    })
+
+    const fixedClass = computed(() => {
+      const info = fixedInfo.value
+      if (!info) return ''
+      const sub = tableContext.subThemeSlots?.value
+      if (!sub) return ''
+      const classes: string[] = []
+      const atStart = tableContext.scrollState?.value?.atStart ?? true
+      const atEnd = tableContext.scrollState?.value?.atEnd ?? true
+      if (info.isLastLeft) {
+        classes.push(atStart ? sub.fixedShadowHidden : sub.fixedShadowLeft)
+      }
+      if (info.isFirstRight) {
+        classes.push(atEnd ? sub.fixedShadowHidden : sub.fixedShadowRight)
+      }
+      return classes.join(' ')
+    })
+
     // ---- 公共 ----
     const headerContent = computed(() => {
       if (tableContext.headerCell) {
@@ -168,15 +204,20 @@ export default defineComponent({
     const cellClass = computed(() => {
       const alignClass = props.column.align ? TABLE_ALIGN_CLASSES[props.column.align] : ''
       const sortableClass = isSortable.value ? tableContext.subThemeSlots?.value.thSortable : ''
-      return cn(props.thClass, alignClass, sortableClass, props.column.className)
+      return cn(props.thClass, alignClass, sortableClass, props.column.className, fixedClass.value)
     })
 
     const cellStyle = computed(() => {
-      if (!props.column.width) return undefined
-      return {
-        width:
-          typeof props.column.width === 'number' ? `${props.column.width}px` : props.column.width,
+      const base: Record<string, string> = {}
+      // Use resized width if available, otherwise original width
+      const resizedWidth =
+        tableContext.columnWidths?.[String(getColumnKey(props.column) ?? props.index)]
+      const w = resizedWidth ?? props.column.width
+      if (w) {
+        base.width = typeof w === 'number' ? `${w}px` : w
       }
+      const fixed = fixedStyle.value
+      return fixed ? { ...base, ...fixed } : Object.keys(base).length ? base : undefined
     })
 
     // ---- 选择下拉 ----
@@ -484,6 +525,9 @@ export default defineComponent({
 
           {/* Filter dropdown */}
           {hasFilters.value && filterDropdownContent}
+
+          {/* Resize handle */}
+          {props.column.resizable && <ResizeHandle column={props.column} colIndex={props.index} />}
         </th>
       )
     }

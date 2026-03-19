@@ -9,6 +9,44 @@ import type { VNodeChild } from 'vue'
 import type { ColumnsType, ColumnType, ColumnFilterItem, Key } from './column'
 import type { TableSlots } from '@vtable-guild/theme'
 
+// ---- 展开行类型 ----
+
+export interface Expandable<TRecord = Record<string, unknown>> {
+  /** 展开行渲染函数 */
+  expandedRowRender?: (
+    record: TRecord,
+    index: number,
+    indent: number,
+    expanded: boolean,
+  ) => VNodeChild
+  /** 受控展开行 key 列表 */
+  expandedRowKeys?: Key[]
+  /** 非受控默认展开行 key 列表 */
+  defaultExpandedRowKeys?: Key[]
+  /** 点击行展开 */
+  expandRowByClick?: boolean
+  /** 自定义展开图标 */
+  expandIcon?: (props: {
+    expanded: boolean
+    record: TRecord
+    onExpand: (record: TRecord, e: Event) => void
+  }) => VNodeChild
+  /** 展开/折叠回调 */
+  onExpand?: (expanded: boolean, record: TRecord) => void
+  /** 展开行变化回调 */
+  onExpandedRowsChange?: (expandedKeys: Key[]) => void
+  /** 展开列宽度 */
+  columnWidth?: number | string
+  /** 展开列固定位置 */
+  fixed?: 'left' | 'right'
+  /** 默认展开所有行 */
+  defaultExpandAllRows?: boolean
+  /** 判断行是否可展开 */
+  rowExpandable?: (record: TRecord) => boolean
+  /** 是否显示展开列，默认 true */
+  showExpandColumn?: boolean
+}
+
 // ---- 行选择类型 ----
 
 export type RowSelectionType = 'checkbox' | 'radio'
@@ -79,6 +117,9 @@ export interface TableSlotsDecl<TRecord extends Record<string, unknown>> {
   loading?: () => VNodeChild
   customFilterDropdown?: (props: CustomFilterDropdownSlotProps<TRecord>) => VNodeChild
   customFilterIcon?: (props: { column: ColumnType<TRecord>; filtered: boolean }) => VNodeChild
+  title?: (data: TRecord[]) => VNodeChild
+  footer?: (data: TRecord[]) => VNodeChild
+  summary?: () => VNodeChild
 }
 
 /**
@@ -123,6 +164,18 @@ export interface TableProps<TRecord extends Record<string, unknown> = Record<str
 
   /** 行选择配置 */
   rowSelection?: RowSelection<TRecord>
+
+  /** 展开行配置 */
+  expandable?: Expandable<TRecord>
+
+  /** 表格标题渲染函数 */
+  title?: (data: TRecord[]) => VNodeChild
+
+  /** 表格页脚渲染函数 */
+  footer?: (data: TRecord[]) => VNodeChild
+
+  /** 滚动配置。x 为横向滚动宽度，y 为纵向滚动高度（启用固定表头）。 */
+  scroll?: { x?: number | string; y?: number | string }
 }
 
 // ---- change 事件参数类型 ----

@@ -1,6 +1,17 @@
-import { computed, defineComponent, inject, provide, type PropType, type SlotsType } from 'vue'
+import {
+  computed,
+  defineComponent,
+  inject,
+  provide,
+  ref,
+  watch,
+  type PropType,
+  type SlotsType,
+  type VNodeChild,
+} from 'vue'
 import {
   mergeDeep,
+  Scrollbar,
   useTheme,
   VTABLE_GUILD_INJECTION_KEY,
   type DeepPartial,
@@ -18,12 +29,16 @@ import {
   type TableSlots,
 } from '@vtable-guild/theme'
 import { useColumns, useSorter, useFilter, useSelection } from '../composables'
+import { useScroll, type ScrollConfig } from '../composables/useScroll'
+import { useExpand } from '../composables/useExpand'
+import { useResize } from '../composables/useResize'
 
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 import { resolveTablePresetConfig } from '../preset-config'
 import TableHeader from './TableHeader'
 import TableBody from './TableBody'
 import TableLoading from './TableLoading'
+import ColGroup from './ColGroup'
 import type {
   ColumnsType,
   ColumnType,
@@ -31,6 +46,7 @@ import type {
   RowSelection,
   TableFiltersInfo,
   TableChangeExtra,
+  Expandable,
 } from '../types'
 
 import type { SorterResult } from '../composables'
@@ -71,6 +87,22 @@ export default defineComponent({
       type: Object as PropType<RowSelection>,
       default: undefined,
     },
+    title: {
+      type: Function as PropType<(data: Record<string, unknown>[]) => VNodeChild>,
+      default: undefined,
+    },
+    footer: {
+      type: Function as PropType<(data: Record<string, unknown>[]) => VNodeChild>,
+      default: undefined,
+    },
+    scroll: {
+      type: Object as PropType<ScrollConfig>,
+      default: undefined,
+    },
+    expandable: {
+      type: Object as PropType<Expandable>,
+      default: undefined,
+    },
   },
   emits: {
     change: (
@@ -78,6 +110,7 @@ export default defineComponent({
       _sorter: SorterResult,
       _extra: TableChangeExtra<Record<string, unknown>>,
     ) => true,
+    resizeColumn: (_column: ColumnType<Record<string, unknown>>, _width: number) => true,
   },
   slots: Object as SlotsType<{
     bodyCell: {
@@ -107,6 +140,9 @@ export default defineComponent({
       column: ColumnType<Record<string, unknown>>
       filtered: boolean
     }
+    title: { data: Record<string, unknown>[] }
+    footer: { data: Record<string, unknown>[] }
+    summary: void
   }>,
   setup(props, { slots, emit }) {
     const globalContext = inject<VTableGuildContext | null>(VTABLE_GUILD_INJECTION_KEY, null)
@@ -225,19 +261,85 @@ export default defineComponent({
       },
     })
 
-    // ---- displayColumns：选择列 + 原始列 ----
+    // ---- 展开行 ----
+    const { isExpanded: expIsExpanded, toggleExpand: expToggleExpand } = useExpand({
+      expandable: () => props.expandable,
+      getRowKey: getRowKeyFn,
+      data: () => processedData.value,
+    })
+
+    const isRowExpandable = (record: Record<string, unknown>): boolean => {
+      const exp = props.expandable
+      if (!exp) return false
+      if (exp.rowExpandable) return exp.rowExpandable(record)
+      return !!exp.expandedRowRender
+    }
+
+    // ---- displayColumns：选择列 + 展开列 + 原始列 ----
     const SELECTION_COLUMN_KEY = '__vtg_selection__'
+    const EXPAND_COLUMN_KEY = '__vtg_expand__'
 
     const displayColumns = computed(() => {
-      const sel = props.rowSelection
-      if (!sel) return leafColumns.value
-      const selColumn: ColumnType<Record<string, unknown>> = {
-        key: SELECTION_COLUMN_KEY,
-        title: '',
-        width: sel.columnWidth ?? 48,
-        align: 'center',
+      const cols: ColumnType<Record<string, unknown>>[] = [...leafColumns.value]
+      const exp = props.expandable
+      if (exp && exp.showExpandColumn !== false) {
+        const expandCol: ColumnType<Record<string, unknown>> = {
+          key: EXPAND_COLUMN_KEY,
+          title: '',
+          width: exp.columnWidth ?? 48,
+          align: 'center',
+          fixed: exp.fixed,
+        }
+        cols.unshift(expandCol)
       }
-      return [selColumn, ...leafColumns.value]
+      const sel = props.rowSelection
+      if (sel) {
+        const selColumn: ColumnType<Record<string, unknown>> = {
+          key: SELECTION_COLUMN_KEY,
+          title: '',
+          width: sel.columnWidth ?? 48,
+          align: 'center',
+        }
+        cols.unshift(selColumn)
+      }
+      return cols
+    })
+
+    // ---- 滚动/固定列 ----
+    const { headerWrapRef, bodyWrapRef, scrollState, handleBodyScroll, fixedOffsets } = useScroll({
+      displayColumns: () => displayColumns.value,
+    })
+
+    const hasStickyHeader = computed(() => !!props.scroll?.y)
+
+    // Bridge VScrollbar's internal wrapRef → useScroll's bodyWrapRef
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const bodyScrollbarRef = ref<any>(null)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const wrapperScrollbarRef = ref<any>(null)
+
+    watch(
+      () => bodyScrollbarRef.value?.wrapRef,
+      (el: HTMLElement | null) => {
+        if (el) bodyWrapRef.value = el
+      },
+    )
+    watch(
+      () => wrapperScrollbarRef.value?.wrapRef,
+      (el: HTMLElement | null) => {
+        if (el) bodyWrapRef.value = el
+      },
+    )
+
+    // ---- 列宽调整 ----
+    const {
+      columnWidths: resizeColumnWidths,
+      startResize: resizeStartResize,
+      isResizing: resizeIsResizing,
+    } = useResize({
+      onResizeColumn(column, width) {
+        emit('resizeColumn', column, width)
+      },
     })
 
     // ---- provide context ----
@@ -281,6 +383,18 @@ export default defineComponent({
       selectionDropdown: themeSlots.selectionDropdown(),
       selectionDropdownItem: themeSlots.selectionDropdownItem(),
       selectionExtra: themeSlots.selectionExtra(),
+      summaryRow: themeSlots.summaryRow(),
+      summaryCell: themeSlots.summaryCell(),
+      headerWrapper: themeSlots.headerWrapper(),
+      bodyWrapper: themeSlots.bodyWrapper(),
+      fixedCell: themeSlots.fixedCell(),
+      fixedShadowLeft: themeSlots.fixedShadowLeft(),
+      fixedShadowRight: themeSlots.fixedShadowRight(),
+      fixedShadowHidden: themeSlots.fixedShadowHidden(),
+      expandIcon: themeSlots.expandIcon(),
+      expandedRow: themeSlots.expandedRow(),
+      expandedRowCell: themeSlots.expandedRowCell(),
+      resizeHandle: themeSlots.resizeHandle(),
     }))
 
     const presetConfig = computed(() => resolveTablePresetConfig(effectiveThemePreset.value))
@@ -313,12 +427,105 @@ export default defineComponent({
       invertSelection: selInvertSelection,
       clearSelection: selClearSelection,
       getChangeableRowKeys: selGetChangeableRowKeys,
+      fixedOffsets,
+      scrollState,
+      expandable: () => props.expandable,
+      isExpanded: expIsExpanded,
+      toggleExpand: expToggleExpand,
+      isRowExpandable,
+      columnWidths: resizeColumnWidths,
+      startResize: resizeStartResize,
+      isResizing: () => resizeIsResizing.value,
     })
 
-    return () => (
-      <div class={themeSlots.root()}>
-        <div class={themeSlots.wrapper()}>
-          <table class={themeSlots.table()}>
+    return () => {
+      // ---- title: prop > slot ----
+      const titleContent = props.title
+        ? props.title(processedData.value)
+        : slots.title
+          ? slots.title({ data: processedData.value })
+          : null
+
+      // ---- footer: prop > slot ----
+      const footerContent = props.footer
+        ? props.footer(processedData.value)
+        : slots.footer
+          ? slots.footer({ data: processedData.value })
+          : null
+
+      // ---- summary: slot only ----
+      const summaryContent = slots.summary ? slots.summary() : null
+
+      // ---- scroll style ----
+      const scroll = props.scroll
+      const tableStyle: Record<string, string> = {}
+      if (scroll?.x) {
+        tableStyle.minWidth = typeof scroll.x === 'number' ? `${scroll.x}px` : scroll.x
+      }
+
+      const loadingOverlay =
+        props.loading &&
+        (slots.loading ? (
+          <TableLoading loadingClass={themeSlots.loading()}>{slots.loading()}</TableLoading>
+        ) : (
+          <TableLoading loadingClass={themeSlots.loading()} />
+        ))
+
+      // ---- Dual-table mode (scroll.y set) ----
+      if (hasStickyHeader.value) {
+        return (
+          <div class={themeSlots.root()}>
+            {titleContent && <div class={themeSlots.title()}>{titleContent}</div>}
+            <div class={themeSlots.wrapper()}>
+              {/* Header table — fixed at top */}
+              <div ref={headerWrapRef} class={themeSlots.headerWrapper()}>
+                <div class="block min-w-full w-max">
+                  <table class={themeSlots.table()} style={tableStyle}>
+                    <ColGroup columns={displayColumns.value} />
+                    <TableHeader
+                      columns={displayColumns.value}
+                      theadClass={themeSlots.thead()}
+                      rowClass={themeSlots.tr()}
+                      thClass={themeSlots.th()}
+                      headerCellInnerClass={themeSlots.headerCellInner()}
+                    />
+                  </table>
+                </div>
+              </div>
+              {/* Body table — VScrollbar handles vertical + horizontal */}
+              <Scrollbar
+                ref={bodyScrollbarRef}
+                maxHeight={typeof scroll!.y === 'number' ? scroll!.y : String(scroll!.y)}
+                wrapClass={themeSlots.bodyWrapper()}
+                onScroll={handleBodyScroll}
+              >
+                <table class={themeSlots.table()} style={tableStyle}>
+                  <ColGroup columns={displayColumns.value} />
+                  <TableBody
+                    dataSource={processedData.value}
+                    columns={displayColumns.value}
+                    tbodyClass={themeSlots.tbody()}
+                    rowClass={themeSlots.tr()}
+                    tdClass={themeSlots.td()}
+                    emptyClass={themeSlots.empty()}
+                    bodyCellEllipsisClass={themeSlots.bodyCellEllipsis()}
+                    rowKey={props.rowKey}
+                  />
+                  {summaryContent && <tfoot class={themeSlots.summary()}>{summaryContent}</tfoot>}
+                </table>
+              </Scrollbar>
+              {loadingOverlay}
+            </div>
+            {footerContent && <div class={themeSlots.footer()}>{footerContent}</div>}
+          </div>
+        )
+      }
+
+      // ---- Single-table mode ----
+      const tableContent = (
+        <>
+          <table class={themeSlots.table()} style={tableStyle}>
+            <ColGroup columns={displayColumns.value} />
             <TableHeader
               columns={displayColumns.value}
               theadClass={themeSlots.thead()}
@@ -336,16 +543,25 @@ export default defineComponent({
               bodyCellEllipsisClass={themeSlots.bodyCellEllipsis()}
               rowKey={props.rowKey}
             />
+            {summaryContent && <tfoot class={themeSlots.summary()}>{summaryContent}</tfoot>}
           </table>
+          {loadingOverlay}
+        </>
+      )
 
-          {props.loading &&
-            (slots.loading ? (
-              <TableLoading loadingClass={themeSlots.loading()}>{slots.loading()}</TableLoading>
-            ) : (
-              <TableLoading loadingClass={themeSlots.loading()} />
-            ))}
+      return (
+        <div class={themeSlots.root()}>
+          {titleContent && <div class={themeSlots.title()}>{titleContent}</div>}
+          <Scrollbar
+            ref={wrapperScrollbarRef}
+            wrapClass={themeSlots.wrapper()}
+            onScroll={handleBodyScroll}
+          >
+            {tableContent}
+          </Scrollbar>
+          {footerContent && <div class={themeSlots.footer()}>{footerContent}</div>}
         </div>
-      </div>
-    )
+      )
+    }
   },
 })

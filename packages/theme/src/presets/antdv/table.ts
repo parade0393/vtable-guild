@@ -156,6 +156,48 @@ export const antdvTableTheme = {
       'flex items-center cursor-pointer px-3 py-[5px] rounded-sm hover:bg-[color:var(--color-control-item-hover-bg)]',
     selectionExtra:
       'inline-flex items-center justify-center cursor-pointer ml-1 text-[10px] text-[color:var(--vtg-table-header-color)] hover:text-[color:var(--color-primary)] transition-colors',
+
+    // ---- 标题/页脚/摘要行 ----
+    title: [
+      'bg-[var(--vtg-table-header-bg)]',
+      'text-[color:var(--vtg-table-text-color)]',
+      'font-semibold',
+    ].join(' '),
+    footer: ['bg-[var(--vtg-table-header-bg)]', 'text-[color:var(--vtg-table-text-color)]'].join(
+      ' ',
+    ),
+    summary: '',
+    summaryRow: 'bg-[var(--vtg-table-header-bg)]',
+    summaryCell: [
+      'font-semibold',
+      'bg-[var(--vtg-table-header-bg)]',
+      'text-[color:var(--vtg-table-text-color)]',
+      'border-b border-[var(--vtg-table-border-color)]',
+    ].join(' '),
+
+    // ---- 固定列/固定表头 ----
+    headerWrapper: 'overflow-hidden',
+    bodyWrapper: 'overflow-auto',
+    fixedCell: 'sticky z-[2] bg-inherit',
+    fixedShadowLeft: [
+      'after:absolute after:top-0 after:bottom-[-1px] after:right-0 after:w-[30px]',
+      'after:translate-x-full after:pointer-events-none',
+      'after:shadow-[inset_10px_0_8px_-8px_rgba(0,0,0,0.08)]',
+    ].join(' '),
+    fixedShadowRight: [
+      'before:absolute before:top-0 before:bottom-[-1px] before:left-0 before:w-[30px]',
+      'before:-translate-x-full before:pointer-events-none',
+      'before:shadow-[inset_-10px_0_8px_-8px_rgba(0,0,0,0.08)]',
+    ].join(' '),
+    fixedShadowHidden: 'after:shadow-none before:shadow-none',
+
+    // ---- 展开行 ----
+    expandIcon: '',
+    expandedRow: '',
+    expandedRowCell: 'bg-[var(--vtg-table-expanded-row-bg,#fafafa)]',
+
+    // ---- 列拖拽调整宽度 ----
+    resizeHandle: '',
   },
   variants: {
     size: {
@@ -168,6 +210,9 @@ export const antdvTableTheme = {
         table: 'border border-[var(--vtg-table-border-color)]',
         th: 'border-r border-[var(--vtg-table-border-color)] last:border-r-0 before:hidden',
         td: 'border-r border-[var(--vtg-table-border-color)] last:border-r-0',
+        title: 'border-b border-[var(--vtg-table-border-color)]',
+        footer: 'border-t border-[var(--vtg-table-border-color)]',
+        summaryCell: 'border-r border-[var(--vtg-table-border-color)] last:border-r-0',
       },
     },
     striped: {
@@ -188,19 +233,19 @@ export const antdvTableTheme = {
   },
   compoundSlots: [
     {
-      slots: ['th', 'td'],
+      slots: ['th', 'td', 'title', 'footer', 'summaryCell'],
       size: 'lg',
       class:
         'px-[var(--vtg-table-cell-padding-inline-lg)] py-[var(--vtg-table-cell-padding-block-lg)]',
     },
     {
-      slots: ['th', 'td'],
+      slots: ['th', 'td', 'title', 'footer', 'summaryCell'],
       size: 'md',
       class:
         'px-[var(--vtg-table-cell-padding-inline-md)] py-[var(--vtg-table-cell-padding-block-md)]',
     },
     {
-      slots: ['th', 'td'],
+      slots: ['th', 'td', 'title', 'footer', 'summaryCell'],
       size: 'sm',
       class:
         'px-[var(--vtg-table-cell-padding-inline-sm)] py-[var(--vtg-table-cell-padding-block-sm)]',

@@ -27,6 +27,18 @@ export interface ColumnType<TRecord extends Record<string, unknown>> {
   className?: string
   customRender?: (ctx: CustomRenderContext<TRecord>) => VNodeChild
 
+  /** 固定列。'left' 固定到左侧，'right' 固定到右侧。 */
+  fixed?: 'left' | 'right'
+
+  /** 是否可拖拽调整列宽 */
+  resizable?: boolean
+
+  /** 最小列宽（拖拽调整时），默认 50 */
+  minWidth?: number
+
+  /** 最大列宽（拖拽调整时） */
+  maxWidth?: number
+
   /**
    * 排序器。
    * - `true`：使用默认比较（字符串/数字自动判断）

@@ -21,6 +21,7 @@ export type {
   TableChangeExtra,
   RowSelection,
   RowSelectionType,
+  Expandable,
 } from './types'
 export type { VTableGuildTableLocale } from '@vtable-guild/core'
 

@@ -59,6 +59,7 @@ onBeforeUnmount(() => {
         <RouterLink class="play-tab" active-class="is-active" to="/filter">筛选</RouterLink>
         <RouterLink class="play-tab" active-class="is-active" to="/selection">选择</RouterLink>
         <RouterLink class="play-tab" active-class="is-active" to="/sort">排序</RouterLink>
+        <RouterLink class="play-tab" active-class="is-active" to="/advanced">高级</RouterLink>
       </nav>
       <div class="play-nav__controls">
         <div class="play-tabs" role="tablist" aria-label="Preset switch">

@@ -97,7 +97,7 @@ export default defineComponent({
         <div
           ref={trackRef}
           class={[props.trackClass, props.trackDirectionClass]}
-          style={{ opacity: showBar ? 1 : 0 }}
+          style={showBar ? { opacity: 1 } : undefined}
           onMousedown={handleTrackMouseDown}
           onMouseenter={handleMouseEnter}
           onMouseleave={handleMouseLeave}

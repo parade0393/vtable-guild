@@ -23,4 +23,5 @@ export type {
   RowSelection,
   RowSelectionType,
   SelectionItem,
+  Expandable,
 } from './table'
