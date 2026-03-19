@@ -191,9 +191,8 @@ export const antdvTableTheme = {
       'after:shadow-[inset_-10px_0_8px_-8px_rgba(0,0,0,0.08)]',
       'before:!bg-transparent',
     ].join(' '),
-    fixedShadowLeftHidden: 'after:shadow-none before:!bg-transparent',
-    fixedShadowRightHidden:
-      'after:shadow-none before:!bg-transparent border-l border-[var(--vtg-table-border-color)]',
+    fixedShadowLeftHidden: 'after:shadow-none',
+    fixedShadowRightHidden: 'after:shadow-none',
 
     // ---- 展开行 ----
     expandIcon: '',
