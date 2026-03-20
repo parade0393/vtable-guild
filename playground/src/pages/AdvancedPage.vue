@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, inject } from 'vue'
 import AntdvAdvancedPage from './AntdvAdvancedPage.vue'
+import ElementPlusAdvancedPage from './ElementPlusAdvancedPage.vue'
 import { PLAYGROUND_CONTEXT_KEY } from '../playgroundContext'
 
 const playground = inject(PLAYGROUND_CONTEXT_KEY)
@@ -14,5 +15,5 @@ const isAntdv = computed(() => playground.preset.value === 'antdv')
 
 <template>
   <AntdvAdvancedPage v-if="isAntdv" :locale="playground.antLocale.value" />
-  <div v-else class="play-inline-note">Element Plus 高级功能对照开发中...</div>
+  <ElementPlusAdvancedPage v-else />
 </template>
