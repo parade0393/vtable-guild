@@ -35,6 +35,15 @@ export { default as Button } from './components/Button'
 export { default as Input } from './components/Input'
 export { default as Scrollbar } from './components/Scrollbar'
 export { default as VTableGuildConfigProvider } from './components/VTableGuildConfigProvider'
+export { VirtualList } from './components/VirtualList'
+export type {
+  ListProps,
+  ListRef,
+  ScrollConfig as VirtualScrollConfig,
+  ScrollInfo as VirtualScrollInfo,
+  ExtraRenderInfo,
+  ScrollBarDirectionType,
+} from './components/VirtualList'
 
 // ---------- Plugin ----------
 export {

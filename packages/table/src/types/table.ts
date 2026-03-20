@@ -176,6 +176,15 @@ export interface TableProps<TRecord extends Record<string, unknown> = Record<str
 
   /** 滚动配置。x 为横向滚动宽度，y 为纵向滚动高度（启用固定表头）。 */
   scroll?: { x?: number | string; y?: number | string }
+
+  /** 是否开启虚拟滚动（需同时设置 scroll.y） */
+  virtual?: boolean
+
+  /** 树形数据子节点字段名，默认 'children' */
+  childrenColumnName?: string
+
+  /** 树形数据缩进宽度（px），默认 15 */
+  indentSize?: number
 }
 
 // ---- change 事件参数类型 ----

@@ -126,6 +126,40 @@ export default defineComponent({
       return fixed ? { ...base, ...fixed } : Object.keys(base).length ? base : undefined
     })
 
+    // ---- 树形数据 indent 信息 ----
+    const treeRow = computed(() => {
+      if (!tableContext.isTreeData?.value) return null
+      const flatData = tableContext.treeFlattenData?.value
+      if (!flatData) return null
+      const key = tableContext.getRowKey?.(props.record, props.rowIndex)
+      return (
+        flatData.find((r) => {
+          const rKey = tableContext.getRowKey?.(r.record, -1)
+          return rKey === key
+        }) ?? null
+      )
+    })
+
+    /** Is this the first data column (where tree indent is rendered)? */
+    const isTreeIndentColumn = computed(() => {
+      if (!tableContext.isTreeData?.value) return false
+      // Skip selection and expand columns
+      return props.column.key !== '__vtg_selection__' &&
+        props.column.key !== '__vtg_expand__' &&
+        props.colIndex <= 2
+        ? (() => {
+            // Find the first non-special column index
+            const ctx = tableContext
+            const sel = ctx.rowSelection?.()
+            const exp = ctx.expandable?.()
+            let firstDataIdx = 0
+            if (sel) firstDataIdx++
+            if (exp && exp.showExpandColumn !== false) firstDataIdx++
+            return props.colIndex === firstDataIdx
+          })()
+        : false
+    })
+
     return () => {
       // ---- 选择列单元格 ----
       if (props.column.key === '__vtg_selection__') {
@@ -230,13 +264,41 @@ export default defineComponent({
         )
       }
 
+      // ---- 普通数据列 ----
+      const row = treeRow.value
+      const showTreeIndent = isTreeIndentColumn.value && row
+
+      const treeIndent = showTreeIndent ? (
+        <span
+          style={{
+            display: 'inline-block',
+            width: `${row.level * (tableContext.treeIndentSize?.value ?? 15)}px`,
+          }}
+        />
+      ) : null
+
+      const treeExpandBtn =
+        showTreeIndent && row.hasChildren ? (
+          <ExpandIcon
+            expanded={row.expanded}
+            expandable={true}
+            onClick={() => tableContext.toggleTreeExpand?.(props.record, props.rowIndex)}
+          />
+        ) : showTreeIndent ? (
+          <span class="inline-block" style={{ width: '18px' }} />
+        ) : null
+
+      const mainContent = props.column.ellipsis ? (
+        <div class={props.bodyCellEllipsisClass}>{cellContent.value}</div>
+      ) : (
+        cellContent.value
+      )
+
       return (
         <td class={cellClass.value} style={cellStyle.value}>
-          {props.column.ellipsis ? (
-            <div class={props.bodyCellEllipsisClass}>{cellContent.value}</div>
-          ) : (
-            cellContent.value
-          )}
+          {treeIndent}
+          {treeExpandBtn}
+          {mainContent}
         </td>
       )
     }

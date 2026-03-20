@@ -32,5 +32,15 @@ export const router = createRouter({
       name: 'advanced',
       component: () => import('./pages/AdvancedPage.vue'),
     },
+    {
+      path: '/virtual',
+      name: 'virtual',
+      component: () => import('./pages/VirtualPage.vue'),
+    },
+    {
+      path: '/tree',
+      name: 'tree',
+      component: () => import('./pages/TreePage.vue'),
+    },
   ],
 })

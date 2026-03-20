@@ -4,6 +4,7 @@ import type { ColumnType, Key, RowSelection, SortOrder } from './types'
 import type { Expandable } from './types/table'
 import type { TablePresetConfig } from './preset-config'
 import type { FixedOffset } from './composables/useScroll'
+import type { FlattenRow } from './composables/useTreeData'
 
 /** 子组件主题 slot class 映射 */
 export interface SubThemeSlots {
@@ -168,6 +169,18 @@ export interface TableContext {
   ) => void
   /** 是否正在拖拽 */
   isResizing?: () => boolean
+
+  // ---- 树形数据 ----
+  /** 是否为树形数据 */
+  isTreeData?: ComputedRef<boolean>
+  /** 扁平化后的树形行数据 */
+  treeFlattenData?: ComputedRef<FlattenRow[]>
+  /** 切换树节点展开状态 */
+  toggleTreeExpand?: (record: Record<string, unknown>, index: number) => void
+  /** 判断树节点是否展开 */
+  isTreeExpanded?: (key: Key) => boolean
+  /** 树形缩进宽度 */
+  treeIndentSize?: ComputedRef<number>
 }
 
 /**

@@ -32,11 +32,14 @@ import { useColumns, useSorter, useFilter, useSelection } from '../composables'
 import { useScroll, type ScrollConfig } from '../composables/useScroll'
 import { useExpand } from '../composables/useExpand'
 import { useResize } from '../composables/useResize'
+import { useVirtual } from '../composables/useVirtual'
+import { useTreeData } from '../composables/useTreeData'
 
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 import { resolveTablePresetConfig } from '../preset-config'
 import TableHeader from './TableHeader'
 import TableBody from './TableBody'
+import VirtualTableBody from './VirtualTableBody'
 import TableLoading from './TableLoading'
 import ColGroup from './ColGroup'
 import type {
@@ -103,6 +106,9 @@ export default defineComponent({
       type: Object as PropType<Expandable>,
       default: undefined,
     },
+    virtual: { type: Boolean, default: false },
+    childrenColumnName: { type: String, default: undefined },
+    indentSize: { type: Number, default: undefined },
   },
   emits: {
     change: (
@@ -223,7 +229,7 @@ export default defineComponent({
 
     const processedData = computed(() => getProcessedData())
 
-    // ---- 行选择 ----
+    // ---- 行 key 解析 ----
     function getRowKeyFn(record: Record<string, unknown>, index: number): Key {
       if (typeof props.rowKey === 'function') return props.rowKey(record)
       if (typeof props.rowKey === 'string' && props.rowKey in record) {
@@ -231,6 +237,26 @@ export default defineComponent({
       }
       return index
     }
+
+    // ---- 树形数据 ----
+    const {
+      flattenData: treeFlattenData,
+      isTreeData,
+      toggleTreeExpand,
+      isTreeExpanded,
+      indentSize: treeIndentSize,
+    } = useTreeData({
+      data: () => processedData.value,
+      childrenColumnName: () => props.childrenColumnName,
+      indentSize: () => props.indentSize,
+      getRowKey: getRowKeyFn,
+    })
+
+    /** Final display data — flat records after tree expansion */
+    const displayData = computed(() => {
+      if (!isTreeData.value) return processedData.value
+      return treeFlattenData.value.map((row) => row.record)
+    })
 
     const {
       selectedKeySet: _selectedKeySet,
@@ -245,7 +271,7 @@ export default defineComponent({
     } = useSelection({
       rowSelection: () => props.rowSelection,
       getRowKey: getRowKeyFn,
-      data: () => processedData.value,
+      data: () => displayData.value,
       onSelectionChange() {
         emit(
           'change',
@@ -256,7 +282,7 @@ export default defineComponent({
             order: sorterState.value.order,
             field: sorterState.value.column?.dataIndex,
           },
-          { action: 'select', currentDataSource: processedData.value },
+          { action: 'select', currentDataSource: displayData.value },
         )
       },
     })
@@ -265,7 +291,7 @@ export default defineComponent({
     const { isExpanded: expIsExpanded, toggleExpand: expToggleExpand } = useExpand({
       expandable: () => props.expandable,
       getRowKey: getRowKeyFn,
-      data: () => processedData.value,
+      data: () => displayData.value,
     })
 
     const isRowExpandable = (record: Record<string, unknown>): boolean => {
@@ -311,6 +337,17 @@ export default defineComponent({
     })
 
     const hasStickyHeader = computed(() => !!props.scroll?.y)
+
+    // ---- 虚拟滚动 ----
+    const {
+      enabled: virtualEnabled,
+      itemHeight: virtualItemHeight,
+      listHeight: virtualListHeight,
+    } = useVirtual({
+      virtual: () => props.virtual,
+      scrollY: () => props.scroll?.y,
+      size: () => props.size,
+    })
 
     // Bridge VScrollbar's internal wrapRef → useScroll's bodyWrapRef
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -437,21 +474,26 @@ export default defineComponent({
       columnWidths: resizeColumnWidths,
       startResize: resizeStartResize,
       isResizing: () => resizeIsResizing.value,
+      isTreeData,
+      treeFlattenData,
+      toggleTreeExpand,
+      isTreeExpanded,
+      treeIndentSize,
     })
 
     return () => {
       // ---- title: prop > slot ----
       const titleContent = props.title
-        ? props.title(processedData.value)
+        ? props.title(displayData.value)
         : slots.title
-          ? slots.title({ data: processedData.value })
+          ? slots.title({ data: displayData.value })
           : null
 
       // ---- footer: prop > slot ----
       const footerContent = props.footer
-        ? props.footer(processedData.value)
+        ? props.footer(displayData.value)
         : slots.footer
-          ? slots.footer({ data: processedData.value })
+          ? slots.footer({ data: displayData.value })
           : null
 
       // ---- summary: slot only ----
@@ -474,6 +516,55 @@ export default defineComponent({
 
       // ---- Dual-table mode (scroll.y set) ----
       if (hasStickyHeader.value) {
+        // Virtual scroll body
+        const virtualBody = virtualEnabled.value ? (
+          <VirtualTableBody
+            dataSource={displayData.value}
+            columns={displayColumns.value}
+            tbodyClass={themeSlots.tbody()}
+            rowClass={themeSlots.tr()}
+            tdClass={themeSlots.td()}
+            emptyClass={themeSlots.empty()}
+            bodyCellEllipsisClass={themeSlots.bodyCellEllipsis()}
+            tableClass={themeSlots.table()}
+            tableStyle={tableStyle}
+            rowKey={props.rowKey}
+            height={virtualListHeight.value}
+            itemHeight={virtualItemHeight.value}
+            onVirtualScroll={(info) => {
+              // Sync header horizontal scroll
+              if (headerWrapRef.value) {
+                headerWrapRef.value.scrollLeft = info.x
+              }
+            }}
+          />
+        ) : null
+
+        // Normal scroll body
+        const normalBody = !virtualEnabled.value ? (
+          <Scrollbar
+            ref={bodyScrollbarRef}
+            maxHeight={typeof scroll!.y === 'number' ? scroll!.y : String(scroll!.y)}
+            wrapClass={themeSlots.bodyWrapper()}
+            onScroll={handleBodyScroll}
+          >
+            <table class={themeSlots.table()} style={tableStyle}>
+              <ColGroup columns={displayColumns.value} />
+              <TableBody
+                dataSource={displayData.value}
+                columns={displayColumns.value}
+                tbodyClass={themeSlots.tbody()}
+                rowClass={themeSlots.tr()}
+                tdClass={themeSlots.td()}
+                emptyClass={themeSlots.empty()}
+                bodyCellEllipsisClass={themeSlots.bodyCellEllipsis()}
+                rowKey={props.rowKey}
+              />
+              {summaryContent && <tfoot class={themeSlots.summary()}>{summaryContent}</tfoot>}
+            </table>
+          </Scrollbar>
+        ) : null
+
         return (
           <div class={themeSlots.root()}>
             {titleContent && <div class={themeSlots.title()}>{titleContent}</div>}
@@ -493,28 +584,8 @@ export default defineComponent({
                   </table>
                 </div>
               </div>
-              {/* Body table — VScrollbar handles vertical + horizontal */}
-              <Scrollbar
-                ref={bodyScrollbarRef}
-                maxHeight={typeof scroll!.y === 'number' ? scroll!.y : String(scroll!.y)}
-                wrapClass={themeSlots.bodyWrapper()}
-                onScroll={handleBodyScroll}
-              >
-                <table class={themeSlots.table()} style={tableStyle}>
-                  <ColGroup columns={displayColumns.value} />
-                  <TableBody
-                    dataSource={processedData.value}
-                    columns={displayColumns.value}
-                    tbodyClass={themeSlots.tbody()}
-                    rowClass={themeSlots.tr()}
-                    tdClass={themeSlots.td()}
-                    emptyClass={themeSlots.empty()}
-                    bodyCellEllipsisClass={themeSlots.bodyCellEllipsis()}
-                    rowKey={props.rowKey}
-                  />
-                  {summaryContent && <tfoot class={themeSlots.summary()}>{summaryContent}</tfoot>}
-                </table>
-              </Scrollbar>
+              {virtualBody}
+              {normalBody}
               {loadingOverlay}
             </div>
             {footerContent && <div class={themeSlots.footer()}>{footerContent}</div>}
@@ -535,7 +606,7 @@ export default defineComponent({
               headerCellInnerClass={themeSlots.headerCellInner()}
             />
             <TableBody
-              dataSource={processedData.value}
+              dataSource={displayData.value}
               columns={displayColumns.value}
               tbodyClass={themeSlots.tbody()}
               rowClass={themeSlots.tr()}
