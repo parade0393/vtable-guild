@@ -57,6 +57,21 @@ export interface SubThemeSlots {
   fixedShadowLeftHidden: string
   fixedShadowRightHidden: string
   expandIcon: string
+  expandIconExpanded: string
+  expandIconCollapsed: string
+  expandIconSpaced: string
+  expandIconDisabled: string
+  expandIconSymbol: string
+  expandIconSymbolExpanded: string
+  expandIconSymbolCollapsed: string
+  treeExpandIcon: string
+  treeExpandIconExpanded: string
+  treeExpandIconCollapsed: string
+  treeExpandIconSpaced: string
+  treeExpandIconDisabled: string
+  treeExpandIconSymbol: string
+  treeExpandIconSymbolExpanded: string
+  treeExpandIconSymbolCollapsed: string
   expandedRow: string
   expandedRowCell: string
   resizeHandle: string

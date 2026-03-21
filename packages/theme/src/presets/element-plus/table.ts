@@ -177,7 +177,26 @@ export const elementPlusTableTheme = {
     fixedShadowRightHidden: 'after:shadow-none',
 
     // ---- 展开行 ----
-    expandIcon: '',
+    expandIcon:
+      'inline-flex h-[23px] w-[23px] shrink-0 items-center justify-center border-0 bg-transparent p-0 text-[color:var(--vtg-table-text-color)] cursor-pointer align-middle transition-[color,transform] duration-200',
+    expandIconExpanded: '',
+    expandIconCollapsed: '',
+    expandIconSpaced: 'cursor-default opacity-0',
+    expandIconDisabled: 'cursor-not-allowed text-[color:var(--color-muted)]',
+    expandIconSymbol:
+      'inline-flex items-center justify-center text-[12px] leading-none transition-transform duration-300 [&>svg]:h-[1em] [&>svg]:w-[1em]',
+    expandIconSymbolExpanded: 'rotate-90',
+    expandIconSymbolCollapsed: 'rotate-0',
+    treeExpandIcon:
+      'me-1 inline-flex h-[23px] w-5 shrink-0 items-center justify-center border-0 bg-transparent p-0 text-[color:var(--vtg-table-text-color)] cursor-pointer align-middle transition-[color,transform] duration-200',
+    treeExpandIconExpanded: '',
+    treeExpandIconCollapsed: '',
+    treeExpandIconSpaced: 'me-1 cursor-default opacity-0',
+    treeExpandIconDisabled: 'me-1 cursor-not-allowed text-[color:var(--color-muted)]',
+    treeExpandIconSymbol:
+      'inline-flex items-center justify-center text-[12px] leading-none transition-transform duration-300 [&>svg]:h-[1em] [&>svg]:w-[1em]',
+    treeExpandIconSymbolExpanded: 'rotate-90',
+    treeExpandIconSymbolCollapsed: 'rotate-0',
     expandedRow: '',
     expandedRowCell: 'bg-[var(--vtg-table-expanded-row-bg,#fafafa)]',
 

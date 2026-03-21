@@ -258,6 +258,7 @@ export default defineComponent({
             <ExpandIcon
               expanded={expanded}
               expandable={canExpand}
+              variant="row"
               onClick={() => tableContext.toggleExpand?.(props.record, props.rowIndex)}
             />
           </td>
@@ -282,10 +283,11 @@ export default defineComponent({
           <ExpandIcon
             expanded={row.expanded}
             expandable={true}
+            variant="tree"
             onClick={() => tableContext.toggleTreeExpand?.(props.record, props.rowIndex)}
           />
         ) : showTreeIndent ? (
-          <span class="inline-block" style={{ width: '18px' }} />
+          <ExpandIcon expanded={false} expandable={false} variant="tree" />
         ) : null
 
       const mainContent = props.column.ellipsis ? (

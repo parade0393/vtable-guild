@@ -109,6 +109,23 @@ export default defineComponent({
     virtual: { type: Boolean, default: false },
     childrenColumnName: { type: String, default: undefined },
     indentSize: { type: Number, default: undefined },
+    expandedRowKeys: {
+      type: Array as PropType<Key[]>,
+      default: undefined,
+    },
+    defaultExpandedRowKeys: {
+      type: Array as PropType<Key[]>,
+      default: undefined,
+    },
+    defaultExpandAllRows: { type: Boolean, default: false },
+    onExpand: {
+      type: Function as PropType<(expanded: boolean, record: Record<string, unknown>) => void>,
+      default: undefined,
+    },
+    onExpandedRowsChange: {
+      type: Function as PropType<(expandedKeys: Key[]) => void>,
+      default: undefined,
+    },
   },
   emits: {
     change: (
@@ -250,6 +267,11 @@ export default defineComponent({
       childrenColumnName: () => props.childrenColumnName,
       indentSize: () => props.indentSize,
       getRowKey: getRowKeyFn,
+      defaultExpandedRowKeys: () => props.defaultExpandedRowKeys,
+      expandedRowKeys: () => props.expandedRowKeys,
+      defaultExpandAllRows: () => props.defaultExpandAllRows,
+      onExpand: props.onExpand,
+      onExpandedRowsChange: props.onExpandedRowsChange,
     })
 
     /** Final display data — flat records after tree expansion */
@@ -430,6 +452,21 @@ export default defineComponent({
       fixedShadowLeftHidden: themeSlots.fixedShadowLeftHidden(),
       fixedShadowRightHidden: themeSlots.fixedShadowRightHidden(),
       expandIcon: themeSlots.expandIcon(),
+      expandIconExpanded: themeSlots.expandIconExpanded(),
+      expandIconCollapsed: themeSlots.expandIconCollapsed(),
+      expandIconSpaced: themeSlots.expandIconSpaced(),
+      expandIconDisabled: themeSlots.expandIconDisabled(),
+      expandIconSymbol: themeSlots.expandIconSymbol(),
+      expandIconSymbolExpanded: themeSlots.expandIconSymbolExpanded(),
+      expandIconSymbolCollapsed: themeSlots.expandIconSymbolCollapsed(),
+      treeExpandIcon: themeSlots.treeExpandIcon(),
+      treeExpandIconExpanded: themeSlots.treeExpandIconExpanded(),
+      treeExpandIconCollapsed: themeSlots.treeExpandIconCollapsed(),
+      treeExpandIconSpaced: themeSlots.treeExpandIconSpaced(),
+      treeExpandIconDisabled: themeSlots.treeExpandIconDisabled(),
+      treeExpandIconSymbol: themeSlots.treeExpandIconSymbol(),
+      treeExpandIconSymbolExpanded: themeSlots.treeExpandIconSymbolExpanded(),
+      treeExpandIconSymbolCollapsed: themeSlots.treeExpandIconSymbolCollapsed(),
       expandedRow: themeSlots.expandedRow(),
       expandedRowCell: themeSlots.expandedRowCell(),
       resizeHandle: themeSlots.resizeHandle(),

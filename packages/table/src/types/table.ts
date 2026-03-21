@@ -185,6 +185,21 @@ export interface TableProps<TRecord extends Record<string, unknown> = Record<str
 
   /** 树形数据缩进宽度（px），默认 15 */
   indentSize?: number
+
+  /** 树形数据受控展开 key 列表 */
+  expandedRowKeys?: Key[]
+
+  /** 树形数据非受控默认展开 key 列表 */
+  defaultExpandedRowKeys?: Key[]
+
+  /** 树形数据默认展开所有节点 */
+  defaultExpandAllRows?: boolean
+
+  /** 树形数据展开/折叠回调 */
+  onExpand?: (expanded: boolean, record: TRecord) => void
+
+  /** 树形数据展开 key 变化回调 */
+  onExpandedRowsChange?: (expandedKeys: Key[]) => void
 }
 
 // ---- change 事件参数类型 ----

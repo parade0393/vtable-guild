@@ -195,7 +195,52 @@ export const antdvTableTheme = {
     fixedShadowRightHidden: 'after:shadow-none',
 
     // ---- 展开行 ----
-    expandIcon: '',
+    expandIcon: [
+      'relative inline-flex h-[17px] w-[17px] shrink-0 items-center justify-center',
+      'rounded-[6px] border border-[var(--vtg-table-border-color,#d9d9d9)]',
+      'bg-[var(--vtg-table-bg,#fff)] text-[color:var(--vtg-table-text-color)]',
+      'cursor-pointer align-sub select-none transition-[border-color,background-color,color] duration-200',
+      'hover:border-[color:var(--color-primary)] hover:text-[color:var(--color-primary)]',
+      'focus:border-[color:var(--color-primary)] focus:text-[color:var(--color-primary)]',
+      'active:border-[color:var(--color-primary)] active:text-[color:var(--color-primary)]',
+      'before:absolute before:left-[3px] before:right-[3px] before:top-1/2 before:h-px',
+      "before:-translate-y-1/2 before:bg-current before:content-['']",
+      'after:absolute after:bottom-[3px] after:left-1/2 after:top-[3px] after:w-px',
+      "after:-translate-x-1/2 after:origin-center after:bg-current after:content-['']",
+      'after:transition-transform after:duration-200',
+    ].join(' '),
+    expandIconExpanded: 'after:scale-y-0',
+    expandIconCollapsed: 'after:scale-y-100',
+    expandIconSpaced:
+      'cursor-default border-transparent bg-transparent before:hidden after:hidden invisible',
+    expandIconDisabled:
+      'cursor-default border-transparent bg-transparent before:hidden after:hidden invisible',
+    expandIconSymbol: 'hidden',
+    expandIconSymbolExpanded: '',
+    expandIconSymbolCollapsed: '',
+    treeExpandIcon: [
+      'relative me-2 inline-flex h-[17px] w-[17px] shrink-0 items-center justify-center',
+      'rounded-[6px] border border-[var(--vtg-table-border-color,#d9d9d9)]',
+      'bg-[var(--vtg-table-bg,#fff)] text-[color:var(--vtg-table-text-color)]',
+      'cursor-pointer align-middle select-none transition-[border-color,background-color,color] duration-200',
+      'hover:border-[color:var(--color-primary)] hover:text-[color:var(--color-primary)]',
+      'focus:border-[color:var(--color-primary)] focus:text-[color:var(--color-primary)]',
+      'active:border-[color:var(--color-primary)] active:text-[color:var(--color-primary)]',
+      'before:absolute before:left-[3px] before:right-[3px] before:top-1/2 before:h-px',
+      "before:-translate-y-1/2 before:bg-current before:content-['']",
+      'after:absolute after:bottom-[3px] after:left-1/2 after:top-[3px] after:w-px',
+      "after:-translate-x-1/2 after:origin-center after:bg-current after:content-['']",
+      'after:transition-transform after:duration-200',
+    ].join(' '),
+    treeExpandIconExpanded: 'after:scale-y-0',
+    treeExpandIconCollapsed: 'after:scale-y-100',
+    treeExpandIconSpaced:
+      'me-2 cursor-default border-transparent bg-transparent before:hidden after:hidden invisible',
+    treeExpandIconDisabled:
+      'me-2 cursor-default border-transparent bg-transparent before:hidden after:hidden invisible',
+    treeExpandIconSymbol: 'hidden',
+    treeExpandIconSymbolExpanded: '',
+    treeExpandIconSymbolCollapsed: '',
     expandedRow: '',
     expandedRowCell: 'bg-[var(--vtg-table-expanded-row-bg,#fafafa)]',
 
