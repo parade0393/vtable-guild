@@ -32,6 +32,10 @@ export default defineComponent({
       type: Function as PropType<(info: VirtualScrollInfo) => void>,
       default: undefined,
     },
+    showScrollBar: {
+      type: [Boolean, String] as PropType<boolean | 'optional' | 'hover'>,
+      default: 'hover',
+    },
   },
   setup(props) {
     const tableContext = inject(TABLE_CONTEXT_KEY, {} as TableContext)
@@ -95,6 +99,7 @@ export default defineComponent({
           scrollWidth={scrollWidth || undefined}
           fullHeight={false}
           onVirtualScroll={props.onVirtualScroll}
+          showScrollBar={props.showScrollBar}
           style={{ overflow: 'hidden' } as CSSProperties}
         >
           {{

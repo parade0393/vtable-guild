@@ -42,13 +42,15 @@ export default defineComponent({
     thumbStyle: { type: Object as PropType<CSSProperties>, default: undefined },
     spinSize: { type: Number, required: true },
     containerSize: { type: Number, required: true },
+    active: { type: Boolean, default: false },
     showScrollBar: {
-      type: [Boolean, String] as PropType<boolean | 'optional'>,
+      type: [Boolean, String] as PropType<boolean | 'optional' | 'hover'>,
       default: undefined,
     },
   },
   setup(props, { expose }) {
     const dragging = ref(false)
+    const thumbHovering = ref(false)
     const pageXY = ref<number | null>(null)
     const startTop = ref<number | null>(null)
     const isLTR = computed(() => !props.rtl)
@@ -56,17 +58,30 @@ export default defineComponent({
     const scrollbarRef = shallowRef<HTMLDivElement>()
     const thumbRef = shallowRef<HTMLDivElement>()
 
-    const visible = ref(props.showScrollBar === 'optional' ? true : props.showScrollBar)
+    const visible = ref(props.showScrollBar === true || props.showScrollBar === 'optional')
     let visibleTimeout: ReturnType<typeof setTimeout> | null = null
 
     const delayHidden = () => {
-      if (props.showScrollBar === true || props.showScrollBar === false) return
+      if (
+        props.showScrollBar === true ||
+        props.showScrollBar === false ||
+        props.showScrollBar === 'hover'
+      ) {
+        return
+      }
       if (visibleTimeout) clearTimeout(visibleTimeout)
       visible.value = true
       visibleTimeout = setTimeout(() => {
         visible.value = false
       }, 3000)
     }
+
+    const mergedVisible = computed(() => {
+      if (props.showScrollBar === true) return true
+      if (props.showScrollBar === false) return false
+      if (props.showScrollBar === 'hover') return props.active || dragging.value
+      return visible.value || dragging.value
+    })
 
     const enableScrollRange = computed(() => props.scrollRange - props.containerSize || 0)
     const enableOffsetRange = computed(() => props.containerSize - props.spinSize || 0)
@@ -196,22 +211,33 @@ export default defineComponent({
     return () => {
       const { prefixCls, horizontal } = props
       const scrollbarPrefixCls = `${prefixCls}-scrollbar`
+      const showThumbHover = thumbHovering.value || dragging.value
 
       const containerStyle: CSSProperties = {
         position: 'absolute',
-        visibility: visible.value ? undefined : 'hidden',
+        opacity: mergedVisible.value ? 1 : 0,
+        pointerEvents: mergedVisible.value ? undefined : 'none',
+        transition: 'opacity 300ms',
       }
 
       const tStyle: CSSProperties = {
         position: 'absolute',
-        borderRadius: '99px',
-        background: 'var(--vc-virtual-list-scrollbar-bg, rgba(0, 0, 0, 0.5))',
+        borderRadius: 'var(--vtg-scrollbar-thumb-radius, 3px)',
+        background: showThumbHover
+          ? 'var(--vtg-scrollbar-thumb-hover-bg, rgb(0 0 0 / 25%))'
+          : 'var(--vtg-scrollbar-thumb-bg, rgb(0 0 0 / 15%))',
         cursor: 'pointer',
         userSelect: 'none',
+        transition: 'background-color 200ms',
       }
 
       if (horizontal) {
-        Object.assign(containerStyle, { height: '8px', left: 0, right: 0, bottom: 0 })
+        Object.assign(containerStyle, {
+          height: 'var(--vtg-scrollbar-thumb-width, 6px)',
+          left: 0,
+          right: 0,
+          bottom: 0,
+        })
         Object.assign(tStyle, {
           height: '100%',
           width: `${props.spinSize}px`,
@@ -219,7 +245,7 @@ export default defineComponent({
         })
       } else {
         Object.assign(containerStyle, {
-          width: '8px',
+          width: 'var(--vtg-scrollbar-thumb-width, 6px)',
           top: 0,
           bottom: 0,
           [isLTR.value ? 'right' : 'left']: 0,
@@ -240,7 +266,7 @@ export default defineComponent({
             {
               [`${scrollbarPrefixCls}-horizontal`]: horizontal,
               [`${scrollbarPrefixCls}-vertical`]: !horizontal,
-              [`${scrollbarPrefixCls}-visible`]: visible.value,
+              [`${scrollbarPrefixCls}-visible`]: mergedVisible.value,
             },
           ],
           style: { ...containerStyle, ...props.style },
@@ -256,6 +282,12 @@ export default defineComponent({
             ],
             style: { ...tStyle, ...props.thumbStyle },
             onMousedown: onThumbMouseDown,
+            onMouseenter: () => {
+              thumbHovering.value = true
+            },
+            onMouseleave: () => {
+              thumbHovering.value = false
+            },
           }),
         ],
       )

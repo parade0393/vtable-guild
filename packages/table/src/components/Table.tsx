@@ -568,6 +568,7 @@ export default defineComponent({
             rowKey={props.rowKey}
             height={virtualListHeight.value}
             itemHeight={virtualItemHeight.value}
+            showScrollBar="hover"
             onVirtualScroll={(info) => {
               // Sync header horizontal scroll
               if (headerWrapRef.value) {

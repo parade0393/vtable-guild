@@ -53,7 +53,7 @@ export interface ListProps {
     verticalScrollBar?: CSSProperties
     verticalScrollBarThumb?: CSSProperties
   }
-  showScrollBar?: boolean | 'optional'
+  showScrollBar?: boolean | 'optional' | 'hover'
   onScroll?: (e: Event) => void
   onVirtualScroll?: (info: ScrollInfo) => void
   onVisibleChange?: (visibleList: any[], fullList: any[]) => void
@@ -89,7 +89,7 @@ export default defineComponent({
     scrollWidth: Number,
     styles: Object as PropType<ListProps['styles']>,
     showScrollBar: {
-      type: [Boolean, String] as PropType<boolean | 'optional'>,
+      type: [Boolean, String] as PropType<boolean | 'optional' | 'hover'>,
       default: 'optional',
     },
     virtual: { type: Boolean, default: true },
@@ -146,6 +146,7 @@ export default defineComponent({
     const componentRef = ref<HTMLElement>()
     const fillerInnerRef = ref()
     const containerRef = ref<HTMLDivElement>()
+    const rootHovering = ref(false)
     const verticalScrollBarRef = shallowRef<ScrollBarRef>()
     const horizontalScrollBarRef = shallowRef<ScrollBarRef>()
 
@@ -559,6 +560,12 @@ export default defineComponent({
           style: { position: 'relative', ...(attrs.style as any) },
           dir: isRTL.value ? 'rtl' : undefined,
           class: [props.prefixCls, { [`${props.prefixCls}-rtl`]: isRTL.value }, attrs.class],
+          onMouseenter: () => {
+            rootHovering.value = true
+          },
+          onMouseleave: () => {
+            rootHovering.value = false
+          },
         },
         [
           createVNode(
@@ -608,6 +615,7 @@ export default defineComponent({
               onStopMove: onScrollbarStopMove,
               spinSize: verticalScrollBarSpinSize.value,
               containerSize: size.value.height,
+              active: rootHovering.value,
               showScrollBar: props.showScrollBar,
               style: props.styles?.verticalScrollBar,
               thumbStyle: props.styles?.verticalScrollBarThumb,
@@ -626,6 +634,7 @@ export default defineComponent({
               spinSize: horizontalScrollBarSpinSize.value,
               containerSize: size.value.width,
               horizontal: true,
+              active: rootHovering.value,
               showScrollBar: props.showScrollBar,
               style: props.styles?.horizontalScrollBar,
               thumbStyle: props.styles?.horizontalScrollBarThumb,
