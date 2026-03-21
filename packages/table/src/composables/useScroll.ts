@@ -25,6 +25,7 @@ export interface UseScrollReturn {
   handleBodyScroll: (e: { scrollTop: number; scrollLeft: number }) => void
   fixedOffsets: ComputedRef<Map<Key, FixedOffset>>
   updateScrollState: () => void
+  syncHorizontalScroll: (scrollLeft: number, maxScrollLeft?: number) => void
 }
 
 export function useScroll(options: {
@@ -41,28 +42,29 @@ export function useScroll(options: {
     atEnd: scrollLeft.value >= maxScrollLeft.value - 1,
   }))
 
+  function syncHorizontalScroll(nextScrollLeft: number, nextMaxScrollLeft?: number) {
+    scrollLeft.value = nextScrollLeft
+    if (typeof nextMaxScrollLeft === 'number') {
+      maxScrollLeft.value = Math.max(0, nextMaxScrollLeft)
+    }
+    if (headerWrapRef.value) {
+      headerWrapRef.value.scrollLeft = nextScrollLeft
+    }
+  }
+
   /**
    * Called by VScrollbar's `onScroll` event or any scroll source.
    * Syncs header container and updates internal scroll state.
    */
   function handleBodyScroll(e: { scrollTop: number; scrollLeft: number }) {
-    scrollLeft.value = e.scrollLeft
-    // Sync header horizontally
-    if (headerWrapRef.value) {
-      headerWrapRef.value.scrollLeft = e.scrollLeft
-    }
-    // Update max for shadow state
     const el = bodyWrapRef.value
-    if (el) {
-      maxScrollLeft.value = el.scrollWidth - el.clientWidth
-    }
+    syncHorizontalScroll(e.scrollLeft, el ? el.scrollWidth - el.clientWidth : maxScrollLeft.value)
   }
 
   function updateScrollState() {
     const el = bodyWrapRef.value
     if (!el) return
-    scrollLeft.value = el.scrollLeft
-    maxScrollLeft.value = el.scrollWidth - el.clientWidth
+    syncHorizontalScroll(el.scrollLeft, el.scrollWidth - el.clientWidth)
   }
 
   // When bodyWrapRef changes (e.g. VScrollbar mounts), refresh state
@@ -124,5 +126,6 @@ export function useScroll(options: {
     handleBodyScroll,
     fixedOffsets,
     updateScrollState,
+    syncHorizontalScroll,
   }
 }

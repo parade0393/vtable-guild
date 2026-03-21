@@ -354,7 +354,14 @@ export default defineComponent({
     })
 
     // ---- 滚动/固定列 ----
-    const { headerWrapRef, bodyWrapRef, scrollState, handleBodyScroll, fixedOffsets } = useScroll({
+    const {
+      headerWrapRef,
+      bodyWrapRef,
+      scrollState,
+      handleBodyScroll,
+      fixedOffsets,
+      syncHorizontalScroll,
+    } = useScroll({
       displayColumns: () => displayColumns.value,
     })
 
@@ -447,6 +454,8 @@ export default defineComponent({
       headerWrapper: themeSlots.headerWrapper(),
       bodyWrapper: themeSlots.bodyWrapper(),
       fixedCell: themeSlots.fixedCell(),
+      fixedDividerLeft: themeSlots.fixedDividerLeft(),
+      fixedDividerRight: themeSlots.fixedDividerRight(),
       fixedShadowLeft: themeSlots.fixedShadowLeft(),
       fixedShadowRight: themeSlots.fixedShadowRight(),
       fixedShadowLeftHidden: themeSlots.fixedShadowLeftHidden(),
@@ -504,6 +513,7 @@ export default defineComponent({
       getChangeableRowKeys: selGetChangeableRowKeys,
       fixedOffsets,
       scrollState,
+      bordered: computed(() => props.bordered),
       expandable: () => props.expandable,
       isExpanded: expIsExpanded,
       toggleExpand: expToggleExpand,
@@ -570,10 +580,7 @@ export default defineComponent({
             itemHeight={virtualItemHeight.value}
             showScrollBar="hover"
             onVirtualScroll={(info) => {
-              // Sync header horizontal scroll
-              if (headerWrapRef.value) {
-                headerWrapRef.value.scrollLeft = info.x
-              }
+              syncHorizontalScroll(info.x, info.maxX)
             }}
           />
         ) : null

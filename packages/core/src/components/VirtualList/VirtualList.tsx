@@ -34,6 +34,7 @@ export interface ListRef {
   nativeElement?: HTMLDivElement
   scrollTo: ScrollTo
   getScrollInfo: () => ScrollInfo
+  getHorizontalRange: () => number
 }
 
 export interface ListProps {
@@ -486,6 +487,7 @@ export default defineComponent({
     expose({
       nativeElement: containerRef,
       getScrollInfo: getVirtualScrollInfo,
+      getHorizontalRange: () => horizontalRange.value,
       scrollTo: (config: number | ScrollConfig | null | undefined) => {
         function isPosScroll(arg: any): arg is { left?: number; top?: number } {
           return arg && typeof arg === 'object' && ('left' in arg || 'top' in arg)

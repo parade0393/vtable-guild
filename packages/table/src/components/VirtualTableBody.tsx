@@ -9,6 +9,10 @@ import ColGroup from './ColGroup'
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 import type { ColumnType, Key } from '../types'
 
+type VirtualTableScrollInfo = VirtualScrollInfo & {
+  maxX: number
+}
+
 export default defineComponent({
   name: 'VirtualTableBody',
   props: {
@@ -29,7 +33,7 @@ export default defineComponent({
     itemHeight: { type: Number, required: true },
     /** Sync header scroll when virtual body scrolls horizontally */
     onVirtualScroll: {
-      type: Function as PropType<(info: VirtualScrollInfo) => void>,
+      type: Function as PropType<(info: VirtualTableScrollInfo) => void>,
       default: undefined,
     },
     showScrollBar: {
@@ -40,6 +44,13 @@ export default defineComponent({
   setup(props) {
     const tableContext = inject(TABLE_CONTEXT_KEY, {} as TableContext)
     const virtualListRef = ref<ListRef>()
+
+    function emitVirtualScroll(info: VirtualScrollInfo) {
+      props.onVirtualScroll?.({
+        ...info,
+        maxX: virtualListRef.value?.getHorizontalRange() ?? 0,
+      })
+    }
 
     function getRowKey(record: Record<string, unknown>, index: number): Key {
       if (typeof props.rowKey === 'function') return props.rowKey(record)
@@ -61,7 +72,7 @@ export default defineComponent({
         if (ref) {
           // Trigger initial scroll state update
           const info = ref.getScrollInfo()
-          props.onVirtualScroll?.(info)
+          emitVirtualScroll(info)
         }
       },
     )
@@ -98,7 +109,7 @@ export default defineComponent({
           itemKey={itemKey}
           scrollWidth={scrollWidth || undefined}
           fullHeight={false}
-          onVirtualScroll={props.onVirtualScroll}
+          onVirtualScroll={emitVirtualScroll}
           showScrollBar={props.showScrollBar}
           style={{ overflow: 'hidden' } as CSSProperties}
         >

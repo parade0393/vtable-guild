@@ -52,6 +52,8 @@ export interface SubThemeSlots {
   headerWrapper: string
   bodyWrapper: string
   fixedCell: string
+  fixedDividerLeft: string
+  fixedDividerRight: string
   fixedShadowLeft: string
   fixedShadowRight: string
   fixedShadowLeftHidden: string
@@ -162,6 +164,8 @@ export interface TableContext {
   fixedOffsets?: ComputedRef<Map<Key, FixedOffset>>
   /** 滚动状态（是否在起始/末端） */
   scrollState?: ComputedRef<{ atStart: boolean; atEnd: boolean }>
+  /** 是否开启 bordered 模式 */
+  bordered?: ComputedRef<boolean>
 
   // ---- 展开行 ----
   /** 展开行配置 */

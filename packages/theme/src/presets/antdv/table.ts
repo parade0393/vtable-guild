@@ -179,6 +179,12 @@ export const antdvTableTheme = {
     headerWrapper: 'overflow-hidden',
     bodyWrapper: 'overflow-auto',
     fixedCell: 'sticky z-[2] bg-inherit',
+    fixedDividerLeft: '',
+    fixedDividerRight: [
+      '[background-image:linear-gradient(var(--vtg-table-header-split-color),var(--vtg-table-header-split-color))]',
+      '[background-size:1px_1.6em] [background-repeat:no-repeat] [background-position:left_center]',
+      'before:!bg-transparent',
+    ].join(' '),
     fixedShadowLeft: [
       'after:absolute after:top-0 after:bottom-[-1px] after:right-0 after:w-[30px]',
       'after:translate-x-full after:pointer-events-none',
