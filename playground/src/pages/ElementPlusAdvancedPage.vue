@@ -4,7 +4,7 @@ import { ElTable, ElTableColumn } from 'element-plus'
 import 'element-plus/es/components/table/style/css'
 import 'element-plus/es/components/table-column/style/css'
 import { VTable } from '@vtable-guild/table'
-import type { ColumnsType, Expandable } from '@vtable-guild/table'
+import type { ColumnsType, Expandable, RowSelection } from '@vtable-guild/table'
 import { VTABLE_GUILD_INJECTION_KEY, type VTableGuildContext } from '@vtable-guild/core'
 import { dataSource, type DemoRow } from '../filterMatrixShared'
 
@@ -158,6 +158,36 @@ const mergedColumns: ColumnsType<MergeRow> = [
   { title: 'Address', dataIndex: 'address', key: 'address', width: 260 },
 ]
 
+// ---- Grouped Header + Row Merge + Row Selection ----
+const compositeColumns: ColumnsType<MergeRow> = [
+  {
+    title: 'Member',
+    key: 'member',
+    children: [
+      {
+        title: 'Group',
+        dataIndex: 'group',
+        key: 'group',
+        width: 150,
+        customCell: (_record, index) => getGroupCellProps(index),
+      },
+      { title: 'Name', dataIndex: 'name', key: 'name', width: 180 },
+    ],
+  },
+  {
+    title: 'Workspace',
+    key: 'workspace',
+    children: [
+      { title: 'Score', dataIndex: 'score', key: 'score', width: 100, align: 'right' },
+      { title: 'Address', dataIndex: 'address', key: 'address', width: 260 },
+    ],
+  },
+]
+
+const compositeRowSelection: RowSelection<MergeRow> = {
+  type: 'checkbox',
+}
+
 function elementMergeSpanMethod({
   rowIndex,
   columnIndex,
@@ -182,6 +212,23 @@ function elementMergeSpanMethod({
 
   return { rowspan: 1, colspan: 1 }
 }
+
+function elementCompositeSpanMethod({
+  rowIndex,
+  columnIndex,
+}: {
+  row: MergeRow
+  column: unknown
+  rowIndex: number
+  columnIndex: number
+}) {
+  if (columnIndex === 1) {
+    if (rowIndex === 0 || rowIndex === 2) return { rowspan: 2, colspan: 1 }
+    if (rowIndex === 1 || rowIndex === 3) return { rowspan: 0, colspan: 0 }
+  }
+
+  return { rowspan: 1, colspan: 1 }
+}
 </script>
 
 <template>
@@ -191,8 +238,7 @@ function elementMergeSpanMethod({
         <p class="play-kicker">Phase 5 Advanced Features</p>
         <h1>element-plus 高级功能对照</h1>
         <p class="play-summary">
-          固定列/固定表头、展开行、标题/页脚/摘要行、列宽拖拽，左侧 ElTable 原版 / 右侧 VTable
-          element-plus preset。
+          固定列/固定表头、展开行、标题/页脚、多级表头、单元格合并，以及带行选择的综合场景。
         </p>
       </div>
     </section>
@@ -200,20 +246,21 @@ function elementMergeSpanMethod({
     <section class="play-metrics">
       <article class="play-metric-card">
         <span class="play-metric-card__label">Case count</span>
-        <strong>7</strong>
-        <p>固定列、固定表头、展开行、标题/页脚、列宽拖拽、多级表头、单元格合并。</p>
+        <strong>8</strong>
+        <p>固定列、固定表头、展开行、标题/页脚、列宽拖拽、多级表头、单元格合并、综合例子。</p>
       </article>
       <article class="play-metric-card">
         <span class="play-metric-card__label">Parity</span>
-        <strong>5 / 7 real native parity</strong>
+        <strong>6 / 8 real native parity</strong>
         <p>
-          固定列、固定表头、展开行、多级表头、单元格合并有原生对照；标题/页脚和列宽拖拽无直接对位。
+          固定列、固定表头、展开行、多级表头、单元格合并、综合例子有原生对照；
+          标题/页脚和列宽拖拽无直接对位。
         </p>
       </article>
       <article class="play-metric-card">
         <span class="play-metric-card__label">Focus</span>
-        <strong>Advanced layout fidelity</strong>
-        <p>验证 element-plus preset 在高级布局场景下的视觉与交互表达。</p>
+        <strong>Advanced layout + composite behavior</strong>
+        <p>验证 element-plus preset 在高级布局和组合型交互场景下的视觉与行为表达。</p>
       </article>
     </section>
 
@@ -535,6 +582,63 @@ function elementMergeSpanMethod({
             <p>customCell + customRender</p>
           </div>
           <VTable :data-source="mergeDataSource" :columns="mergedColumns" size="md" row-key="key" />
+        </article>
+      </div>
+    </section>
+
+    <!-- 08 Grouped Header + Row Merge + Row Selection -->
+    <section class="play-case">
+      <header class="play-case__header">
+        <div>
+          <p class="play-case__index">Case 08</p>
+          <h2>多级表头 + 行合并 + 行选择</h2>
+        </div>
+        <p class="play-case__desc">
+          ElTable 组合 type="selection" + 多级表头 + span-method，VTable 统一走 rowSelection +
+          children + customCell(rowSpan)
+        </p>
+      </header>
+      <div class="play-compare-grid">
+        <article class="play-panel">
+          <div class="play-panel__head">
+            <div>
+              <span class="play-badge">reference</span>
+              <h3>element-plus</h3>
+            </div>
+            <p>selection + grouped header + span-method</p>
+          </div>
+          <ElTable
+            :data="mergeDataSource"
+            :span-method="elementCompositeSpanMethod"
+            style="width: 100%"
+            row-key="key"
+          >
+            <ElTableColumn type="selection" width="48" />
+            <ElTableColumn label="Member">
+              <ElTableColumn prop="group" label="Group" width="150" />
+              <ElTableColumn prop="name" label="Name" width="180" />
+            </ElTableColumn>
+            <ElTableColumn label="Workspace">
+              <ElTableColumn prop="score" label="Score" width="100" align="right" />
+              <ElTableColumn prop="address" label="Address" width="260" />
+            </ElTableColumn>
+          </ElTable>
+        </article>
+        <article class="play-panel play-panel--accent">
+          <div class="play-panel__head">
+            <div>
+              <span class="play-badge play-badge--accent">vtable-guild</span>
+              <h3>element-plus preset</h3>
+            </div>
+            <p>rowSelection + children + customCell</p>
+          </div>
+          <VTable
+            :data-source="mergeDataSource"
+            :columns="compositeColumns"
+            :row-selection="compositeRowSelection"
+            size="md"
+            row-key="key"
+          />
         </article>
       </div>
     </section>

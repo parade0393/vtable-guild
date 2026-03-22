@@ -2,7 +2,7 @@
 import { h } from 'vue'
 import { ConfigProvider as AConfigProvider, Table as ATable } from 'ant-design-vue'
 import { VTable } from '@vtable-guild/table'
-import type { ColumnsType, Expandable } from '@vtable-guild/table'
+import type { ColumnsType, Expandable, RowSelection } from '@vtable-guild/table'
 import { dataSource, type DemoRow } from '../filterMatrixShared'
 
 defineProps<{
@@ -199,6 +199,65 @@ const antMergedColumns = [
   },
   { title: 'Address', dataIndex: 'address', key: 'address', width: 260 },
 ]
+
+// ---- Grouped Header + Row Merge + Row Selection ----
+const compositeColumns: ColumnsType<MergeRow> = [
+  {
+    title: 'Member',
+    key: 'member',
+    children: [
+      {
+        title: 'Group',
+        dataIndex: 'group',
+        key: 'group',
+        width: 150,
+        customCell: (_record, index) => getGroupCellProps(index),
+      },
+      { title: 'Name', dataIndex: 'name', key: 'name', width: 180 },
+    ],
+  },
+  {
+    title: 'Workspace',
+    key: 'workspace',
+    children: [
+      { title: 'Score', dataIndex: 'score', key: 'score', width: 100, align: 'right' },
+      { title: 'Address', dataIndex: 'address', key: 'address', width: 260 },
+    ],
+  },
+]
+
+const antCompositeColumns = [
+  {
+    title: 'Member',
+    key: 'member',
+    children: [
+      {
+        title: 'Group',
+        dataIndex: 'group',
+        key: 'group',
+        width: 150,
+        customCell: (_record: MergeRow, index?: number) => getGroupCellProps(index),
+      },
+      { title: 'Name', dataIndex: 'name', key: 'name', width: 180 },
+    ],
+  },
+  {
+    title: 'Workspace',
+    key: 'workspace',
+    children: [
+      { title: 'Score', dataIndex: 'score', key: 'score', width: 100, align: 'right' },
+      { title: 'Address', dataIndex: 'address', key: 'address', width: 260 },
+    ],
+  },
+]
+
+const antCompositeRowSelection = {
+  type: 'checkbox' as const,
+}
+
+const compositeRowSelection: RowSelection<MergeRow> = {
+  type: 'checkbox',
+}
 </script>
 
 <template>
@@ -208,7 +267,9 @@ const antMergedColumns = [
         <div>
           <p class="play-kicker">Phase 5 Advanced Features</p>
           <h1>ant-design-vue 高级功能对照</h1>
-          <p class="play-summary">固定列/固定表头、展开行、标题/页脚/摘要行、列宽拖拽</p>
+          <p class="play-summary">
+            固定列/固定表头、展开行、标题/页脚、多级表头、单元格合并，以及行选择综合例子
+          </p>
         </div>
       </section>
 
@@ -457,6 +518,47 @@ const antMergedColumns = [
             <VTable
               :data-source="mergeDataSource"
               :columns="mergedColumns"
+              size="md"
+              row-key="key"
+            />
+          </article>
+        </div>
+      </section>
+
+      <!-- 08 Grouped Header + Row Merge + Row Selection -->
+      <section class="play-case">
+        <header class="play-case__header">
+          <div>
+            <p class="play-case__index">Case 08</p>
+            <h2>多级表头 + 行合并 + 行选择</h2>
+          </div>
+          <p class="play-case__desc">
+            综合验证 rowSelection checkbox + children + customCell(rowSpan)，表头仍只支持
+            column.colSpan
+          </p>
+        </header>
+        <div class="play-compare-grid">
+          <article class="play-panel">
+            <div class="play-panel__head">
+              <h3>ant-design-vue <span class="play-badge">reference</span></h3>
+            </div>
+            <ATable
+              :data-source="mergeDataSource"
+              :columns="antCompositeColumns as any"
+              :row-selection="antCompositeRowSelection"
+              :pagination="false"
+              size="middle"
+              row-key="key"
+            />
+          </article>
+          <article class="play-panel play-panel--accent">
+            <div class="play-panel__head">
+              <h3>VTable <span class="play-badge play-badge--accent">guild</span></h3>
+            </div>
+            <VTable
+              :data-source="mergeDataSource"
+              :columns="compositeColumns"
+              :row-selection="compositeRowSelection"
               size="md"
               row-key="key"
             />

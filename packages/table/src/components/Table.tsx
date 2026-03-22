@@ -10,6 +10,7 @@ import {
   type VNodeChild,
 } from 'vue'
 import {
+  cn,
   mergeDeep,
   Scrollbar,
   useTheme,
@@ -354,6 +355,7 @@ export default defineComponent({
     })
 
     const { leafColumns: displayColumns, headerRows } = useColumns(() => displayColumnTree.value)
+    const hasGroupedHeader = computed(() => headerRows.value.length > 1)
 
     // ---- 滚动/固定列 ----
     const {
@@ -383,6 +385,26 @@ export default defineComponent({
     const hasPotentialBodySpan = computed(() =>
       dataLeafColumns.value.some((column) => !!column.customCell || !!column.customRender),
     )
+    const groupedHeaderThemeClasses = computed(() => {
+      if (!hasGroupedHeader.value || props.bordered) {
+        return {
+          table: '',
+          th: '',
+          td: '',
+        }
+      }
+
+      return {
+        table: themeSlots.groupedHeaderTable(),
+        th: themeSlots.groupedHeaderTh(),
+        td: themeSlots.groupedHeaderTd(),
+      }
+    })
+    const tableClass = computed(
+      () => cn(themeSlots.table(), groupedHeaderThemeClasses.value.table) ?? '',
+    )
+    const thClass = computed(() => cn(themeSlots.th(), groupedHeaderThemeClasses.value.th) ?? '')
+    const tdClass = computed(() => cn(themeSlots.td(), groupedHeaderThemeClasses.value.td) ?? '')
     const warnedVirtualSpan = ref(false)
 
     watch(
@@ -592,10 +614,10 @@ export default defineComponent({
             columns={displayColumns.value}
             tbodyClass={themeSlots.tbody()}
             rowClass={themeSlots.tr()}
-            tdClass={themeSlots.td()}
+            tdClass={tdClass.value}
             emptyClass={themeSlots.empty()}
             bodyCellEllipsisClass={themeSlots.bodyCellEllipsis()}
-            tableClass={themeSlots.table()}
+            tableClass={tableClass.value}
             tableStyle={tableStyle}
             rowKey={props.rowKey}
             height={virtualListHeight.value}
@@ -615,14 +637,14 @@ export default defineComponent({
             wrapClass={themeSlots.bodyWrapper()}
             onScroll={handleBodyScroll}
           >
-            <table class={themeSlots.table()} style={tableStyle}>
+            <table class={tableClass.value} style={tableStyle}>
               <ColGroup columns={displayColumns.value} />
               <TableBody
                 dataSource={displayData.value}
                 columns={displayColumns.value}
                 tbodyClass={themeSlots.tbody()}
                 rowClass={themeSlots.tr()}
-                tdClass={themeSlots.td()}
+                tdClass={tdClass.value}
                 emptyClass={themeSlots.empty()}
                 bodyCellEllipsisClass={themeSlots.bodyCellEllipsis()}
                 rowKey={props.rowKey}
@@ -639,13 +661,13 @@ export default defineComponent({
               {/* Header table — fixed at top */}
               <div ref={headerWrapRef} class={themeSlots.headerWrapper()}>
                 <div class="block min-w-full w-max">
-                  <table class={themeSlots.table()} style={tableStyle}>
+                  <table class={tableClass.value} style={tableStyle}>
                     <ColGroup columns={displayColumns.value} />
                     <TableHeader
                       rows={headerRows.value}
                       theadClass={themeSlots.thead()}
                       rowClass={themeSlots.tr()}
-                      thClass={themeSlots.th()}
+                      thClass={thClass.value}
                       headerCellInnerClass={themeSlots.headerCellInner()}
                     />
                   </table>
@@ -663,13 +685,13 @@ export default defineComponent({
       // ---- Single-table mode ----
       const tableContent = (
         <>
-          <table class={themeSlots.table()} style={tableStyle}>
+          <table class={tableClass.value} style={tableStyle}>
             <ColGroup columns={displayColumns.value} />
             <TableHeader
               rows={headerRows.value}
               theadClass={themeSlots.thead()}
               rowClass={themeSlots.tr()}
-              thClass={themeSlots.th()}
+              thClass={thClass.value}
               headerCellInnerClass={themeSlots.headerCellInner()}
             />
             <TableBody
@@ -677,7 +699,7 @@ export default defineComponent({
               columns={displayColumns.value}
               tbodyClass={themeSlots.tbody()}
               rowClass={themeSlots.tr()}
-              tdClass={themeSlots.td()}
+              tdClass={tdClass.value}
               emptyClass={themeSlots.empty()}
               bodyCellEllipsisClass={themeSlots.bodyCellEllipsis()}
               rowKey={props.rowKey}

@@ -38,6 +38,12 @@ export const elementPlusTableTheme = {
     thead: '',
     tbody: '',
     tr: 'group/row transition-colors',
+    groupedHeaderTable: 'border border-[var(--vtg-table-border-color)]',
+    groupedHeaderTh: [
+      'border-r border-[var(--vtg-table-border-color)] last:border-r-0',
+      'bg-[color:var(--color-surface-hover)]',
+    ].join(' '),
+    groupedHeaderTd: 'border-r border-[var(--vtg-table-border-color)] last:border-r-0',
     th: [
       'relative text-left font-semibold',
       'bg-[var(--vtg-table-header-bg)]',
