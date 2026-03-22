@@ -129,8 +129,8 @@ export const elementPlusTableTheme = {
       'inline-flex items-center justify-center text-[length:42px] text-[color:var(--color-primary)] animate-spin',
 
     // ---- 行选中背景 ----
-    tdSelected: 'bg-[var(--vtg-table-row-selected-bg)]',
-    tdSelectedHover: 'group-hover/row:bg-[var(--vtg-table-row-selected-hover-bg)]',
+    tdSelected: '',
+    tdSelectedHover: '',
 
     // ---- 选择下拉相关 ----
     selectionDropdown: [

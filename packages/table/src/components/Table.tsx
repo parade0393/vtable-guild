@@ -12,6 +12,8 @@ import {
 import {
   cn,
   mergeDeep,
+  mergeThemeConfigs,
+  type ThemeConfig,
   Scrollbar,
   useTheme,
   VTABLE_GUILD_INJECTION_KEY,
@@ -24,8 +26,14 @@ import {
 } from '@vtable-guild/core'
 import {
   resolveBuiltInTableLocale,
+  resolveButtonThemePreset,
+  resolveCheckboxThemePreset,
+  resolveInputThemePreset,
+  resolveRadioThemePreset,
+  resolveScrollbarThemePreset,
   resolveTableLocalePreset,
   resolveTableThemePreset,
+  resolveTooltipThemePreset,
   tableTheme,
   type TableSlots,
 } from '@vtable-guild/theme'
@@ -172,6 +180,57 @@ export default defineComponent({
     const globalContext = inject<VTableGuildContext | null>(VTABLE_GUILD_INJECTION_KEY, null)
 
     const effectiveThemePreset = computed(() => globalContext?.themePreset ?? 'antdv')
+
+    const descendantTheme = computed(() => {
+      const inheritedTheme = globalContext?.theme ?? {}
+      const presetName = effectiveThemePreset.value
+
+      return {
+        ...inheritedTheme,
+        button: mergeThemeConfigs(
+          resolveButtonThemePreset(presetName),
+          inheritedTheme.button as Partial<ThemeConfig> | undefined,
+        ),
+        checkbox: mergeThemeConfigs(
+          resolveCheckboxThemePreset(presetName),
+          inheritedTheme.checkbox as Partial<ThemeConfig> | undefined,
+        ),
+        input: mergeThemeConfigs(
+          resolveInputThemePreset(presetName),
+          inheritedTheme.input as Partial<ThemeConfig> | undefined,
+        ),
+        radio: mergeThemeConfigs(
+          resolveRadioThemePreset(presetName),
+          inheritedTheme.radio as Partial<ThemeConfig> | undefined,
+        ),
+        scrollbar: mergeThemeConfigs(
+          resolveScrollbarThemePreset(presetName),
+          inheritedTheme.scrollbar as Partial<ThemeConfig> | undefined,
+        ),
+        tooltip: mergeThemeConfigs(
+          resolveTooltipThemePreset(presetName),
+          inheritedTheme.tooltip as Partial<ThemeConfig> | undefined,
+        ),
+      }
+    })
+
+    provide(VTABLE_GUILD_INJECTION_KEY, {
+      get themePreset() {
+        return effectiveThemePreset.value
+      },
+      get theme() {
+        return descendantTheme.value
+      },
+      get locale() {
+        return globalContext?.locale ?? 'zh-CN'
+      },
+      get locales() {
+        return globalContext?.locales ?? {}
+      },
+      get localeOverrides() {
+        return globalContext?.localeOverrides ?? {}
+      },
+    } as VTableGuildContext)
 
     const defaultTheme = computed(
       () => resolveTableThemePreset(effectiveThemePreset.value) ?? tableTheme,
@@ -543,6 +602,7 @@ export default defineComponent({
       ),
       subThemeSlots,
       presetConfig,
+      themePreset: effectiveThemePreset,
       localeName: effectiveLocaleName,
       locale: tableLocale,
       rowSelection: () => props.rowSelection,

@@ -252,6 +252,17 @@ export default defineComponent({
       return classes.join(' ')
     })
 
+    const groupedHeaderClass = computed(() => {
+      const isAntdv = tableContext.themePreset?.value === 'antdv'
+      const isBordered = tableContext.bordered?.value ?? false
+
+      if (!isAntdv || isBordered || props.cell.isLeaf) {
+        return ''
+      }
+
+      return 'before:hidden border-b-0'
+    })
+
     // ---- 公共 ----
     const headerContent = computed(() => {
       if (tableContext.headerCell) {
@@ -272,6 +283,7 @@ export default defineComponent({
         props.thClass,
         alignClass,
         sortableClass,
+        groupedHeaderClass.value,
         props.cell.column.className,
         headerCellProps.value?.class,
         headerCellProps.value?.className,

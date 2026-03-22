@@ -21,7 +21,19 @@ export const antdvCheckboxTheme = {
       'cursor-pointer transition-all duration-300 shrink-0',
       'hover:border-[color:var(--color-primary)]',
     ].join(' '),
-    indicator: '',
+    checkMark: [
+      'pointer-events-none absolute box-border',
+      'top-1/2 left-[22%]',
+      'w-[5.71px] h-[9.14px]',
+      'border-b-2 border-r-2 border-[color:var(--vtg-checkbox-check-color,#fff)]',
+      '[transform:rotate(45deg)_translate(-50%,_-50%)]',
+    ].join(' '),
+    indeterminateMark: [
+      'pointer-events-none absolute top-1/2 left-1/2',
+      'w-2 h-2 rounded-[1px]',
+      'bg-[color:var(--vtg-checkbox-indeterminate-color,var(--color-primary))]',
+      '-translate-x-1/2 -translate-y-1/2',
+    ].join(' '),
   },
   variants: {
     checked: {

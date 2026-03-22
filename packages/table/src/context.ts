@@ -1,5 +1,5 @@
 import type { ComputedRef, InjectionKey, Slots } from 'vue'
-import type { LocaleName, VTableGuildTableLocale } from '@vtable-guild/core'
+import type { LocaleName, ThemePresetName, VTableGuildTableLocale } from '@vtable-guild/core'
 import type { ColumnType, Key, RowSelection, SortOrder } from './types'
 import type { Expandable } from './types/table'
 import type { TablePresetConfig } from './preset-config'
@@ -130,6 +130,9 @@ export interface TableContext {
 
   /** 当前主题预设行为配置 */
   presetConfig?: ComputedRef<TablePresetConfig>
+
+  /** 当前主题预设 */
+  themePreset?: ComputedRef<ThemePresetName>
 
   /** 当前激活语言标识 */
   localeName?: ComputedRef<LocaleName>

@@ -18,7 +18,19 @@ const defaultCheckboxTheme = {
       'cursor-pointer transition-all duration-300 shrink-0',
       'hover:border-[color:var(--color-primary)]',
     ].join(' '),
-    indicator: '',
+    checkMark: [
+      'pointer-events-none absolute box-border',
+      'top-1/2 left-[22%]',
+      'w-[5.71px] h-[9.14px]',
+      'border-b-2 border-r-2 border-[color:var(--vtg-checkbox-check-color,#fff)]',
+      '[transform:rotate(45deg)_translate(-50%,_-50%)]',
+    ].join(' '),
+    indeterminateMark: [
+      'pointer-events-none absolute top-1/2 left-1/2',
+      'w-2 h-2 rounded-[1px]',
+      'bg-[color:var(--vtg-checkbox-indeterminate-color,var(--color-primary))]',
+      '-translate-x-1/2 -translate-y-1/2',
+    ].join(' '),
   },
   variants: {
     checked: {
@@ -77,37 +89,10 @@ export default defineComponent({
         class={themeSlots.root()}
         onClick={handleClick}
       >
-        {/* Checked: border-based checkmark (antdv ::after style) */}
-        <span
-          aria-hidden="true"
-          style={{
-            display: props.checked ? 'block' : 'none',
-            boxSizing: 'border-box',
-            position: 'absolute',
-            top: '50%',
-            left: '22%',
-            width: '5.71px',
-            height: '9.14px',
-            borderBottom: '2px solid var(--vtg-checkbox-check-color, #fff)',
-            borderRight: '2px solid var(--vtg-checkbox-check-color, #fff)',
-            transform: 'rotate(45deg) scale(1) translate(-50%, -50%)',
-          }}
-        />
-        {/* Indeterminate: solid square (antdv ::after style) */}
-        <span
-          aria-hidden="true"
-          style={{
-            display: props.indeterminate && !props.checked ? 'block' : 'none',
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            width: '8px',
-            height: '8px',
-            backgroundColor: 'var(--vtg-checkbox-indeterminate-color, var(--color-primary))',
-            transform: 'translate(-50%, -50%)',
-            borderRadius: '1px',
-          }}
-        />
+        {props.checked && <span aria-hidden="true" class={themeSlots.checkMark()} />}
+        {props.indeterminate && !props.checked && (
+          <span aria-hidden="true" class={themeSlots.indeterminateMark()} />
+        )}
       </span>
     )
   },

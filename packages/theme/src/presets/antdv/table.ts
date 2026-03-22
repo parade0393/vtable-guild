@@ -36,7 +36,7 @@ export const antdvTableTheme = {
     tbody: '',
     tr: 'group/row transition-colors',
     groupedHeaderTable: '',
-    groupedHeaderTh: 'before:hidden',
+    groupedHeaderTh: '',
     groupedHeaderTd: '',
     th: [
       'relative text-left font-semibold',
