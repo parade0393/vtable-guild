@@ -1,12 +1,11 @@
-import { computed, defineComponent, inject } from 'vue'
-import type { PropType } from 'vue'
+import { computed, defineComponent, inject, type PropType } from 'vue'
 import { cn } from '@vtable-guild/core'
 import { TABLE_ALIGN_CLASSES } from '@vtable-guild/theme'
-
-import { ColumnType } from '../types'
-import { TABLE_CONTEXT_KEY } from '../context'
+import type { ColumnType } from '../types'
+import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 import { getByDataIndex } from '../composables'
 import { getColumnKey } from '../composables/useSorter'
+import { omitCellProps, resolveBodyCell, type ResolvedBodyCell } from '../utils/cell'
 import SelectionCheckbox from './SelectionCheckbox'
 import SelectionRadio from './SelectionRadio'
 import ExpandIcon from './ExpandIcon'
@@ -18,15 +17,27 @@ export default defineComponent({
     rowIndex: { type: Number, required: true },
     column: { type: Object as PropType<ColumnType<Record<string, unknown>>>, required: true },
     colIndex: { type: Number, required: true },
+    resolvedCell: {
+      type: Object as PropType<ResolvedBodyCell>,
+      default: undefined,
+    },
     tdClass: { type: String, required: true },
     bodyCellEllipsisClass: { type: String, required: true },
   },
   setup(props) {
-    // ---- 通过 inject 获取 Table.tsx provide 的 bodyCell slot ----
-    // ⚠️ 不使用 useSlots()！scoped slots 不跨层级传播。
-    const tableContext = inject(TABLE_CONTEXT_KEY, {})
+    const tableContext = inject(TABLE_CONTEXT_KEY, {} as TableContext)
 
-    const text = computed(() => getByDataIndex(props.record, props.column.dataIndex))
+    const resolvedCell = computed(
+      () =>
+        props.resolvedCell ??
+        resolveBodyCell({
+          text: getByDataIndex(props.record, props.column.dataIndex),
+          record: props.record,
+          rowIndex: props.rowIndex,
+          column: props.column,
+          bodyCell: tableContext.bodyCell,
+        }),
+    )
 
     // ---- 固定列 ----
     const fixedInfo = computed(() => {
@@ -61,42 +72,16 @@ export default defineComponent({
       return classes.join(' ')
     })
 
-    /**
-     * 计算最终渲染内容。
-     *
-     * 优先级：customRender > bodyCell slot > 纯文本
-     *
-     * TSX 中 VNode 可直接通过 {content} 渲染，无需 <component :is> 包裹。
-     */
-    const cellContent = computed(() => {
-      // 优先级 1：column.customRender
-      if (props.column.customRender) {
-        return props.column.customRender({
-          text: text.value,
-          record: props.record,
-          index: props.rowIndex,
-          column: props.column,
-        })
-      }
-
-      // 优先级 2：bodyCell slot（通过 inject 获取）
-      if (tableContext.bodyCell) {
-        return tableContext.bodyCell({
-          text: text.value,
-          record: props.record,
-          index: props.rowIndex,
-          column: props.column,
-        })
-      }
-      // 优先级 3：纯文本
-      return text.value ?? ''
-    })
-
     const isRowSelected = computed(() => {
       const key = tableContext.getRowKey?.(props.record, props.rowIndex)
       if (key === undefined) return false
       return tableContext.isSelected?.(key) ?? false
     })
+
+    const bodyDomProps = computed(() => ({
+      ...omitCellProps(resolvedCell.value.renderCellProps),
+      ...omitCellProps(resolvedCell.value.customCellProps),
+    }))
 
     const cellClass = computed(() => {
       const alignClass = props.column.align ? TABLE_ALIGN_CLASSES[props.column.align] : ''
@@ -105,10 +90,15 @@ export default defineComponent({
         isRowSelected.value && subThemeSlots
           ? cn(subThemeSlots.tdSelected, subThemeSlots.tdSelectedHover)
           : ''
+
       return cn(
         props.tdClass,
         alignClass,
         props.column.className,
+        resolvedCell.value.customCellProps?.class,
+        resolvedCell.value.customCellProps?.className,
+        resolvedCell.value.renderCellProps?.class,
+        resolvedCell.value.renderCellProps?.className,
         selectedClasses,
         fixedClass.value,
       )
@@ -118,12 +108,20 @@ export default defineComponent({
       const base: Record<string, string> = {}
       const resizedWidth =
         tableContext.columnWidths?.[String(getColumnKey(props.column) ?? props.colIndex)]
-      const w = resizedWidth ?? props.column.width
-      if (w) {
-        base.width = typeof w === 'number' ? `${w}px` : w
+      const width = resizedWidth ?? props.column.width
+
+      if (width) {
+        base.width = typeof width === 'number' ? `${width}px` : width
       }
-      const fixed = fixedStyle.value
-      return fixed ? { ...base, ...fixed } : Object.keys(base).length ? base : undefined
+
+      return {
+        ...base,
+        ...(fixedStyle.value ?? {}),
+        ...((resolvedCell.value.customCellProps?.style as Record<string, string> | undefined) ??
+          {}),
+        ...((resolvedCell.value.renderCellProps?.style as Record<string, string> | undefined) ??
+          {}),
+      }
     })
 
     // ---- 树形数据 indent 信息 ----
@@ -133,34 +131,37 @@ export default defineComponent({
       if (!flatData) return null
       const key = tableContext.getRowKey?.(props.record, props.rowIndex)
       return (
-        flatData.find((r) => {
-          const rKey = tableContext.getRowKey?.(r.record, -1)
-          return rKey === key
+        flatData.find((row) => {
+          const rowKey = tableContext.getRowKey?.(row.record, -1)
+          return rowKey === key
         }) ?? null
       )
     })
 
-    /** Is this the first data column (where tree indent is rendered)? */
     const isTreeIndentColumn = computed(() => {
       if (!tableContext.isTreeData?.value) return false
-      // Skip selection and expand columns
       return props.column.key !== '__vtg_selection__' &&
         props.column.key !== '__vtg_expand__' &&
         props.colIndex <= 2
         ? (() => {
-            // Find the first non-special column index
-            const ctx = tableContext
-            const sel = ctx.rowSelection?.()
-            const exp = ctx.expandable?.()
+            const sel = tableContext.rowSelection?.()
+            const exp = tableContext.expandable?.()
             let firstDataIdx = 0
-            if (sel) firstDataIdx++
-            if (exp && exp.showExpandColumn !== false) firstDataIdx++
+            if (sel) firstDataIdx += 1
+            if (exp && exp.showExpandColumn !== false) firstDataIdx += 1
             return props.colIndex === firstDataIdx
           })()
         : false
     })
 
     return () => {
+      if (resolvedCell.value.colSpan === 0 || resolvedCell.value.rowSpan === 0) {
+        return null
+      }
+
+      const colSpan = resolvedCell.value.colSpan !== 1 ? resolvedCell.value.colSpan : undefined
+      const rowSpan = resolvedCell.value.rowSpan !== 1 ? resolvedCell.value.rowSpan : undefined
+
       // ---- 选择列单元格 ----
       if (props.column.key === '__vtg_selection__') {
         const sel = tableContext.rowSelection?.()
@@ -181,20 +182,9 @@ export default defineComponent({
           selectedClasses,
           fixedClass.value,
         )
-        const cellSelStyle = (() => {
-          const base: Record<string, string> = {}
-          if (props.column.width) {
-            base.width =
-              typeof props.column.width === 'number'
-                ? `${props.column.width}px`
-                : props.column.width
-          }
-          const fixed = fixedStyle.value
-          return fixed ? { ...base, ...fixed } : Object.keys(base).length ? base : undefined
-        })()
 
         return (
-          <td class={cellSelClass} style={cellSelStyle}>
+          <td class={cellSelClass} style={cellStyle.value} colspan={colSpan} rowspan={rowSpan}>
             {isRadio ? (
               <SelectionRadio
                 checked={checked}
@@ -225,22 +215,10 @@ export default defineComponent({
           props.column.className,
           fixedClass.value,
         )
-        const expandCellStyle = (() => {
-          const base: Record<string, string> = {}
-          if (props.column.width) {
-            base.width =
-              typeof props.column.width === 'number'
-                ? `${props.column.width}px`
-                : props.column.width
-          }
-          const fixed = fixedStyle.value
-          return fixed ? { ...base, ...fixed } : Object.keys(base).length ? base : undefined
-        })()
 
-        // Custom expand icon
         if (exp?.expandIcon) {
           return (
-            <td class={expandCellClass} style={expandCellStyle}>
+            <td class={expandCellClass} style={cellStyle.value} colspan={colSpan} rowspan={rowSpan}>
               {exp.expandIcon({
                 expanded,
                 record: props.record,
@@ -254,7 +232,7 @@ export default defineComponent({
         }
 
         return (
-          <td class={expandCellClass} style={expandCellStyle}>
+          <td class={expandCellClass} style={cellStyle.value} colspan={colSpan} rowspan={rowSpan}>
             <ExpandIcon
               expanded={expanded}
               expandable={canExpand}
@@ -291,13 +269,19 @@ export default defineComponent({
         ) : null
 
       const mainContent = props.column.ellipsis ? (
-        <div class={props.bodyCellEllipsisClass}>{cellContent.value}</div>
+        <div class={props.bodyCellEllipsisClass}>{resolvedCell.value.content}</div>
       ) : (
-        cellContent.value
+        resolvedCell.value.content
       )
 
       return (
-        <td class={cellClass.value} style={cellStyle.value}>
+        <td
+          {...bodyDomProps.value}
+          class={cellClass.value}
+          style={cellStyle.value}
+          colspan={colSpan}
+          rowspan={rowSpan}
+        >
           {treeIndent}
           {treeExpandBtn}
           {mainContent}

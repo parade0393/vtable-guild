@@ -1,11 +1,14 @@
 import { defineComponent, type PropType } from 'vue'
 import TableHeaderCell from './TableHeaderCell'
-import type { ColumnType } from '../types'
+import type { HeaderRowMeta } from '../composables/useColumns'
 
 export default defineComponent({
   name: 'TableHeader',
   props: {
-    columns: { type: Array as PropType<ColumnType<Record<string, unknown>>[]>, required: true },
+    rows: {
+      type: Array as PropType<HeaderRowMeta<Record<string, unknown>>[]>,
+      required: true,
+    },
     theadClass: { type: String, required: true },
     rowClass: { type: String, required: true },
     thClass: { type: String, required: true },
@@ -14,17 +17,19 @@ export default defineComponent({
   setup(props) {
     return () => (
       <thead class={props.theadClass}>
-        <tr class={props.rowClass}>
-          {props.columns.map((column, index) => (
-            <TableHeaderCell
-              key={column.key ?? String(column.dataIndex ?? index)}
-              column={column}
-              index={index}
-              thClass={props.thClass}
-              headerCellInnerClass={props.headerCellInnerClass}
-            />
-          ))}
-        </tr>
+        {props.rows.map((row, rowIndex) => (
+          <tr key={`header-row-${rowIndex}`} class={props.rowClass}>
+            {row.map((cell, cellIndex) => (
+              <TableHeaderCell
+                key={`${String(cell.column.key ?? cell.column.title ?? cellIndex)}-${rowIndex}-${cellIndex}`}
+                cell={cell}
+                index={cellIndex}
+                thClass={props.thClass}
+                headerCellInnerClass={props.headerCellInnerClass}
+              />
+            ))}
+          </tr>
+        ))}
       </thead>
     )
   },

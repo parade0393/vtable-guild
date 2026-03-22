@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { h, inject, provide, reactive, ref } from 'vue'
+import { h, inject, provide, reactive } from 'vue'
 import { ElTable, ElTableColumn } from 'element-plus'
 import 'element-plus/es/components/table/style/css'
 import 'element-plus/es/components/table-column/style/css'
@@ -83,6 +83,105 @@ const resizeColumns: ColumnsType<DemoRow> = [
   { title: 'Status', dataIndex: 'status', key: 'status', width: 130, resizable: true },
   { title: 'Address', dataIndex: 'address', key: 'address' },
 ]
+
+// ---- Grouped Header + Header colSpan ----
+const groupedColumns: ColumnsType<DemoRow> = [
+  { title: 'Name', dataIndex: 'name', key: 'name', width: 160 },
+  {
+    title: 'Profile',
+    key: 'profile',
+    children: [
+      { title: 'Age', dataIndex: 'age', key: 'age', width: 90, align: 'right' },
+      { title: 'Region', dataIndex: 'region', key: 'region', width: 150 },
+    ],
+  },
+  {
+    title: 'Work',
+    key: 'work',
+    children: [
+      { title: 'Team', dataIndex: 'team', key: 'team', width: 160, colSpan: 2 },
+      { title: 'Role', dataIndex: 'role', key: 'role', width: 180, colSpan: 0 },
+    ],
+  },
+  { title: 'Address', dataIndex: 'address', key: 'address', width: 220 },
+]
+
+// ---- Body rowSpan / colSpan ----
+interface MergeRow extends DemoRow {
+  group: string
+}
+
+const mergeDataSource: MergeRow[] = [
+  { ...dataSource[0], key: 101, group: 'North America' },
+  { ...dataSource[1], key: 102, group: 'North America' },
+  { ...dataSource[2], key: 103, group: 'Europe' },
+  { ...dataSource[3], key: 104, group: 'Europe' },
+  { ...dataSource[4], key: 105, group: 'Solo' },
+]
+
+function getGroupCellProps(index?: number) {
+  if (index === 0 || index === 2) return { rowSpan: 2 }
+  if (index === 1 || index === 3) return { rowSpan: 0 }
+  return {}
+}
+
+const mergedColumns: ColumnsType<MergeRow> = [
+  {
+    title: 'Group',
+    dataIndex: 'group',
+    key: 'group',
+    width: 150,
+    customCell: (_record, index) => getGroupCellProps(index),
+  },
+  {
+    title: 'Name',
+    dataIndex: 'name',
+    key: 'name',
+    width: 180,
+    customRender: ({ text, record, index }) =>
+      index === 4
+        ? {
+            children: `${text} / ${record.score}`,
+            props: { colSpan: 2 },
+          }
+        : text,
+  },
+  {
+    title: 'Score',
+    dataIndex: 'score',
+    key: 'score',
+    width: 100,
+    align: 'right',
+    customRender: ({ text, index }) =>
+      index === 4 ? { children: text, props: { colSpan: 0 } } : text,
+  },
+  { title: 'Address', dataIndex: 'address', key: 'address', width: 260 },
+]
+
+function elementMergeSpanMethod({
+  rowIndex,
+  columnIndex,
+}: {
+  row: MergeRow
+  column: unknown
+  rowIndex: number
+  columnIndex: number
+}) {
+  if (columnIndex === 0) {
+    if (rowIndex === 0 || rowIndex === 2) return { rowspan: 2, colspan: 1 }
+    if (rowIndex === 1 || rowIndex === 3) return { rowspan: 0, colspan: 0 }
+  }
+
+  if (columnIndex === 1 && rowIndex === 4) {
+    return { rowspan: 1, colspan: 2 }
+  }
+
+  if (columnIndex === 2 && rowIndex === 4) {
+    return { rowspan: 0, colspan: 0 }
+  }
+
+  return { rowspan: 1, colspan: 1 }
+}
 </script>
 
 <template>
@@ -101,13 +200,15 @@ const resizeColumns: ColumnsType<DemoRow> = [
     <section class="play-metrics">
       <article class="play-metric-card">
         <span class="play-metric-card__label">Case count</span>
-        <strong>5</strong>
-        <p>固定列、固定表头、展开行、标题/页脚、列宽拖拽。</p>
+        <strong>7</strong>
+        <p>固定列、固定表头、展开行、标题/页脚、列宽拖拽、多级表头、单元格合并。</p>
       </article>
       <article class="play-metric-card">
         <span class="play-metric-card__label">Parity</span>
-        <strong>3 / 5 real native parity</strong>
-        <p>固定列、固定表头、展开行有原生对照；标题/页脚和列宽拖拽无直接对位。</p>
+        <strong>5 / 7 real native parity</strong>
+        <p>
+          固定列、固定表头、展开行、多级表头、单元格合并有原生对照；标题/页脚和列宽拖拽无直接对位。
+        </p>
       </article>
       <article class="play-metric-card">
         <span class="play-metric-card__label">Focus</span>
@@ -336,6 +437,104 @@ const resizeColumns: ColumnsType<DemoRow> = [
             row-key="key"
             @resize-column="(col: any, w: number) => console.log('resize', col.title, w)"
           />
+        </article>
+      </div>
+    </section>
+
+    <!-- 06 Grouped Header + Header colSpan -->
+    <section class="play-case">
+      <header class="play-case__header">
+        <div>
+          <p class="play-case__index">Case 06</p>
+          <h2>多级表头 + 表头 colSpan</h2>
+        </div>
+        <p class="play-case__desc">
+          ElTable 原生支持多级表头，但没有 antd 风格的 column.colSpan API；右侧同时验证 VTable 的
+          children + header colSpan
+        </p>
+      </header>
+      <div class="play-compare-grid">
+        <article class="play-panel">
+          <div class="play-panel__head">
+            <div>
+              <span class="play-badge">reference</span>
+              <h3>element-plus</h3>
+            </div>
+            <p>原生多级表头</p>
+          </div>
+          <ElTable :data="dataSource.slice(0, 4)" style="width: 100%">
+            <ElTableColumn prop="name" label="Name" width="160" />
+            <ElTableColumn label="Profile">
+              <ElTableColumn prop="age" label="Age" width="90" align="right" />
+              <ElTableColumn prop="region" label="Region" width="150" />
+            </ElTableColumn>
+            <ElTableColumn label="Work">
+              <ElTableColumn prop="team" label="Team" width="160" />
+              <ElTableColumn prop="role" label="Role" width="180" />
+            </ElTableColumn>
+            <ElTableColumn prop="address" label="Address" width="220" />
+          </ElTable>
+        </article>
+        <article class="play-panel play-panel--accent">
+          <div class="play-panel__head">
+            <div>
+              <span class="play-badge play-badge--accent">vtable-guild</span>
+              <h3>element-plus preset</h3>
+            </div>
+            <p>children + column.colSpan</p>
+          </div>
+          <VTable
+            :data-source="dataSource.slice(0, 4)"
+            :columns="groupedColumns"
+            :scroll="{ x: 960 }"
+            size="md"
+            row-key="key"
+          />
+        </article>
+      </div>
+    </section>
+
+    <!-- 07 Body rowSpan / colSpan -->
+    <section class="play-case">
+      <header class="play-case__header">
+        <div>
+          <p class="play-case__index">Case 07</p>
+          <h2>单元格合并 rowSpan / colSpan</h2>
+        </div>
+        <p class="play-case__desc">
+          ElTable 使用 span-method；VTable 对齐 antd 语义，走 customCell 与
+          customRender(RenderedCell)
+        </p>
+      </header>
+      <div class="play-compare-grid">
+        <article class="play-panel">
+          <div class="play-panel__head">
+            <div>
+              <span class="play-badge">reference</span>
+              <h3>element-plus</h3>
+            </div>
+            <p>span-method 原生对照</p>
+          </div>
+          <ElTable
+            :data="mergeDataSource"
+            :span-method="elementMergeSpanMethod"
+            style="width: 100%"
+          >
+            <ElTableColumn prop="group" label="Group" width="150" />
+            <ElTableColumn prop="name" label="Name" width="180" />
+            <ElTableColumn prop="score" label="Score" width="100" align="right" />
+            <ElTableColumn prop="address" label="Address" width="260" />
+          </ElTable>
+        </article>
+        <article class="play-panel play-panel--accent">
+          <div class="play-panel__head">
+            <div>
+              <span class="play-badge play-badge--accent">vtable-guild</span>
+              <h3>element-plus preset</h3>
+            </div>
+            <p>customCell + customRender</p>
+          </div>
+          <VTable :data-source="mergeDataSource" :columns="mergedColumns" size="md" row-key="key" />
         </article>
       </div>
     </section>

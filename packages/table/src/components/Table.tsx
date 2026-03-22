@@ -143,8 +143,8 @@ export default defineComponent({
       column: ColumnType<Record<string, unknown>>
     }
     headerCell: {
-      title: string | undefined
-      column: ColumnType<Record<string, unknown>>
+      title: VNodeChild | undefined
+      column: ColumnsType<Record<string, unknown>>[number]
       index: number
     }
     empty: void
@@ -202,12 +202,12 @@ export default defineComponent({
       )
     })
 
-    // ---- 拍平列 ----
-    const { leafColumns } = useColumns(() => props.columns)
+    // ---- 原始数据列 ----
+    const { leafColumns: dataLeafColumns } = useColumns(() => props.columns)
 
     // ---- 排序 ----
     const { getSortOrder, toggleSortOrder, sortData, sorterState } = useSorter({
-      columns: () => leafColumns.value,
+      columns: () => dataLeafColumns.value,
       onSorterChange(sorterResult) {
         const processedData = getProcessedData()
         emit('change', getAllFilters(), sorterResult, {
@@ -219,7 +219,7 @@ export default defineComponent({
 
     // ---- 筛选 ----
     const { getFilteredValue, confirmFilter, resetFilter, getAllFilters, filterData } = useFilter({
-      columns: () => leafColumns.value,
+      columns: () => dataLeafColumns.value,
       onFilterChange(filters) {
         const processedData = getProcessedData()
         emit(
@@ -327,8 +327,8 @@ export default defineComponent({
     const SELECTION_COLUMN_KEY = '__vtg_selection__'
     const EXPAND_COLUMN_KEY = '__vtg_expand__'
 
-    const displayColumns = computed(() => {
-      const cols: ColumnType<Record<string, unknown>>[] = [...leafColumns.value]
+    const displayColumnTree = computed<ColumnsType<Record<string, unknown>>>(() => {
+      const cols: ColumnsType<Record<string, unknown>> = [...props.columns]
       const exp = props.expandable
       if (exp && exp.showExpandColumn !== false) {
         const expandCol: ColumnType<Record<string, unknown>> = {
@@ -352,6 +352,8 @@ export default defineComponent({
       }
       return cols
     })
+
+    const { leafColumns: displayColumns, headerRows } = useColumns(() => displayColumnTree.value)
 
     // ---- 滚动/固定列 ----
     const {
@@ -377,6 +379,26 @@ export default defineComponent({
       scrollY: () => props.scroll?.y,
       size: () => props.size,
     })
+
+    const hasPotentialBodySpan = computed(() =>
+      dataLeafColumns.value.some((column) => !!column.customCell || !!column.customRender),
+    )
+    const warnedVirtualSpan = ref(false)
+
+    watch(
+      [virtualEnabled, hasPotentialBodySpan],
+      ([enabled, hasSpan]) => {
+        if (!enabled || !hasSpan || warnedVirtualSpan.value || import.meta.env.PROD) {
+          return
+        }
+
+        warnedVirtualSpan.value = true
+        console.warn(
+          '[VTable] Body cell merging via customCell/customRender is not supported when virtual=true.',
+        )
+      },
+      { immediate: true },
+    )
 
     // Bridge VScrollbar's internal wrapRef → useScroll's bodyWrapRef
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -620,7 +642,7 @@ export default defineComponent({
                   <table class={themeSlots.table()} style={tableStyle}>
                     <ColGroup columns={displayColumns.value} />
                     <TableHeader
-                      columns={displayColumns.value}
+                      rows={headerRows.value}
                       theadClass={themeSlots.thead()}
                       rowClass={themeSlots.tr()}
                       thClass={themeSlots.th()}
@@ -644,7 +666,7 @@ export default defineComponent({
           <table class={themeSlots.table()} style={tableStyle}>
             <ColGroup columns={displayColumns.value} />
             <TableHeader
-              columns={displayColumns.value}
+              rows={headerRows.value}
               theadClass={themeSlots.thead()}
               rowClass={themeSlots.tr()}
               thClass={themeSlots.th()}

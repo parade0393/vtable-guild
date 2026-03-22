@@ -6,7 +6,7 @@ import type {
   VTableGuildTableLocale,
 } from '@vtable-guild/core'
 import type { VNodeChild } from 'vue'
-import type { ColumnsType, ColumnType, ColumnFilterItem, Key } from './column'
+import type { ColumnsType, ColumnType, ColumnGroupType, ColumnFilterItem, Key } from './column'
 import type { TableSlots } from '@vtable-guild/theme'
 
 // ---- 展开行类型 ----
@@ -88,8 +88,8 @@ export interface TableBodyCellSlotProps<TRecord extends Record<string, unknown>>
  * headerCell slot 的参数类型。
  */
 export interface TableHeaderCellSlotProps<TRecord extends Record<string, unknown>> {
-  title: string | undefined
-  column: ColumnType<TRecord>
+  title: VNodeChild | undefined
+  column: ColumnType<TRecord> | ColumnGroupType<TRecord>
   index: number
 }
 

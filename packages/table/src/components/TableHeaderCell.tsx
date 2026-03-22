@@ -1,28 +1,28 @@
 import {
-  defineComponent,
   computed,
+  defineComponent,
   inject,
-  ref,
-  watch,
-  onBeforeUnmount,
   nextTick,
+  onBeforeUnmount,
+  ref,
   Teleport,
+  watch,
   type PropType,
 } from 'vue'
 import { cn, Tooltip } from '@vtable-guild/core'
 import { TABLE_ALIGN_CLASSES } from '@vtable-guild/theme'
-import type { ColumnType, SortOrder } from '../types'
+import { DownOutlinedIcon } from '@vtable-guild/icons'
+import type { ColumnType, SelectionItem, SortOrder } from '../types'
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
+import type { HeaderCellMeta } from '../composables/useColumns'
+import { getColumnKey } from '../composables/useSorter'
+import { getCellSpan, omitCellProps } from '../utils/cell'
 import SortButton from './SortButton'
 import FilterIcon from './FilterIcon'
 import FilterDropdown from './FilterDropdown'
 import SelectionCheckbox from './SelectionCheckbox'
 import SelectionDropdown from './SelectionDropdown'
 import ResizeHandle from './ResizeHandle'
-import { DownOutlinedIcon } from '@vtable-guild/icons'
-import type { SelectionItem } from '../types'
-
-import { getColumnKey } from '../composables/useSorter'
 
 function getAriaSortValue(order: SortOrder): 'ascending' | 'descending' | undefined {
   if (order === 'ascend') return 'ascending'
@@ -33,7 +33,10 @@ function getAriaSortValue(order: SortOrder): 'ascending' | 'descending' | undefi
 export default defineComponent({
   name: 'TableHeaderCell',
   props: {
-    column: { type: Object as PropType<ColumnType<Record<string, unknown>>>, required: true },
+    cell: {
+      type: Object as PropType<HeaderCellMeta<Record<string, unknown>>>,
+      required: true,
+    },
     index: { type: Number, required: true },
     thClass: { type: String, required: true },
     headerCellInnerClass: { type: String, required: true },
@@ -41,58 +44,85 @@ export default defineComponent({
   setup(props) {
     const tableContext = inject(TABLE_CONTEXT_KEY, {} as TableContext)
 
-    // ---- 排序 ----
-    const sortOrder = computed(() => {
-      if (!props.column.sorter) return null
-      return tableContext.getSortOrder?.(props.column) ?? null
+    const leafColumn = computed(() =>
+      props.cell.isLeaf ? (props.cell.column as ColumnType<Record<string, unknown>>) : null,
+    )
+
+    const headerCellProps = computed(() =>
+      props.cell.column.customHeaderCell?.(
+        props.cell.column,
+        props.index,
+        leafColumn.value ?? undefined,
+      ),
+    )
+
+    const mergedColSpan = computed(
+      () => getCellSpan(headerCellProps.value, 'colSpan') ?? props.cell.colSpan,
+    )
+
+    const mergedRowSpan = computed(() => props.cell.rowSpan)
+
+    const headerDomProps = computed(() => {
+      const { onClick: _onClick, ...rest } = omitCellProps(headerCellProps.value)
+      return rest
     })
 
-    const isSortable = computed(() => !!props.column.sorter)
+    // ---- 排序 ----
+    const sortOrder = computed(() => {
+      if (!leafColumn.value?.sorter) return null
+      return tableContext.getSortOrder?.(leafColumn.value) ?? null
+    })
+
+    const isSortable = computed(() => !!leafColumn.value?.sorter)
 
     const showTooltip = computed(() => {
-      if (!isSortable.value) return false
-      return props.column.showSorterTooltip ?? tableContext.showSorterTooltip?.value ?? true
+      if (!leafColumn.value || !isSortable.value) return false
+      return leafColumn.value.showSorterTooltip ?? tableContext.showSorterTooltip?.value ?? true
     })
 
     // ---- 筛选 ----
-    const hasFilters = computed(
-      () =>
-        (props.column.filters?.length ?? 0) > 0 ||
-        !!props.column.customFilterDropdown ||
-        !!props.column.filterDropdown,
-    )
-
-    const filteredValue = computed(() => {
-      if (!hasFilters.value) return []
-      return tableContext.getFilteredValue?.(props.column) ?? []
+    const hasFilters = computed(() => {
+      const column = leafColumn.value
+      if (!column) return false
+      return (
+        (column.filters?.length ?? 0) > 0 ||
+        !!column.customFilterDropdown ||
+        !!column.filterDropdown
+      )
     })
 
-    // C1: filtered prop override
+    const filteredValue = computed(() => {
+      if (!leafColumn.value || !hasFilters.value) return []
+      return tableContext.getFilteredValue?.(leafColumn.value) ?? []
+    })
+
     const isFiltered = computed(() => {
-      if (props.column.filtered !== undefined) return props.column.filtered
+      const column = leafColumn.value
+      if (!column) return false
+      if (column.filtered !== undefined) return column.filtered
       return filteredValue.value.length > 0
     })
 
-    // C2: Controlled dropdown (filterDropdownOpen / onFilterDropdownOpenChange)
-    const isDropdownControlled = computed(() => props.column.filterDropdownOpen !== undefined)
+    const isDropdownControlled = computed(() => leafColumn.value?.filterDropdownOpen !== undefined)
     const internalVisible = ref(false)
     const filterDropdownVisible = computed(() =>
-      isDropdownControlled.value ? props.column.filterDropdownOpen! : internalVisible.value,
+      isDropdownControlled.value
+        ? (leafColumn.value?.filterDropdownOpen ?? false)
+        : internalVisible.value,
     )
 
     function setDropdownVisible(visible: boolean) {
       if (!isDropdownControlled.value) internalVisible.value = visible
-      props.column.onFilterDropdownOpenChange?.(visible)
+      leafColumn.value?.onFilterDropdownOpenChange?.(visible)
     }
 
     const filterAnchorRef = ref<HTMLElement | null>(null)
     const customDropdownRef = ref<HTMLElement | null>(null)
 
-    function toggleFilterDropdown(_e: MouseEvent) {
+    function toggleFilterDropdown() {
       setDropdownVisible(!filterDropdownVisible.value)
     }
 
-    // 自定义下拉菜单的外部点击关闭
     function handleCustomDropdownMouseDown(e: MouseEvent) {
       if (
         customDropdownRef.value &&
@@ -103,12 +133,14 @@ export default defineComponent({
       }
     }
 
-    // 判断是否使用自定义下拉（column.filterDropdown 或 customFilterDropdown slot）
-    const isCustomDropdown = computed(
-      () =>
-        !!props.column.filterDropdown ||
-        (!!props.column.customFilterDropdown && !!tableContext.customFilterDropdown),
-    )
+    const isCustomDropdown = computed(() => {
+      const column = leafColumn.value
+      if (!column) return false
+      return (
+        !!column.filterDropdown ||
+        (!!column.customFilterDropdown && !!tableContext.customFilterDropdown)
+      )
+    })
 
     watch(filterDropdownVisible, (visible) => {
       if (visible && isCustomDropdown.value) {
@@ -129,11 +161,9 @@ export default defineComponent({
       return filterAnchorRef.value.getBoundingClientRect()
     }
 
-    // C3: Pending selected keys for slot props
     const pendingSelectedKeys = ref<(string | number | boolean)[]>([])
-
-    // 树形筛选展开/折叠持久化（跨 dropdown open/close）
     const treeExpandedKeys = ref<Set<string | number | boolean> | null>(null)
+
     watch(
       () => filteredValue.value,
       (keys) => {
@@ -143,12 +173,14 @@ export default defineComponent({
     )
 
     function handleFilterConfirm(keys: (string | number | boolean)[]) {
-      tableContext.confirmFilter?.(props.column, keys)
+      if (!leafColumn.value) return
+      tableContext.confirmFilter?.(leafColumn.value, keys)
       setDropdownVisible(false)
     }
 
     function handleFilterReset() {
-      tableContext.resetFilter?.(props.column)
+      if (!leafColumn.value) return
+      tableContext.resetFilter?.(leafColumn.value)
       setDropdownVisible(false)
     }
 
@@ -158,9 +190,34 @@ export default defineComponent({
 
     // ---- 固定列 ----
     const fixedInfo = computed(() => {
-      if (!props.column.fixed) return null
-      const key = getColumnKey(props.column) ?? props.index
-      return tableContext.fixedOffsets?.value?.get(key) ?? null
+      const leafColumns = props.cell.leafColumns
+      if (!leafColumns.length) return null
+
+      const firstLeaf = leafColumns[0]
+      const lastLeaf = leafColumns[leafColumns.length - 1]
+      const firstKey = getColumnKey(firstLeaf) ?? props.cell.colStart
+      const lastKey = getColumnKey(lastLeaf) ?? props.cell.colEnd
+      const firstInfo = tableContext.fixedOffsets?.value?.get(firstKey)
+      const lastInfo = tableContext.fixedOffsets?.value?.get(lastKey)
+
+      if (leafColumns.every((column) => column.fixed === 'left') && firstInfo?.left !== undefined) {
+        return {
+          left: firstInfo.left,
+          isLastLeft: lastInfo?.isLastLeft,
+        }
+      }
+
+      if (
+        leafColumns.every((column) => column.fixed === 'right') &&
+        lastInfo?.right !== undefined
+      ) {
+        return {
+          right: lastInfo.right,
+          isFirstRight: firstInfo?.isFirstRight,
+        }
+      }
+
+      return null
     })
 
     const fixedStyle = computed(() => {
@@ -177,17 +234,21 @@ export default defineComponent({
       if (!info) return ''
       const sub = tableContext.subThemeSlots?.value
       if (!sub) return ''
+
       const classes: string[] = []
       const atStart = tableContext.scrollState?.value?.atStart ?? true
       const atEnd = tableContext.scrollState?.value?.atEnd ?? true
       const showFixedDivider = !(tableContext.bordered?.value ?? false)
-      if (info.isLastLeft) {
-        if (!atStart) classes.push(sub.fixedShadowLeft)
+
+      if (info.isLastLeft && !atStart) {
+        classes.push(sub.fixedShadowLeft)
       }
+
       if (info.isFirstRight) {
         if (showFixedDivider && atEnd) classes.push(sub.fixedDividerRight)
         if (!atEnd) classes.push(sub.fixedShadowRight)
       }
+
       return classes.join(' ')
     })
 
@@ -195,31 +256,49 @@ export default defineComponent({
     const headerContent = computed(() => {
       if (tableContext.headerCell) {
         return tableContext.headerCell({
-          title: props.column.title,
-          column: props.column,
+          title: props.cell.column.title,
+          column: props.cell.column,
           index: props.index,
         })
       }
-      return props.column.title ?? ''
+
+      return props.cell.column.title ?? ''
     })
 
     const cellClass = computed(() => {
-      const alignClass = props.column.align ? TABLE_ALIGN_CLASSES[props.column.align] : ''
+      const alignClass = props.cell.column.align ? TABLE_ALIGN_CLASSES[props.cell.column.align] : ''
       const sortableClass = isSortable.value ? tableContext.subThemeSlots?.value.thSortable : ''
-      return cn(props.thClass, alignClass, sortableClass, props.column.className, fixedClass.value)
+      return cn(
+        props.thClass,
+        alignClass,
+        sortableClass,
+        props.cell.column.className,
+        headerCellProps.value?.class,
+        headerCellProps.value?.className,
+        fixedClass.value,
+      )
     })
 
     const cellStyle = computed(() => {
       const base: Record<string, string> = {}
-      // Use resized width if available, otherwise original width
-      const resizedWidth =
-        tableContext.columnWidths?.[String(getColumnKey(props.column) ?? props.index)]
-      const w = resizedWidth ?? props.column.width
-      if (w) {
-        base.width = typeof w === 'number' ? `${w}px` : w
+
+      if (leafColumn.value) {
+        const resizedWidth =
+          tableContext.columnWidths?.[String(getColumnKey(leafColumn.value) ?? props.cell.colStart)]
+        const width = resizedWidth ?? leafColumn.value.width
+        if (width) {
+          base.width = typeof width === 'number' ? `${width}px` : width
+        }
       }
+
+      const style = headerCellProps.value?.style as Record<string, string> | undefined
       const fixed = fixedStyle.value
-      return fixed ? { ...base, ...fixed } : Object.keys(base).length ? base : undefined
+
+      return {
+        ...base,
+        ...(fixed ?? {}),
+        ...(style ?? {}),
+      }
     })
 
     // ---- 选择下拉 ----
@@ -242,45 +321,74 @@ export default defineComponent({
 
     const sortAreaHovered = ref(false)
 
-    function handleClick() {
-      if (isSortable.value) {
-        tableContext.toggleSortOrder?.(props.column)
+    function handleCellClick(event: MouseEvent) {
+      const onClick = headerCellProps.value?.onClick
+      if (typeof onClick === 'function') {
+        onClick(event)
+      }
+
+      if (leafColumn.value && isSortable.value) {
+        tableContext.toggleSortOrder?.(leafColumn.value)
       }
     }
 
     return () => {
+      if (mergedColSpan.value === 0 || mergedRowSpan.value === 0) {
+        return null
+      }
+
+      const colSpan = mergedColSpan.value !== 1 ? mergedColSpan.value : undefined
+      const rowSpan = mergedRowSpan.value !== 1 ? mergedRowSpan.value : undefined
+
       // ---- 选择列表头 ----
-      if (props.column.key === '__vtg_selection__') {
+      if (leafColumn.value?.key === '__vtg_selection__') {
         const sel = tableContext.rowSelection?.()
         const isRadio = sel?.type === 'radio'
 
-        const cellSelClass = cn(props.thClass, 'text-center', props.column.className)
-        const cellSelStyle = props.column.width
-          ? {
-              width:
-                typeof props.column.width === 'number'
-                  ? `${props.column.width}px`
-                  : props.column.width,
-            }
-          : undefined
+        const cellSelClass = cn(
+          props.thClass,
+          'text-center',
+          leafColumn.value.className,
+          headerCellProps.value?.class,
+          headerCellProps.value?.className,
+          fixedClass.value,
+        )
+        const cellSelStyle = cellStyle.value
 
         if (isRadio) {
-          return <th class={cellSelClass} style={cellSelStyle} />
+          return (
+            <th
+              {...headerDomProps.value}
+              class={cellSelClass}
+              style={cellSelStyle}
+              colspan={colSpan}
+              rowspan={rowSpan}
+              onClick={handleCellClick}
+            />
+          )
         }
 
         const hideSelectAll = sel?.hideSelectAll === true
         const hasSelections = sel?.selections !== undefined && sel.selections !== false
 
         if (hideSelectAll) {
-          return <th class={cellSelClass} style={cellSelStyle} />
+          return (
+            <th
+              {...headerDomProps.value}
+              class={cellSelClass}
+              style={cellSelStyle}
+              colspan={colSpan}
+              rowspan={rowSpan}
+              onClick={handleCellClick}
+            />
+          )
         }
 
         const state = tableContext.allCheckedState?.() ?? 'none'
+        const tableLocale = tableContext.locale?.value
 
-        // Build selection items for dropdown
         let selectionItems: SelectionItem[] = []
         if (hasSelections) {
-          const tableLocale = tableContext.locale?.value
           if (sel?.selections === true) {
             selectionItems = [
               {
@@ -305,7 +413,14 @@ export default defineComponent({
         }
 
         return (
-          <th class={cellSelClass} style={cellSelStyle}>
+          <th
+            {...headerDomProps.value}
+            class={cellSelClass}
+            style={cellSelStyle}
+            colspan={colSpan}
+            rowspan={rowSpan}
+            onClick={handleCellClick}
+          >
             <span class="inline-flex items-center justify-center">
               <SelectionCheckbox
                 checked={state === 'all'}
@@ -343,9 +458,8 @@ export default defineComponent({
           : sortOrder.value === 'ascend'
             ? (tableLocale?.header.sortTriggerDesc ?? '点击降序')
             : (tableLocale?.header.cancelSort ?? '取消排序')
-      const { column } = props
 
-      // 排序区域（标题 + 排序图标）
+      const column = leafColumn.value
       const sortAreaWrapperClass = tableContext.subThemeSlots?.value.sortAreaWrapper
       const sortAreaTitleClass = tableContext.subThemeSlots?.value.sortAreaTitle
 
@@ -357,7 +471,6 @@ export default defineComponent({
       )
 
       const sortAreaOuterClass = tableContext.subThemeSlots?.value.sortAreaOuter
-
       const sortArea = showTooltip.value ? (
         <span
           class={sortAreaOuterClass}
@@ -376,56 +489,57 @@ export default defineComponent({
         <span class={sortAreaOuterClass}>{sorterContent}</span>
       )
 
-      // C4: Filter icon rendering priority
-      // column.filterIcon > tableContext.customFilterIcon slot > default FilterIcon
-      const filterIconContent = (() => {
-        if (column.filterIcon) {
-          return (
-            <span
-              class={tableContext.subThemeSlots?.value.filterIconWrapper}
-              ref={filterAnchorRef}
-              onMousedown={(e: MouseEvent) => e.stopPropagation()}
-              onClick={(e: MouseEvent) => {
-                e.stopPropagation()
-                toggleFilterDropdown(e)
-              }}
-              role="button"
-              aria-label={tableLocale?.header.filterTriggerAriaLabel ?? '筛选'}
-            >
-              {column.filterIcon({ filtered: isFiltered.value })}
-            </span>
-          )
-        }
-        if (tableContext.customFilterIcon) {
-          return (
-            <span
-              class={tableContext.subThemeSlots?.value.filterIconWrapper}
-              ref={filterAnchorRef}
-              onMousedown={(e: MouseEvent) => e.stopPropagation()}
-              onClick={(e: MouseEvent) => {
-                e.stopPropagation()
-                toggleFilterDropdown(e)
-              }}
-              role="button"
-              aria-label={tableLocale?.header.filterTriggerAriaLabel ?? '筛选'}
-            >
-              {tableContext.customFilterIcon({ column, filtered: isFiltered.value })}
-            </span>
-          )
-        }
-        return (
-          <span
-            ref={filterAnchorRef}
-            class={tableContext.subThemeSlots?.value.filterIconWrapper}
-            onMousedown={(e: MouseEvent) => e.stopPropagation()}
-          >
-            <FilterIcon active={isFiltered.value} onClick={toggleFilterDropdown} />
-          </span>
-        )
-      })()
+      const filterIconContent =
+        column &&
+        (() => {
+          if (column.filterIcon) {
+            return (
+              <span
+                class={tableContext.subThemeSlots?.value.filterIconWrapper}
+                ref={filterAnchorRef}
+                onMousedown={(e: MouseEvent) => e.stopPropagation()}
+                onClick={(e: MouseEvent) => {
+                  e.stopPropagation()
+                  toggleFilterDropdown()
+                }}
+                role="button"
+                aria-label={tableLocale?.header.filterTriggerAriaLabel ?? '筛选'}
+              >
+                {column.filterIcon({ filtered: isFiltered.value })}
+              </span>
+            )
+          }
 
-      // C5: Shared dropdownSlotProps for custom filter dropdown
-      const dropdownSlotProps = {
+          if (tableContext.customFilterIcon) {
+            return (
+              <span
+                class={tableContext.subThemeSlots?.value.filterIconWrapper}
+                ref={filterAnchorRef}
+                onMousedown={(e: MouseEvent) => e.stopPropagation()}
+                onClick={(e: MouseEvent) => {
+                  e.stopPropagation()
+                  toggleFilterDropdown()
+                }}
+                role="button"
+                aria-label={tableLocale?.header.filterTriggerAriaLabel ?? '筛选'}
+              >
+                {tableContext.customFilterIcon({ column, filtered: isFiltered.value })}
+              </span>
+            )
+          }
+
+          return (
+            <span
+              ref={filterAnchorRef}
+              class={tableContext.subThemeSlots?.value.filterIconWrapper}
+              onMousedown={(e: MouseEvent) => e.stopPropagation()}
+            >
+              <FilterIcon active={isFiltered.value} onClick={() => toggleFilterDropdown()} />
+            </span>
+          )
+        })()
+
+      const dropdownSlotProps = column && {
         column,
         selectedKeys: pendingSelectedKeys.value,
         setSelectedKeys: (keys: (string | number | boolean)[]) => {
@@ -434,7 +548,6 @@ export default defineComponent({
         confirm: (opts?: { closeDropdown?: boolean }) => {
           handleFilterConfirm(pendingSelectedKeys.value)
           if (opts?.closeDropdown === false) {
-            // Re-open since handleFilterConfirm closes
             setDropdownVisible(true)
           }
         },
@@ -453,83 +566,90 @@ export default defineComponent({
         close: () => setDropdownVisible(false),
       }
 
-      // C5: Rendering priority: column.filterDropdown > customFilterDropdown slot > default
-      const customFilterDropdownSlot = column.customFilterDropdown
+      const customFilterDropdownSlot = column?.customFilterDropdown
         ? tableContext.customFilterDropdown
         : undefined
 
-      const filterDropdownContent = (() => {
-        const customContent = column.filterDropdown
-          ? column.filterDropdown(dropdownSlotProps)
-          : customFilterDropdownSlot
-            ? customFilterDropdownSlot(dropdownSlotProps)
-            : null
+      const filterDropdownContent =
+        column &&
+        dropdownSlotProps &&
+        (() => {
+          const customContent = column.filterDropdown
+            ? column.filterDropdown(dropdownSlotProps)
+            : customFilterDropdownSlot
+              ? customFilterDropdownSlot(dropdownSlotProps)
+              : null
 
-        if (customContent) {
-          const anchorRect = getAnchorRect()
-          const viewportWidth = window.innerWidth
-          const dropdownMinWidth = 150
-          const overflowRight = anchorRect.left + dropdownMinWidth > viewportWidth
-          const posStyle: Record<string, string> = {
-            position: 'fixed',
-            top: `${anchorRect.bottom + 4}px`,
-            zIndex: '1050',
+          if (customContent) {
+            const anchorRect = getAnchorRect()
+            const viewportWidth = window.innerWidth
+            const dropdownMinWidth = 150
+            const overflowRight = anchorRect.left + dropdownMinWidth > viewportWidth
+            const posStyle: Record<string, string> = {
+              position: 'fixed',
+              top: `${anchorRect.bottom + 4}px`,
+              zIndex: '1050',
+            }
+
+            if (overflowRight) {
+              posStyle.right = `${viewportWidth - anchorRect.right}px`
+            } else {
+              posStyle.left = `${anchorRect.left}px`
+            }
+
+            return (
+              <Teleport to="body">
+                <div
+                  ref={customDropdownRef}
+                  class={tableContext.subThemeSlots?.value.filterDropdown}
+                  style={posStyle}
+                >
+                  {customContent}
+                </div>
+              </Teleport>
+            )
           }
-          if (overflowRight) {
-            posStyle.right = `${viewportWidth - anchorRect.right}px`
-          } else {
-            posStyle.left = `${anchorRect.left}px`
-          }
+
           return (
-            <Teleport to="body">
-              <div
-                ref={customDropdownRef}
-                class={tableContext.subThemeSlots?.value.filterDropdown}
-                style={posStyle}
-              >
-                {customContent}
-              </div>
-            </Teleport>
+            <FilterDropdown
+              filters={column.filters ?? []}
+              selectedKeys={filteredValue.value}
+              multiple={column.filterMultiple !== false}
+              anchorRect={getAnchorRect()}
+              filterSearch={column.filterSearch ?? false}
+              filterMode={column.filterMode ?? 'menu'}
+              expandedKeys={treeExpandedKeys.value}
+              visible={filterDropdownVisible.value}
+              onConfirm={handleFilterConfirm}
+              onReset={handleFilterReset}
+              onClose={handleFilterClose}
+              onUpdate:expandedKeys={(keys: Set<string | number | boolean>) => {
+                treeExpandedKeys.value = keys
+              }}
+            />
           )
-        }
-
-        return (
-          <FilterDropdown
-            filters={column.filters ?? []}
-            selectedKeys={filteredValue.value}
-            multiple={column.filterMultiple !== false}
-            anchorRect={getAnchorRect()}
-            filterSearch={column.filterSearch ?? false}
-            filterMode={column.filterMode ?? 'menu'}
-            expandedKeys={treeExpandedKeys.value}
-            visible={filterDropdownVisible.value}
-            onConfirm={handleFilterConfirm}
-            onReset={handleFilterReset}
-            onClose={handleFilterClose}
-            onUpdate:expandedKeys={(keys: Set<string | number | boolean>) => {
-              treeExpandedKeys.value = keys
-            }}
-          />
-        )
-      })()
+        })()
 
       return (
         <th
+          {...headerDomProps.value}
           class={cellClass.value}
           style={cellStyle.value}
-          onClick={handleClick}
-          aria-sort={getAriaSortValue(sortOrder.value)}
+          colspan={colSpan}
+          rowspan={rowSpan}
+          onClick={handleCellClick}
+          aria-sort={leafColumn.value ? getAriaSortValue(sortOrder.value) : undefined}
         >
           <span class={cn('flex items-center', props.headerCellInnerClass)}>
             {sortArea}
             {hasFilters.value && filterIconContent}
           </span>
 
-          {/* Filter dropdown */}
           {hasFilters.value && filterDropdownContent}
 
-          {/* Resize handle */}
-          {props.column.resizable && <ResizeHandle column={props.column} colIndex={props.index} />}
+          {leafColumn.value?.resizable && (
+            <ResizeHandle column={leafColumn.value} colIndex={props.cell.colStart} />
+          )}
         </th>
       )
     }

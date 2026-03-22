@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { h, ref } from 'vue'
+import { h } from 'vue'
 import { ConfigProvider as AConfigProvider, Table as ATable } from 'ant-design-vue'
 import { VTable } from '@vtable-guild/table'
 import type { ColumnsType, Expandable } from '@vtable-guild/table'
@@ -38,8 +38,6 @@ const expandColumns: ColumnsType<DemoRow> = [
   { title: 'Address', dataIndex: 'address', key: 'address' },
 ]
 
-const expandedRowKeys = ref<(string | number)[]>([])
-
 const expandable: Expandable<DemoRow> = {
   expandedRowRender: (record) =>
     h(
@@ -72,6 +70,134 @@ const resizeColumns: ColumnsType<DemoRow> = [
   { title: 'Age', dataIndex: 'age', key: 'age', width: 90, align: 'right', resizable: true },
   { title: 'Status', dataIndex: 'status', key: 'status', width: 130, resizable: true },
   { title: 'Address', dataIndex: 'address', key: 'address' },
+]
+
+// ---- Grouped Header + Header colSpan ----
+const groupedColumns: ColumnsType<DemoRow> = [
+  { title: 'Name', dataIndex: 'name', key: 'name', width: 160 },
+  {
+    title: 'Profile',
+    key: 'profile',
+    children: [
+      { title: 'Age', dataIndex: 'age', key: 'age', width: 90, align: 'right' },
+      { title: 'Region', dataIndex: 'region', key: 'region', width: 150 },
+    ],
+  },
+  {
+    title: 'Work',
+    key: 'work',
+    children: [
+      { title: 'Team', dataIndex: 'team', key: 'team', width: 160, colSpan: 2 },
+      { title: 'Role', dataIndex: 'role', key: 'role', width: 180, colSpan: 0 },
+    ],
+  },
+  { title: 'Address', dataIndex: 'address', key: 'address', width: 220 },
+]
+
+const antGroupedColumns = [
+  { title: 'Name', dataIndex: 'name', key: 'name', width: 160 },
+  {
+    title: 'Profile',
+    key: 'profile',
+    children: [
+      { title: 'Age', dataIndex: 'age', key: 'age', width: 90, align: 'right' },
+      { title: 'Region', dataIndex: 'region', key: 'region', width: 150 },
+    ],
+  },
+  {
+    title: 'Work',
+    key: 'work',
+    children: [
+      { title: 'Team', dataIndex: 'team', key: 'team', width: 160, colSpan: 2 },
+      { title: 'Role', dataIndex: 'role', key: 'role', width: 180, colSpan: 0 },
+    ],
+  },
+  { title: 'Address', dataIndex: 'address', key: 'address', width: 220 },
+]
+
+// ---- Body rowSpan / colSpan ----
+interface MergeRow extends DemoRow {
+  group: string
+}
+
+const mergeDataSource: MergeRow[] = [
+  { ...dataSource[0], key: 101, group: 'North America' },
+  { ...dataSource[1], key: 102, group: 'North America' },
+  { ...dataSource[2], key: 103, group: 'Europe' },
+  { ...dataSource[3], key: 104, group: 'Europe' },
+  { ...dataSource[4], key: 105, group: 'Solo' },
+]
+
+function getGroupCellProps(index?: number) {
+  if (index === 0 || index === 2) return { rowSpan: 2 }
+  if (index === 1 || index === 3) return { rowSpan: 0 }
+  return {}
+}
+
+const mergedColumns: ColumnsType<MergeRow> = [
+  {
+    title: 'Group',
+    dataIndex: 'group',
+    key: 'group',
+    width: 150,
+    customCell: (_record, index) => getGroupCellProps(index),
+  },
+  {
+    title: 'Name',
+    dataIndex: 'name',
+    key: 'name',
+    width: 180,
+    customRender: ({ text, record, index }) =>
+      index === 4
+        ? {
+            children: `${text} / ${record.score}`,
+            props: { colSpan: 2 },
+          }
+        : text,
+  },
+  {
+    title: 'Score',
+    dataIndex: 'score',
+    key: 'score',
+    width: 100,
+    align: 'right',
+    customRender: ({ text, index }) =>
+      index === 4 ? { children: text, props: { colSpan: 0 } } : text,
+  },
+  { title: 'Address', dataIndex: 'address', key: 'address', width: 260 },
+]
+
+const antMergedColumns = [
+  {
+    title: 'Group',
+    dataIndex: 'group',
+    key: 'group',
+    width: 150,
+    customCell: (_record: MergeRow, index?: number) => getGroupCellProps(index),
+  },
+  {
+    title: 'Name',
+    dataIndex: 'name',
+    key: 'name',
+    width: 180,
+    customRender: ({ text, record, index }: { text: string; record: MergeRow; index: number }) =>
+      index === 4
+        ? {
+            children: `${text} / ${record.score}`,
+            props: { colSpan: 2 },
+          }
+        : text,
+  },
+  {
+    title: 'Score',
+    dataIndex: 'score',
+    key: 'score',
+    width: 100,
+    align: 'right',
+    customRender: ({ text, index }: { text: number; index: number }) =>
+      index === 4 ? { children: text, props: { colSpan: 0 } } : text,
+  },
+  { title: 'Address', dataIndex: 'address', key: 'address', width: 260 },
 ]
 </script>
 
@@ -255,6 +381,84 @@ const resizeColumns: ColumnsType<DemoRow> = [
               size="md"
               row-key="key"
               @resize-column="(col: any, w: number) => console.log('resize', col.title, w)"
+            />
+          </article>
+        </div>
+      </section>
+
+      <!-- 06 Grouped Header + Header colSpan -->
+      <section class="play-case">
+        <header class="play-case__header">
+          <div>
+            <p class="play-case__index">Case 06</p>
+            <h2>多级表头 + 表头 colSpan</h2>
+          </div>
+          <p class="play-case__desc">
+            使用 children 构建多级表头，表头合并只走 column.colSpan，不扩展 header rowSpan API
+          </p>
+        </header>
+        <div class="play-compare-grid">
+          <article class="play-panel">
+            <div class="play-panel__head">
+              <h3>ant-design-vue <span class="play-badge">reference</span></h3>
+            </div>
+            <ATable
+              :data-source="dataSource.slice(0, 4)"
+              :columns="antGroupedColumns as any"
+              :scroll="{ x: 960 }"
+              :pagination="false"
+              size="middle"
+              row-key="key"
+            />
+          </article>
+          <article class="play-panel play-panel--accent">
+            <div class="play-panel__head">
+              <h3>VTable <span class="play-badge play-badge--accent">guild</span></h3>
+            </div>
+            <VTable
+              :data-source="dataSource.slice(0, 4)"
+              :columns="groupedColumns"
+              :scroll="{ x: 960 }"
+              size="md"
+              row-key="key"
+            />
+          </article>
+        </div>
+      </section>
+
+      <!-- 07 Body rowSpan / colSpan -->
+      <section class="play-case">
+        <header class="play-case__header">
+          <div>
+            <p class="play-case__index">Case 07</p>
+            <h2>单元格合并 rowSpan / colSpan</h2>
+          </div>
+          <p class="play-case__desc">
+            body 支持 customCell 与 customRender(RenderedCell) 合并；virtual=true 不支持该能力
+          </p>
+        </header>
+        <div class="play-compare-grid">
+          <article class="play-panel">
+            <div class="play-panel__head">
+              <h3>ant-design-vue <span class="play-badge">reference</span></h3>
+            </div>
+            <ATable
+              :data-source="mergeDataSource"
+              :columns="antMergedColumns as any"
+              :pagination="false"
+              size="middle"
+              row-key="key"
+            />
+          </article>
+          <article class="play-panel play-panel--accent">
+            <div class="play-panel__head">
+              <h3>VTable <span class="play-badge play-badge--accent">guild</span></h3>
+            </div>
+            <VTable
+              :data-source="mergeDataSource"
+              :columns="mergedColumns"
+              size="md"
+              row-key="key"
             />
           </article>
         </div>

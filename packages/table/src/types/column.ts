@@ -1,4 +1,4 @@
-import type { VNodeChild } from 'vue'
+import type { CSSProperties, VNodeChild } from 'vue'
 import type { CustomFilterDropdownSlotProps } from './table'
 
 /** 行唯一标识 */
@@ -14,18 +14,45 @@ export type SortOrder = 'ascend' | 'descend' | null
 export type SorterFn<TRecord> = (a: TRecord, b: TRecord) => number
 export type ColumnSorter<TRecord> = boolean | SorterFn<TRecord>
 
+export interface CellAdditionalProps {
+  class?: string
+  className?: string
+  style?: CSSProperties
+  colSpan?: number
+  rowSpan?: number
+  colspan?: number
+  rowspan?: number
+  onClick?: (event: MouseEvent) => void
+  onMouseenter?: (event: MouseEvent) => void
+  onMouseleave?: (event: MouseEvent) => void
+  [key: string]: unknown
+}
+
+export interface RenderedCell {
+  props?: CellAdditionalProps
+  children?: VNodeChild
+}
+
+export type GetComponentProps<
+  TData,
+  TRecord extends Record<string, unknown> = Record<string, unknown>,
+> = (data: TData, index?: number, column?: ColumnType<TRecord>) => CellAdditionalProps
+
 /**
  * 叶子列配置。
  */
 export interface ColumnType<TRecord extends Record<string, unknown>> {
   key?: Key
-  title?: string
+  title?: VNodeChild
   dataIndex?: DataIndex
   width?: number | string
   align?: AlignType
   ellipsis?: boolean
   className?: string
-  customRender?: (ctx: CustomRenderContext<TRecord>) => VNodeChild
+  colSpan?: number
+  customRender?: (ctx: CustomRenderContext<TRecord>) => VNodeChild | RenderedCell
+  customCell?: GetComponentProps<TRecord, TRecord>
+  customHeaderCell?: GetComponentProps<ColumnType<TRecord> | ColumnGroupType<TRecord>, TRecord>
 
   /** 固定列。'left' 固定到左侧，'right' 固定到右侧。 */
   fixed?: 'left' | 'right'
@@ -165,10 +192,14 @@ export type DataIndex = string | number | Array<string | number>
 export interface CustomRenderContext<TRecord extends Record<string, unknown>> {
   /** 当前单元格的值（通过 dataIndex 取出） */
   text: unknown
+  /** 与 ant-design-vue 对齐的 value 别名 */
+  value: unknown
   /** 当前行数据 */
   record: TRecord
   /** 行索引 */
   index: number
+  /** 当前渲染行索引 */
+  renderIndex: number
   /** 列配置 */
   column: ColumnType<TRecord>
 }
