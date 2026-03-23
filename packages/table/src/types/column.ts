@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { CSSProperties, VNodeChild } from 'vue'
 import type { CustomFilterDropdownSlotProps } from './table'
 
@@ -11,22 +12,29 @@ export type AlignType = 'left' | 'center' | 'right'
 export type SortOrder = 'ascend' | 'descend' | null
 
 /** 排序器：布尔值表示使用默认排序，函数表示自定义比较 */
-export type SorterFn<TRecord> = (a: TRecord, b: TRecord) => number
-export interface ColumnSorterObject<TRecord> {
+export type SorterFn<TRecord = Record<string, any>> = (a: TRecord, b: TRecord) => number
+export interface ColumnSorterObject<TRecord = Record<string, any>> {
   compare?: SorterFn<TRecord>
   multiple?: number
 }
-export type ColumnSorter<TRecord> = boolean | SorterFn<TRecord> | ColumnSorterObject<TRecord>
+export type ColumnSorter<TRecord = Record<string, any>> =
+  | boolean
+  | SorterFn<TRecord>
+  | ColumnSorterObject<TRecord>
 export type Breakpoint = 'xxxl' | 'xxl' | 'xl' | 'lg' | 'md' | 'sm' | 'xs'
 export type TableLayout = 'auto' | 'fixed'
-export type RowClassName<TRecord> = (record: TRecord, index: number, indent: number) => string
+export type RowClassName<TRecord = Record<string, any>> = (
+  record: TRecord,
+  index: number,
+  indent: number,
+) => string
 export interface TableSticky {
   offsetHeader?: number
   offsetSummary?: number
   offsetScroll?: number
   getContainer?: () => Window | HTMLElement
 }
-export type TransformCellText<TRecord extends object> = (opt: {
+export type TransformCellText<TRecord extends object = Record<string, any>> = (opt: {
   text: unknown
   column: ColumnType<TRecord>
   record: TRecord
@@ -52,13 +60,13 @@ export interface RenderedCell {
   children?: VNodeChild
 }
 
-export type GetComponentProps<TData, TRecord extends object = Record<string, unknown>> = (
+export type GetComponentProps<TData> = (
   data: TData,
   index?: number,
-  column?: ColumnType<TRecord>,
-) => CellAdditionalProps
+  column?: ColumnType<any>,
+) => CellAdditionalProps | undefined
 
-export interface ColumnTitleProps<TRecord extends object> {
+export interface ColumnTitleProps<TRecord extends object = Record<string, any>> {
   sortOrder?: SortOrder
   sortColumn?: ColumnType<TRecord>
   sortColumns?: Array<{
@@ -68,14 +76,14 @@ export interface ColumnTitleProps<TRecord extends object> {
   filters?: Record<string, (string | number | boolean)[] | null>
 }
 
-export type ColumnTitle<TRecord extends object> =
+export type ColumnTitle<TRecord extends object = Record<string, any>> =
   | VNodeChild
   | ((props: ColumnTitleProps<TRecord>) => VNodeChild)
 
 /**
  * 叶子列配置。
  */
-export interface ColumnType<TRecord extends object> {
+export interface ColumnType<TRecord extends object = Record<string, any>> {
   key?: Key
   title?: ColumnTitle<TRecord>
   dataIndex?: DataIndex
@@ -85,8 +93,8 @@ export interface ColumnType<TRecord extends object> {
   className?: string
   colSpan?: number
   customRender?: (ctx: CustomRenderContext<TRecord>) => VNodeChild | RenderedCell
-  customCell?: GetComponentProps<TRecord, TRecord>
-  customHeaderCell?: GetComponentProps<ColumnType<TRecord> | ColumnGroupType<TRecord>, TRecord>
+  customCell?: GetComponentProps<TRecord>
+  customHeaderCell?: GetComponentProps<ColumnType<TRecord> | ColumnGroupType<TRecord>>
 
   /** 固定列。'left' 固定到左侧，'right' 固定到右侧。 */
   fixed?: 'left' | 'right'
@@ -229,7 +237,7 @@ export type DataIndex = string | number | Array<string | number>
 /**
  * customRender 回调参数。
  */
-export interface CustomRenderContext<TRecord extends object> {
+export interface CustomRenderContext<TRecord extends object = Record<string, any>> {
   /** 当前单元格的值（通过 dataIndex 取出） */
   text: unknown
   /** 与 ant-design-vue 对齐的 value 别名 */
@@ -247,7 +255,7 @@ export interface CustomRenderContext<TRecord extends object> {
 /**
  * 列组配置（含 children）。
  */
-export interface ColumnGroupType<TRecord extends object> extends Omit<
+export interface ColumnGroupType<TRecord extends object = Record<string, any>> extends Omit<
   ColumnType<TRecord>,
   | 'dataIndex'
   | 'customRender'
@@ -276,7 +284,7 @@ export interface ColumnGroupType<TRecord extends object> extends Omit<
 /**
  * columns prop 的类型。
  */
-export type ColumnsType<TRecord extends object> = Array<
+export type ColumnsType<TRecord extends object = Record<string, any>> = Array<
   ColumnType<TRecord> | ColumnGroupType<TRecord>
 >
 

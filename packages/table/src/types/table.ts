@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type {
   DeepPartial,
   LocaleName,
@@ -5,12 +6,7 @@ import type {
   SlotProps,
   VTableGuildTableLocale,
 } from '@vtable-guild/core'
-import type {
-  AllowedComponentProps,
-  ComponentCustomProps,
-  VNodeChild,
-  VNodeProps,
-} from 'vue'
+import type { AllowedComponentProps, ComponentCustomProps, VNodeChild, VNodeProps } from 'vue'
 import type {
   ColumnsType,
   ColumnType,
@@ -19,6 +15,7 @@ import type {
   Key,
   RowClassName,
   GetComponentProps,
+  CellAdditionalProps,
   RenderedCell,
   TableLayout,
   TableSticky,
@@ -109,7 +106,7 @@ export interface RowSelection<TRecord = Record<string, unknown>> {
 /**
  * bodyCell slot 的参数类型。
  */
-export interface TableBodyCellSlotProps<TRecord extends object> {
+export interface TableBodyCellSlotProps<TRecord extends object = Record<string, any>> {
   text: unknown
   record: TRecord
   index: number
@@ -119,7 +116,7 @@ export interface TableBodyCellSlotProps<TRecord extends object> {
 /**
  * headerCell slot 的参数类型。
  */
-export interface TableHeaderCellSlotProps<TRecord extends object> {
+export interface TableHeaderCellSlotProps<TRecord extends object = Record<string, any>> {
   title: VNodeChild | undefined
   column: ColumnType<TRecord> | ColumnGroupType<TRecord>
   index: number
@@ -128,7 +125,7 @@ export interface TableHeaderCellSlotProps<TRecord extends object> {
 /**
  * customFilterDropdown slot 的参数类型。
  */
-export interface CustomFilterDropdownSlotProps<TRecord extends object> {
+export interface CustomFilterDropdownSlotProps<TRecord extends object = Record<string, any>> {
   column: ColumnType<TRecord>
   selectedKeys: (string | number | boolean)[]
   setSelectedKeys: (keys: (string | number | boolean)[]) => void
@@ -142,14 +139,14 @@ export interface CustomFilterDropdownSlotProps<TRecord extends object> {
 /**
  * title / footer slot 的参数类型。
  */
-export interface TableDataSlotProps<TRecord extends object> {
+export interface TableDataSlotProps<TRecord extends object = Record<string, any>> {
   data: TRecord[]
 }
 
 /**
  * Table 组件 slots 声明。
  */
-export interface TableSlotsDecl<TRecord extends object> {
+export interface TableSlotsDecl<TRecord extends object = Record<string, any>> {
   bodyCell?: (props: TableBodyCellSlotProps<TRecord>) => VNodeChild
   headerCell?: (props: TableHeaderCellSlotProps<TRecord>) => VNodeChild
   empty?: () => VNodeChild
@@ -164,7 +161,7 @@ export interface TableSlotsDecl<TRecord extends object> {
 /**
  * Table 组件 Props。
  */
-export interface TableProps<TRecord extends object = Record<string, unknown>> {
+export interface TableProps<TRecord extends object = Record<string, any>> {
   /** 数据源 */
   dataSource: TRecord[]
   /** 列配置 */
@@ -196,13 +193,13 @@ export interface TableProps<TRecord extends object = Record<string, unknown>> {
   rowClassName?: string | RowClassName<TRecord>
 
   /** 自定义行 props */
-  customRow?: GetComponentProps<TRecord, TRecord>
+  customRow?: GetComponentProps<TRecord>
 
   /** 自定义表头行 props */
   customHeaderRow?: (
     columns: Array<ColumnType<TRecord> | ColumnGroupType<TRecord>>,
     index?: number,
-  ) => ReturnType<GetComponentProps<ColumnType<TRecord>[], TRecord>>
+  ) => CellAdditionalProps
 
   /**
    * 表级别控制是否显示排序 tooltip，默认 true。
@@ -276,7 +273,7 @@ export interface TableProps<TRecord extends object = Record<string, unknown>> {
 /** change 事件中的 filters 参数 */
 export type TableFiltersInfo = Record<string, (string | number | boolean)[] | null>
 
-export interface SorterResultLike<TRecord extends object> {
+export interface SorterResultLike<TRecord extends object = Record<string, any>> {
   column: ColumnType<TRecord> | undefined
   columnKey: Key | undefined
   order: SortOrder
@@ -284,18 +281,18 @@ export interface SorterResultLike<TRecord extends object> {
 }
 
 /** change 事件中的 extra 参数 */
-export interface TableChangeExtra<TRecord extends object> {
+export interface TableChangeExtra<TRecord extends object = Record<string, any>> {
   /** 触发变化的来源 */
   action: 'sort' | 'filter' | 'select'
   /** 当前显示的数据（经排序/筛选后） */
   currentDataSource: TRecord[]
 }
 
-export type VTableSorterResult<TRecord extends object> =
+export type VTableSorterResult<TRecord extends object = Record<string, any>> =
   | SorterResultLike<TRecord>
   | Array<SorterResultLike<TRecord>>
 
-export interface VTableEventProps<TRecord extends object = Record<string, unknown>> {
+export interface VTableEventProps<TRecord extends object = Record<string, any>> {
   onChange?: (
     filters: TableFiltersInfo,
     sorter: VTableSorterResult<TRecord>,
@@ -304,10 +301,10 @@ export interface VTableEventProps<TRecord extends object = Record<string, unknow
   onResizeColumn?: (column: ColumnType<TRecord>, width: number) => void
 }
 
-export type VTablePublicProps<TRecord extends object = Record<string, unknown>> = TableProps<TRecord> &
+export type VTablePublicProps<TRecord extends object = Record<string, any>> = TableProps<TRecord> &
   VTableEventProps<TRecord>
 
-export declare class VTableGeneric<TRecord extends object = Record<string, unknown>> {
+export declare class VTableGeneric<TRecord extends object = Record<string, any>> {
   readonly $props: VTablePublicProps<TRecord> &
     VNodeProps &
     AllowedComponentProps &
