@@ -5,6 +5,7 @@ import type {
   RenderedCell,
   TableBodyCellSlotProps,
 } from '../types'
+import { ensureValidVNode } from './vnode'
 
 export interface ResolvedBodyCell {
   content: VNodeChild
@@ -95,12 +96,15 @@ export function resolveBodyCell<TRecord extends Record<string, unknown>>(options
       content = rendered
     }
   } else if (bodyCell) {
-    content = bodyCell({
+    const slotContent = bodyCell({
       text: transformedText,
       record,
       index: rowIndex,
       column,
     })
+    if (ensureValidVNode(slotContent) !== null) {
+      content = slotContent
+    }
   }
 
   const colSpan = getCellSpan(renderCellProps, 'colSpan') ?? getCellSpan(customCellProps, 'colSpan')

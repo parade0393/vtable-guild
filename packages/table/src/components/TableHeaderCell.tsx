@@ -17,6 +17,7 @@ import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 import type { HeaderCellMeta } from '../composables/useColumns'
 import { getColumnKey } from '../composables/useSorter'
 import { getCellSpan, omitCellProps } from '../utils/cell'
+import { ensureValidVNode } from '../utils/vnode'
 import SortButton from './SortButton'
 import FilterIcon from './FilterIcon'
 import FilterDropdown from './FilterDropdown'
@@ -320,11 +321,14 @@ export default defineComponent({
 
     const headerContent = computed(() => {
       if (tableContext.headerCell) {
-        return tableContext.headerCell({
+        const slotContent = tableContext.headerCell({
           title: resolvedHeaderTitle.value,
           column: props.cell.column,
           index: props.index,
         })
+        if (ensureValidVNode(slotContent) !== null) {
+          return slotContent
+        }
       }
 
       return resolvedHeaderTitle.value
