@@ -266,8 +266,11 @@ export const antdvTableTheme = {
     },
     bordered: {
       true: {
-        table: 'border border-[var(--vtg-table-border-color)]',
-        th: 'border-r border-[var(--vtg-table-border-color)] last:border-r-0 before:hidden',
+        table: 'border border-[var(--vtg-table-border-color)] rounded-t-[8px]',
+        th: [
+          'border-r border-[var(--vtg-table-border-color)] last:border-r-0 before:hidden',
+          'first:rounded-tl-[8px] last:rounded-tr-[8px]',
+        ].join(' '),
         td: 'border-r border-[var(--vtg-table-border-color)] last:border-r-0',
         title: 'border-b border-[var(--vtg-table-border-color)]',
         footer: 'border-t border-[var(--vtg-table-border-color)]',
