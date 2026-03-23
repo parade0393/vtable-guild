@@ -42,5 +42,10 @@ export const router = createRouter({
       name: 'tree',
       component: () => import('./pages/TreePage.vue'),
     },
+    {
+      path: '/antdv-full',
+      name: 'antdv-full',
+      component: () => import('./pages/AntdvFull.vue'),
+    },
   ],
 })

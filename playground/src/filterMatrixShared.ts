@@ -184,7 +184,7 @@ export const ellipsisDemoColumns: ColumnType<DemoRow>[] = [
   { title: 'Name', dataIndex: 'name', key: 'ellipsis-name', width: 140 },
   { title: 'Team', dataIndex: 'team', key: 'ellipsis-team', width: 140 },
   {
-    title: 'Role',
+    title: 'Long Column Long Column Long Column Long Column Long Column Long Column',
     dataIndex: 'role',
     key: 'ellipsis-role',
     width: 180,

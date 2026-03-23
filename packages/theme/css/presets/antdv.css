@@ -109,6 +109,7 @@
   --vtg-radio-dot-size: 8px;
   --vtg-radio-border-width: 1px;
   --vtg-tooltip-bg: rgb(0 0 0 / 85%);
+  --vtg-tooltip-arrow-outer-color: rgb(0 0 0 / 85%);
   --vtg-tooltip-border-radius: 6px;
   --vtg-tooltip-padding: 6px 8px;
   --vtg-tooltip-font-size: 14px;

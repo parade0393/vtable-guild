@@ -62,7 +62,7 @@ export const antdvTableTheme = {
       'bg-[color:var(--vtg-table-loading-overlay-bg)]',
     ].join(' '),
     headerCellInner: 'flex items-center',
-    bodyCellEllipsis: 'overflow-hidden text-ellipsis whitespace-nowrap',
+    bodyCellEllipsis: 'block min-w-0 overflow-hidden text-ellipsis whitespace-nowrap',
 
     // ---- 排序相关 ----
     thSortable: 'cursor-pointer select-none hover:bg-[var(--vtg-table-header-sort-hover-bg)]',

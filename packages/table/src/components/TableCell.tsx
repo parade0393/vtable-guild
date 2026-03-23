@@ -1,5 +1,5 @@
-import { computed, defineComponent, inject, type PropType, type VNodeChild } from 'vue'
-import { cn } from '@vtable-guild/core'
+import { computed, defineComponent, inject, ref, type PropType, type VNodeChild } from 'vue'
+import { cn, Tooltip } from '@vtable-guild/core'
 import { TABLE_ALIGN_CLASSES } from '@vtable-guild/theme'
 import type { CellAdditionalProps, ColumnType } from '../types'
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
@@ -31,6 +31,8 @@ export default defineComponent({
   },
   setup(props) {
     const tableContext = inject(TABLE_CONTEXT_KEY, {} as TableContext)
+    const ellipsisContentRef = ref<HTMLElement | null>(null)
+    const ellipsisTooltipOpen = ref(false)
 
     const resolvedCell = computed(
       () =>
@@ -169,6 +171,22 @@ export default defineComponent({
         ...cellStyle.value,
         ...((extraStyle as Record<string, string> | undefined) ?? {}),
       }
+    }
+
+    function updateEllipsisTooltipState() {
+      const contentEl = ellipsisContentRef.value
+      const tooltipText = resolvedCell.value.tooltipText
+
+      ellipsisTooltipOpen.value = Boolean(
+        contentEl &&
+        tooltipText &&
+        (contentEl.scrollWidth > contentEl.clientWidth ||
+          contentEl.scrollHeight > contentEl.clientHeight),
+      )
+    }
+
+    function closeEllipsisTooltip() {
+      ellipsisTooltipOpen.value = false
     }
 
     return () => {
@@ -317,7 +335,21 @@ export default defineComponent({
         ) : null
 
       const mainContent = props.column.ellipsis ? (
-        <div class={props.bodyCellEllipsisClass}>{resolvedCell.value.content}</div>
+        <Tooltip
+          block
+          title={resolvedCell.value.tooltipText}
+          placement="top"
+          open={ellipsisTooltipOpen.value}
+        >
+          <div
+            ref={ellipsisContentRef}
+            class={props.bodyCellEllipsisClass}
+            onMouseenter={updateEllipsisTooltipState}
+            onMouseleave={closeEllipsisTooltip}
+          >
+            {resolvedCell.value.content}
+          </div>
+        </Tooltip>
       ) : (
         resolvedCell.value.content
       )

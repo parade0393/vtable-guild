@@ -104,9 +104,11 @@
   --vtg-radio-dot-size: 6px;
   --vtg-radio-border-width: 1px;
   --vtg-tooltip-bg: #303133;
+  --vtg-tooltip-arrow-outer-color: #414243;
   --vtg-tooltip-border-radius: 4px;
-  --vtg-tooltip-padding: 8px 12px;
+  --vtg-tooltip-padding: 5px 11px;
   --vtg-tooltip-font-size: 12px;
+  --vtg-tooltip-shadow: 0 0 12px rgb(0 0 0 / 12%);
 
   /* Input */
   --vtg-input-border-radius: 4px;
@@ -173,6 +175,7 @@
 
   /* tooltip */
   --vtg-tooltip-bg: #303133;
+  --vtg-tooltip-arrow-outer-color: #4c4d4f;
   --vtg-table-row-selected-bg: #18222c;
   --vtg-table-row-selected-hover-bg: #1d3043;
 

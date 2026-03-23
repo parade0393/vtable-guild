@@ -9,10 +9,20 @@ import { ensureValidVNode } from './vnode'
 
 export interface ResolvedBodyCell {
   content: VNodeChild
+  tooltipText?: string
   customCellProps?: CellAdditionalProps
   renderCellProps?: CellAdditionalProps
   colSpan: number
   rowSpan: number
+}
+
+function resolveTooltipText(value: unknown): string | undefined {
+  if (value == null) return undefined
+  if (typeof value === 'string') return value
+  if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
+    return String(value)
+  }
+  return undefined
 }
 
 export function isRenderedCell(value: unknown): value is RenderedCell {
@@ -112,6 +122,7 @@ export function resolveBodyCell<TRecord extends Record<string, unknown>>(options
 
   return {
     content,
+    tooltipText: resolveTooltipText(transformedText),
     customCellProps,
     renderCellProps,
     colSpan: colSpan ?? 1,

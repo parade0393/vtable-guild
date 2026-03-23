@@ -7,6 +7,8 @@
     "dev": "vite"
   },
   "dependencies": {
+    "@ant-design/icons-vue": "^7.0.1",
+    "@element-plus/icons-vue": "^2.3.2",
     "@vtable-guild/core": "workspace:*",
     "@vtable-guild/table": "workspace:*",
     "@vtable-guild/theme": "workspace:*",

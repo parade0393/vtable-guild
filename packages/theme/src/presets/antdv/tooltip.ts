@@ -18,12 +18,15 @@ export const antdvTooltipTheme = {
     content: [
       'text-white max-w-[250px] break-words relative',
       'text-[length:var(--vtg-tooltip-font-size)]',
+      'leading-[1.5715]',
       'bg-[color:var(--vtg-tooltip-bg)]',
       'rounded-[var(--vtg-tooltip-border-radius)]',
       'p-[var(--vtg-tooltip-padding)]',
       'shadow-[0_6px_16px_0_rgba(0,0,0,0.08),0_3px_6px_-4px_rgba(0,0,0,0.12),0_9px_28px_8px_rgba(0,0,0,0.05)]',
     ].join(' '),
-    arrow: 'absolute w-2 h-2 rotate-45 bg-[color:var(--vtg-tooltip-bg)]',
+    arrow: 'absolute block overflow-visible pointer-events-none',
+    arrowOuter: 'absolute inset-0 w-0 h-0',
+    arrowInner: 'absolute inset-0 w-0 h-0',
   },
   defaultVariants: {},
 } as const satisfies ThemeConfig
