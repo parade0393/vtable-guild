@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="TRecord extends object = Record<string, unknown>">
-import { computed, useAttrs } from 'vue'
+import { computed, getCurrentInstance } from 'vue'
 import TableImpl from './Table'
 import type {
   ColumnType,
@@ -19,19 +19,26 @@ defineOptions({
   name: 'VTable',
 })
 
-const props = defineProps<TableProps<TRecord>>()
+defineProps<TableProps<TRecord>>()
 
 const emit = defineEmits<{
-  change: [filters: TableFiltersInfo, sorter: VTableSorterResult<TRecord>, extra: TableChangeExtra<TRecord>]
+  change: [
+    filters: TableFiltersInfo,
+    sorter: VTableSorterResult<TRecord>,
+    extra: TableChangeExtra<TRecord>,
+  ]
   resizeColumn: [column: ColumnType<TRecord>, width: number]
 }>()
 
 defineSlots<TableSlotsDecl<TRecord>>()
 
-const attrs = useAttrs()
+const instance = getCurrentInstance()
 const forwardedBindings = computed(() => ({
-  ...(attrs as Record<string, unknown>),
-  ...(props as any),
+  ...Object.fromEntries(
+    Object.entries(instance?.vnode.props ?? {}).filter(
+      ([key]) => key !== 'onChange' && key !== 'onResizeColumn',
+    ),
+  ),
 }))
 
 function handleChange(
@@ -55,9 +62,7 @@ function asBodyCellSlotProps(slotProps: TableBodyCellSlotProps<Record<string, un
   return slotProps as unknown as TableBodyCellSlotProps<TRecord>
 }
 
-function asHeaderCellSlotProps(
-  slotProps: TableHeaderCellSlotProps<Record<string, unknown>>,
-) {
+function asHeaderCellSlotProps(slotProps: TableHeaderCellSlotProps<Record<string, unknown>>) {
   return slotProps as unknown as TableHeaderCellSlotProps<TRecord>
 }
 
