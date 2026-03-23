@@ -2,6 +2,8 @@ import {
   computed,
   defineComponent,
   inject,
+  onBeforeUnmount,
+  onMounted,
   provide,
   ref,
   watch,
@@ -52,8 +54,10 @@ import VirtualTableBody from './VirtualTableBody'
 import TableLoading from './TableLoading'
 import ColGroup from './ColGroup'
 import type {
+  Breakpoint,
   ColumnsType,
   ColumnType,
+  ColumnGroupType,
   Key,
   RowSelection,
   TableFiltersInfo,
@@ -63,13 +67,79 @@ import type {
 
 import type { SorterResult } from '../composables'
 
+type TableRecord = Record<string, unknown>
+
+const RESPONSIVE_BREAKPOINTS: Array<[Breakpoint, number]> = [
+  ['xxxl', 2000],
+  ['xxl', 1600],
+  ['xl', 1200],
+  ['lg', 992],
+  ['md', 768],
+  ['sm', 576],
+  ['xs', 0],
+]
+
+function resolveMatchedBreakpoints(): Set<Breakpoint> {
+  if (typeof window === 'undefined') {
+    return new Set(['md', 'sm', 'xs'])
+  }
+
+  const width = window.innerWidth
+  const screens = new Set<Breakpoint>()
+
+  RESPONSIVE_BREAKPOINTS.forEach(([breakpoint, minWidth]) => {
+    if (breakpoint === 'xs') {
+      if (width < 576) {
+        screens.add('xs')
+      }
+      return
+    }
+
+    if (width >= minWidth) {
+      screens.add(breakpoint)
+    }
+  })
+
+  return screens
+}
+
+function filterResponsiveColumns<TRecord extends Record<string, unknown>>(
+  columns: ColumnsType<TRecord>,
+  screens: Set<Breakpoint>,
+): ColumnsType<TRecord> {
+  return columns.reduce<ColumnsType<TRecord>>((result, column) => {
+    if (
+      column.responsive?.length &&
+      !column.responsive.some((breakpoint) => screens.has(breakpoint))
+    ) {
+      return result
+    }
+
+    if ('children' in column && Array.isArray(column.children)) {
+      const children = filterResponsiveColumns(column.children, screens)
+      if (children.length === 0) {
+        return result
+      }
+
+      result.push({
+        ...column,
+        children,
+      } as ColumnGroupType<TRecord>)
+      return result
+    }
+
+    result.push(column)
+    return result
+  }, [])
+}
+
 export default defineComponent({
   name: 'VTable',
   props: {
-    dataSource: { type: Array as PropType<Record<string, unknown>[]>, default: () => [] },
-    columns: { type: Array as PropType<ColumnsType<Record<string, unknown>>>, default: () => [] },
+    dataSource: { type: Array as PropType<TableRecord[]>, default: () => [] },
+    columns: { type: Array as PropType<ColumnsType<TableRecord>>, default: () => [] },
     rowKey: {
-      type: [String, Function] as PropType<string | ((record: Record<string, unknown>) => Key)>,
+      type: [String, Function] as PropType<string | ((record: TableRecord) => Key)>,
       default: undefined,
     },
     loading: { type: Boolean, default: false },
@@ -77,12 +147,46 @@ export default defineComponent({
     bordered: { type: Boolean, default: false },
     striped: { type: Boolean, default: false },
     hoverable: { type: Boolean, default: true },
+    tableLayout: {
+      type: String as PropType<'auto' | 'fixed'>,
+      default: undefined,
+    },
+    showHeader: { type: Boolean, default: true },
+    rowClassName: {
+      type: [String, Function] as PropType<
+        string | ((record: TableRecord, index: number, indent: number) => string)
+      >,
+      default: undefined,
+    },
+    customRow: {
+      type: Function as PropType<
+        (
+          record: TableRecord,
+          index?: number,
+          column?: ColumnType<TableRecord>,
+        ) => Record<string, unknown>
+      >,
+      default: undefined,
+    },
+    customHeaderRow: {
+      type: Function as PropType<
+        (
+          columns: Array<ColumnType<TableRecord> | ColumnGroupType<TableRecord>>,
+          index?: number,
+        ) => Record<string, unknown>
+      >,
+      default: undefined,
+    },
     ui: {
       type: Object as PropType<SlotProps<{ slots: Record<TableSlots, string> }>>,
       default: undefined,
     },
     class: { type: String, default: undefined },
     showSorterTooltip: { type: Boolean, default: undefined },
+    sortDirections: {
+      type: Array as PropType<Array<'ascend' | 'descend' | null>>,
+      default: undefined,
+    },
     locale: {
       type: String as PropType<LocaleName>,
       default: undefined,
@@ -95,16 +199,37 @@ export default defineComponent({
       type: Object as PropType<DeepPartial<VTableGuildTableLocale>>,
       default: undefined,
     },
+    sticky: {
+      type: [Boolean, Object] as PropType<
+        boolean | { offsetHeader?: number; offsetSummary?: number; offsetScroll?: number }
+      >,
+      default: undefined,
+    },
+    getPopupContainer: {
+      type: Function as PropType<(triggerNode: HTMLElement) => HTMLElement>,
+      default: undefined,
+    },
+    transformCellText: {
+      type: Function as PropType<
+        (options: {
+          text: unknown
+          column: ColumnType<TableRecord>
+          record: TableRecord
+          index: number
+        }) => unknown
+      >,
+      default: undefined,
+    },
     rowSelection: {
-      type: Object as PropType<RowSelection>,
+      type: Object as PropType<Record<string, unknown>>,
       default: undefined,
     },
     title: {
-      type: Function as PropType<(data: Record<string, unknown>[]) => VNodeChild>,
+      type: Function as PropType<(data: TableRecord[]) => VNodeChild>,
       default: undefined,
     },
     footer: {
-      type: Function as PropType<(data: Record<string, unknown>[]) => VNodeChild>,
+      type: Function as PropType<(data: TableRecord[]) => VNodeChild>,
       default: undefined,
     },
     scroll: {
@@ -112,7 +237,7 @@ export default defineComponent({
       default: undefined,
     },
     expandable: {
-      type: Object as PropType<Expandable>,
+      type: Object as PropType<Record<string, unknown>>,
       default: undefined,
     },
     virtual: { type: Boolean, default: false },
@@ -128,7 +253,7 @@ export default defineComponent({
     },
     defaultExpandAllRows: { type: Boolean, default: false },
     onExpand: {
-      type: Function as PropType<(expanded: boolean, record: Record<string, unknown>) => void>,
+      type: Function as PropType<(expanded: boolean, record: TableRecord) => void>,
       default: undefined,
     },
     onExpandedRowsChange: {
@@ -139,7 +264,7 @@ export default defineComponent({
   emits: {
     change: (
       _filters: TableFiltersInfo,
-      _sorter: SorterResult,
+      _sorter: SorterResult<Record<string, unknown>>,
       _extra: TableChangeExtra<Record<string, unknown>>,
     ) => true,
     resizeColumn: (_column: ColumnType<Record<string, unknown>>, _width: number) => true,
@@ -262,37 +387,55 @@ export default defineComponent({
       )
     })
 
+    const matchedResponsiveBreakpoints = ref<Set<Breakpoint>>(resolveMatchedBreakpoints())
+
+    function updateResponsiveBreakpoints() {
+      matchedResponsiveBreakpoints.value = resolveMatchedBreakpoints()
+    }
+
+    onMounted(() => {
+      updateResponsiveBreakpoints()
+      window.addEventListener('resize', updateResponsiveBreakpoints)
+    })
+
+    onBeforeUnmount(() => {
+      window.removeEventListener('resize', updateResponsiveBreakpoints)
+    })
+
+    const responsiveColumns = computed(() =>
+      filterResponsiveColumns(props.columns, matchedResponsiveBreakpoints.value),
+    )
+
+    const resolvedSticky = computed(() =>
+      props.sticky === true ? {} : typeof props.sticky === 'object' ? props.sticky : undefined,
+    )
+
     // ---- 原始数据列 ----
-    const { leafColumns: dataLeafColumns } = useColumns(() => props.columns)
+    const { leafColumns: dataLeafColumns } = useColumns(() => responsiveColumns.value)
 
     // ---- 排序 ----
-    const { getSortOrder, toggleSortOrder, sortData, sorterState } = useSorter({
-      columns: () => dataLeafColumns.value,
-      onSorterChange(sorterResult) {
-        const processedData = getProcessedData()
-        emit('change', getAllFilters(), sorterResult, {
-          action: 'sort',
-          currentDataSource: processedData,
-        })
-      },
-    })
+    const { getSortOrder, toggleSortOrder, sortData, sorterState, sorterResult, sortColumns } =
+      useSorter({
+        columns: () => dataLeafColumns.value,
+        tableSortDirections: () => props.sortDirections,
+        onSorterChange(sorterResult) {
+          const processedData = getProcessedData()
+          emit('change', getAllFilters(), sorterResult, {
+            action: 'sort',
+            currentDataSource: processedData,
+          })
+        },
+      })
 
     // ---- 筛选 ----
     const { getFilteredValue, confirmFilter, resetFilter, getAllFilters, filterData } = useFilter({
       columns: () => dataLeafColumns.value,
       onFilterChange(filters) {
         const processedData = getProcessedData()
-        emit(
-          'change',
-          filters,
-          {
-            column: sorterState.value.column,
-            columnKey: sorterState.value.columnKey,
-            order: sorterState.value.order,
-            field: sorterState.value.column?.dataIndex,
-          },
-          { action: 'filter', currentDataSource: processedData },
-        )
+        emit('change', filters, sorterResult.value, {
+          action: 'filter',
+          currentDataSource: processedData,
+        })
       },
     })
 
@@ -344,6 +487,7 @@ export default defineComponent({
       selectedKeySet: _selectedKeySet,
       isSelected: selIsSelected,
       isDisabled: selIsDisabled,
+      getSelectionState: selGetSelectionState,
       toggleRow: selToggleRow,
       toggleAll: selToggleAll,
       allCheckedState: selAllCheckedState,
@@ -351,36 +495,36 @@ export default defineComponent({
       clearSelection: selClearSelection,
       getChangeableRowKeys: selGetChangeableRowKeys,
     } = useSelection({
-      rowSelection: () => props.rowSelection,
+      rowSelection: () => props.rowSelection as RowSelection<Record<string, unknown>> | undefined,
       getRowKey: getRowKeyFn,
-      data: () => displayData.value,
+      data: () => processedData.value,
+      visibleData: () => displayData.value,
+      childrenColumnName: () => props.childrenColumnName,
       onSelectionChange() {
-        emit(
-          'change',
-          getAllFilters(),
-          {
-            column: sorterState.value.column,
-            columnKey: sorterState.value.columnKey,
-            order: sorterState.value.order,
-            field: sorterState.value.column?.dataIndex,
-          },
-          { action: 'select', currentDataSource: displayData.value },
-        )
+        emit('change', getAllFilters(), sorterResult.value, {
+          action: 'select',
+          currentDataSource: displayData.value,
+        })
       },
     })
 
     // ---- 展开行 ----
     const { isExpanded: expIsExpanded, toggleExpand: expToggleExpand } = useExpand({
-      expandable: () => props.expandable,
+      expandable: () => props.expandable as Expandable<Record<string, unknown>> | undefined,
       getRowKey: getRowKeyFn,
       data: () => displayData.value,
     })
 
     const isRowExpandable = (record: Record<string, unknown>): boolean => {
-      const exp = props.expandable
+      const exp = props.expandable as Expandable<Record<string, unknown>> | undefined
       if (!exp) return false
       if (exp.rowExpandable) return exp.rowExpandable(record)
       return !!exp.expandedRowRender
+    }
+
+    const toggleExpandedRow = (record: Record<string, unknown>, index: number) => {
+      if (!isRowExpandable(record)) return
+      expToggleExpand(record, index)
     }
 
     // ---- displayColumns：选择列 + 展开列 + 原始列 ----
@@ -388,8 +532,8 @@ export default defineComponent({
     const EXPAND_COLUMN_KEY = '__vtg_expand__'
 
     const displayColumnTree = computed<ColumnsType<Record<string, unknown>>>(() => {
-      const cols: ColumnsType<Record<string, unknown>> = [...props.columns]
-      const exp = props.expandable
+      const cols: ColumnsType<Record<string, unknown>> = [...responsiveColumns.value]
+      const exp = props.expandable as Expandable<Record<string, unknown>> | undefined
       if (exp && exp.showExpandColumn !== false) {
         const expandCol: ColumnType<Record<string, unknown>> = {
           key: EXPAND_COLUMN_KEY,
@@ -400,13 +544,14 @@ export default defineComponent({
         }
         cols.unshift(expandCol)
       }
-      const sel = props.rowSelection
+      const sel = props.rowSelection as RowSelection<Record<string, unknown>> | undefined
       if (sel) {
         const selColumn: ColumnType<Record<string, unknown>> = {
           key: SELECTION_COLUMN_KEY,
           title: '',
           width: sel.columnWidth ?? 48,
           align: 'center',
+          fixed: sel.fixed === true ? 'left' : sel.fixed || undefined,
         }
         cols.unshift(selColumn)
       }
@@ -428,7 +573,40 @@ export default defineComponent({
       displayColumns: () => displayColumns.value,
     })
 
-    const hasStickyHeader = computed(() => !!props.scroll?.y)
+    const hasStickyHeader = computed(
+      () => props.showHeader !== false && (!!props.scroll?.y || !!props.sticky),
+    )
+
+    const hasFixedColumns = computed(() =>
+      displayColumns.value.some((column) => column.fixed === 'left' || column.fixed === 'right'),
+    )
+
+    const hasSizedDataColumns = computed(() =>
+      dataLeafColumns.value.some((column) => column.width !== undefined),
+    )
+
+    const shouldExpandTableWidth = computed(
+      () =>
+        props.scroll?.x !== undefined ||
+        hasFixedColumns.value ||
+        (!!props.scroll?.y && hasSizedDataColumns.value),
+    )
+
+    const resolvedTableLayout = computed(() => {
+      if (props.tableLayout) return props.tableLayout
+      if (props.scroll?.y || props.scroll?.x || hasFixedColumns.value) return 'fixed'
+      return 'auto'
+    })
+
+    const stickyHeaderStyle = computed<Record<string, string> | undefined>(() => {
+      if (!resolvedSticky.value) return undefined
+
+      return {
+        position: 'sticky',
+        top: `${resolvedSticky.value.offsetHeader ?? 0}px`,
+        zIndex: '4',
+      }
+    })
 
     // ---- 虚拟滚动 ----
     const {
@@ -510,6 +688,59 @@ export default defineComponent({
         emit('resizeColumn', column, width)
       },
     })
+
+    function getRowIndent(record: Record<string, unknown>): number {
+      return isTreeData.value
+        ? (treeFlattenData.value.find((row) => row.record === record)?.level ?? 0)
+        : 0
+    }
+
+    function getResolvedRowClassName(record: Record<string, unknown>, index: number): string {
+      if (!props.rowClassName) return ''
+      if (typeof props.rowClassName === 'function') {
+        return props.rowClassName(record, index, getRowIndent(record))
+      }
+      return props.rowClassName
+    }
+
+    function getResolvedRowProps(record: Record<string, unknown>, index: number) {
+      return props.customRow?.(record, index)
+    }
+
+    function getResolvedHeaderRowProps(
+      columns: Array<
+        ColumnType<Record<string, unknown>> | ColumnGroupType<Record<string, unknown>>
+      >,
+      index: number,
+    ) {
+      return props.customHeaderRow?.(columns, index)
+    }
+
+    function getResolvedColumnTitle(
+      column: ColumnType<Record<string, unknown>> | ColumnGroupType<Record<string, unknown>>,
+    ) {
+      if (typeof column.title !== 'function') {
+        return column.title ?? ''
+      }
+
+      const sortableColumn = column as ColumnType<Record<string, unknown>>
+      const resolvedSortColumns = sortColumns.value.filter(
+        (item): item is { column: ColumnType<Record<string, unknown>>; order: typeof item.order } =>
+          !!item.column,
+      )
+
+      return column.title({
+        sortOrder: sortableColumn.sorter ? (getSortOrder(sortableColumn) ?? undefined) : undefined,
+        sortColumn: sorterState.value.column,
+        sortColumns: resolvedSortColumns.length > 0 ? resolvedSortColumns : undefined,
+        filters: getAllFilters(),
+      })
+    }
+
+    const scrollbarViewStyle = {
+      width: '100%',
+      minWidth: '100%',
+    } as const
 
     // ---- provide context ----
     const subThemeSlots = computed(() => ({
@@ -605,9 +836,10 @@ export default defineComponent({
       themePreset: effectiveThemePreset,
       localeName: effectiveLocaleName,
       locale: tableLocale,
-      rowSelection: () => props.rowSelection,
+      rowSelection: () => props.rowSelection as RowSelection<Record<string, unknown>> | undefined,
       isSelected: selIsSelected,
       isDisabledRow: selIsDisabled,
+      getSelectionState: selGetSelectionState,
       toggleRow: selToggleRow,
       toggleAll: selToggleAll,
       allCheckedState: () => selAllCheckedState.value,
@@ -618,9 +850,17 @@ export default defineComponent({
       fixedOffsets,
       scrollState,
       bordered: computed(() => props.bordered),
-      expandable: () => props.expandable,
+      tableLayout: resolvedTableLayout,
+      sticky: computed(() => props.sticky),
+      getRowProps: getResolvedRowProps,
+      getRowClassName: getResolvedRowClassName,
+      getHeaderRowProps: getResolvedHeaderRowProps,
+      getColumnTitle: getResolvedColumnTitle,
+      getPopupContainer: props.getPopupContainer,
+      transformCellText: props.transformCellText,
+      expandable: () => props.expandable as Expandable<Record<string, unknown>> | undefined,
       isExpanded: expIsExpanded,
-      toggleExpand: expToggleExpand,
+      toggleExpand: toggleExpandedRow,
       isRowExpandable,
       columnWidths: resizeColumnWidths,
       startResize: resizeStartResize,
@@ -652,7 +892,11 @@ export default defineComponent({
 
       // ---- scroll style ----
       const scroll = props.scroll
-      const tableStyle: Record<string, string> = {}
+      const tableStyle: Record<string, string> = {
+        width: shouldExpandTableWidth.value ? 'max-content' : '100%',
+        tableLayout: resolvedTableLayout.value,
+      }
+
       if (scroll?.x) {
         tableStyle.minWidth = typeof scroll.x === 'number' ? `${scroll.x}px` : scroll.x
       }
@@ -667,6 +911,28 @@ export default defineComponent({
 
       // ---- Dual-table mode (scroll.y set) ----
       if (hasStickyHeader.value) {
+        const headerTable =
+          props.showHeader !== false ? (
+            <div
+              ref={headerWrapRef}
+              class={themeSlots.headerWrapper()}
+              style={stickyHeaderStyle.value}
+            >
+              <div class="block w-full min-w-full">
+                <table class={tableClass.value} style={tableStyle}>
+                  <ColGroup columns={displayColumns.value} />
+                  <TableHeader
+                    rows={headerRows.value}
+                    theadClass={themeSlots.thead()}
+                    rowClass={themeSlots.tr()}
+                    thClass={thClass.value}
+                    headerCellInnerClass={themeSlots.headerCellInner()}
+                  />
+                </table>
+              </div>
+            </div>
+          ) : null
+
         // Virtual scroll body
         const virtualBody = virtualEnabled.value ? (
           <VirtualTableBody
@@ -693,8 +959,15 @@ export default defineComponent({
         const normalBody = !virtualEnabled.value ? (
           <Scrollbar
             ref={bodyScrollbarRef}
-            maxHeight={typeof scroll!.y === 'number' ? scroll!.y : String(scroll!.y)}
+            maxHeight={
+              scroll?.y !== undefined
+                ? typeof scroll.y === 'number'
+                  ? scroll.y
+                  : String(scroll.y)
+                : undefined
+            }
             wrapClass={themeSlots.bodyWrapper()}
+            viewStyle={scrollbarViewStyle}
             onScroll={handleBodyScroll}
           >
             <table class={tableClass.value} style={tableStyle}>
@@ -718,21 +991,7 @@ export default defineComponent({
           <div class={themeSlots.root()}>
             {titleContent && <div class={themeSlots.title()}>{titleContent}</div>}
             <div class={themeSlots.wrapper()}>
-              {/* Header table — fixed at top */}
-              <div ref={headerWrapRef} class={themeSlots.headerWrapper()}>
-                <div class="block min-w-full w-max">
-                  <table class={tableClass.value} style={tableStyle}>
-                    <ColGroup columns={displayColumns.value} />
-                    <TableHeader
-                      rows={headerRows.value}
-                      theadClass={themeSlots.thead()}
-                      rowClass={themeSlots.tr()}
-                      thClass={thClass.value}
-                      headerCellInnerClass={themeSlots.headerCellInner()}
-                    />
-                  </table>
-                </div>
-              </div>
+              {headerTable}
               {virtualBody}
               {normalBody}
               {loadingOverlay}
@@ -747,13 +1006,15 @@ export default defineComponent({
         <>
           <table class={tableClass.value} style={tableStyle}>
             <ColGroup columns={displayColumns.value} />
-            <TableHeader
-              rows={headerRows.value}
-              theadClass={themeSlots.thead()}
-              rowClass={themeSlots.tr()}
-              thClass={thClass.value}
-              headerCellInnerClass={themeSlots.headerCellInner()}
-            />
+            {props.showHeader !== false && (
+              <TableHeader
+                rows={headerRows.value}
+                theadClass={themeSlots.thead()}
+                rowClass={themeSlots.tr()}
+                thClass={thClass.value}
+                headerCellInnerClass={themeSlots.headerCellInner()}
+              />
+            )}
             <TableBody
               dataSource={displayData.value}
               columns={displayColumns.value}
@@ -776,6 +1037,7 @@ export default defineComponent({
           <Scrollbar
             ref={wrapperScrollbarRef}
             wrapClass={themeSlots.wrapper()}
+            viewStyle={scrollbarViewStyle}
             onScroll={handleBodyScroll}
           >
             {tableContent}

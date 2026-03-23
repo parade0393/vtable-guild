@@ -15,7 +15,7 @@ export default defineComponent({
         checked={props.checked}
         indeterminate={props.indeterminate}
         disabled={props.disabled}
-        onChange={(next: boolean) => emit('change', next)}
+        onChange={(next: boolean, e: MouseEvent) => emit('change', next, e)}
       />
     )
   },

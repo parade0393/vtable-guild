@@ -6,7 +6,20 @@ import type {
   VTableGuildTableLocale,
 } from '@vtable-guild/core'
 import type { VNodeChild } from 'vue'
-import type { ColumnsType, ColumnType, ColumnGroupType, ColumnFilterItem, Key } from './column'
+import type {
+  ColumnsType,
+  ColumnType,
+  ColumnGroupType,
+  ColumnFilterItem,
+  Key,
+  RowClassName,
+  GetComponentProps,
+  RenderedCell,
+  TableLayout,
+  TableSticky,
+  TransformCellText,
+  SortOrder,
+} from './column'
 import type { TableSlots } from '@vtable-guild/theme'
 
 // ---- 展开行类型 ----
@@ -29,6 +42,7 @@ export interface Expandable<TRecord = Record<string, unknown>> {
   expandIcon?: (props: {
     expanded: boolean
     record: TRecord
+    expandable: boolean
     onExpand: (record: TRecord, e: Event) => void
   }) => VNodeChild
   /** 展开/折叠回调 */
@@ -45,6 +59,8 @@ export interface Expandable<TRecord = Record<string, unknown>> {
   rowExpandable?: (record: TRecord) => boolean
   /** 是否显示展开列，默认 true */
   showExpandColumn?: boolean
+  /** 展开行 class */
+  expandedRowClassName?: string | RowClassName<TRecord>
 }
 
 // ---- 行选择类型 ----
@@ -58,15 +74,26 @@ export interface SelectionItem {
 }
 
 export interface RowSelection<TRecord = Record<string, unknown>> {
+  preserveSelectedRowKeys?: boolean
   type?: RowSelectionType
   selectedRowKeys?: Key[]
   defaultSelectedRowKeys?: Key[]
   onChange?: (selectedRowKeys: Key[], selectedRows: TRecord[]) => void
   onSelect?: (record: TRecord, selected: boolean, selectedRows: TRecord[]) => void
+  onSelectMultiple?: (selected: boolean, selectedRows: TRecord[], changeRows: TRecord[]) => void
   onSelectAll?: (selected: boolean, selectedRows: TRecord[], changeRows: TRecord[]) => void
+  onSelectInvert?: (selectedRowKeys: Key[]) => void
+  onSelectNone?: () => void
   getCheckboxProps?: (record: TRecord) => { disabled?: boolean; name?: string }
   columnWidth?: number | string
   fixed?: boolean | 'left' | 'right'
+  columnTitle?: string | VNodeChild
+  renderCell?: (
+    value: boolean,
+    record: TRecord,
+    index: number,
+    originNode: VNodeChild,
+  ) => VNodeChild | RenderedCell
   checkStrictly?: boolean
   /** 自定义选择项。true 显示默认项，数组显示自定义项 */
   selections?: boolean | SelectionItem[]
@@ -77,7 +104,7 @@ export interface RowSelection<TRecord = Record<string, unknown>> {
 /**
  * bodyCell slot 的参数类型。
  */
-export interface TableBodyCellSlotProps<TRecord extends Record<string, unknown>> {
+export interface TableBodyCellSlotProps<TRecord extends object> {
   text: unknown
   record: TRecord
   index: number
@@ -87,7 +114,7 @@ export interface TableBodyCellSlotProps<TRecord extends Record<string, unknown>>
 /**
  * headerCell slot 的参数类型。
  */
-export interface TableHeaderCellSlotProps<TRecord extends Record<string, unknown>> {
+export interface TableHeaderCellSlotProps<TRecord extends object> {
   title: VNodeChild | undefined
   column: ColumnType<TRecord> | ColumnGroupType<TRecord>
   index: number
@@ -96,7 +123,7 @@ export interface TableHeaderCellSlotProps<TRecord extends Record<string, unknown
 /**
  * customFilterDropdown slot 的参数类型。
  */
-export interface CustomFilterDropdownSlotProps<TRecord extends Record<string, unknown>> {
+export interface CustomFilterDropdownSlotProps<TRecord extends object> {
   column: ColumnType<TRecord>
   selectedKeys: (string | number | boolean)[]
   setSelectedKeys: (keys: (string | number | boolean)[]) => void
@@ -110,7 +137,7 @@ export interface CustomFilterDropdownSlotProps<TRecord extends Record<string, un
 /**
  * Table 组件 slots 声明。
  */
-export interface TableSlotsDecl<TRecord extends Record<string, unknown>> {
+export interface TableSlotsDecl<TRecord extends object> {
   bodyCell?: (props: TableBodyCellSlotProps<TRecord>) => VNodeChild
   headerCell?: (props: TableHeaderCellSlotProps<TRecord>) => VNodeChild
   empty?: () => VNodeChild
@@ -125,7 +152,7 @@ export interface TableSlotsDecl<TRecord extends Record<string, unknown>> {
 /**
  * Table 组件 Props。
  */
-export interface TableProps<TRecord extends Record<string, unknown> = Record<string, unknown>> {
+export interface TableProps<TRecord extends object = Record<string, unknown>> {
   /** 数据源 */
   dataSource: TRecord[]
   /** 列配置 */
@@ -147,11 +174,32 @@ export interface TableProps<TRecord extends Record<string, unknown> = Record<str
   /** 根元素自定义 class */
   class?: string
 
+  /** 表格布局模式 */
+  tableLayout?: TableLayout
+
+  /** 是否显示表头 */
+  showHeader?: boolean
+
+  /** 行 class */
+  rowClassName?: string | RowClassName<TRecord>
+
+  /** 自定义行 props */
+  customRow?: GetComponentProps<TRecord, TRecord>
+
+  /** 自定义表头行 props */
+  customHeaderRow?: (
+    columns: Array<ColumnType<TRecord> | ColumnGroupType<TRecord>>,
+    index?: number,
+  ) => ReturnType<GetComponentProps<ColumnType<TRecord>[], TRecord>>
+
   /**
    * 表级别控制是否显示排序 tooltip，默认 true。
    * 可被列级别 showSorterTooltip 覆盖。
    */
   showSorterTooltip?: boolean
+
+  /** 表级排序方向列表 */
+  sortDirections?: SortOrder[]
 
   /** 当前激活语言标识，默认继承 provider/plugin，否则为 'zh-CN'。 */
   locale?: LocaleName
@@ -161,6 +209,15 @@ export interface TableProps<TRecord extends Record<string, unknown> = Record<str
 
   /** 表级 locale 局部覆写，优先级高于全局 provider / plugin。 */
   localeOverrides?: DeepPartial<VTableGuildTableLocale>
+
+  /** 粘性表头/滚动条 */
+  sticky?: boolean | TableSticky
+
+  /** 下拉层挂载容器 */
+  getPopupContainer?: (triggerNode: HTMLElement) => HTMLElement
+
+  /** 单元格文本转换 */
+  transformCellText?: TransformCellText<TRecord>
 
   /** 行选择配置 */
   rowSelection?: RowSelection<TRecord>
@@ -206,6 +263,13 @@ export interface TableProps<TRecord extends Record<string, unknown> = Record<str
 
 /** change 事件中的 filters 参数 */
 export type TableFiltersInfo = Record<string, (string | number | boolean)[] | null>
+
+export interface SorterResultLike<TRecord extends object> {
+  column: ColumnType<TRecord> | undefined
+  columnKey: Key | undefined
+  order: SortOrder
+  field: ColumnType<TRecord>['dataIndex']
+}
 
 /** change 事件中的 extra 参数 */
 export interface TableChangeExtra<TRecord extends Record<string, unknown>> {

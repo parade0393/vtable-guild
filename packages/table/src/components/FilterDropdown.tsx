@@ -54,6 +54,10 @@ export default defineComponent({
       type: Object as PropType<{ top: number; left: number; right: number; bottom: number }>,
       required: true,
     },
+    popupContainer: {
+      type: [String, Object] as PropType<string | HTMLElement>,
+      default: 'body',
+    },
     filterSearch: {
       type: [Boolean, Function] as PropType<
         boolean | ((input: string, filter: ColumnFilterItem) => boolean)
@@ -464,9 +468,8 @@ export default defineComponent({
 
     return () => {
       const { anchorRect } = props
-      const viewportWidth = window.innerWidth
       const dropdownMinWidth = 150
-      const overflowRight = anchorRect.left + dropdownMinWidth > viewportWidth
+      const popupContainer = props.popupContainer
       const isTree = props.filterMode === 'tree'
       const listClass = isTree
         ? tableContext.subThemeSlots?.value.filterDropdownTreeList
@@ -475,19 +478,35 @@ export default defineComponent({
         ? tableContext.subThemeSlots?.value.filterDropdownTreeContentWrapper
         : tableContext.subThemeSlots?.value.filterDropdownContentWrapper
 
-      const style: Record<string, string> = {
-        position: 'fixed',
-        top: `${anchorRect.bottom + 4}px`,
-        zIndex: '1050',
-      }
-      if (overflowRight) {
-        style.right = `${viewportWidth - anchorRect.right}px`
+      const style: Record<string, string> = { zIndex: '1050' }
+      if (
+        typeof popupContainer === 'string' ||
+        (typeof document !== 'undefined' && popupContainer === document.body)
+      ) {
+        const viewportWidth = window.innerWidth
+        const overflowRight = anchorRect.left + dropdownMinWidth > viewportWidth
+        style.position = 'fixed'
+        style.top = `${anchorRect.bottom + 4}px`
+        if (overflowRight) {
+          style.right = `${viewportWidth - anchorRect.right}px`
+        } else {
+          style.left = `${anchorRect.left}px`
+        }
       } else {
-        style.left = `${anchorRect.left}px`
+        const containerRect = popupContainer.getBoundingClientRect()
+        const overflowRight =
+          anchorRect.left - containerRect.left + dropdownMinWidth > popupContainer.clientWidth
+        style.position = 'absolute'
+        style.top = `${anchorRect.bottom - containerRect.top + popupContainer.scrollTop + 4}px`
+        if (overflowRight) {
+          style.right = `${containerRect.right - anchorRect.right + popupContainer.scrollLeft}px`
+        } else {
+          style.left = `${anchorRect.left - containerRect.left + popupContainer.scrollLeft}px`
+        }
       }
 
       return (
-        <Teleport to="body">
+        <Teleport to={popupContainer}>
           <Transition name="vtg-dropdown">
             {props.visible && (
               <div

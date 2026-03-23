@@ -132,6 +132,7 @@ const treeProps = {
 }
 
 const selectedRowKeys = ref<(string | number)[]>([])
+const cascadeSelectedRowKeys = ref<(string | number)[]>(['1-1-1'])
 
 const rowSelection = computed<RowSelection<TreeRow>>(() => ({
   selectedRowKeys: selectedRowKeys.value,
@@ -144,6 +145,22 @@ const antRowSelection = computed(() => ({
   selectedRowKeys: selectedRowKeys.value,
   onChange: (keys: (string | number)[]) => {
     selectedRowKeys.value = [...keys]
+  },
+}))
+
+const cascadeRowSelection = computed<RowSelection<TreeRow>>(() => ({
+  selectedRowKeys: cascadeSelectedRowKeys.value,
+  checkStrictly: false,
+  onChange: (keys) => {
+    cascadeSelectedRowKeys.value = [...keys]
+  },
+}))
+
+const antCascadeRowSelection = computed(() => ({
+  selectedRowKeys: cascadeSelectedRowKeys.value,
+  checkStrictly: false,
+  onChange: (keys: (string | number)[]) => {
+    cascadeSelectedRowKeys.value = [...keys]
   },
 }))
 
@@ -174,8 +191,8 @@ function handleElementSelectionChange(rows: TreeRow[]) {
         </article>
         <article class="play-metric-card">
           <span class="play-metric-card__label">Coverage</span>
-          <strong>4 / 4 paired cases</strong>
-          <p>基础树形、默认展开、树形选择、自定义缩进全部恢复为左右对照。</p>
+          <strong>5 / 5 paired cases</strong>
+          <p>基础树形、默认展开、树形选择、自定义缩进，以及级联选择都恢复为可回归页面。</p>
         </article>
         <article class="play-metric-card">
           <span class="play-metric-card__label">Preset</span>
@@ -416,6 +433,65 @@ function handleElementSelectionChange(rows: TreeRow[]) {
               :data-source="treeData as any"
               :columns="columns as any"
               :indent-size="30"
+              size="md"
+              row-key="key"
+            />
+          </article>
+        </div>
+      </section>
+
+      <section class="play-case">
+        <header class="play-case__header">
+          <div>
+            <p class="play-case__index">05</p>
+            <h2>树形级联选择</h2>
+          </div>
+          <p class="play-case__desc">
+            验证点：`checkStrictly = false` 后，父子节点联动，父节点支持半选态。
+          </p>
+        </header>
+        <p class="play-inline-note">
+          cascade keys:
+          {{ cascadeSelectedRowKeys.length > 0 ? cascadeSelectedRowKeys.join(', ') : '(无)' }}
+        </p>
+        <div class="play-compare-grid">
+          <article class="play-panel">
+            <div class="play-panel__head">
+              <div>
+                <span class="play-badge">reference</span>
+                <h3>{{ isAntdv ? 'ant-design-vue' : 'native note' }}</h3>
+              </div>
+              <p>{{ isAntdv ? 'tree + checkStrictly=false' : '右侧统一 API 更值得验证' }}</p>
+            </div>
+            <ATable
+              v-if="isAntdv"
+              :data-source="treeData"
+              :columns="columns as any"
+              :pagination="false"
+              :row-selection="antCascadeRowSelection"
+              row-key="key"
+              size="middle"
+            />
+            <div v-else class="play-note-card">
+              <p class="play-note-card__eyebrow">No native parity</p>
+              <h3>element-plus</h3>
+              <p>
+                这一组回归的是 antd 风格的 `checkStrictly` 语义，父节点半选态和联动由右侧统一提供。
+              </p>
+            </div>
+          </article>
+          <article class="play-panel play-panel--accent">
+            <div class="play-panel__head">
+              <div>
+                <span class="play-badge play-badge--accent">vtable-guild</span>
+                <h3>{{ isAntdv ? 'antdv preset' : 'element-plus preset' }}</h3>
+              </div>
+              <p>rowSelection.checkStrictly = false</p>
+            </div>
+            <VTable
+              :data-source="treeData as any"
+              :columns="columns as any"
+              :row-selection="cascadeRowSelection as any"
               size="md"
               row-key="key"
             />

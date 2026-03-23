@@ -129,9 +129,23 @@ export default defineComponent({
               const exp = tableContext.expandable?.()
               const isExpanded = tableContext.isExpanded?.(key) ?? false
               const expandRowByClick = exp?.expandRowByClick ?? false
+              const canExpand = tableContext.isRowExpandable?.(item) ?? false
+              const rowClassName = tableContext.getRowClassName?.(item, rIndex)
+              const rowProps = tableContext.getRowProps?.(item, rIndex)
+              const treeRow = tableContext.treeFlattenData?.value?.find(
+                (row) => row.record === item,
+              )
+              const rowIndent = treeRow?.level ?? 0
+              const expandedRowClassName =
+                typeof exp?.expandedRowClassName === 'function'
+                  ? exp.expandedRowClassName(item, rIndex, rowIndent)
+                  : exp?.expandedRowClassName
 
               const handleRowClick = expandRowByClick
-                ? () => tableContext.toggleExpand?.(item, rIndex)
+                ? () => {
+                    if (!canExpand) return
+                    tableContext.toggleExpand?.(item, rIndex)
+                  }
                 : undefined
 
               return (
@@ -144,7 +158,12 @@ export default defineComponent({
                 >
                   <ColGroup columns={props.columns} />
                   <tbody class={props.tbodyClass}>
-                    <TableRow key={key} rowClass={props.rowClass} onClick={handleRowClick}>
+                    <TableRow
+                      key={key}
+                      rowClass={cn(props.rowClass, rowClassName) ?? ''}
+                      rowProps={rowProps}
+                      onClick={handleRowClick}
+                    >
                       {props.columns.map((column, colIndex) => (
                         <TableCell
                           key={column.key ?? String(column.dataIndex ?? colIndex)}
@@ -160,7 +179,12 @@ export default defineComponent({
                     {isExpanded && exp?.expandedRowRender && (
                       <tr
                         key={`${key}-expanded`}
-                        class={cn(props.rowClass, tableContext.subThemeSlots?.value.expandedRow)}
+                        class={cn(
+                          props.rowClass,
+                          rowClassName,
+                          tableContext.subThemeSlots?.value.expandedRow,
+                          expandedRowClassName,
+                        )}
                       >
                         <td
                           colspan={props.columns.length}

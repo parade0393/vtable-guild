@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { h, inject, provide, reactive } from 'vue'
+import { computed, h, inject, provide, reactive, ref } from 'vue'
 import { ElTable, ElTableColumn } from 'element-plus'
 import 'element-plus/es/components/table/style/css'
 import 'element-plus/es/components/table-column/style/css'
 import { VTable } from '@vtable-guild/table'
-import type { ColumnsType, Expandable, RowSelection } from '@vtable-guild/table'
+import type { ColumnsType, Expandable, Key, RowSelection } from '@vtable-guild/table'
 import { VTABLE_GUILD_INJECTION_KEY, type VTableGuildContext } from '@vtable-guild/core'
 import { dataSource, type DemoRow } from '../filterMatrixShared'
 
@@ -59,14 +59,52 @@ const expandColumns: ColumnsType<DemoRow> = [
   { title: 'Address', dataIndex: 'address', key: 'address' },
 ]
 
-const expandable: Expandable<DemoRow> = {
-  expandedRowRender: (record) =>
+const expandableContent = (record: DemoRow) =>
+  h(
+    'p',
+    { style: { margin: 0 } },
+    `${record.name} works as ${record.role} in ${record.team} team, based in ${record.city}.`,
+  )
+
+const controlledExpandedKeys = ref<Key[]>([1])
+const hiddenExpandKeys = ref<Key[]>([])
+
+const controlledExpandable = computed<Expandable<DemoRow>>(() => ({
+  expandedRowRender: (record) => expandableContent(record),
+  expandedRowKeys: controlledExpandedKeys.value,
+  expandRowByClick: true,
+  rowExpandable: (record) => record.status !== 'Draft',
+  onExpandedRowsChange: (keys) => {
+    controlledExpandedKeys.value = [...keys]
+  },
+  expandIcon: ({ expanded, expandable, onExpand, record }) =>
     h(
-      'p',
-      { style: { margin: 0 } },
-      `${record.name} works as ${record.role} in ${record.team} team, based in ${record.city}.`,
+      'button',
+      {
+        type: 'button',
+        class: [
+          'rounded-full border px-2 py-0.5 text-xs transition-colors',
+          expandable
+            ? 'border-[color:var(--color-primary)] text-[color:var(--color-primary)]'
+            : 'cursor-not-allowed border-[color:var(--color-border)] text-[color:var(--color-text-secondary)]',
+        ],
+        disabled: !expandable,
+        onClick: (e: MouseEvent) => onExpand(record, e),
+      },
+      expandable ? (expanded ? '收起' : '展开') : '锁定',
     ),
-}
+}))
+
+const hiddenExpandExpandable = computed<Expandable<DemoRow>>(() => ({
+  expandedRowRender: (record) => expandableContent(record),
+  expandedRowKeys: hiddenExpandKeys.value,
+  expandRowByClick: true,
+  showExpandColumn: false,
+  rowExpandable: (record) => record.status !== 'Draft',
+  onExpandedRowsChange: (keys) => {
+    hiddenExpandKeys.value = [...keys]
+  },
+}))
 
 // ---- Title / Footer / Summary ----
 const summaryColumns: ColumnsType<DemoRow> = [
@@ -112,11 +150,11 @@ interface MergeRow extends DemoRow {
 }
 
 const mergeDataSource: MergeRow[] = [
-  { ...dataSource[0], key: 101, group: 'North America' },
-  { ...dataSource[1], key: 102, group: 'North America' },
-  { ...dataSource[2], key: 103, group: 'Europe' },
-  { ...dataSource[3], key: 104, group: 'Europe' },
-  { ...dataSource[4], key: 105, group: 'Solo' },
+  { ...dataSource[0]!, key: 101, group: 'North America' },
+  { ...dataSource[1]!, key: 102, group: 'North America' },
+  { ...dataSource[2]!, key: 103, group: 'Europe' },
+  { ...dataSource[3]!, key: 104, group: 'Europe' },
+  { ...dataSource[4]!, key: 105, group: 'Solo' },
 ]
 
 function getGroupCellProps(index?: number) {
@@ -141,10 +179,10 @@ const mergedColumns: ColumnsType<MergeRow> = [
     customRender: ({ text, record, index }) =>
       index === 4
         ? {
-            children: `${text} / ${record.score}`,
+            children: `${String(text)} / ${record.score}`,
             props: { colSpan: 2 },
           }
-        : text,
+        : String(text),
   },
   {
     title: 'Score',
@@ -153,7 +191,7 @@ const mergedColumns: ColumnsType<MergeRow> = [
     width: 100,
     align: 'right',
     customRender: ({ text, index }) =>
-      index === 4 ? { children: text, props: { colSpan: 0 } } : text,
+      index === 4 ? { children: Number(text), props: { colSpan: 0 } } : Number(text),
   },
   { title: 'Address', dataIndex: 'address', key: 'address', width: 260 },
 ]
@@ -186,6 +224,60 @@ const compositeColumns: ColumnsType<MergeRow> = [
 
 const compositeRowSelection: RowSelection<MergeRow> = {
   type: 'checkbox',
+}
+
+const apiWiringData = dataSource.slice(0, 4)
+const apiSummaryScore = apiWiringData.reduce((sum, row) => sum + row.score, 0)
+const apiWiringColumns: ColumnsType<DemoRow> = [
+  { title: 'Name', dataIndex: 'name', key: 'name', width: 180 },
+  {
+    title: 'Status',
+    dataIndex: 'status',
+    key: 'status',
+    width: 140,
+    customHeaderCell: () => ({
+      class: 'uppercase tracking-[0.08em]',
+    }),
+  },
+  {
+    title: 'Score',
+    dataIndex: 'score',
+    key: 'score',
+    width: 110,
+    align: 'right',
+    customHeaderCell: () => ({
+      class: 'text-[color:var(--color-primary)]',
+    }),
+  },
+  { title: 'Address', dataIndex: 'address', key: 'address' },
+]
+
+function apiRowClassName(record: DemoRow, index: number) {
+  return [index % 2 === 1 ? 'bg-black/[0.02]' : '', record.status === 'Draft' ? 'opacity-75' : '']
+    .filter(Boolean)
+    .join(' ')
+}
+
+function apiCustomRow(record: DemoRow, index?: number) {
+  return {
+    'data-status': record.status,
+    style:
+      index === 0
+        ? {
+            boxShadow: 'inset 3px 0 0 var(--color-primary)',
+          }
+        : undefined,
+  }
+}
+
+function apiCustomHeaderRow(_columns: ColumnsType<DemoRow>, index?: number) {
+  return index === 0
+    ? {
+        style: {
+          background: 'rgba(15, 23, 42, 0.03)',
+        },
+      }
+    : {}
 }
 
 function elementMergeSpanMethod({
@@ -246,8 +338,11 @@ function elementCompositeSpanMethod({
     <section class="play-metrics">
       <article class="play-metric-card">
         <span class="play-metric-card__label">Case count</span>
-        <strong>8</strong>
-        <p>固定列、固定表头、展开行、标题/页脚、列宽拖拽、多级表头、单元格合并、综合例子。</p>
+        <strong>10</strong>
+        <p>
+          固定列、固定表头、受控展开、标题/页脚、列宽拖拽、多级表头、单元格合并、综合例子与 API
+          组合回归。
+        </p>
       </article>
       <article class="play-metric-card">
         <span class="play-metric-card__label">Parity</span>
@@ -360,12 +455,17 @@ function elementCompositeSpanMethod({
       <header class="play-case__header">
         <div>
           <p class="play-case__index">Case 03</p>
-          <h2>展开行</h2>
+          <h2>受控展开行 + 自定义展开图标</h2>
         </div>
         <p class="play-case__desc">
-          ElTable 使用 type="expand" 列 + template slot，VTable 使用 expandable prop
+          ElTable 使用 type="expand" 列 + template slot；右侧进一步回归
+          expandedRowKeys、expandRowByClick 和 rowExpandable。
         </p>
       </header>
+      <p class="play-inline-note">
+        controlledExpandedKeys = [{{ controlledExpandedKeys.join(', ') || 'none' }}]，Draft
+        行不可展开。
+      </p>
       <div class="play-compare-grid">
         <article class="play-panel">
           <div class="play-panel__head">
@@ -396,12 +496,12 @@ function elementCompositeSpanMethod({
               <span class="play-badge play-badge--accent">vtable-guild</span>
               <h3>element-plus preset</h3>
             </div>
-            <p>expandable prop</p>
+            <p>controlled expandable</p>
           </div>
           <VTable
             :data-source="dataSource"
             :columns="expandColumns"
-            :expandable="expandable"
+            :expandable="controlledExpandable as any"
             size="md"
             row-key="key"
           />
@@ -635,10 +735,142 @@ function elementCompositeSpanMethod({
           <VTable
             :data-source="mergeDataSource"
             :columns="compositeColumns"
-            :row-selection="compositeRowSelection"
+            :row-selection="compositeRowSelection as any"
             size="md"
             row-key="key"
           />
+        </article>
+      </div>
+    </section>
+
+    <section class="play-case">
+      <header class="play-case__header">
+        <div>
+          <p class="play-case__index">Case 09</p>
+          <h2>隐藏展开列 + 点击整行展开</h2>
+        </div>
+        <p class="play-case__desc">
+          `showExpandColumn = false` 后不渲染展开列，交互入口完全交给 expandRowByClick。
+        </p>
+      </header>
+      <p class="play-inline-note">
+        hiddenExpandKeys = [{{ hiddenExpandKeys.join(', ') || 'none' }}]
+      </p>
+      <div class="play-compare-grid">
+        <article class="play-panel">
+          <div class="play-panel__head">
+            <div>
+              <span class="play-badge">reference</span>
+              <h3>native note</h3>
+            </div>
+            <p>更偏 VTable 的 API 组合能力</p>
+          </div>
+          <div class="play-note-card">
+            <p class="play-note-card__eyebrow">Interaction detail</p>
+            <h3>showExpandColumn = false</h3>
+            <p>隐藏图标列后，点击任意可展开行都会切换详情内容；Draft 行仍然不可展开。</p>
+          </div>
+        </article>
+        <article class="play-panel play-panel--accent">
+          <div class="play-panel__head">
+            <div>
+              <span class="play-badge play-badge--accent">vtable-guild</span>
+              <h3>element-plus preset</h3>
+            </div>
+            <p>showExpandColumn = false</p>
+          </div>
+          <VTable
+            :data-source="dataSource"
+            :columns="expandColumns"
+            :expandable="hiddenExpandExpandable as any"
+            size="md"
+            row-key="key"
+          />
+        </article>
+      </div>
+    </section>
+
+    <section class="play-case">
+      <header class="play-case__header">
+        <div>
+          <p class="play-case__index">Case 10</p>
+          <h2>row/header 自定义与 summary slot</h2>
+        </div>
+        <p class="play-case__desc">
+          验证点：rowClassName、customRow、customHeaderRow、headerCell、bodyCell、customHeaderCell
+          和 summary。
+        </p>
+      </header>
+      <div class="play-compare-grid">
+        <article class="play-panel">
+          <div class="play-panel__head">
+            <div>
+              <span class="play-badge">reference</span>
+              <h3>native note</h3>
+            </div>
+            <p>这是统一 API 的组合回归，不强行拼原生一一对照。</p>
+          </div>
+          <div class="play-note-card">
+            <p class="play-note-card__eyebrow">API wiring</p>
+            <h3>Custom row / header / summary</h3>
+            <p>
+              右侧把表头插槽、行属性注入和 summary slot 放在一张表里回归，方便快速观察组合效果。
+            </p>
+          </div>
+        </article>
+        <article class="play-panel play-panel--accent">
+          <div class="play-panel__head">
+            <div>
+              <span class="play-badge play-badge--accent">vtable-guild</span>
+              <h3>element-plus preset</h3>
+            </div>
+            <p>customRow + customHeaderRow + slots + summary</p>
+          </div>
+          <VTable
+            :data-source="apiWiringData"
+            :columns="apiWiringColumns"
+            :row-class-name="apiRowClassName"
+            :custom-row="apiCustomRow"
+            :custom-header-row="apiCustomHeaderRow"
+            size="md"
+            row-key="key"
+          >
+            <template #headerCell="{ title, column }">
+              <span class="inline-flex items-center gap-2">
+                <span>{{ title }}</span>
+                <span
+                  v-if="column.key === 'score'"
+                  class="text-[11px] uppercase tracking-[0.08em] text-[color:var(--color-text-secondary)]"
+                >
+                  metric
+                </span>
+              </span>
+            </template>
+            <template #bodyCell="{ text, column }">
+              <span
+                v-if="column.key === 'status'"
+                class="inline-flex rounded-full border border-[color:var(--color-border)] px-2 py-0.5 text-xs"
+              >
+                {{ text }}
+              </span>
+              <span
+                v-else-if="column.key === 'score'"
+                class="font-semibold text-[color:var(--color-primary)]"
+              >
+                {{ text }}
+              </span>
+              <template v-else>{{ text }}</template>
+            </template>
+            <template #summary>
+              <tr>
+                <td colspan="2" class="text-right font-medium">Visible score total</td>
+                <td class="text-right font-semibold text-[color:var(--color-primary)]">
+                  {{ apiSummaryScore }}
+                </td>
+                <td class="text-[11px] text-[color:var(--color-text-secondary)]">summary slot</td>
+              </tr>
+            </template>
+          </VTable>
         </article>
       </div>
     </section>

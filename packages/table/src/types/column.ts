@@ -12,7 +12,26 @@ export type SortOrder = 'ascend' | 'descend' | null
 
 /** 排序器：布尔值表示使用默认排序，函数表示自定义比较 */
 export type SorterFn<TRecord> = (a: TRecord, b: TRecord) => number
-export type ColumnSorter<TRecord> = boolean | SorterFn<TRecord>
+export interface ColumnSorterObject<TRecord> {
+  compare?: SorterFn<TRecord>
+  multiple?: number
+}
+export type ColumnSorter<TRecord> = boolean | SorterFn<TRecord> | ColumnSorterObject<TRecord>
+export type Breakpoint = 'xxxl' | 'xxl' | 'xl' | 'lg' | 'md' | 'sm' | 'xs'
+export type TableLayout = 'auto' | 'fixed'
+export type RowClassName<TRecord> = (record: TRecord, index: number, indent: number) => string
+export interface TableSticky {
+  offsetHeader?: number
+  offsetSummary?: number
+  offsetScroll?: number
+  getContainer?: () => Window | HTMLElement
+}
+export type TransformCellText<TRecord extends object> = (opt: {
+  text: unknown
+  column: ColumnType<TRecord>
+  record: TRecord
+  index: number
+}) => unknown
 
 export interface CellAdditionalProps {
   class?: string
@@ -33,17 +52,32 @@ export interface RenderedCell {
   children?: VNodeChild
 }
 
-export type GetComponentProps<
-  TData,
-  TRecord extends Record<string, unknown> = Record<string, unknown>,
-> = (data: TData, index?: number, column?: ColumnType<TRecord>) => CellAdditionalProps
+export type GetComponentProps<TData, TRecord extends object = Record<string, unknown>> = (
+  data: TData,
+  index?: number,
+  column?: ColumnType<TRecord>,
+) => CellAdditionalProps
+
+export interface ColumnTitleProps<TRecord extends object> {
+  sortOrder?: SortOrder
+  sortColumn?: ColumnType<TRecord>
+  sortColumns?: Array<{
+    column: ColumnType<TRecord>
+    order: SortOrder
+  }>
+  filters?: Record<string, (string | number | boolean)[] | null>
+}
+
+export type ColumnTitle<TRecord extends object> =
+  | VNodeChild
+  | ((props: ColumnTitleProps<TRecord>) => VNodeChild)
 
 /**
  * 叶子列配置。
  */
-export interface ColumnType<TRecord extends Record<string, unknown>> {
+export interface ColumnType<TRecord extends object> {
   key?: Key
-  title?: VNodeChild
+  title?: ColumnTitle<TRecord>
   dataIndex?: DataIndex
   width?: number | string
   align?: AlignType
@@ -169,13 +203,19 @@ export interface ColumnType<TRecord extends Record<string, unknown>> {
    * 列级别自定义筛选下拉渲染函数。
    * 优先级高于 customFilterDropdown slot。
    */
-  filterDropdown?: (props: CustomFilterDropdownSlotProps<TRecord>) => VNodeChild
+  filterDropdown?: VNodeChild | ((props: CustomFilterDropdownSlotProps<TRecord>) => VNodeChild)
 
   /**
    * 列级别控制是否显示排序 tooltip。
    * 未设置时使用 Table 级别的 showSorterTooltip。
    */
   showSorterTooltip?: boolean
+
+  /**
+   * 响应式可见断点。
+   * 当前屏幕命中任一断点时显示该列。
+   */
+  responsive?: Breakpoint[]
 }
 
 /**
@@ -189,7 +229,7 @@ export type DataIndex = string | number | Array<string | number>
 /**
  * customRender 回调参数。
  */
-export interface CustomRenderContext<TRecord extends Record<string, unknown>> {
+export interface CustomRenderContext<TRecord extends object> {
   /** 当前单元格的值（通过 dataIndex 取出） */
   text: unknown
   /** 与 ant-design-vue 对齐的 value 别名 */
@@ -207,7 +247,7 @@ export interface CustomRenderContext<TRecord extends Record<string, unknown>> {
 /**
  * 列组配置（含 children）。
  */
-export interface ColumnGroupType<TRecord extends Record<string, unknown>> extends Omit<
+export interface ColumnGroupType<TRecord extends object> extends Omit<
   ColumnType<TRecord>,
   | 'dataIndex'
   | 'customRender'
@@ -236,7 +276,7 @@ export interface ColumnGroupType<TRecord extends Record<string, unknown>> extend
 /**
  * columns prop 的类型。
  */
-export type ColumnsType<TRecord extends Record<string, unknown>> = Array<
+export type ColumnsType<TRecord extends object> = Array<
   ColumnType<TRecord> | ColumnGroupType<TRecord>
 >
 

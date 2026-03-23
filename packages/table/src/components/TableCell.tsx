@@ -1,11 +1,16 @@
-import { computed, defineComponent, inject, type PropType } from 'vue'
+import { computed, defineComponent, inject, type PropType, type VNodeChild } from 'vue'
 import { cn } from '@vtable-guild/core'
 import { TABLE_ALIGN_CLASSES } from '@vtable-guild/theme'
-import type { ColumnType } from '../types'
+import type { CellAdditionalProps, ColumnType } from '../types'
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 import { getByDataIndex } from '../composables'
 import { getColumnKey } from '../composables/useSorter'
-import { omitCellProps, resolveBodyCell, type ResolvedBodyCell } from '../utils/cell'
+import {
+  isRenderedCell,
+  omitCellProps,
+  resolveBodyCell,
+  type ResolvedBodyCell,
+} from '../utils/cell'
 import SelectionCheckbox from './SelectionCheckbox'
 import SelectionRadio from './SelectionRadio'
 import ExpandIcon from './ExpandIcon'
@@ -36,10 +41,10 @@ export default defineComponent({
           rowIndex: props.rowIndex,
           column: props.column,
           bodyCell: tableContext.bodyCell,
+          transformCellText: tableContext.transformCellText,
         }),
     )
 
-    // ---- 固定列 ----
     const fixedInfo = computed(() => {
       if (!props.column.fixed) return null
       const key = getColumnKey(props.column) ?? props.colIndex
@@ -63,20 +68,25 @@ export default defineComponent({
       const classes: string[] = []
       const atStart = tableContext.scrollState?.value?.atStart ?? true
       const atEnd = tableContext.scrollState?.value?.atEnd ?? true
-      if (info.isLastLeft) {
-        if (!atStart) classes.push(sub.fixedShadowLeft)
+      if (info.isLastLeft && !atStart) {
+        classes.push(sub.fixedShadowLeft)
       }
-      if (info.isFirstRight) {
-        if (!atEnd) classes.push(sub.fixedShadowRight)
+      if (info.isFirstRight && !atEnd) {
+        classes.push(sub.fixedShadowRight)
       }
       return classes.join(' ')
     })
 
-    const isRowSelected = computed(() => {
-      const key = tableContext.getRowKey?.(props.record, props.rowIndex)
-      if (key === undefined) return false
-      return tableContext.isSelected?.(key) ?? false
-    })
+    const selectionState = computed(
+      () =>
+        tableContext.getSelectionState?.(props.record, props.rowIndex) ?? {
+          checked: false,
+          indeterminate: false,
+          disabled: false,
+        },
+    )
+
+    const isRowSelected = computed(() => selectionState.value.checked)
 
     const bodyDomProps = computed(() => ({
       ...omitCellProps(resolvedCell.value.renderCellProps),
@@ -124,7 +134,6 @@ export default defineComponent({
       }
     })
 
-    // ---- 树形数据 indent 信息 ----
     const treeRow = computed(() => {
       if (!tableContext.isTreeData?.value) return null
       const flatData = tableContext.treeFlattenData?.value
@@ -140,6 +149,7 @@ export default defineComponent({
 
     const isTreeIndentColumn = computed(() => {
       if (!tableContext.isTreeData?.value) return false
+
       return props.column.key !== '__vtg_selection__' &&
         props.column.key !== '__vtg_expand__' &&
         props.colIndex <= 2
@@ -154,6 +164,13 @@ export default defineComponent({
         : false
     })
 
+    function mergeSelectionCellStyle(extraStyle?: CellAdditionalProps['style']) {
+      return {
+        ...cellStyle.value,
+        ...((extraStyle as Record<string, string> | undefined) ?? {}),
+      }
+    }
+
     return () => {
       if (resolvedCell.value.colSpan === 0 || resolvedCell.value.rowSpan === 0) {
         return null
@@ -162,47 +179,74 @@ export default defineComponent({
       const colSpan = resolvedCell.value.colSpan !== 1 ? resolvedCell.value.colSpan : undefined
       const rowSpan = resolvedCell.value.rowSpan !== 1 ? resolvedCell.value.rowSpan : undefined
 
-      // ---- 选择列单元格 ----
       if (props.column.key === '__vtg_selection__') {
         const sel = tableContext.rowSelection?.()
         const isRadio = sel?.type === 'radio'
-        const key = tableContext.getRowKey?.(props.record, props.rowIndex)
-        const checked = key !== undefined && (tableContext.isSelected?.(key) ?? false)
-        const disabled = tableContext.isDisabledRow?.(props.record) ?? false
 
-        const subThemeSlots = tableContext.subThemeSlots?.value
-        const selectedClasses =
-          checked && subThemeSlots
-            ? cn(subThemeSlots.tdSelected, subThemeSlots.tdSelectedHover)
-            : ''
+        const originNode = isRadio ? (
+          <SelectionRadio
+            checked={selectionState.value.checked}
+            disabled={selectionState.value.disabled}
+            onChange={(e: MouseEvent) => tableContext.toggleRow?.(props.record, props.rowIndex, e)}
+          />
+        ) : (
+          <SelectionCheckbox
+            checked={selectionState.value.checked}
+            indeterminate={selectionState.value.indeterminate}
+            disabled={selectionState.value.disabled}
+            onChange={(_checked: boolean, e: MouseEvent) =>
+              tableContext.toggleRow?.(props.record, props.rowIndex, e)
+            }
+          />
+        )
+
+        let selectionCellContent: VNodeChild = originNode
+        let selectionCellProps: CellAdditionalProps | undefined
+
+        if (sel?.renderCell) {
+          const rendered = sel.renderCell(
+            selectionState.value.checked,
+            props.record,
+            props.rowIndex,
+            originNode,
+          )
+
+          if (isRenderedCell(rendered)) {
+            selectionCellContent = rendered.children
+            selectionCellProps = rendered.props
+          } else {
+            selectionCellContent = rendered
+          }
+        }
+
         const cellSelClass = cn(
           props.tdClass,
           'text-center',
           props.column.className,
-          selectedClasses,
+          selectionCellProps?.class,
+          selectionCellProps?.className,
+          isRowSelected.value &&
+            tableContext.subThemeSlots?.value &&
+            cn(
+              tableContext.subThemeSlots.value.tdSelected,
+              tableContext.subThemeSlots.value.tdSelectedHover,
+            ),
           fixedClass.value,
         )
 
         return (
-          <td class={cellSelClass} style={cellStyle.value} colspan={colSpan} rowspan={rowSpan}>
-            {isRadio ? (
-              <SelectionRadio
-                checked={checked}
-                disabled={disabled}
-                onChange={() => tableContext.toggleRow?.(props.record, props.rowIndex)}
-              />
-            ) : (
-              <SelectionCheckbox
-                checked={checked}
-                disabled={disabled}
-                onChange={() => tableContext.toggleRow?.(props.record, props.rowIndex)}
-              />
-            )}
+          <td
+            {...omitCellProps(selectionCellProps)}
+            class={cellSelClass}
+            style={mergeSelectionCellStyle(selectionCellProps?.style)}
+            colspan={colSpan}
+            rowspan={rowSpan}
+          >
+            {selectionCellContent}
           </td>
         )
       }
 
-      // ---- 展开列单元格 ----
       if (props.column.key === '__vtg_expand__') {
         const exp = tableContext.expandable?.()
         const key = tableContext.getRowKey?.(props.record, props.rowIndex)
@@ -222,8 +266,10 @@ export default defineComponent({
               {exp.expandIcon({
                 expanded,
                 record: props.record,
+                expandable: canExpand,
                 onExpand: (_record, e) => {
                   e.stopPropagation()
+                  if (!canExpand) return
                   tableContext.toggleExpand?.(props.record, props.rowIndex)
                 },
               })}
@@ -237,13 +283,15 @@ export default defineComponent({
               expanded={expanded}
               expandable={canExpand}
               variant="row"
-              onClick={() => tableContext.toggleExpand?.(props.record, props.rowIndex)}
+              onClick={() => {
+                if (!canExpand) return
+                tableContext.toggleExpand?.(props.record, props.rowIndex)
+              }}
             />
           </td>
         )
       }
 
-      // ---- 普通数据列 ----
       const row = treeRow.value
       const showTreeIndent = isTreeIndentColumn.value && row
 

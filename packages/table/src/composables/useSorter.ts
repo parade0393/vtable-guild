@@ -1,32 +1,60 @@
-// packages/table/src/composables/useSorter.ts
-
-import { computed, ref, type Ref } from 'vue'
-import type { ColumnType, Key, SortOrder, SorterFn } from '../types'
+import { computed, reactive, type ComputedRef } from 'vue'
+import type {
+  ColumnSorterObject,
+  ColumnType,
+  Key,
+  SortOrder,
+  SorterFn,
+  SorterResultLike,
+} from '../types'
 import { getByDataIndex } from './useColumns'
 
-/** 排序状态 */
-export interface SorterState {
-  /** 排序列的 key */
+export interface SorterState<TRecord extends Record<string, unknown> = Record<string, unknown>> {
   columnKey: Key | undefined
-  /** 排序方向 */
   order: SortOrder
-  /** 排序列配置 */
-  column: ColumnType<Record<string, unknown>> | undefined
+  column: ColumnType<TRecord> | undefined
+  multiplePriority: number | false
 }
 
-/** change 事件中的 sorter 参数 */
-export interface SorterResult {
-  column: ColumnType<Record<string, unknown>> | undefined
-  columnKey: Key | undefined
-  order: SortOrder
-  field: ColumnType<Record<string, unknown>>['dataIndex']
+export type SorterResult<TRecord extends Record<string, unknown> = Record<string, unknown>> =
+  | SorterResultLike<TRecord>
+  | Array<SorterResultLike<TRecord>>
+
+function getSorterObject<TRecord extends Record<string, unknown>>(
+  sorter: ColumnType<TRecord>['sorter'],
+): ColumnSorterObject<TRecord> | undefined {
+  if (!sorter || typeof sorter !== 'object' || typeof sorter === 'function') {
+    return undefined
+  }
+
+  return sorter as ColumnSorterObject<TRecord>
+}
+
+function getMultiplePriority<TRecord extends Record<string, unknown>>(
+  column: ColumnType<TRecord>,
+): number | false {
+  const multiple = getSorterObject(column.sorter)?.multiple
+  return typeof multiple === 'number' && Number.isFinite(multiple) ? multiple : false
+}
+
+function normalizeSorterResult<TRecord extends Record<string, unknown>>(
+  state: SorterState<TRecord>,
+): SorterResultLike<TRecord> {
+  return {
+    column: state.column,
+    columnKey: state.columnKey,
+    order: state.order,
+    field: state.column?.dataIndex,
+  }
 }
 
 /**
  * 获取列的唯一标识。
  * 优先使用 key，其次 dataIndex 转字符串。
  */
-function getColumnKey(column: ColumnType<Record<string, unknown>>): Key | undefined {
+function getColumnKey<TRecord extends Record<string, unknown>>(
+  column: ColumnType<TRecord>,
+): Key | undefined {
   if (column.key !== undefined) return column.key
   if (column.dataIndex !== undefined) {
     return Array.isArray(column.dataIndex) ? column.dataIndex.join('.') : String(column.dataIndex)
@@ -43,165 +71,280 @@ function defaultCompare(a: unknown, b: unknown): number {
   return String(a ?? '').localeCompare(String(b ?? ''))
 }
 
-/**
- * 获取列的可用排序方向列表。
- * 默认 ['ascend', 'descend']，用户可通过 sortDirections 自定义。
- */
-function getSortDirections(column: ColumnType<Record<string, unknown>>): SortOrder[] {
-  return column.sortDirections ?? ['ascend', 'descend']
+function getSortDirections<TRecord extends Record<string, unknown>>(
+  column: ColumnType<TRecord>,
+  tableSortDirections?: SortOrder[],
+): SortOrder[] {
+  return column.sortDirections ?? tableSortDirections ?? ['ascend', 'descend']
 }
 
-/**
- * 计算下一个排序方向。
- * 在 sortDirections 数组中循环，超出末尾回到 null（无排序）。
- */
 function getNextSortOrder(current: SortOrder, directions: SortOrder[]): SortOrder {
   const index = directions.indexOf(current)
-  // 当前方向不在列表中（如 null） → 从第一个方向开始
+
   if (index === -1) return directions[0] ?? null
-  // 已是最后一个 → 回到 null（无排序）
   if (index >= directions.length - 1) return null
+
   return directions[index + 1]
 }
 
-export interface UseSorterOptions {
-  /** 响应式列配置 getter */
-  columns: () => ColumnType<Record<string, unknown>>[]
-  /** 排序变化回调（用于触发 change 事件） */
-  onSorterChange?: (sorterResult: SorterResult) => void
+function compareSorterPriority<TRecord extends Record<string, unknown>>(
+  a: SorterState<TRecord>,
+  b: SorterState<TRecord>,
+): number {
+  return Number(b.multiplePriority) - Number(a.multiplePriority)
 }
 
-/**
- * 排序状态管理 composable。
- *
- * 支持受控（column.sortOrder）和非受控（内部 ref）两种模式：
- * - 受控：column.sortOrder 不为 undefined 时，组件不管理排序状态
- * - 非受控：首次使用 column.defaultSortOrder，后续内部维护
- *
- * 返回值：
- * - sortedData：排序后的数据（computed）
- * - sorterState：当前排序状态（computed）
- * - toggleSortOrder：切换排序方向（表头点击时调用）
- * - getSortOrder：获取某列的当前排序方向
- */
-export function useSorter(options: UseSorterOptions) {
-  const { columns, onSorterChange } = options
+export interface UseSorterOptions<TRecord extends Record<string, unknown>> {
+  columns: () => ColumnType<TRecord>[]
+  tableSortDirections?: () => SortOrder[] | undefined
+  onSorterChange?: (sorterResult: SorterResult<TRecord>) => void
+}
 
-  // ---- 非受控模式的内部状态 ----
-  const innerSortColumnKey = ref<Key | undefined>(undefined) as Ref<Key | undefined>
-  const innerSortOrder = ref<SortOrder>(null) as Ref<SortOrder>
+export function useSorter<TRecord extends Record<string, unknown>>(
+  options: UseSorterOptions<TRecord>,
+) {
+  const { columns, tableSortDirections, onSorterChange } = options
 
-  // 初始化：查找第一个有 defaultSortOrder 的列
-  const initColumn = columns().find((col) => col.defaultSortOrder && col.sorter)
-  if (initColumn) {
-    innerSortColumnKey.value = getColumnKey(initColumn)
-    innerSortOrder.value = initColumn.defaultSortOrder!
-  }
+  const innerSortOrders = reactive<Record<string, SortOrder>>({})
+  const initializedDefaults = new Set<string>()
 
-  /**
-   * 判断某列是否处于受控模式。
-   * column.sortOrder 不为 undefined 即视为受控。
-   */
-  function isControlled(column: ColumnType<Record<string, unknown>>): boolean {
-    return column.sortOrder !== undefined
-  }
+  function syncDefaultSorterState() {
+    const activeKeys = new Set<string>()
 
-  /**
-   * 获取某列的当前排序方向。
-   */
-  function getSortOrder(column: ColumnType<Record<string, unknown>>): SortOrder {
-    const key = getColumnKey(column)
-    // 受控模式直接返回 column.sortOrder
-    if (isControlled(column)) return column.sortOrder!
-    // 非受控模式：只有当前活跃排序列才有方向
-    if (key !== undefined && key === innerSortColumnKey.value) return innerSortOrder.value
-    return null
-  }
+    columns().forEach((column) => {
+      if (!column.sorter) return
 
-  /**
-   * 切换排序方向。
-   * 表头点击时调用。
-   */
-  function toggleSortOrder(column: ColumnType<Record<string, unknown>>): void {
-    if (!column.sorter) return
+      const key = getColumnKey(column)
+      if (key === undefined) return
 
-    const key = getColumnKey(column)
-    const currentOrder = getSortOrder(column)
-    const directions = getSortDirections(column)
-    const nextOrder = getNextSortOrder(currentOrder, directions)
+      const keyString = String(key)
+      activeKeys.add(keyString)
 
-    // 非受控模式：更新内部状态
-    if (!isControlled(column)) {
-      if (nextOrder === null) {
-        innerSortColumnKey.value = undefined
-        innerSortOrder.value = null
-      } else {
-        innerSortColumnKey.value = key
-        innerSortOrder.value = nextOrder
+      if (column.sortOrder !== undefined) return
+
+      if (!initializedDefaults.has(keyString)) {
+        initializedDefaults.add(keyString)
+
+        if (column.defaultSortOrder) {
+          innerSortOrders[keyString] = column.defaultSortOrder
+        }
       }
-    }
+    })
 
-    // 触发回调（无论受控/非受控）
-    onSorterChange?.({
-      column: nextOrder ? column : undefined,
-      columnKey: nextOrder ? key : undefined,
-      order: nextOrder,
-      field: column.dataIndex,
+    Object.keys(innerSortOrders).forEach((key) => {
+      if (!activeKeys.has(key)) {
+        delete innerSortOrders[key]
+      }
     })
   }
 
-  /**
-   * 当前排序状态（computed）。
-   */
-  const sorterState = computed<SorterState>(() => {
-    // 优先查找受控列
-    const controlledCol = columns().find(
-      (col) => col.sorter && isControlled(col) && col.sortOrder !== null,
+  syncDefaultSorterState()
+
+  function isControlled(column: ColumnType<TRecord>): boolean {
+    return column.sortOrder !== undefined
+  }
+
+  function readSortOrder(column: ColumnType<TRecord>): SortOrder {
+    const key = getColumnKey(column)
+    if (key === undefined) return null
+
+    if (isControlled(column)) {
+      return column.sortOrder ?? null
+    }
+
+    return innerSortOrders[String(key)] ?? null
+  }
+
+  function collectSorterStates(override?: {
+    columnKey?: Key
+    order: SortOrder
+    column: ColumnType<TRecord>
+  }): SorterState<TRecord>[] {
+    syncDefaultSorterState()
+
+    const states: SorterState<TRecord>[] = []
+
+    columns().forEach((column) => {
+      if (!column.sorter) return
+
+      const key = getColumnKey(column)
+      if (key === undefined) return
+
+      const order =
+        override && String(key) === String(override.columnKey)
+          ? override.order
+          : readSortOrder(column)
+
+      if (!order) return
+
+      states.push({
+        columnKey: key,
+        order,
+        column,
+        multiplePriority: getMultiplePriority(column),
+      })
+    })
+
+    const nonMultipleStates = states.filter((state) => state.multiplePriority === false)
+    if (nonMultipleStates.length > 0) {
+      return [nonMultipleStates[nonMultipleStates.length - 1]]
+    }
+
+    return states.sort(compareSorterPriority)
+  }
+
+  function buildSorterResult(states: SorterState<TRecord>[]): SorterResult<TRecord> {
+    if (states.length === 0) {
+      return {
+        column: undefined,
+        columnKey: undefined,
+        order: null,
+        field: undefined,
+      }
+    }
+
+    if (states.length === 1) {
+      return normalizeSorterResult(states[0])
+    }
+
+    return states.map(normalizeSorterResult)
+  }
+
+  function getSortOrder(column: ColumnType<TRecord>): SortOrder {
+    syncDefaultSorterState()
+    return readSortOrder(column)
+  }
+
+  function clearUncontrolledSorters(predicate?: (column: ColumnType<TRecord>) => boolean) {
+    columns().forEach((column) => {
+      if (!column.sorter || isControlled(column)) return
+
+      const key = getColumnKey(column)
+      if (key === undefined) return
+
+      if (predicate && !predicate(column)) return
+
+      delete innerSortOrders[String(key)]
+    })
+  }
+
+  function toggleSortOrder(column: ColumnType<TRecord>): void {
+    if (!column.sorter) return
+
+    syncDefaultSorterState()
+
+    const key = getColumnKey(column)
+    if (key === undefined) return
+
+    const currentOrder = getSortOrder(column)
+    const directions = getSortDirections(column, tableSortDirections?.())
+    const nextOrder = getNextSortOrder(currentOrder, directions)
+    const multiplePriority = getMultiplePriority(column)
+
+    if (!isControlled(column)) {
+      if (multiplePriority === false) {
+        clearUncontrolledSorters()
+      } else {
+        clearUncontrolledSorters((item) => getMultiplePriority(item) === false)
+      }
+
+      if (nextOrder) {
+        innerSortOrders[String(key)] = nextOrder
+      } else {
+        delete innerSortOrders[String(key)]
+      }
+    }
+
+    const nextStates = collectSorterStates({
+      column,
+      columnKey: key,
+      order: nextOrder,
+    })
+
+    onSorterChange?.(buildSorterResult(nextStates))
+  }
+
+  function resolveCompareFn(column: ColumnType<TRecord>): SorterFn<TRecord> | null {
+    if (!column.sorter) return null
+
+    if (typeof column.sorter === 'function') {
+      return column.sorter as SorterFn<TRecord>
+    }
+
+    const sorterObject = getSorterObject(column.sorter)
+    if (sorterObject?.compare) {
+      return sorterObject.compare
+    }
+
+    return (a, b) =>
+      defaultCompare(getByDataIndex(a, column.dataIndex), getByDataIndex(b, column.dataIndex))
+  }
+
+  const sorterStates = computed(() => collectSorterStates())
+
+  const sorterState = computed<SorterState<TRecord>>(() => {
+    return (
+      sorterStates.value[0] ?? {
+        columnKey: undefined,
+        order: null,
+        column: undefined,
+        multiplePriority: false,
+      }
     )
-    if (controlledCol) {
-      return {
-        columnKey: getColumnKey(controlledCol),
-        order: controlledCol.sortOrder!,
-        column: controlledCol,
-      }
-    }
-
-    // 非受控模式
-    if (innerSortColumnKey.value !== undefined && innerSortOrder.value !== null) {
-      const col = columns().find((c) => getColumnKey(c) === innerSortColumnKey.value)
-      return {
-        columnKey: innerSortColumnKey.value,
-        order: innerSortOrder.value,
-        column: col,
-      }
-    }
-
-    return { columnKey: undefined, order: null, column: undefined }
   })
 
-  /**
-   * 排序数据。
-   *
-   * @param data - 原始数据数组
-   * @returns 排序后的新数组（不修改原数组）
-   */
-  function sortData<TRecord extends Record<string, unknown>>(data: TRecord[]): TRecord[] {
-    const { column, order } = sorterState.value
-    if (!column || !order || !column.sorter) return data
+  const sorterResult = computed<SorterResult<TRecord>>(() => buildSorterResult(sorterStates.value))
 
-    const compareFn: SorterFn<TRecord> =
-      typeof column.sorter === 'function'
-        ? (column.sorter as SorterFn<TRecord>)
-        : (a, b) =>
-            defaultCompare(getByDataIndex(a, column.dataIndex), getByDataIndex(b, column.dataIndex))
+  const sortColumns = computed(() =>
+    sorterStates.value.map((state) => ({
+      column: state.column,
+      order: state.order,
+    })),
+  )
 
-    const multiplier = order === 'descend' ? -1 : 1
+  function sortData(data: TRecord[]): TRecord[] {
+    if (sorterStates.value.length === 0) return data
 
-    return [...data].sort((a, b) => compareFn(a, b) * multiplier)
+    const activeSorters = sorterStates.value
+      .map((state) => {
+        if (!state.column || !state.order) return null
+
+        const compareFn = resolveCompareFn(state.column)
+        if (!compareFn) return null
+
+        return {
+          compareFn,
+          multiplier: state.order === 'descend' ? -1 : 1,
+        }
+      })
+      .filter(
+        (
+          sorter,
+        ): sorter is {
+          compareFn: SorterFn<TRecord>
+          multiplier: number
+        } => sorter !== null,
+      )
+
+    if (activeSorters.length === 0) return data
+
+    return [...data].sort((a, b) => {
+      for (const sorter of activeSorters) {
+        const result = sorter.compareFn(a, b) * sorter.multiplier
+        if (result !== 0) {
+          return result
+        }
+      }
+
+      return 0
+    })
   }
 
   return {
     sorterState,
+    sorterStates: sorterStates as ComputedRef<SorterState<TRecord>[]>,
+    sorterResult,
+    sortColumns,
     getSortOrder,
     toggleSortOrder,
     sortData,

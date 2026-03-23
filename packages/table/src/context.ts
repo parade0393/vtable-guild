@@ -1,10 +1,20 @@
 import type { ComputedRef, InjectionKey, Slots } from 'vue'
 import type { LocaleName, ThemePresetName, VTableGuildTableLocale } from '@vtable-guild/core'
-import type { ColumnType, Key, RowSelection, SortOrder } from './types'
+import type {
+  CellAdditionalProps,
+  ColumnGroupType,
+  ColumnType,
+  Key,
+  RowSelection,
+  SortOrder,
+  TableLayout,
+  TableSticky,
+} from './types'
 import type { Expandable } from './types/table'
 import type { TablePresetConfig } from './preset-config'
 import type { FixedOffset } from './composables/useScroll'
 import type { FlattenRow } from './composables/useTreeData'
+import type { SelectionState } from './composables/useSelection'
 
 /** 子组件主题 slot class 映射 */
 export interface SubThemeSlots {
@@ -147,8 +157,10 @@ export interface TableContext {
   isSelected?: (key: Key) => boolean
   /** 判断某行是否禁用 */
   isDisabledRow?: (record: Record<string, unknown>) => boolean
+  /** 获取某行选择状态（含半选） */
+  getSelectionState?: (record: Record<string, unknown>, index: number) => SelectionState
   /** 切换某行选中状态 */
-  toggleRow?: (record: Record<string, unknown>, index: number) => void
+  toggleRow?: (record: Record<string, unknown>, index: number, nativeEvent?: MouseEvent) => void
   /** 全选/取消全选 */
   toggleAll?: (selected: boolean) => void
   /** 全选状态 */
@@ -169,6 +181,34 @@ export interface TableContext {
   scrollState?: ComputedRef<{ atStart: boolean; atEnd: boolean }>
   /** 是否开启 bordered 模式 */
   bordered?: ComputedRef<boolean>
+  /** 表格布局模式 */
+  tableLayout?: ComputedRef<TableLayout | undefined>
+  /** sticky 配置 */
+  sticky?: ComputedRef<boolean | TableSticky | undefined>
+
+  // ---- 行/表头自定义 ----
+  /** 解析 body 行 props */
+  getRowProps?: (record: Record<string, unknown>, index: number) => CellAdditionalProps | undefined
+  /** 解析 body 行 class */
+  getRowClassName?: (record: Record<string, unknown>, index: number) => string
+  /** 解析表头行 props */
+  getHeaderRowProps?: (
+    columns: Array<ColumnType<Record<string, unknown>> | ColumnGroupType<Record<string, unknown>>>,
+    index: number,
+  ) => CellAdditionalProps | undefined
+  /** 解析列标题 */
+  getColumnTitle?: (
+    column: ColumnType<Record<string, unknown>> | ColumnGroupType<Record<string, unknown>>,
+  ) => unknown
+  /** 下拉层容器 */
+  getPopupContainer?: (triggerNode: HTMLElement) => HTMLElement
+  /** 单元格文本转换 */
+  transformCellText?: (options: {
+    text: unknown
+    column: ColumnType<Record<string, unknown>>
+    record: Record<string, unknown>
+    index: number
+  }) => unknown
 
   // ---- 展开行 ----
   /** 展开行配置 */

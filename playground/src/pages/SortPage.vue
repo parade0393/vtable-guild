@@ -64,22 +64,77 @@ const controlledSortColumns = computed<ColumnsType<DemoRow>>(() => [
 
 const sortDirectionColumns: ColumnsType<DemoRow> = [
   {
-    title: 'Age',
+    title: ({ sortOrder }) => `Age${sortOrder ? ` · ${sortOrder}` : ''}`,
     dataIndex: 'age',
     key: 'age',
     width: 100,
     align: 'right',
     sorter: true,
-    sortDirections: ['ascend', 'descend', null],
-    showSorterTooltip: false,
   },
-  { title: 'Region', dataIndex: 'region', key: 'region' },
+  {
+    title: ({ sortOrder }) => `Region${sortOrder ? ` · ${sortOrder}` : ''}`,
+    dataIndex: 'region',
+    key: 'region',
+    sorter: true,
+  },
+  { title: 'Address', dataIndex: 'address', key: 'address', ellipsis: true },
+]
+
+const antMultiSortColumns = [
+  {
+    title: 'Age',
+    dataIndex: 'age',
+    key: 'age',
+    width: 100,
+    align: 'right',
+    sorter: { multiple: 1 },
+  },
+  {
+    title: 'Score',
+    dataIndex: 'score',
+    key: 'score',
+    width: 110,
+    align: 'right',
+    sorter: { multiple: 3 },
+  },
+  {
+    title: 'Team',
+    dataIndex: 'team',
+    key: 'team',
+    sorter: { multiple: 2 },
+  },
+  { title: 'Address', dataIndex: 'address', key: 'address', ellipsis: true },
+]
+
+const multiSortColumns: ColumnsType<DemoRow> = [
+  {
+    title: ({ sortOrder }) => `Age${sortOrder ? ` · ${sortOrder}` : ''}`,
+    dataIndex: 'age',
+    key: 'age',
+    width: 100,
+    align: 'right',
+    sorter: { multiple: 1 },
+  },
+  {
+    title: ({ sortOrder }) => `Score${sortOrder ? ` · ${sortOrder}` : ''}`,
+    dataIndex: 'score',
+    key: 'score',
+    width: 110,
+    align: 'right',
+    sorter: { multiple: 3 },
+  },
+  {
+    title: ({ sortOrder }) => `Team${sortOrder ? ` · ${sortOrder}` : ''}`,
+    dataIndex: 'team',
+    key: 'team',
+    sorter: { multiple: 2 },
+  },
   { title: 'Address', dataIndex: 'address', key: 'address', ellipsis: true },
 ]
 </script>
 
 <template>
-  <AConfigProvider :locale="playground.antLocale.value">
+  <AConfigProvider :locale="playground.antLocale.value as any">
     <main class="play-page">
       <section class="play-hero">
         <div class="play-hero__copy">
@@ -131,7 +186,7 @@ const sortDirectionColumns: ColumnsType<DemoRow> = [
             </div>
             <ATable
               v-if="isAntdv"
-              :columns="baseSortColumns"
+              :columns="baseSortColumns as any"
               :data-source="dataSource"
               :pagination="false"
               row-key="key"
@@ -150,7 +205,7 @@ const sortDirectionColumns: ColumnsType<DemoRow> = [
               </div>
               <p>sorter: true</p>
             </div>
-            <VTable :columns="baseSortColumns" :data-source="dataSource" row-key="key" />
+            <VTable :columns="baseSortColumns as any" :data-source="dataSource" row-key="key" />
           </article>
         </div>
       </section>
@@ -174,7 +229,7 @@ const sortDirectionColumns: ColumnsType<DemoRow> = [
             </div>
             <ATable
               v-if="isAntdv"
-              :columns="customSortColumns"
+              :columns="customSortColumns as any"
               :data-source="dataSource"
               :pagination="false"
               row-key="key"
@@ -193,7 +248,7 @@ const sortDirectionColumns: ColumnsType<DemoRow> = [
               </div>
               <p>sorter = (a, b) =&gt; number</p>
             </div>
-            <VTable :columns="customSortColumns" :data-source="dataSource" row-key="key" />
+            <VTable :columns="customSortColumns as any" :data-source="dataSource" row-key="key" />
           </article>
         </div>
       </section>
@@ -217,7 +272,7 @@ const sortDirectionColumns: ColumnsType<DemoRow> = [
             </div>
             <ATable
               v-if="isAntdv"
-              :columns="defaultSortColumns"
+              :columns="defaultSortColumns as any"
               :data-source="dataSource"
               :pagination="false"
               row-key="key"
@@ -236,7 +291,7 @@ const sortDirectionColumns: ColumnsType<DemoRow> = [
               </div>
               <p>defaultSortOrder</p>
             </div>
-            <VTable :columns="defaultSortColumns" :data-source="dataSource" row-key="key" />
+            <VTable :columns="defaultSortColumns as any" :data-source="dataSource" row-key="key" />
           </article>
         </div>
       </section>
@@ -271,7 +326,7 @@ const sortDirectionColumns: ColumnsType<DemoRow> = [
             </div>
             <ATable
               v-if="isAntdv"
-              :columns="controlledSortColumns"
+              :columns="controlledSortColumns as any"
               :data-source="dataSource"
               :pagination="false"
               row-key="key"
@@ -290,7 +345,11 @@ const sortDirectionColumns: ColumnsType<DemoRow> = [
               </div>
               <p>sortOrder = {{ controlledOrder ?? 'null' }}</p>
             </div>
-            <VTable :columns="controlledSortColumns" :data-source="dataSource" row-key="key" />
+            <VTable
+              :columns="controlledSortColumns as any"
+              :data-source="dataSource"
+              row-key="key"
+            />
           </article>
         </div>
       </section>
@@ -299,24 +358,35 @@ const sortDirectionColumns: ColumnsType<DemoRow> = [
         <header class="play-case__header">
           <div>
             <p class="play-case__index">05</p>
-            <h2>方向循环与 Tooltip 开关</h2>
+            <h2>表级方向循环与标题函数</h2>
           </div>
-          <p class="play-case__desc">验证点：sortDirections 包含 null，且关闭 sorter tooltip。</p>
+          <p class="play-case__desc">
+            验证点：表级 sortDirections 控制所有列的切换节奏，标题函数读取 sortOrder。
+          </p>
         </header>
         <div class="play-compare-grid">
           <article class="play-panel">
             <div class="play-panel__head">
               <div>
                 <span class="play-badge">reference</span>
-                <h3>native note</h3>
+                <h3>{{ isAntdv ? 'ant-design-vue' : 'native note' }}</h3>
               </div>
-              <p>这一组更偏 VTable API 细节</p>
+              <p>{{ isAntdv ? 'table sortDirections' : '这一组更偏统一 API 细节' }}</p>
             </div>
-            <div class="play-note-card">
+            <ATable
+              v-if="isAntdv"
+              :columns="sortDirectionColumns as any"
+              :data-source="dataSource"
+              :pagination="false"
+              :sort-directions="['descend', 'ascend', null]"
+              row-key="key"
+            />
+            <div v-else class="play-note-card">
               <p class="play-note-card__eyebrow">API detail</p>
-              <h3>Direction cycle</h3>
-              <p>把 null 放进 sortDirections 后，可在升序、降序和无排序之间循环。</p>
-              <p>同时关闭 tooltip，方便单独回归排序按钮的视觉状态。</p>
+              <h3>Table-level control</h3>
+              <p>
+                右侧让整张表统一走 `['descend', 'ascend', null]` 循环，再由标题函数回显当前状态。
+              </p>
             </div>
           </article>
           <article class="play-panel play-panel--accent">
@@ -325,9 +395,59 @@ const sortDirectionColumns: ColumnsType<DemoRow> = [
                 <span class="play-badge play-badge--accent">vtable-guild</span>
                 <h3>{{ isAntdv ? 'antdv preset' : 'element-plus preset' }}</h3>
               </div>
-              <p>sortDirections + showSorterTooltip</p>
+              <p>table sortDirections + title(props)</p>
             </div>
-            <VTable :columns="sortDirectionColumns" :data-source="dataSource" row-key="key" />
+            <VTable
+              :columns="sortDirectionColumns as any"
+              :data-source="dataSource"
+              :sort-directions="['descend', 'ascend', null]"
+              row-key="key"
+            />
+          </article>
+        </div>
+      </section>
+
+      <section class="play-case">
+        <header class="play-case__header">
+          <div>
+            <p class="play-case__index">06</p>
+            <h2>多列排序</h2>
+          </div>
+          <p class="play-case__desc">
+            验证点：多个 sorter 同时生效时，change sorter 结果变成数组，标题函数同步显示状态。
+          </p>
+        </header>
+        <div class="play-compare-grid">
+          <article class="play-panel">
+            <div class="play-panel__head">
+              <div>
+                <span class="play-badge">reference</span>
+                <h3>{{ isAntdv ? 'ant-design-vue' : 'native note' }}</h3>
+              </div>
+              <p>{{ isAntdv ? 'sorter.multiple' : '右侧统一 API 是验证重点' }}</p>
+            </div>
+            <ATable
+              v-if="isAntdv"
+              :columns="antMultiSortColumns as any"
+              :data-source="dataSource"
+              :pagination="false"
+              row-key="key"
+            />
+            <div v-else class="play-note-card">
+              <p class="play-note-card__eyebrow">Preset verification</p>
+              <h3>element-plus</h3>
+              <p>这一组重点回归 VTable 的 antd 风格多列排序语义，而不是对齐原生 sortable。</p>
+            </div>
+          </article>
+          <article class="play-panel play-panel--accent">
+            <div class="play-panel__head">
+              <div>
+                <span class="play-badge play-badge--accent">vtable-guild</span>
+                <h3>{{ isAntdv ? 'antdv preset' : 'element-plus preset' }}</h3>
+              </div>
+              <p>sorter.multiple</p>
+            </div>
+            <VTable :columns="multiSortColumns as any" :data-source="dataSource" row-key="key" />
           </article>
         </div>
       </section>

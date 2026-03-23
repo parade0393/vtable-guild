@@ -23,10 +23,11 @@ export type {
   TableChangeExtra,
   RowSelection,
   RowSelectionType,
+  SelectionItem,
   Expandable,
 } from './types'
 export type { VTableGuildTableLocale } from '@vtable-guild/core'
 
 export { useColumns, getByDataIndex } from './composables'
-export type { SorterResult } from './composables'
+export type { SorterResult, SelectionState } from './composables'
 export type { FlattenRow } from './composables/useTreeData'

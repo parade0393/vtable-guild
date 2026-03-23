@@ -7,6 +7,7 @@ export { useFilter } from './useFilter'
 export type { FiltersRecord } from './useFilter'
 
 export { useSelection } from './useSelection'
+export type { SelectionState } from './useSelection'
 
 export { useScroll } from './useScroll'
 export type { ScrollConfig, FixedOffset } from './useScroll'

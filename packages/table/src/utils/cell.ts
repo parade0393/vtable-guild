@@ -54,18 +54,34 @@ export function resolveBodyCell<TRecord extends Record<string, unknown>>(options
   rowIndex: number
   column: ColumnType<TRecord>
   bodyCell?: ((props: TableBodyCellSlotProps<TRecord>) => VNodeChild) | undefined
+  transformCellText?:
+    | ((options: {
+        text: unknown
+        column: ColumnType<TRecord>
+        record: TRecord
+        index: number
+      }) => unknown)
+    | undefined
 }): ResolvedBodyCell {
-  const { text, record, rowIndex, column, bodyCell } = options
+  const { text, record, rowIndex, column, bodyCell, transformCellText } = options
 
   const customCellProps = column.customCell?.(record, rowIndex, column)
+  const transformedText = transformCellText
+    ? transformCellText({
+        text,
+        column,
+        record,
+        index: rowIndex,
+      })
+    : text
 
-  let content = (text ?? '') as VNodeChild
+  let content = (transformedText ?? '') as VNodeChild
   let renderCellProps: CellAdditionalProps | undefined
 
   if (column.customRender) {
     const rendered = column.customRender({
-      text,
-      value: text,
+      text: transformedText,
+      value: transformedText,
       record,
       index: rowIndex,
       renderIndex: rowIndex,
@@ -80,7 +96,7 @@ export function resolveBodyCell<TRecord extends Record<string, unknown>>(options
     }
   } else if (bodyCell) {
     content = bodyCell({
-      text,
+      text: transformedText,
       record,
       index: rowIndex,
       column,
