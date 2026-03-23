@@ -5,7 +5,12 @@ import type {
   SlotProps,
   VTableGuildTableLocale,
 } from '@vtable-guild/core'
-import type { VNodeChild } from 'vue'
+import type {
+  AllowedComponentProps,
+  ComponentCustomProps,
+  VNodeChild,
+  VNodeProps,
+} from 'vue'
 import type {
   ColumnsType,
   ColumnType,
@@ -135,6 +140,13 @@ export interface CustomFilterDropdownSlotProps<TRecord extends object> {
 }
 
 /**
+ * title / footer slot 的参数类型。
+ */
+export interface TableDataSlotProps<TRecord extends object> {
+  data: TRecord[]
+}
+
+/**
  * Table 组件 slots 声明。
  */
 export interface TableSlotsDecl<TRecord extends object> {
@@ -144,8 +156,8 @@ export interface TableSlotsDecl<TRecord extends object> {
   loading?: () => VNodeChild
   customFilterDropdown?: (props: CustomFilterDropdownSlotProps<TRecord>) => VNodeChild
   customFilterIcon?: (props: { column: ColumnType<TRecord>; filtered: boolean }) => VNodeChild
-  title?: (data: TRecord[]) => VNodeChild
-  footer?: (data: TRecord[]) => VNodeChild
+  title?: (props: TableDataSlotProps<TRecord>) => VNodeChild
+  footer?: (props: TableDataSlotProps<TRecord>) => VNodeChild
   summary?: () => VNodeChild
 }
 
@@ -272,9 +284,42 @@ export interface SorterResultLike<TRecord extends object> {
 }
 
 /** change 事件中的 extra 参数 */
-export interface TableChangeExtra<TRecord extends Record<string, unknown>> {
+export interface TableChangeExtra<TRecord extends object> {
   /** 触发变化的来源 */
   action: 'sort' | 'filter' | 'select'
   /** 当前显示的数据（经排序/筛选后） */
   currentDataSource: TRecord[]
 }
+
+export type VTableSorterResult<TRecord extends object> =
+  | SorterResultLike<TRecord>
+  | Array<SorterResultLike<TRecord>>
+
+export interface VTableEventProps<TRecord extends object = Record<string, unknown>> {
+  onChange?: (
+    filters: TableFiltersInfo,
+    sorter: VTableSorterResult<TRecord>,
+    extra: TableChangeExtra<TRecord>,
+  ) => void
+  onResizeColumn?: (column: ColumnType<TRecord>, width: number) => void
+}
+
+export type VTablePublicProps<TRecord extends object = Record<string, unknown>> = TableProps<TRecord> &
+  VTableEventProps<TRecord>
+
+export declare class VTableGeneric<TRecord extends object = Record<string, unknown>> {
+  readonly $props: VTablePublicProps<TRecord> &
+    VNodeProps &
+    AllowedComponentProps &
+    ComponentCustomProps
+  readonly $slots: TableSlotsDecl<TRecord>
+  $emit(
+    event: 'change',
+    filters: TableFiltersInfo,
+    sorter: VTableSorterResult<TRecord>,
+    extra: TableChangeExtra<TRecord>,
+  ): void
+  $emit(event: 'resizeColumn', column: ColumnType<TRecord>, width: number): void
+}
+
+export type VTableComponent = typeof VTableGeneric

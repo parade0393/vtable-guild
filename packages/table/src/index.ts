@@ -1,4 +1,4 @@
-export { default as VTable } from './components/Table'
+export { default as VTable } from './components/VTable.vue'
 
 export type {
   Key,
@@ -17,10 +17,15 @@ export type {
   TableProps,
   TableBodyCellSlotProps,
   TableHeaderCellSlotProps,
+  TableDataSlotProps,
   TableSlotsDecl,
   CustomFilterDropdownSlotProps,
   TableFiltersInfo,
   TableChangeExtra,
+  VTableSorterResult,
+  VTableEventProps,
+  VTablePublicProps,
+  VTableComponent,
   RowSelection,
   RowSelectionType,
   SelectionItem,
