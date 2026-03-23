@@ -7,7 +7,12 @@ import 'element-plus/es/components/loading/style/css'
 import { VTable } from '@vtable-guild/table'
 import type { ColumnsType } from '@vtable-guild/table'
 import { VTABLE_GUILD_INJECTION_KEY, type VTableGuildContext } from '@vtable-guild/core'
-import { dataSource, type DemoRow } from '../filterMatrixShared'
+import {
+  dataSource,
+  ellipsisDemoColumns,
+  ellipsisDemoRows,
+  type DemoRow,
+} from '../filterMatrixShared'
 
 const vLoading = ElLoading.directive
 
@@ -402,6 +407,47 @@ provide(
             :data-source="compactRows"
             row-key="key"
           />
+        </article>
+      </div>
+    </section>
+
+    <!-- 08 Preset Ellipsis -->
+    <section class="play-case">
+      <header class="play-case__header">
+        <div>
+          <p class="play-case__index">08</p>
+          <h2>单元格自动省略</h2>
+        </div>
+        <p class="play-case__desc">
+          验证点：左侧原生 ElTable 与右侧 element-plus preset 的 VTable 在相同列宽下都能稳定省略。
+        </p>
+      </header>
+      <div class="play-compare-grid">
+        <article class="play-panel">
+          <div class="play-panel__head">
+            <div>
+              <span class="play-badge">reference</span>
+              <h3>element-plus</h3>
+            </div>
+            <p>native overflow tooltip</p>
+          </div>
+          <ElTable :data="ellipsisDemoRows" style="width: 100%">
+            <ElTableColumn prop="name" label="Name" width="140" />
+            <ElTableColumn prop="team" label="Team" width="140" />
+            <ElTableColumn prop="role" label="Role" width="180" show-overflow-tooltip />
+            <ElTableColumn prop="address" label="Address" width="260" show-overflow-tooltip />
+          </ElTable>
+        </article>
+
+        <article class="play-panel play-panel--accent">
+          <div class="play-panel__head">
+            <div>
+              <span class="play-badge play-badge--accent">vtable-guild</span>
+              <h3>element-plus preset</h3>
+            </div>
+            <p>same content, same width</p>
+          </div>
+          <VTable :columns="ellipsisDemoColumns" :data-source="ellipsisDemoRows" row-key="key" />
         </article>
       </div>
     </section>

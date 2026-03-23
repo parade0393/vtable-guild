@@ -3,7 +3,12 @@ import { computed, ref } from 'vue'
 import { ConfigProvider as AConfigProvider, Table as ATable } from 'ant-design-vue'
 import { VTable } from '@vtable-guild/table'
 import type { ColumnsType } from '@vtable-guild/table'
-import { dataSource, type DemoRow } from '../filterMatrixShared'
+import {
+  dataSource,
+  ellipsisDemoColumns,
+  ellipsisDemoRows,
+  type DemoRow,
+} from '../filterMatrixShared'
 
 defineProps<{
   locale: Record<string, unknown>
@@ -367,6 +372,47 @@ const compactRows = computed(() => dataSource.slice(0, 4))
               :data-source="compactRows"
               row-key="key"
             />
+          </article>
+        </div>
+      </section>
+
+      <!-- 08 Preset Ellipsis -->
+      <section class="play-case">
+        <header class="play-case__header">
+          <div>
+            <p class="play-case__index">08</p>
+            <h2>单元格自动省略</h2>
+          </div>
+          <p class="play-case__desc">
+            验证点：左侧原生 ATable 与右侧 antdv preset 的 VTable 在相同列宽下都能稳定省略。
+          </p>
+        </header>
+        <div class="play-compare-grid">
+          <article class="play-panel">
+            <div class="play-panel__head">
+              <div>
+                <span class="play-badge">reference</span>
+                <h3>ant-design-vue</h3>
+              </div>
+              <p>native ellipsis</p>
+            </div>
+            <ATable
+              :columns="ellipsisDemoColumns"
+              :data-source="ellipsisDemoRows"
+              :pagination="false"
+              row-key="key"
+            />
+          </article>
+
+          <article class="play-panel play-panel--accent">
+            <div class="play-panel__head">
+              <div>
+                <span class="play-badge play-badge--accent">vtable-guild</span>
+                <h3>antdv preset</h3>
+              </div>
+              <p>same content, same width</p>
+            </div>
+            <VTable :columns="ellipsisDemoColumns" :data-source="ellipsisDemoRows" row-key="key" />
           </article>
         </div>
       </section>

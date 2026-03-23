@@ -7,7 +7,8 @@
  * 3. .dark — 只覆盖语义 token，组件 token 自动跟随
  */
 
-:root {
+:root,
+[data-vtg-preset='antdv'] {
   /* ===== 语义 token — antdv 设计体系值 ===== */
 
   /* 排版 */
@@ -125,7 +126,9 @@
   --vtg-scrollbar-thumb-radius: 3px;
 }
 
-.dark {
+.dark,
+.dark [data-vtg-preset='antdv'],
+[data-vtg-preset='antdv'].dark {
   /* ===== 语义 token 暗色值 — 只改语义 token，组件 token 自动跟随 ===== */
   --color-surface: #141414;
   --color-surface-hover: #1d1d1d;

@@ -173,6 +173,32 @@ export const dataSource: DemoRow[] = [
   },
 ]
 
+export const ellipsisDemoRows: DemoRow[] = dataSource.slice(0, 4).map((row, index) => ({
+  ...row,
+  role:
+    index % 2 === 0 ? `${row.role} / Interaction Steward` : `${row.role} / Operations Coordination`,
+  address: `${row.address} / Documentation Archive Corridor / Unit ${index + 11} / Long Text Validation Segment`,
+}))
+
+export const ellipsisDemoColumns: ColumnType<DemoRow>[] = [
+  { title: 'Name', dataIndex: 'name', key: 'ellipsis-name', width: 140 },
+  { title: 'Team', dataIndex: 'team', key: 'ellipsis-team', width: 140 },
+  {
+    title: 'Role',
+    dataIndex: 'role',
+    key: 'ellipsis-role',
+    width: 180,
+    ellipsis: true,
+  },
+  {
+    title: 'Address',
+    dataIndex: 'address',
+    key: 'ellipsis-address',
+    width: 260,
+    ellipsis: true,
+  },
+]
+
 export const cityFilters: FilterOption[] = [
   { text: 'New York', value: 'New York' },
   { text: 'Chicago', value: 'Chicago' },

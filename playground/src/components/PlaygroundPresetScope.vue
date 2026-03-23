@@ -36,7 +36,7 @@ const rootClass = computed(() => [
 </script>
 
 <template>
-  <div :class="rootClass">
+  <div :class="rootClass" :data-vtg-preset="preset">
     <slot />
   </div>
 </template>
