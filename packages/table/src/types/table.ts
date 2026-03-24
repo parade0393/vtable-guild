@@ -26,7 +26,7 @@ import type { TableSlots } from '@vtable-guild/theme'
 
 // ---- 展开行类型 ----
 
-export interface Expandable<TRecord = Record<string, unknown>> {
+export interface Expandable<TRecord extends object = Record<string, any>> {
   /** 展开行渲染函数 */
   expandedRowRender?: (
     record: TRecord,
@@ -75,7 +75,7 @@ export interface SelectionItem {
   onSelect?: (changeableRowKeys: Key[]) => void
 }
 
-export interface RowSelection<TRecord = Record<string, unknown>> {
+export interface RowSelection<TRecord extends object = Record<string, any>> {
   preserveSelectedRowKeys?: boolean
   type?: RowSelectionType
   selectedRowKeys?: Key[]

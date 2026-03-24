@@ -3,6 +3,7 @@ export { default as VTable } from './components/VTable.vue'
 export type {
   Key,
   AlignType,
+  Breakpoint,
   DataIndex,
   CellAdditionalProps,
   CustomRenderContext,
