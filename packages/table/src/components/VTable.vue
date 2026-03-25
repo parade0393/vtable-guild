@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="TRecord extends object = Record<string, unknown>">
-import { computed, getCurrentInstance } from 'vue'
+import { getCurrentInstance } from 'vue'
 import TableImpl from './Table'
 import type {
   ColumnType,
@@ -33,13 +33,15 @@ const emit = defineEmits<{
 defineSlots<TableSlotsDecl<TRecord>>()
 
 const instance = getCurrentInstance()
-const forwardedBindings = computed(() => ({
-  ...Object.fromEntries(
-    Object.entries(instance?.vnode.props ?? {}).filter(
-      ([key]) => key !== 'onChange' && key !== 'onResizeColumn',
-    ),
-  ),
-}))
+function getForwardedBindings() {
+  const result: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(instance?.vnode.props ?? {})) {
+    if (key !== 'onChange' && key !== 'onResizeColumn') {
+      result[key] = value
+    }
+  }
+  return result
+}
 
 function handleChange(
   filters: TableFiltersInfo,
@@ -85,7 +87,11 @@ function asDataSlotProps(slotProps: TableDataSlotProps<Record<string, unknown>>)
 </script>
 
 <template>
-  <TableImpl v-bind="forwardedBindings" @change="handleChange" @resize-column="handleResizeColumn">
+  <TableImpl
+    v-bind="getForwardedBindings()"
+    @change="handleChange"
+    @resize-column="handleResizeColumn"
+  >
     <template v-if="$slots.bodyCell" #bodyCell="slotProps">
       <slot name="bodyCell" v-bind="asBodyCellSlotProps(slotProps)" />
     </template>
