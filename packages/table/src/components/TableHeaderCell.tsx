@@ -434,7 +434,7 @@ export default defineComponent({
 
         const cellSelClass = cn(
           props.thClass,
-          'text-center before:hidden',
+          'text-center before:hidden leading-[0]',
           leafColumn.value.className,
           headerCellProps.value?.class,
           headerCellProps.value?.className,

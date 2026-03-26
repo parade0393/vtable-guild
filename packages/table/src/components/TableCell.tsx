@@ -239,7 +239,7 @@ export default defineComponent({
 
         const cellSelClass = cn(
           props.tdClass,
-          'text-center',
+          'text-center leading-[0]',
           props.column.className,
           selectionCellProps?.class,
           selectionCellProps?.className,
