@@ -892,12 +892,14 @@ export default defineComponent({
       // ---- scroll style ----
       const scroll = props.scroll
       const tableStyle: Record<string, string> = {
-        width: shouldExpandTableWidth.value ? 'max-content' : '100%',
         tableLayout: resolvedTableLayout.value,
       }
 
       if (scroll?.x) {
-        tableStyle.minWidth = typeof scroll.x === 'number' ? `${scroll.x}px` : scroll.x
+        tableStyle.width = typeof scroll.x === 'number' ? `${scroll.x}px` : scroll.x
+        tableStyle.minWidth = '100%'
+      } else {
+        tableStyle.width = shouldExpandTableWidth.value ? 'max-content' : '100%'
       }
 
       const loadingOverlay =
