@@ -518,7 +518,7 @@ export default defineComponent({
             onClick={handleCellClick}
           >
             {!hideSelectAll ? (
-              <span class="inline-flex items-center justify-center">
+              <span class="inline-flex items-center justify-center relative">
                 <SelectionCheckbox
                   checked={state === 'all'}
                   indeterminate={state === 'partial'}
@@ -528,7 +528,10 @@ export default defineComponent({
                 {hasSelections && (
                   <span
                     ref={selectionAnchorRef}
-                    class={tableContext.subThemeSlots?.value.selectionExtra}
+                    class={cn(
+                      tableContext.subThemeSlots?.value.selectionExtra,
+                      'absolute left-full top-1/2 -translate-y-1/2',
+                    )}
                     onMouseenter={openSelectionDropdown}
                     onMouseleave={scheduleCloseSelectionDropdown}
                     role="button"
