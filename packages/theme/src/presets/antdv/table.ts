@@ -22,14 +22,16 @@ export const TABLE_ALIGN_CLASSES = {
 
 export const antdvTableTheme = {
   slots: {
-    root: 'relative w-full',
+    root: [
+      'relative w-full',
+      'font-[family-name:var(--vtg-table-font-family)]',
+      'text-[length:var(--vtg-table-font-size)]',
+      'leading-[var(--vtg-table-line-height)]',
+    ].join(' '),
     wrapper: 'w-full overflow-auto',
     table: [
       'w-full border-separate border-spacing-0',
       'bg-[var(--vtg-table-bg)]',
-      'font-[family-name:var(--vtg-table-font-family)]',
-      'text-[length:var(--vtg-table-font-size)]',
-      'leading-[var(--vtg-table-line-height)]',
       'text-[color:var(--vtg-table-text-color)]',
     ].join(' '),
     thead: '',
@@ -161,11 +163,9 @@ export const antdvTableTheme = {
       'inline-flex items-center justify-center cursor-pointer ml-0.5 text-[10px] text-[color:var(--color-sorter-icon)] hover:text-[color:var(--color-primary)] transition-colors',
 
     // ---- 标题/页脚/摘要行 ----
-    title: [
-      'bg-[var(--vtg-table-header-bg)]',
-      'text-[color:var(--vtg-table-text-color)]',
-      'font-semibold',
-    ].join(' '),
+    title: ['bg-[var(--vtg-table-header-bg)]', 'text-[color:var(--vtg-table-text-color)]'].join(
+      ' ',
+    ),
     footer: ['bg-[var(--vtg-table-header-bg)]', 'text-[color:var(--vtg-table-text-color)]'].join(
       ' ',
     ),
@@ -266,12 +266,11 @@ export const antdvTableTheme = {
     },
     bordered: {
       true: {
-        table: 'border border-[var(--vtg-table-border-color)] rounded-t-[8px]',
-        th: [
-          'border-r border-[var(--vtg-table-border-color)] last:border-r-0 before:hidden',
-          'first:rounded-tl-[8px] last:rounded-tr-[8px]',
-        ].join(' '),
+        root: 'border border-[var(--vtg-table-border-color)] rounded-[8px] overflow-hidden',
+        table: '',
+        th: 'border-r border-[var(--vtg-table-border-color)] last:border-r-0 before:hidden',
         td: 'border-r border-[var(--vtg-table-border-color)] last:border-r-0',
+        tbody: '[&>tr:last-child>td]:border-b-0',
         title: 'border-b border-[var(--vtg-table-border-color)]',
         footer: 'border-t border-[var(--vtg-table-border-color)]',
         summaryCell: 'border-r border-[var(--vtg-table-border-color)] last:border-r-0',

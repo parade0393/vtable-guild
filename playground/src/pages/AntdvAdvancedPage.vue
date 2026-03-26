@@ -497,6 +497,7 @@ function apiCustomHeaderRow(_columns: ColumnsType<DemoRow>, index?: number) {
             <ATable
               :data-source="dataSource.slice(0, 4)"
               :columns="summaryColumns as any"
+              bordered
               :title="() => 'Table Title'"
               :footer="() => 'Table Footer'"
               :pagination="false"
@@ -513,6 +514,8 @@ function apiCustomHeaderRow(_columns: ColumnsType<DemoRow>, index?: number) {
               :columns="summaryColumns"
               :title="() => 'Table Title'"
               :footer="() => 'Table Footer'"
+              :pagination="false"
+              bordered
               size="md"
               row-key="key"
             />

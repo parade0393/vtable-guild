@@ -25,14 +25,16 @@ export const TABLE_ALIGN_CLASSES = {
 
 export const elementPlusTableTheme = {
   slots: {
-    root: 'relative w-full',
+    root: [
+      'relative w-full',
+      'font-[family-name:var(--vtg-table-font-family)]',
+      'text-[length:var(--vtg-table-font-size)]',
+      'leading-[var(--vtg-table-line-height)]',
+    ].join(' '),
     wrapper: 'w-full overflow-auto',
     table: [
       'w-full border-separate border-spacing-0',
       'bg-[var(--vtg-table-bg)]',
-      'font-[family-name:var(--vtg-table-font-family)]',
-      'text-[length:var(--vtg-table-font-size)]',
-      'leading-[var(--vtg-table-line-height)]',
       'text-[color:var(--vtg-table-text-color)]',
     ].join(' '),
     thead: '',
@@ -217,9 +219,11 @@ export const elementPlusTableTheme = {
     },
     bordered: {
       true: {
-        table: 'border border-[var(--vtg-table-border-color)]',
+        root: 'border border-[var(--vtg-table-border-color)] overflow-hidden',
+        table: '',
         th: 'border-r border-[var(--vtg-table-border-color)] last:border-r-0',
         td: 'border-r border-[var(--vtg-table-border-color)] last:border-r-0',
+        tbody: '[&>tr:last-child>td]:border-b-0',
         title: 'border-b border-[var(--vtg-table-border-color)]',
         footer: 'border-t border-[var(--vtg-table-border-color)]',
         summaryCell: 'border-r border-[var(--vtg-table-border-color)] last:border-r-0',
