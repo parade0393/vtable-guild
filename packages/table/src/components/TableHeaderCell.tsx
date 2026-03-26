@@ -13,6 +13,7 @@ import { cn, Tooltip } from '@vtable-guild/core'
 import { TABLE_ALIGN_CLASSES } from '@vtable-guild/theme'
 import { DownOutlinedIcon } from '@vtable-guild/icons'
 import type { ColumnType, SelectionItem, SortOrder } from '../types'
+import { SELECTION_ALL, SELECTION_INVERT, SELECTION_NONE } from '../constants'
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 import type { HeaderCellMeta } from '../composables/useColumns'
 import { getColumnKey } from '../composables/useSorter'
@@ -448,7 +449,30 @@ export default defineComponent({
               },
             ]
           } else if (Array.isArray(sel?.selections)) {
-            selectionItems = sel.selections as SelectionItem[]
+            selectionItems = sel.selections.map((item) => {
+              if (item === SELECTION_ALL) {
+                return {
+                  key: '__vtg_select_all__',
+                  text: tableLocale?.selection?.selectAll ?? '全选当页',
+                  onSelect: () => tableContext.toggleAll?.(true),
+                }
+              }
+              if (item === SELECTION_INVERT) {
+                return {
+                  key: '__vtg_select_invert__',
+                  text: tableLocale?.selection?.selectInvert ?? '反选当页',
+                  onSelect: () => tableContext.invertSelection?.(),
+                }
+              }
+              if (item === SELECTION_NONE) {
+                return {
+                  key: '__vtg_select_none__',
+                  text: tableLocale?.selection?.selectNone ?? '清空所有',
+                  onSelect: () => tableContext.clearSelection?.(),
+                }
+              }
+              return item as SelectionItem
+            })
           }
         }
 

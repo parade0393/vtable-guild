@@ -1,4 +1,9 @@
-export { default as VTable } from './components/VTable.vue'
+import _VTable from './components/VTable.vue'
+import { SELECTION_ALL, SELECTION_INVERT, SELECTION_NONE } from './constants'
+
+const VTable = Object.assign(_VTable, { SELECTION_ALL, SELECTION_INVERT, SELECTION_NONE } as const)
+
+export { VTable, SELECTION_ALL, SELECTION_INVERT, SELECTION_NONE }
 
 export type {
   Key,
@@ -33,6 +38,7 @@ export type {
   RowSelection,
   RowSelectionType,
   SelectionItem,
+  SelectionSentinel,
   Expandable,
 } from './types'
 export type { VTableGuildTableLocale } from '@vtable-guild/core'

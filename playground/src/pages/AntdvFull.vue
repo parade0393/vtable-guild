@@ -29,6 +29,7 @@ import type {
   Key,
   RowSelection,
   SelectionItem,
+  SelectionSentinel,
   Expandable,
   TableFiltersInfo,
   VTableSorterResult,
@@ -238,7 +239,10 @@ function start5() {
 
 const selectedRowKeys6 = ref<Key[]>([])
 
-const customSelections: SelectionItem[] = [
+const customSelections: (SelectionItem | SelectionSentinel)[] = [
+  VTable.SELECTION_ALL,
+  VTable.SELECTION_INVERT,
+  VTable.SELECTION_NONE,
   {
     key: 'odd',
     text: 'Select Odd Row',

@@ -22,6 +22,7 @@ import type {
   TransformCellText,
   SortOrder,
 } from './column'
+import type { SelectionSentinel } from '../constants'
 import type { TableSlots } from '@vtable-guild/theme'
 
 // ---- 展开行类型 ----
@@ -97,8 +98,8 @@ export interface RowSelection<TRecord extends object = Record<string, any>> {
     originNode: VNodeChild,
   ) => VNodeChild | RenderedCell
   checkStrictly?: boolean
-  /** 自定义选择项。true 显示默认项，数组显示自定义项 */
-  selections?: boolean | SelectionItem[]
+  /** 自定义选择项。true 显示默认项，数组可混合 SELECTION_ALL 等哨兵与自定义项 */
+  selections?: boolean | (SelectionItem | SelectionSentinel)[]
   /** 隐藏全选 checkbox 及自定义选择下拉 */
   hideSelectAll?: boolean
 }

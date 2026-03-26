@@ -46,3 +46,4 @@ export type {
   SelectionItem,
   Expandable,
 } from './table'
+export type { SelectionSentinel } from '../constants'
