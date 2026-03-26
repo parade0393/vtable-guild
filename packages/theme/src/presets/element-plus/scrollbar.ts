@@ -6,7 +6,7 @@ export const elementPlusScrollbarTheme = {
     wrap: 'overflow-auto scrollbar-none h-full',
     view: 'block min-w-full w-max',
     track:
-      'absolute z-[1] rounded opacity-0 transition-opacity duration-300 group-hover:opacity-100',
+      'absolute z-[3] rounded opacity-0 transition-opacity duration-300 group-hover:opacity-100',
     trackVertical: 'right-0.5 top-0.5 bottom-0.5 w-[var(--vtg-scrollbar-thumb-width)]',
     trackHorizontal: 'bottom-0.5 left-0.5 right-0.5 h-[var(--vtg-scrollbar-thumb-width)]',
     thumb: [
