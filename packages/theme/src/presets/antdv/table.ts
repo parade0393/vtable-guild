@@ -153,12 +153,12 @@ export const antdvTableTheme = {
       'text-[length:var(--vtg-table-font-size)] leading-[var(--vtg-table-line-height)]',
       'text-[color:var(--vtg-table-text-color)]',
       'shadow-[0_6px_16px_0_rgba(0,0,0,0.08),0_3px_6px_-4px_rgba(0,0,0,0.12),0_9px_28px_8px_rgba(0,0,0,0.05)]',
-      'p-1 min-w-[120px]',
+      'p-1',
     ].join(' '),
     selectionDropdownItem:
       'flex items-center cursor-pointer px-3 py-[5px] rounded-sm hover:bg-[color:var(--color-control-item-hover-bg)]',
     selectionExtra:
-      'inline-flex items-center justify-center cursor-pointer ml-1 text-[10px] text-[color:var(--vtg-table-header-color)] hover:text-[color:var(--color-primary)] transition-colors',
+      'inline-flex items-center justify-center cursor-pointer ml-0.5 text-[10px] text-[color:var(--color-sorter-icon)] hover:text-[color:var(--color-primary)] transition-colors',
 
     // ---- 标题/页脚/摘要行 ----
     title: [

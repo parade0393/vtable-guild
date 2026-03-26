@@ -380,12 +380,26 @@ export default defineComponent({
       return selectionAnchorRef.value.getBoundingClientRect()
     }
 
-    function toggleSelectionDropdown(e: MouseEvent) {
-      e.stopPropagation()
-      selectionDropdownVisible.value = !selectionDropdownVisible.value
+    let selectionHoverTimer: ReturnType<typeof setTimeout> | null = null
+
+    function openSelectionDropdown() {
+      if (selectionHoverTimer) clearTimeout(selectionHoverTimer)
+      selectionDropdownVisible.value = true
+    }
+
+    function scheduleCloseSelectionDropdown() {
+      if (selectionHoverTimer) clearTimeout(selectionHoverTimer)
+      selectionHoverTimer = setTimeout(() => {
+        selectionDropdownVisible.value = false
+      }, 100)
+    }
+
+    function cancelCloseSelectionDropdown() {
+      if (selectionHoverTimer) clearTimeout(selectionHoverTimer)
     }
 
     function closeSelectionDropdown() {
+      if (selectionHoverTimer) clearTimeout(selectionHoverTimer)
       selectionDropdownVisible.value = false
     }
 
@@ -420,7 +434,7 @@ export default defineComponent({
 
         const cellSelClass = cn(
           props.thClass,
-          'text-center',
+          'text-center before:hidden',
           leafColumn.value.className,
           headerCellProps.value?.class,
           headerCellProps.value?.className,
@@ -515,7 +529,8 @@ export default defineComponent({
                   <span
                     ref={selectionAnchorRef}
                     class={tableContext.subThemeSlots?.value.selectionExtra}
-                    onClick={toggleSelectionDropdown}
+                    onMouseenter={openSelectionDropdown}
+                    onMouseleave={scheduleCloseSelectionDropdown}
                     role="button"
                     aria-label="Selection options"
                   >
@@ -534,6 +549,8 @@ export default defineComponent({
                 popupContainer={resolvePopupContainer(tableContext, selectionAnchorRef.value)}
                 visible={selectionDropdownVisible.value}
                 onClose={closeSelectionDropdown}
+                onMouseenter={cancelCloseSelectionDropdown}
+                onMouseleave={scheduleCloseSelectionDropdown}
               />
             )}
           </th>

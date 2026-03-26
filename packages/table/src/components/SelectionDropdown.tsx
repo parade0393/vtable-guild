@@ -39,7 +39,7 @@ export default defineComponent({
       default: true,
     },
   },
-  emits: ['close', 'select'],
+  emits: ['close', 'select', 'mouseenter', 'mouseleave'],
   setup(props, { emit }) {
     const tableContext = inject(TABLE_CONTEXT_KEY, {} as TableContext)
     const dropdownRef = ref<HTMLElement | null>(null)
@@ -108,6 +108,8 @@ export default defineComponent({
                 ref={dropdownRef}
                 class={tableContext.subThemeSlots?.value.selectionDropdown}
                 style={style}
+                onMouseenter={() => emit('mouseenter')}
+                onMouseleave={() => emit('mouseleave')}
               >
                 <ul class="m-0 list-none p-0">
                   {props.items.map((item) => (
