@@ -581,19 +581,12 @@ export default defineComponent({
       displayColumns.value.some((column) => column.fixed === 'left' || column.fixed === 'right'),
     )
 
-    const hasSizedDataColumns = computed(() =>
-      dataLeafColumns.value.some((column) => column.width !== undefined),
-    )
-
     const hasEllipsisColumns = computed(() =>
       dataLeafColumns.value.some((column) => column.ellipsis),
     )
 
     const shouldExpandTableWidth = computed(
-      () =>
-        props.scroll?.x !== undefined ||
-        hasFixedColumns.value ||
-        (!!props.scroll?.y && hasSizedDataColumns.value),
+      () => props.scroll?.x !== undefined || hasFixedColumns.value,
     )
 
     const resolvedTableLayout = computed(() => {
