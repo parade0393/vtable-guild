@@ -314,6 +314,21 @@ export default defineComponent({
       return 'before:hidden border-b-0'
     })
 
+    // 修复分组表头中「非真正最后一列」被 last: 选择器错误匹配的问题。
+    // 场景：某行的最后一个 <th> 可能因 rowSpan 缺位，而不是整张表的最后叶子列。
+    // bordered 模式：覆盖 last:border-r-0；非 bordered 模式：覆盖 last:before:bg-transparent。
+    const lastColumnDividerFix = computed(() => {
+      const total = tableContext.leafColumnCount?.value ?? 0
+      if (total > 0 && props.cell.colEnd < total - 1) {
+        const isBordered = tableContext.bordered?.value ?? false
+        if (isBordered) {
+          return 'last:border-r last:border-[var(--vtg-table-border-color)]'
+        }
+        return 'last:before:bg-[var(--vtg-table-header-split-color)]'
+      }
+      return ''
+    })
+
     const resolvedHeaderTitle = computed(() => {
       return tableContext.getColumnTitle?.(props.cell.column) ?? props.cell.column.title ?? ''
     })
@@ -345,6 +360,7 @@ export default defineComponent({
         headerCellProps.value?.class,
         headerCellProps.value?.className,
         fixedClass.value,
+        lastColumnDividerFix.value,
       )
     })
 

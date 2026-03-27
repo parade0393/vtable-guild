@@ -185,6 +185,8 @@ export interface TableContext {
   tableLayout?: ComputedRef<TableLayout | undefined>
   /** sticky 配置 */
   sticky?: ComputedRef<boolean | TableSticky | undefined>
+  /** 叶子列总数（用于分组表头判断是否为真正的最后一列） */
+  leafColumnCount?: ComputedRef<number>
 
   // ---- 行/表头自定义 ----
   /** 解析 body 行 props */

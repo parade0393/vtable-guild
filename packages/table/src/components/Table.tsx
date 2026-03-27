@@ -848,6 +848,7 @@ export default defineComponent({
       getChangeableRowKeys: selGetChangeableRowKeys,
       fixedOffsets,
       scrollState,
+      leafColumnCount: computed(() => displayColumns.value.length),
       bordered: computed(() => props.bordered),
       tableLayout: resolvedTableLayout,
       sticky: computed(() => props.sticky),
