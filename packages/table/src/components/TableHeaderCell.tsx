@@ -291,15 +291,13 @@ export default defineComponent({
       const classes: string[] = []
       const atStart = tableContext.scrollState?.value?.atStart ?? true
       const atEnd = tableContext.scrollState?.value?.atEnd ?? true
-      const showFixedDivider = !(tableContext.bordered?.value ?? false)
 
       if (info.isLastLeft && !atStart) {
         classes.push(sub.fixedShadowLeft)
       }
 
-      if (info.isFirstRight) {
-        if (showFixedDivider && atEnd) classes.push(sub.fixedDividerRight)
-        if (!atEnd) classes.push(sub.fixedShadowRight)
+      if (info.isFirstRight && !atEnd) {
+        classes.push(sub.fixedShadowRight)
       }
 
       return classes.join(' ')
