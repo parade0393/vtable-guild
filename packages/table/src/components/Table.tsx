@@ -140,7 +140,7 @@ export default defineComponent({
     columns: { type: Array as PropType<ColumnsType<TableRecord>>, default: () => [] },
     rowKey: {
       type: [String, Function] as PropType<string | ((record: TableRecord) => Key)>,
-      default: undefined,
+      default: 'key',
     },
     loading: { type: Boolean, default: false },
     size: { type: String as PropType<'sm' | 'md' | 'lg'>, default: undefined },
@@ -992,7 +992,7 @@ export default defineComponent({
         return (
           <div class={themeSlots.root()}>
             {titleContent && <div class={themeSlots.title()}>{titleContent}</div>}
-            <div class={themeSlots.wrapper()}>
+            <div class={cn(themeSlots.wrapper(), resolvedSticky.value && 'overflow-clip')}>
               {headerTable}
               {virtualBody}
               {normalBody}

@@ -89,12 +89,14 @@ export function useTreeData<TRecord extends Record<string, unknown> = Record<str
         // Collect all keys that have children
         const allKeys = new Set<Key>()
         const field = childrenField.value
-        function collectExpandableKeys(records: TRecord[], idx: number[] = []) {
-          records.forEach((record, ri) => {
+        let keyCounter = 0
+        function collectExpandableKeys(records: TRecord[]) {
+          records.forEach((record) => {
             const children = (record as Record<string, unknown>)[field]
+            const idx = keyCounter++
             if (Array.isArray(children) && children.length > 0) {
-              allKeys.add(options.getRowKey(record, idx.length > 0 ? -1 : ri))
-              collectExpandableKeys(children, [...idx, ri])
+              allKeys.add(options.getRowKey(record, idx))
+              collectExpandableKeys(children)
             }
           })
         }

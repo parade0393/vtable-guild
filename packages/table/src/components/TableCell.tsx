@@ -140,13 +140,7 @@ export default defineComponent({
       if (!tableContext.isTreeData?.value) return null
       const flatData = tableContext.treeFlattenData?.value
       if (!flatData) return null
-      const key = tableContext.getRowKey?.(props.record, props.rowIndex)
-      return (
-        flatData.find((row) => {
-          const rowKey = tableContext.getRowKey?.(row.record, -1)
-          return rowKey === key
-        }) ?? null
-      )
+      return flatData.find((row) => row.record === props.record) ?? null
     })
 
     const isTreeIndentColumn = computed(() => {
