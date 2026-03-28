@@ -17,7 +17,7 @@
  */
 
 import { h, ref, reactive, computed } from 'vue'
-import { VTable } from '@vtable-guild/table'
+import { VTable, VTableSummary } from '@vtable-guild/table'
 import { SmileOutlined, SearchOutlined, DownOutlined } from '@ant-design/icons-vue'
 import { Tag as ATag, Space as ASpace } from 'ant-design-vue'
 import type {
@@ -1156,6 +1156,33 @@ const summaryData: SummaryRecord[] = [
 const totalBorrow = computed(() => summaryData.reduce((sum, r) => sum + r.borrow, 0))
 const totalRepayment = computed(() => summaryData.reduce((sum, r) => sum + r.repayment, 0))
 
+// 27b. Fixed Summary with scroll + fixed columns
+interface SummaryFixedRecord {
+  key: string
+  name: string
+  amount: number
+  address: string
+  description: string
+}
+
+const summaryFixedColumns: ColumnsType<SummaryFixedRecord> = [
+  { title: 'Name', dataIndex: 'name', fixed: 'left', width: 120 },
+  { title: 'Amount', dataIndex: 'amount', width: 100 },
+  { title: 'Address', dataIndex: 'address', width: 250 },
+  { title: 'Description', dataIndex: 'description' },
+  { title: 'Action', key: 'action', fixed: 'right', width: 80 },
+]
+
+const summaryFixedData: SummaryFixedRecord[] = Array.from({ length: 20 }, (_, i) => ({
+  key: String(i + 1),
+  name: ['John Brown', 'Jim Green', 'Joe Black', 'Jim Red'][i % 4],
+  amount: [10, 100, 10, 75][i % 4],
+  address: `London Park no. ${i}`,
+  description: `Description ${i}`,
+}))
+
+const summaryFixedTotal = computed(() => summaryFixedData.reduce((sum, r) => sum + r.amount, 0))
+
 // ============================================================
 // 28. 响应式
 // ============================================================
@@ -1615,15 +1642,50 @@ function cancelRow() {
       <div class="play-panel">
         <VTable :columns="summaryColumns" :data-source="summaryData" bordered>
           <template #summary>
-            <tr>
-              <td>Total</td>
-              <td>
-                <span style="color: red">{{ totalBorrow }}</span>
-              </td>
-              <td>
-                <span>{{ totalRepayment }}</span>
-              </td>
-            </tr>
+            <VTableSummary>
+              <VTableSummary.Row>
+                <VTableSummary.Cell :index="0">Total</VTableSummary.Cell>
+                <VTableSummary.Cell :index="1">
+                  <span style="color: red">{{ totalBorrow }}</span>
+                </VTableSummary.Cell>
+                <VTableSummary.Cell :index="2">
+                  {{ totalRepayment }}
+                </VTableSummary.Cell>
+              </VTableSummary.Row>
+              <VTableSummary.Row>
+                <VTableSummary.Cell :index="0">Balance</VTableSummary.Cell>
+                <VTableSummary.Cell :index="1" :col-span="2">
+                  <span style="color: red">{{ totalBorrow - totalRepayment }}</span>
+                </VTableSummary.Cell>
+              </VTableSummary.Row>
+            </VTableSummary>
+          </template>
+        </VTable>
+      </div>
+    </section>
+
+    <!-- ================= 27b. Fixed Summary ================= -->
+    <section class="play-case">
+      <header class="play-case__header">27b. 固定概要栏 (Fixed Summary + Fixed Columns)</header>
+      <div class="play-panel">
+        <VTable
+          :columns="summaryFixedColumns"
+          :data-source="summaryFixedData"
+          :scroll="{ x: 800, y: 200 }"
+          bordered
+        >
+          <template #summary>
+            <VTableSummary fixed>
+              <VTableSummary.Row>
+                <VTableSummary.Cell :index="0">Total</VTableSummary.Cell>
+                <VTableSummary.Cell :index="1">
+                  <span style="color: red">{{ summaryFixedTotal }}</span>
+                </VTableSummary.Cell>
+                <VTableSummary.Cell :index="2" />
+                <VTableSummary.Cell :index="3" />
+                <VTableSummary.Cell :index="4" />
+              </VTableSummary.Row>
+            </VTableSummary>
           </template>
         </VTable>
       </div>

@@ -816,6 +816,9 @@ export default defineComponent({
 
     const presetConfig = computed(() => resolveTablePresetConfig(effectiveThemePreset.value))
 
+    // ---- Summary fixed ----
+    const summaryFixed = ref<boolean | 'top' | 'bottom' | false>(false)
+
     provide<TableContext>(TABLE_CONTEXT_KEY, {
       bodyCell: slots.bodyCell,
       headerCell: slots.headerCell,
@@ -865,6 +868,10 @@ export default defineComponent({
       columnWidths: resizeColumnWidths,
       startResize: resizeStartResize,
       isResizing: () => resizeIsResizing.value,
+      displayColumns: computed(() => displayColumns.value),
+      registerSummaryFixed: (fixed) => {
+        summaryFixed.value = fixed
+      },
       isTreeData,
       treeFlattenData,
       toggleTreeExpand,
@@ -889,6 +896,7 @@ export default defineComponent({
 
       // ---- summary: slot only ----
       const summaryContent = slots.summary ? slots.summary() : null
+      const isSummaryFixed = summaryFixed.value !== false
 
       // ---- scroll style ----
       const scroll = props.scroll
@@ -984,10 +992,32 @@ export default defineComponent({
                 bodyCellEllipsisClass={themeSlots.bodyCellEllipsis()}
                 rowKey={props.rowKey}
               />
-              {summaryContent && <tfoot class={themeSlots.summary()}>{summaryContent}</tfoot>}
+              {summaryContent && !isSummaryFixed && (
+                <tfoot class={themeSlots.summary()}>{summaryContent}</tfoot>
+              )}
             </table>
           </Scrollbar>
         ) : null
+
+        const fixedSummaryBlock =
+          summaryContent && isSummaryFixed ? (
+            <div
+              class={themeSlots.headerWrapper()}
+              style={{
+                position: 'sticky',
+                bottom: `${resolvedSticky.value?.offsetSummary ?? 0}px`,
+                zIndex: '4',
+                overflow: 'hidden',
+              }}
+            >
+              <div class="block w-full min-w-full">
+                <table class={tableClass.value} style={tableStyle}>
+                  <ColGroup columns={displayColumns.value} />
+                  <tfoot class={themeSlots.summary()}>{summaryContent}</tfoot>
+                </table>
+              </div>
+            </div>
+          ) : null
 
         return (
           <div class={themeSlots.root()}>
@@ -996,6 +1026,7 @@ export default defineComponent({
               {headerTable}
               {virtualBody}
               {normalBody}
+              {fixedSummaryBlock}
               {loadingOverlay}
             </div>
             {footerContent && <div class={themeSlots.footer()}>{footerContent}</div>}

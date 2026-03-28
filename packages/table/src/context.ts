@@ -15,6 +15,7 @@ import type { TablePresetConfig } from './preset-config'
 import type { FixedOffset } from './composables/useScroll'
 import type { FlattenRow } from './composables/useTreeData'
 import type { SelectionState } from './composables/useSelection'
+import type { SummaryFixed } from './components/VTableSummary'
 
 /** 子组件主题 slot class 映射 */
 export interface SubThemeSlots {
@@ -233,6 +234,12 @@ export interface TableContext {
   ) => void
   /** 是否正在拖拽 */
   isResizing?: () => boolean
+
+  // ---- Summary ----
+  /** 扁平化后的叶子列列表（含选择列/展开列），用于 SummaryCell 通过 index 映射 */
+  displayColumns?: ComputedRef<ColumnType<Record<string, unknown>>[]>
+  /** 由 VTableSummary 组件调用，注册 summary 的 fixed 模式 */
+  registerSummaryFixed?: (fixed: SummaryFixed | false) => void
 
   // ---- 树形数据 ----
   /** 是否为树形数据 */
