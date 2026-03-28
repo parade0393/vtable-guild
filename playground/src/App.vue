@@ -387,7 +387,7 @@ onBeforeUnmount(() => {
   border: 1px solid var(--play-line);
   border-radius: 22px;
   background: var(--play-panel-strong);
-  overflow: hidden;
+  overflow: clip;
 }
 
 .play-panel--accent {
