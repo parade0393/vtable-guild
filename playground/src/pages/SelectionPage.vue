@@ -169,6 +169,7 @@ const richSelection = computed<RowSelection<DemoRow>>(() => ({
   selectedRowKeys: richKeys.value,
   fixed: true,
   columnTitle: '成员',
+  columnWidth: 140,
   onChange: (keys) => {
     richKeys.value = [...keys]
   },
@@ -202,6 +203,7 @@ const defaultSelectedSelection: RowSelection<DemoRow> = {
   type: 'checkbox',
   defaultSelectedRowKeys: [2, 6],
   columnTitle: 'Preset',
+  columnWidth: 80,
 }
 
 const preserveSelectionData = computed(() =>
@@ -213,6 +215,7 @@ const preserveSelection = computed<RowSelection<DemoRow>>(() => ({
   selectedRowKeys: preserveKeys.value,
   preserveSelectedRowKeys: true,
   columnTitle: 'Keep keys',
+  columnWidth: 100,
   onChange: (keys) => {
     preserveKeys.value = [...keys]
   },
@@ -598,7 +601,6 @@ const preserveSelection = computed<RowSelection<DemoRow>>(() => ({
               <p>columnTitle + renderCell + fixed</p>
             </div>
             <VTable
-              bordered
               :columns="selectionColumns as any"
               :data-source="dataSource"
               :row-selection="richSelection as any"

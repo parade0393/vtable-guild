@@ -231,9 +231,11 @@ export default defineComponent({
           }
         }
 
+        const hasRenderCell = !!sel?.renderCell
+
         const cellSelClass = cn(
           props.tdClass,
-          'text-center leading-[0]',
+          hasRenderCell ? 'text-center' : 'text-center leading-[0]',
           props.column.className,
           selectionCellProps?.class,
           selectionCellProps?.className,
