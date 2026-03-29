@@ -35,9 +35,9 @@ coverage
 # Vitest
 __screenshots__/
 
-# docs
-docs/.vitepress/cache
-docs/.vitepress/dist
+# VitePress
+site/.vitepress/cache
+site/.vitepress/dist
 
 #claude
 .claude/

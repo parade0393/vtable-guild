@@ -18,14 +18,19 @@
     "./css/presets/element-plus": "./css/presets/element-plus.css"
   },
   "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "vite build",
     "dev": "vite build --watch",
-    "type-check": "vue-tsc --build"
+    "type-check": "vue-tsc --build",
+    "test": "vitest run --config ../../vitest.config.ts --project theme"
   },
   "devDependencies": {
     "@vtable-guild/core": "workspace:*"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "license": "MIT"
 }

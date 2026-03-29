@@ -1,0 +1,24 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.1.1/schema.json",
+  "changelog": [
+    "@changesets/cli/changelog",
+    {
+      "repo": "vtable-guild/vtable-guild"
+    }
+  ],
+  "commit": false,
+  "fixed": [],
+  "linked": [
+    [
+      "@vtable-guild/core",
+      "@vtable-guild/icons",
+      "@vtable-guild/table",
+      "@vtable-guild/theme",
+      "@vtable-guild/vtable-guild"
+    ]
+  ],
+  "access": "public",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": ["@vtable-guild/playground", "@vtable-guild/site"]
+}

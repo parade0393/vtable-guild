@@ -1,0 +1,98 @@
+:root {
+  --vp-c-brand-1: #0f766e;
+  --vp-c-brand-2: #0d9488;
+  --vp-c-brand-3: #14b8a6;
+  --vp-c-brand-soft: rgb(20 184 166 / 14%);
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: linear-gradient(120deg, #0f766e 10%, #0369a1 90%);
+  --vp-home-hero-image-background-image:
+    radial-gradient(circle at 20% 20%, rgb(20 184 166 / 28%), transparent 38%),
+    radial-gradient(circle at 80% 30%, rgb(14 116 144 / 22%), transparent 32%),
+    linear-gradient(135deg, rgb(15 118 110 / 18%), rgb(3 105 161 / 10%));
+  --vp-home-hero-image-filter: blur(36px);
+}
+
+.vp-doc a {
+  text-underline-offset: 3px;
+}
+
+.vtg-callout {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 16px;
+  padding: 18px 20px;
+  background: linear-gradient(180deg, rgb(15 118 110 / 5%), rgb(255 255 255 / 0%));
+}
+
+.vtg-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.vtg-card {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 18px;
+  padding: 18px;
+  background: var(--vp-c-bg-soft);
+}
+
+.vtg-card h3 {
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.vtg-demo-card {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 20px;
+  padding: 18px;
+  margin: 24px 0;
+  background:
+    radial-gradient(circle at top left, rgb(15 118 110 / 8%), transparent 28%), var(--vp-c-bg-soft);
+}
+
+.vtg-demo-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.vtg-demo-card__header h3 {
+  margin: 0;
+}
+
+.vtg-demo-card__eyebrow {
+  margin: 0 0 4px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vp-c-text-2);
+}
+
+.vtg-demo-card__note {
+  margin: 12px 0 10px;
+  color: var(--vp-c-text-2);
+}
+
+.vtg-demo-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  color: var(--vp-c-text-2);
+}
+
+.vtg-demo-card__frame {
+  width: 100%;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+@media (width <= 640px) {
+  .vtg-demo-card__header {
+    flex-direction: column;
+  }
+}

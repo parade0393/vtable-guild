@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite"
+    "dev": "vite",
+    "test": "vitest run --config ../vitest.config.ts --project playground --passWithNoTests"
   },
   "dependencies": {
     "@ant-design/icons-vue": "^7.0.1",

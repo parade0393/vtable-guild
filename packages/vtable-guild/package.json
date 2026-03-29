@@ -13,11 +13,13 @@
     }
   },
   "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "vite build",
     "dev": "vite build --watch",
-    "type-check": "vue-tsc --build"
+    "type-check": "vue-tsc --build",
+    "test": "vitest run --config ../../vitest.config.ts --project vtable-guild --passWithNoTests"
   },
   "dependencies": {
     "@vtable-guild/core": "workspace:*",
@@ -27,6 +29,9 @@
   },
   "peerDependencies": {
     "vue": "^3.5.0"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "license": "MIT"
 }

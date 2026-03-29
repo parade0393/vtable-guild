@@ -1,0 +1,12 @@
+{
+  "name": "@vtable-guild/site",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev .",
+    "build": "vitepress build .",
+    "preview": "vitepress preview .",
+    "test": "vitest run --config ../vitest.config.ts --project site --passWithNoTests"
+  }
+}

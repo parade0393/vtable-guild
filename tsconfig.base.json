@@ -1,6 +1,7 @@
 // tsconfig.base.json
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "Bundler",
@@ -18,7 +19,14 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "types": ["vite/client"]
+    "types": ["vite/client"],
+    "paths": {
+      "@vtable-guild/core": ["packages/core/src/index.ts"],
+      "@vtable-guild/icons": ["packages/icons/src/index.ts"],
+      "@vtable-guild/theme": ["packages/theme/src/index.ts"],
+      "@vtable-guild/table": ["packages/table/src/index.ts"],
+      "@vtable-guild/vtable-guild": ["packages/vtable-guild/src/index.ts"]
+    }
   },
   "exclude": ["node_modules", "dist"]
 }
