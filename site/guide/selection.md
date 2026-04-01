@@ -1,25 +1,34 @@
 # 行选择
 
-行选择能力覆盖 checkbox、radio、受控键集合、自定义选择菜单，以及树形数据下的父子联动。当前已经补上严格模式与非严格模式的状态测试。
+rowSelection 用来开启行选择列，并统一管理单选、多选、全选、自定义批量选择和树形联动行为。
 
-## 基础 checkbox
+如果你的页面有“批量操作”“勾选后侧边编辑”“按选中项导出”这类需求，这一组能力会是高频入口。
+
+## 基础多选
 
 ```vue
 <script setup lang="ts">
 import { VTable, type ColumnsType, type RowSelection } from '@vtable-guild/vtable-guild'
 
-interface DemoRow {
+interface UserRow {
   key: string
   name: string
   disabled?: boolean
 }
 
-const columns: ColumnsType<DemoRow> = [{ title: 'Name', dataIndex: 'name', key: 'name' }]
+const columns: ColumnsType<UserRow> = [{ title: '姓名', dataIndex: 'name', key: 'name' }]
 
-const rowSelection: RowSelection<DemoRow> = {
+const rowSelection: RowSelection<UserRow> = {
   type: 'checkbox',
-  getCheckboxProps: (record) => ({ disabled: record.disabled }),
+  getCheckboxProps: (record) => ({
+    disabled: record.disabled,
+  }),
 }
+
+const dataSource: UserRow[] = [
+  { key: '1', name: 'Ada' },
+  { key: '2', name: 'Grace', disabled: true },
+]
 </script>
 
 <template>
@@ -32,12 +41,17 @@ const rowSelection: RowSelection<DemoRow> = {
 </template>
 ```
 
-## 受控模式
+## 受控选择
+
+当选中项需要和页面状态、侧边栏操作区或接口请求保持同步时，建议直接使用受控模式。
 
 ```ts
-const selectedRowKeys = ref<Key[]>([1, 3])
+import { computed, ref } from 'vue'
+import type { Key, RowSelection } from '@vtable-guild/vtable-guild'
 
-const rowSelection = computed<RowSelection<DemoRow>>(() => ({
+const selectedRowKeys = ref<Key[]>([])
+
+const rowSelection = computed<RowSelection<UserRow>>(() => ({
   type: 'checkbox',
   selectedRowKeys: selectedRowKeys.value,
   onChange: (keys) => {
@@ -46,29 +60,30 @@ const rowSelection = computed<RowSelection<DemoRow>>(() => ({
 }))
 ```
 
-## 树形联动
+## 单选与批量选择
 
-当 `checkStrictly` 为 `false` 时，选择会在父子节点之间联动：
+- type: 'radio' 时进入单选模式。
+- selections: true 可以开启默认批量选择菜单。
+- selections 也可以传入自定义菜单项，用于“只选当前结果”“只选可操作项”等业务动作。
+- hideSelectAll 可以隐藏表头全选入口。
 
-- 选中所有子节点后，父节点会自动变成选中。
-- 只选中部分子节点时，父节点会显示为半选。
+## 树形数据联动
+
+当 checkStrictly 为 false 时，父子节点会联动：
+
+- 选中所有子节点后，父节点自动选中。
+- 只选中部分子节点时，父节点显示为半选。
 - 点击父节点会递归切换整棵子树。
 
-## 扩展项
+如果你的业务更强调“每一行独立选择”，把 checkStrictly 保持为 true 会更清晰。
 
-- `type: 'radio'`：单选模式。
-- `selections: true | SelectionItem[]`：开启默认批量选择菜单，或提供自定义菜单项。
-- `hideSelectAll`：隐藏表头全选。
-- `preserveSelectedRowKeys`：在数据裁剪或分页场景下保留已选 key。
+## 使用建议
 
-## 对照示例来源
+- 需要长期保留选中结果时，使用 preserveSelectedRowKeys。
+- 如果某些行不可操作，优先通过 getCheckboxProps 禁用，而不是在点击后再回滚状态。
+- 树形联动适合权限树、组织架构和分组数据，不适合每行语义完全独立的表格。
 
-- playground 入口：`playground/src/pages/SelectionPage.vue`
-- 当前测试覆盖：`packages/table/src/composables/useSelection.test.ts`
+## 相关页面
 
-<PlaygroundDemo
-  title="行选择对照页"
-  route="/selection"
-  note="这一页覆盖 checkbox、radio、受控 selectedRowKeys、自定义 selections 和保留 key 等能力。"
-  :height="560"
-/>
+- [树形表格](/guide/tree-table)
+- [API Reference](/guide/api-reference)

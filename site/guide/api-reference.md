@@ -1,127 +1,135 @@
 # API Reference
 
-这一页不是把类型声明原样搬过来，而是把业务接入最常查的 Table API 压缩成一份查询入口。更细的泛型和内部类型，仍然以源码导出的 TypeScript 定义为准。
+这一页提供的是接入时最常查的一层 API 速览，目的是帮你快速确认字段名、职责和能力边界。
 
-## 组件与导出
+如果你需要精确泛型或更细的类型约束，最终仍然应该以源码导出的 TypeScript 定义为准。
 
-- `@vtable-guild/table`：直接导出 `VTable`、`VTableSummary` 和表格相关类型，适合按包拆分接入。
-- `@vtable-guild/vtable-guild`：聚合导出 `core`、`theme`、`table` 能力，适合业务项目统一入口。
-- `@vtable-guild/core`：提供 `createVTableGuild`、`VTableGuildConfigProvider`、通用工具类型与基础组件。
+## 常用导出
 
-## 核心 Props
+- @vtable-guild/vtable-guild，聚合导出，适合大多数业务项目。
+- @vtable-guild/table，直接导出 VTable、VTableSummary 和表格类型。
+- @vtable-guild/core，导出 createVTableGuild、VTableGuildConfigProvider 和通用类型。
 
-### 数据与列
+## VTable 核心 Props
 
-| Prop                 | 类型                        | 说明                                                   |
-| -------------------- | --------------------------- | ------------------------------------------------------ |
-| `dataSource`         | `TRecord[]`                 | 表格数据源。                                           |
-| `columns`            | `ColumnsType<TRecord>`      | 列配置，支持多级表头、排序、筛选、固定列和自定义渲染。 |
-| `rowKey`             | `string \| (record) => Key` | 行唯一标识。业务场景建议始终显式传入。                 |
-| `childrenColumnName` | `string`                    | 树形数据子节点字段名，默认 `children`。                |
-| `indentSize`         | `number`                    | 树形缩进宽度，默认 `15`。                              |
+### 数据与结构
+
+| Prop               | 说明                                                   |
+| ------------------ | ------------------------------------------------------ |
+| dataSource         | 表格数据源。                                           |
+| columns            | 列配置，支持排序、筛选、固定列、多级表头和自定义渲染。 |
+| rowKey             | 行唯一标识。建议始终显式传入。                         |
+| childrenColumnName | 树形数据的子节点字段名，默认是 children。              |
+| indentSize         | 树形缩进宽度，默认 15。                                |
 
 ### 视觉与布局
 
-| Prop          | 类型                                             | 说明                                    |
-| ------------- | ------------------------------------------------ | --------------------------------------- |
-| `size`        | `'sm' \| 'md' \| 'lg'`                           | 表格尺寸。                              |
-| `bordered`    | `boolean`                                        | 是否展示边框。                          |
-| `striped`     | `boolean`                                        | 是否启用斑马纹。                        |
-| `hoverable`   | `boolean`                                        | 是否启用 hover 高亮。                   |
-| `tableLayout` | `TableLayout`                                    | 表格布局模式。                          |
-| `showHeader`  | `boolean`                                        | 是否显示表头。                          |
-| `scroll`      | `{ x?: number \| string; y?: number \| string }` | 横纵滚动配置；`y` 会启用固定表头。      |
-| `sticky`      | `boolean \| TableSticky`                         | 粘性表头与滚动条配置。                  |
-| `virtual`     | `boolean`                                        | 是否启用虚拟滚动，需要配合 `scroll.y`。 |
+| Prop        | 说明                                                |
+| ----------- | --------------------------------------------------- |
+| size        | 表格尺寸，可选 sm、md、lg。                         |
+| bordered    | 是否显示边框。                                      |
+| striped     | 是否开启斑马纹。                                    |
+| hoverable   | 是否开启行 hover 高亮。                             |
+| tableLayout | 表格布局模式。                                      |
+| showHeader  | 是否显示表头。                                      |
+| scroll      | 横向和纵向滚动配置；提供 y 时会形成固定表头滚动区。 |
+| sticky      | 粘性表头或滚动条配置。                              |
+| virtual     | 是否启用虚拟滚动，必须配合 scroll.y。               |
 
 ### 主题与语言
 
-| Prop                | 类型                                  | 说明                       |
-| ------------------- | ------------------------------------- | -------------------------- |
-| `ui`                | `SlotProps`                           | 实例级 slot class 覆写。   |
-| `class`             | `string`                              | 根节点 class 追加。        |
-| `locale`            | `LocaleName`                          | 当前表实例使用的语言标识。 |
-| `locales`           | `LocaleRegistry`                      | 当前实例额外注册的语言包。 |
-| `localeOverrides`   | `DeepPartial<VTableGuildTableLocale>` | 表级 locale 局部覆写。     |
-| `getPopupContainer` | `(triggerNode) => HTMLElement`        | 筛选和选择菜单挂载容器。   |
+| Prop              | 说明                         |
+| ----------------- | ---------------------------- |
+| ui                | 实例级 slot 样式覆盖。       |
+| class             | 根节点额外 class。           |
+| locale            | 当前表实例使用的语言标识。   |
+| locales           | 当前实例额外注册的语言包。   |
+| localeOverrides   | 当前实例的 locale 局部覆写。 |
+| getPopupContainer | 筛选和选择菜单的挂载容器。   |
 
 ### 交互能力
 
-| Prop                     | 类型                         | 说明                                                       |
-| ------------------------ | ---------------------------- | ---------------------------------------------------------- |
-| `rowSelection`           | `RowSelection<TRecord>`      | 行选择配置，支持 checkbox、radio、自定义选择菜单和固定列。 |
-| `expandable`             | `Expandable<TRecord>`        | 展开行配置，支持点击行展开、自定义展开内容和固定位置。     |
-| `expandedRowKeys`        | `Key[]`                      | 树形/展开行的受控展开 key。                                |
-| `defaultExpandedRowKeys` | `Key[]`                      | 树形/展开行的默认展开 key。                                |
-| `defaultExpandAllRows`   | `boolean`                    | 是否默认展开所有节点。                                     |
-| `transformCellText`      | `TransformCellText<TRecord>` | 统一拦截单元格文本转换。                                   |
+| Prop                   | 说明                         |
+| ---------------------- | ---------------------------- |
+| rowSelection           | 行选择配置。                 |
+| expandable             | 展开行配置。                 |
+| expandedRowKeys        | 树形或展开行的受控展开 key。 |
+| defaultExpandedRowKeys | 树形或展开行的默认展开 key。 |
+| defaultExpandAllRows   | 是否默认展开所有节点。       |
+| transformCellText      | 统一拦截单元格文本转换。     |
 
 ### 自定义结构
 
-| Prop              | 类型                                       | 说明                          |
-| ----------------- | ------------------------------------------ | ----------------------------- |
-| `rowClassName`    | `string \| RowClassName<TRecord>`          | 行 class。                    |
-| `customRow`       | `GetComponentProps<TRecord>`               | 自定义 body row DOM props。   |
-| `customHeaderRow` | `(columns, index?) => CellAdditionalProps` | 自定义 header row DOM props。 |
-| `title`           | `(data) => VNodeChild`                     | 标题区域渲染函数。            |
-| `footer`          | `(data) => VNodeChild`                     | 页脚区域渲染函数。            |
+| Prop            | 说明                               |
+| --------------- | ---------------------------------- |
+| rowClassName    | 为行添加 class。                   |
+| customRow       | 为 body row 注入属性、事件和样式。 |
+| customHeaderRow | 为 header row 注入属性。           |
+| title           | 表格标题区域渲染函数。             |
+| footer          | 表格页脚区域渲染函数。             |
 
 ## 常用事件
 
-| 事件           | 参数                       | 说明                               |
-| -------------- | -------------------------- | ---------------------------------- |
-| `change`       | `(filters, sorter, extra)` | 排序、筛选、选择后的统一事件出口。 |
-| `resizeColumn` | `(column, width)`          | 拖拽列宽后触发。                   |
+| 事件         | 参数                     | 说明                               |
+| ------------ | ------------------------ | ---------------------------------- |
+| change       | (filters, sorter, extra) | 排序、筛选、选择后的统一事件出口。 |
+| resizeColumn | (column, width)          | 拖拽列宽结束后触发。               |
 
-`change` 的 `extra.action` 当前会返回 `sort`、`filter` 或 `select`，便于业务区分来源。
+如果你来自 ant-design-vue，需要提前确认这几条兼容边界：
+
+- change 事件当前不包含 pagination 参数，签名为 (filters, sorter, extra)。
+- resizeColumn 事件参数顺序为 (column, width)。
+- size 取值为 sm / md / lg，而不是 small / middle / large。
+
+extra.action 当前会返回 sort、filter 或 select，便于业务区分触发来源。
 
 ## 常用 Slots
 
-| Slot                   | 参数                                                                                        | 说明                                  |
-| ---------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------- |
-| `bodyCell`             | `{ text, record, index, column }`                                                           | 单元格自定义渲染。                    |
-| `headerCell`           | `{ title, column, index }`                                                                  | 表头单元格自定义渲染。                |
-| `empty`                | `-`                                                                                         | 空状态。                              |
-| `loading`              | `-`                                                                                         | 加载态。                              |
-| `customFilterDropdown` | `{ column, selectedKeys, setSelectedKeys, confirm, clearFilters, filters, visible, close }` | 自定义筛选面板。                      |
-| `customFilterIcon`     | `{ column, filtered }`                                                                      | 自定义筛选图标。                      |
-| `title`                | `{ data }`                                                                                  | 标题区域 slot。                       |
-| `footer`               | `{ data }`                                                                                  | 页脚区域 slot。                       |
-| `summary`              | `-`                                                                                         | 摘要行。通常与 `VTableSummary` 配合。 |
+| Slot                 | 说明                   |
+| -------------------- | ---------------------- |
+| bodyCell             | 自定义单元格内容。     |
+| headerCell           | 自定义表头单元格内容。 |
+| empty                | 自定义空状态。         |
+| loading              | 自定义加载态。         |
+| customFilterDropdown | 自定义筛选面板。       |
+| customFilterIcon     | 自定义筛选图标。       |
+| title                | 自定义标题区域。       |
+| footer               | 自定义页脚区域。       |
+| summary              | 自定义摘要区域。       |
 
-## `rowSelection` 常查字段
+## rowSelection 常查字段
 
-| 字段                                         | 说明                                   |
-| -------------------------------------------- | -------------------------------------- |
-| `type`                                       | `checkbox` 或 `radio`。                |
-| `selectedRowKeys` / `defaultSelectedRowKeys` | 受控 / 非受控选中项。                  |
-| `fixed`                                      | 选择列固定到左侧或右侧。               |
-| `columnTitle`                                | 选择列表头自定义标题。                 |
-| `renderCell`                                 | 自定义选择单元格。                     |
-| `checkStrictly`                              | 树形数据是否父子联动。                 |
-| `selections`                                 | 是否显示默认选择菜单，或传入自定义项。 |
-| `hideSelectAll`                              | 是否隐藏全选和选择菜单。               |
+| 字段                                     | 说明                       |
+| ---------------------------------------- | -------------------------- |
+| type                                     | checkbox 或 radio。        |
+| selectedRowKeys / defaultSelectedRowKeys | 受控或默认选中项。         |
+| fixed                                    | 选择列固定位置。           |
+| columnTitle                              | 选择列表头标题。           |
+| renderCell                               | 自定义选择单元格。         |
+| checkStrictly                            | 树形数据是否父子联动。     |
+| selections                               | 默认或自定义批量选择菜单。 |
+| hideSelectAll                            | 是否隐藏全选入口。         |
 
-## `expandable` 常查字段
+## expandable 常查字段
 
-| 字段                | 说明                     |
-| ------------------- | ------------------------ |
-| `expandedRowRender` | 展开内容渲染函数。       |
-| `expandRowByClick`  | 点击整行展开。           |
-| `expandIcon`        | 自定义展开图标。         |
-| `rowExpandable`     | 控制某一行是否允许展开。 |
-| `columnWidth`       | 展开列宽度。             |
-| `fixed`             | 展开列固定位置。         |
-| `showExpandColumn`  | 是否展示展开列。         |
+| 字段              | 说明                     |
+| ----------------- | ------------------------ |
+| expandedRowRender | 展开内容渲染函数。       |
+| expandRowByClick  | 点击整行展开。           |
+| expandIcon        | 自定义展开图标。         |
+| rowExpandable     | 控制某一行是否允许展开。 |
+| columnWidth       | 展开列宽度。             |
+| fixed             | 展开列固定位置。         |
+| showExpandColumn  | 是否显示展开列。         |
 
-## `VTableSummary` 结构
+## VTableSummary
 
-- `VTableSummary`：摘要容器，支持 `fixed="top"` 或 `fixed="bottom"`。
-- `VTableSummary.Row`：摘要行。
-- `VTableSummary.Cell`：摘要单元格，常用字段包括 `index`、`colSpan`、`rowSpan`、`align`。
+- VTableSummary 是摘要容器，支持 fixed 为 true、top 或 bottom。
+- VTableSummary.Row 表示摘要行。
+- VTableSummary.Cell 表示摘要单元格，常用字段包括 index、colSpan、rowSpan 和 align。
 
-## 建议的查阅顺序
+## 建议怎么查这页
 
-1. 先用这一页确认字段名和大致职责。
-2. 具体交互看对应指南页，例如排序、筛选、行选择、固定列、虚拟滚动。
-3. 需要精确类型时，回到 `packages/table/src/types/table.ts` 和 `packages/table/src/types/column.ts`。
+1. 先在这里确认字段名和能力边界。
+2. 具体交互细节回到对应指南页，比如排序、筛选、行选择、虚拟滚动和主题覆盖。
+3. 需要精确类型时，再查看 packages/table/src/types/table.ts 和 packages/table/src/types/column.ts。

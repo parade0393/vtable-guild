@@ -1,33 +1,41 @@
 # 排序
 
-排序能力由 `sorter`、`sortOrder`、`defaultSortOrder` 和 `sortDirections` 组合完成，对齐的是常见 Vue 表格里的两类模式：组件内部管理状态，以及外部完全受控。
+排序能力围绕这几个字段展开：sorter、sortOrder、defaultSortOrder 和 sortDirections。
 
-## 支持的方式
+如果你来自 ant-design-vue，这套写法会比较熟悉。区别在于 vtable-guild 更强调直接可用的列排序能力，并把排序结果统一收敛到 change 事件里。
 
-- `sorter: true`：使用默认比较，数字按数值、其他值按字符串比较。
-- `sorter: (a, b) => number`：使用自定义比较函数。
-- `sorter: { multiple: number }`：启用多列排序，并按 `multiple` 权重排序。
-- `defaultSortOrder`：初始化时设置一次默认排序。
-- `sortOrder`：受控模式，由外部状态决定当前排序方向。
+## 你可以怎么开启排序
 
-## 基础示例
+- sorter: true，使用默认比较规则。数字按数值排序，其他值按字符串比较。
+- sorter: (a, b) => number，使用自定义比较函数。
+- sorter: { multiple: number }，启用多列排序并指定优先级。
+- defaultSortOrder，在首次渲染时设置默认排序方向。
+- sortOrder，进入受控模式，由外部状态决定当前排序方向。
+
+## 最常见的写法
 
 ```vue
 <script setup lang="ts">
 import { VTable, type ColumnsType } from '@vtable-guild/vtable-guild'
 
-interface DemoRow {
+interface ScoreRow {
   key: string
   name: string
   score: number
 }
 
-const columns: ColumnsType<DemoRow> = [
-  { title: 'Name', dataIndex: 'name', key: 'name' },
-  { title: 'Score', dataIndex: 'score', key: 'score', align: 'right', sorter: true },
+const columns: ColumnsType<ScoreRow> = [
+  { title: '姓名', dataIndex: 'name', key: 'name' },
+  {
+    title: '分数',
+    dataIndex: 'score',
+    key: 'score',
+    align: 'right',
+    sorter: true,
+  },
 ]
 
-const dataSource: DemoRow[] = [
+const dataSource: ScoreRow[] = [
   { key: '1', name: 'Charlie', score: 80 },
   { key: '2', name: 'Alice', score: 95 },
 ]
@@ -40,43 +48,47 @@ const dataSource: DemoRow[] = [
 
 ## 受控排序
 
+当排序状态需要和页面查询参数、服务端请求或外部状态同步时，使用受控模式更稳。
+
 ```ts
-const controlledOrder = ref<SortOrder>('ascend')
+import { computed, ref } from 'vue'
+import type { SortOrder } from '@vtable-guild/vtable-guild'
+
+const scoreOrder = ref<SortOrder>('ascend')
 
 const columns = computed(() => [
-  { title: 'Name', dataIndex: 'name', key: 'name' },
+  { title: '姓名', dataIndex: 'name', key: 'name' },
   {
-    title: 'Score',
+    title: '分数',
     dataIndex: 'score',
     key: 'score',
     sorter: true,
-    sortOrder: controlledOrder.value,
+    sortOrder: scoreOrder.value,
   },
 ])
 ```
 
-这种模式下，点击表头后组件会通过 `change` 事件返回新的 sorter 结果，外部再决定是否更新 `sortOrder`。
+在这种模式下，点击表头后会通过 change 返回新的 sorter 结果，是否更新 sortOrder 由你自己决定。
 
 ## 多列排序
 
+当多个字段都需要参与排序时，使用 multiple 指定优先级。数值越大，优先级越高。
+
 ```ts
 const columns = [
-  { title: 'Age', dataIndex: 'age', key: 'age', sorter: { multiple: 1 } },
-  { title: 'Score', dataIndex: 'score', key: 'score', sorter: { multiple: 3 } },
-  { title: 'Team', dataIndex: 'team', key: 'team', sorter: { multiple: 2 } },
+  { title: '年龄', dataIndex: 'age', key: 'age', sorter: { multiple: 1 } },
+  { title: '团队', dataIndex: 'team', key: 'team', sorter: { multiple: 2 } },
+  { title: '分数', dataIndex: 'score', key: 'score', sorter: { multiple: 3 } },
 ]
 ```
 
-权重越大，优先级越高。当前内部排序顺序是先筛选、再排序，因此多列排序会基于已筛选后的数据集运行。
+## 实际使用建议
 
-## 对照示例来源
+- 简单排序优先用 sorter: true，避免为普通数字和字符串字段重复写比较函数。
+- 如果页面还有筛选，当前数据处理顺序是先筛选再排序，多列排序会基于筛选后的结果运行。
+- 如果你打算和服务端联动，建议从一开始就用受控模式，减少前后端状态不一致的问题。
 
-- playground 入口：`playground/src/pages/SortPage.vue`
-- 当前测试覆盖：`packages/table/src/composables/useSorter.test.ts`、`packages/table/src/components/VTable.test.ts`
+## 相关页面
 
-<PlaygroundDemo
-  title="排序能力对照页"
-  route="/sort"
-  note="这个页面覆盖基础单列排序、自定义比较器、默认排序、受控排序和多列排序。"
-  :height="520"
-/>
+- [筛选](/guide/filtering)
+- [API Reference](/guide/api-reference)

@@ -1,6 +1,8 @@
 # 树形表格
 
-树形表格通过 `childrenColumnName`、`indentSize` 和展开状态控制来处理多级数据。它与展开行是两套能力：树形表格是数据本身有层级，展开行则是行外附加内容。
+当你的数据天然带有父子层级时，应该使用树形表格，而不是展开行。
+
+树形表格会基于 childrenColumnName、缩进宽度和展开状态来管理多级节点的展示方式。
 
 ## 基础示例
 
@@ -14,29 +16,28 @@
 />
 ```
 
-## 可控制的点
+## 你可以控制的部分
 
-- `childrenColumnName`：定义子节点字段名。
-- `indentSize`：控制缩进宽度。
-- `defaultExpandedRowKeys`：初始化默认展开节点。
-- `expandedRowKeys`：受控展开状态。
-- `rowSelection.checkStrictly = false`：开启树形级联选择。
+- childrenColumnName，指定子节点字段名。
+- indentSize，控制层级缩进宽度。
+- defaultExpandedRowKeys，设置默认展开节点。
+- expandedRowKeys，改成完全受控的展开状态。
+- rowSelection.checkStrictly，控制父子选择是否联动。
 
-## 与选择联动
+## 和行选择一起使用
 
-树形数据下，选择逻辑与普通平铺表格不同：
+树形数据下，选择行为通常有两种模式：
 
-- 严格模式下，父子节点互不影响。
-- 非严格模式下，父节点选中状态由子节点计算而来，支持半选。
+- checkStrictly 为 true，父子节点互不影响，更适合“每一项单独代表一个对象”的场景。
+- checkStrictly 为 false，父子节点联动，并支持半选，更适合权限树、部门树和分类树。
 
-## 对照示例来源
+## 使用建议
 
-- playground 入口：`playground/src/pages/TreePage.vue`
-- 当前测试覆盖：`packages/table/src/composables/useTreeData.test.ts`、`packages/table/src/composables/useSelection.test.ts`
+- rowKey 要稳定，尤其是在异步更新树节点时。
+- 如果层级较深，建议适当提高 indentSize，避免视觉上挤在一起。
+- 当树形数据同时叠加固定列和选择列时，先确认列宽与缩进不会互相挤压。
 
-<PlaygroundDemo
-  title="树形数据对照页"
-  route="/tree"
-  note="这个页面覆盖基础树形展开、默认展开、树形选择、级联选择和缩进表现。"
-  :height="600"
-/>
+## 相关页面
+
+- [行选择](/guide/selection)
+- [展开行](/guide/expandable-rows)

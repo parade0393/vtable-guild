@@ -1,14 +1,20 @@
 # 预设与语言
 
-`vtable-guild` 的运行时配置除了主题 slot 覆盖，还包括两条更上层的通道：`themePreset` 负责切换视觉预设，`locale`、`locales` 和 `localeOverrides` 负责切换与扩展文案。
+这部分配置解决的是两个更上层的问题：
 
-## 预设切换
+- 整体外观要贴近哪套 UI 体系。
+- 表格内部文案要用哪种语言，以及如何局部覆盖。
 
-全局安装时可以通过 `createVTableGuild` 指定预设：
+## 主题预设
+
+当前内置两套主题预设：
+
+- antdv，默认预设，适合已经接入 ant-design-vue 的项目。
+- element-plus，适合已经使用 element-plus 视觉体系的项目。
+
+运行时切换方式很直接：
 
 ```ts
-import { createVTableGuild } from '@vtable-guild/core'
-
 app.use(
   createVTableGuild({
     themePreset: 'antdv',
@@ -16,12 +22,21 @@ app.use(
 )
 ```
 
-当前内置目标预设有两套：
+如果你改成 element-plus，也要记得在样式入口里补上对应 preset 文件，详见 [包导入与样式](/guide/package-consumption)。
 
-- `antdv`：默认预设，对齐 ant-design-vue。
-- `element-plus`：预留并逐步完善的第二套视觉方向。
+## 内置语言
 
-## 语言与文案覆盖
+当前内置的 preset locale 至少覆盖了 zh-CN 和 en-US 两种常见语言场景，主要包括：
+
+- 排序提示文案
+- 筛选面板文案
+- 空态文案
+- 加载态文案
+- 行选择菜单文案
+
+## 注册和覆盖语言包
+
+如果你要切成英文或自定义文案，可以在插件层传 locale、locales 和 localeOverrides：
 
 ```ts
 app.use(
@@ -57,11 +72,11 @@ app.use(
 )
 ```
 
-如果你只想局部覆写少量文案，可以传 `localeOverrides`，不必完整重写整套 locale。
+如果你只想覆盖少量字段，优先使用 localeOverrides，不必重写整套 locale。
 
-## 局部作用域配置
+## 局部作用域切换
 
-对单个页面或单个子树做定向切换时，可以使用 `VTableGuildConfigProvider`：
+当你需要在某个子树里单独切换预设或语言时，可以使用 VTableGuildConfigProvider：
 
 ```vue
 <VTableGuildConfigProvider locale="en-US">
@@ -69,22 +84,9 @@ app.use(
 </VTableGuildConfigProvider>
 ```
 
-这个 provider 会在父级上下文基础上继续合并 `theme`、`locales` 和 `localeOverrides`，适合多语言或多预设对照页。
+这类方式适合局部对照页、多语言后台或嵌入式业务模块。
 
-## 当前实践
+## 相关页面
 
-- playground 顶部支持 ant-design-vue / element-plus 预设切换。
-- playground 同时提供 `zh-CN` 和 `en-US` locale 切换。
-- 页面级预设隔离由 `PlaygroundPresetScope` 负责，通过 provide/inject 覆盖 `themePreset`。
-
-## 对照示例来源
-
-- playground 入口：playground/src/App.vue
-- 相关实现：packages/core/src/plugin/index.ts、packages/core/src/components/VTableGuildConfigProvider.tsx
-
-<PlaygroundDemo
-  title="预设与语言切换对照页"
-  route="/basic"
-  note="打开 playground 后，可直接使用顶部控制区切换 ant-design-vue / element-plus 预设，以及中文 / English locale。"
-  :height="760"
-/>
+- [三层主题覆盖](/guide/theme-overrides)
+- [包导入与样式](/guide/package-consumption)

@@ -1,31 +1,36 @@
 # 多级表头与单元格合并
 
-这一组能力主要解决复杂报表布局：表头可以通过 `children` 形成多级结构，表体可以通过 `customCell` 和 `customRender` 返回的 `colSpan` / `rowSpan` 做行列合并。
+这一组能力主要服务于报表类页面。简单数据表一般不需要它，但一旦表格开始承载指标分组、结构化汇总或复杂横向布局，它就会变得很重要。
 
 ## 多级表头
 
+多级表头通过 children 形成层级结构。
+
 ```ts
 const columns = [
-  { title: 'Name', dataIndex: 'name', key: 'name', width: 160 },
+  { title: '姓名', dataIndex: 'name', key: 'name', width: 160 },
   {
-    title: 'Profile',
+    title: '画像信息',
     key: 'profile',
     children: [
-      { title: 'Age', dataIndex: 'age', key: 'age', width: 90 },
-      { title: 'Region', dataIndex: 'region', key: 'region', width: 150 },
+      { title: '年龄', dataIndex: 'age', key: 'age', width: 96 },
+      { title: '区域', dataIndex: 'region', key: 'region', width: 150 },
     ],
   },
 ]
 ```
 
-当前表头合并只走列配置上的 `children` 与 `colSpan`，不额外扩展 header rowSpan API。
+## 表体合并
 
-## 表体单元格合并
+表体合并主要通过两种方式完成：
+
+- customCell 返回 rowSpan 或 colSpan。
+- customRender 返回带 props 的 RenderedCell。
 
 ```ts
 const columns = [
   {
-    title: 'Group',
+    title: '组别',
     dataIndex: 'group',
     key: 'group',
     customCell: (_record, index) => {
@@ -35,7 +40,7 @@ const columns = [
     },
   },
   {
-    title: 'Name',
+    title: '姓名',
     dataIndex: 'name',
     key: 'name',
     customRender: ({ text, record, index }) =>
@@ -49,26 +54,18 @@ const columns = [
 ]
 ```
 
-## 当前约束
+## 使用边界
 
-- 表头分组依赖稳定列结构，建议同时提供明确 `width`。
-- 表体合并能力依赖 `customCell` 或 `RenderedCell.props`，适合静态报表结构。
-- `virtual=true` 时不支持跨行合并，因为虚拟列表只渲染可见区行节点。
+- 多级表头依赖相对稳定的列结构，建议提供清晰的 width。
+- 单元格合并更适合静态报表和明确分组结构。
+- 开启 virtual 后，不适合再做跨行合并，因为虚拟滚动只渲染可视区域行节点。
 
-## 组合场景
+## 使用建议
 
-- 多级表头 + 表体合并：适合复杂统计报表。
-- 多级表头 + 行选择：支持，但建议先在 playground 对照页观察布局结果。
-- 多级表头 + 固定列：可组合，但需要更谨慎地控制列宽与滚动区宽度。
+- 表格一旦同时叠加固定列、多级表头和合并单元格，先保证布局稳定，再叠加其他交互。
+- 如果只是想强调某些单元格样式，不要急着用合并，优先考虑 ui、customRender 或 summary。
 
-## 对照示例来源
+## 相关页面
 
-- playground 入口：playground/src/pages/AdvancedPage.vue
-- 相关测试覆盖：packages/table/src/composables/useColumns.test.ts、packages/table/src/components/VTable.test.ts
-
-<PlaygroundDemo
-  title="多级表头与单元格合并对照页"
-  route="/advanced"
-  note="Advanced 页面中的 Case 06 到 Case 08 覆盖了多级表头、rowSpan/colSpan 合并，以及它们与行选择组合时的表现。"
-  :height="920"
-/>
+- [标题与摘要行](/guide/title-footer-summary)
+- [固定列](/guide/fixed-columns)

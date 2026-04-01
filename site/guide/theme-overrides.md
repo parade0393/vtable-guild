@@ -1,14 +1,20 @@
-# 主题覆盖
+# 三层主题覆盖
 
-`vtable-guild` 的主题覆盖分成三层：预设默认主题、插件级全局主题、实例级 `ui` / `class` 覆盖。最终类名会通过 `cn()` 合并，因此同一组 Tailwind utility 冲突时以后者为准。
+vtable-guild 的主题系统有一个很明确的目标：让你既能快速接入预设，又能在全局和单实例两层做细粒度控制，而不是把所有样式都压到业务页面里。
 
-## 三层优先级
+## 三层结构
 
-1. 主题预设：来自 `@vtable-guild/theme`，例如默认的 `antdv`。
-2. 插件配置：通过 `createVTableGuild({ theme })` 在应用级覆盖。
-3. 实例覆盖：通过组件 `ui` 和 `class` 精调单个实例。
+主题从低到高分成三层：
 
-## 全局覆盖示例
+1. 预设默认主题。当前内置 antdv 和 element-plus 两套视觉基线。
+2. createVTableGuild 的全局 theme 配置。适合整个应用统一风格。
+3. VTable 实例上的 ui 和 class。适合单张表格的局部例外。
+
+这三层会按顺序合并，因此你不需要为了改一张表的表头颜色，就复制整套主题配置。
+
+## 全局覆盖
+
+当你希望整个应用里的表格都遵循同一套视觉规则时，优先在插件层覆盖：
 
 ```ts
 import { createApp } from 'vue'
@@ -25,13 +31,18 @@ app.use(
           th: 'bg-slate-50 text-slate-900',
           td: 'align-top',
         },
+        defaultVariants: {
+          size: 'sm',
+        },
       },
     },
   }),
 )
 ```
 
-## 单实例覆盖示例
+## 单实例覆盖
+
+当你只想调整某一张表格时，优先使用 ui 和 class：
 
 ```vue
 <VTable
@@ -40,21 +51,24 @@ app.use(
   :data-source="dataSource"
   class="shadow-lg"
   :ui="{
+    root: 'rounded-xl',
     th: 'bg-emerald-50',
-    td: 'uppercase',
+    td: 'align-top',
   }"
 />
 ```
 
-## 建议做法
+## 推荐使用方式
 
-- 大范围风格对齐放到插件层，避免在业务页面里重复写 `ui`。
-- 单个页面或单个表格的视觉例外放到实例层。
-- 如果是预设级差异，优先改 `packages/theme`，不要在组件里硬编码样式。
+- 需要统一业务线视觉时，用全局 theme。
+- 需要页面级例外时，用 ui 和 class。
+- 只是切换整体风格时，用 themePreset，不要从头重写 theme。
 
-## 当前验证
+## 什么时候不该直接用 slot
 
-- 合并逻辑测试：packages/core/src/composables/useTheme.test.ts
-- 表格组件测试：packages/table/src/components/VTable.test.ts
+如果你的目的只是改表头背景、单元格对齐或边框风格，优先走主题和 ui。只有在内容结构本身要变化时，再使用插槽。
 
-这一层测试会同时验证插件主题、实例 `ui` 与根节点 `class` 能正确叠加到表格 DOM。
+## 相关页面
+
+- [预设与语言](/guide/presets-and-locales)
+- [包导入与样式](/guide/package-consumption)

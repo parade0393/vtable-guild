@@ -1,40 +1,36 @@
-# 包导入与样式入口
+# 包导入与样式
 
-发布后的接入方式主要有两类：走聚合包，或者按需安装 `core`、`table`、`theme`。两种方式都能工作，差别在于依赖暴露面和团队维护成本。
+vtable-guild 是一个多包仓库。对使用者来说，通常只需要理解两件事：
 
-## 方式一：聚合包接入
+- 你是用聚合入口，还是按包拆分接入。
+- 你希望页面默认呈现哪套视觉预设。
 
-如果你希望把运行时入口尽量收敛到一个包，优先使用 `@vtable-guild/vtable-guild`。
+## 推荐的接入方式
+
+如果你只想尽快在业务项目里使用，优先选择聚合包：
 
 ```bash
 pnpm add @vtable-guild/vtable-guild @vtable-guild/theme vue
 ```
 
+然后在入口里这样写：
+
 ```ts
-import { createApp } from 'vue'
-import App from './App.vue'
 import { createVTableGuild, VTable } from '@vtable-guild/vtable-guild'
 import '@vtable-guild/theme/css'
-
-const app = createApp(App)
-
-app.use(createVTableGuild({ themePreset: 'antdv' }))
-app.component('VTable', VTable)
-app.mount('#app')
 ```
 
-适合场景：
+这种方式最简单，适合绝大多数业务项目。
 
-- 业务应用直接消费组件库。
-- 希望统一从一个入口导入组件、类型和插件。
+## 按包拆分接入
 
-## 方式二：分包按需接入
-
-如果你只想使用表格本体和主题能力，可以显式安装分包：
+如果你需要更明确地控制依赖边界，也可以分开安装：
 
 ```bash
 pnpm add @vtable-guild/core @vtable-guild/table @vtable-guild/theme vue
 ```
+
+常见导入方式如下：
 
 ```ts
 import { createVTableGuild } from '@vtable-guild/core'
@@ -42,31 +38,87 @@ import { VTable } from '@vtable-guild/table'
 import '@vtable-guild/theme/css'
 ```
 
-适合场景：
-
-- 你希望更明确地控制依赖边界。
-- 你的工程只需要 `table`，不需要聚合导出。
-
 ## 样式入口
 
-- `@vtable-guild/theme/css`：默认主题 token、过渡和 `antdv` 预设基础样式。
-- `@vtable-guild/theme/css/presets/element-plus`：在默认样式之后额外引入，用于切到 `element-plus` 视觉预设。
+### 默认样式
+
+```ts
+import '@vtable-guild/theme/css'
+```
+
+这会加载默认的 antdv 预设样式。
+
+### element-plus 视觉预设
+
+如果你要使用 element-plus 风格，请继续追加对应样式文件：
 
 ```ts
 import '@vtable-guild/theme/css'
 import '@vtable-guild/theme/css/presets/element-plus'
 ```
 
-然后在运行时用 `createVTableGuild({ themePreset: 'element-plus' })` 对齐预设名。
+同时在插件初始化时切换预设：
 
-## 导入建议
+```ts
+app.use(
+  createVTableGuild({
+    themePreset: 'element-plus',
+  }),
+)
+```
 
-- 应用层优先聚合包，减少导入分散。
-- 组件库二次封装或平台层优先分包，职责更清晰。
-- 无论哪种方式，主题 CSS 都应在应用入口尽早加载。
+样式入口和运行时 preset 需要保持一致，否则你会得到不完整的视觉结果。
 
-## 参考位置
+## 全局主题与语言入口
 
-- README：README.md
-- playground 接入：playground/src/main.ts
-- 运行时切换：playground/src/App.vue
+createVTableGuild 支持这些全局配置：
+
+- themePreset: 选择 antdv 或 element-plus
+- theme: 组件级主题覆盖
+- locale: 当前语言标识
+- locales: 自定义语言包注册表
+- localeOverrides: 当前语言包的局部覆写
+
+示例：
+
+```ts
+app.use(
+  createVTableGuild({
+    themePreset: 'antdv',
+    locale: 'zh-CN',
+    theme: {
+      table: {
+        slots: {
+          th: 'bg-slate-50 font-medium',
+        },
+        defaultVariants: {
+          size: 'sm',
+        },
+      },
+    },
+  }),
+)
+```
+
+## 单实例覆盖
+
+当你不想动全局 preset，只想调整一张表格时，优先用 ui 与 class：
+
+```vue
+<VTable
+  :ui="{
+    root: 'shadow-sm',
+    th: 'text-fuchsia-700',
+    td: 'align-top',
+  }"
+  class="rounded-xl"
+/>
+```
+
+这种方式适合局部业务定制，不会影响其他表格实例。
+
+## 继续阅读
+
+- [快速开始](/guide/getting-started)
+- [三层主题覆盖](/guide/theme-overrides)
+- [预设与语言](/guide/presets-and-locales)

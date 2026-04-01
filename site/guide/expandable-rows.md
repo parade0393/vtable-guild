@@ -1,25 +1,27 @@
 # 展开行
 
-展开行覆盖两类用法：由组件内部维护展开状态的非受控模式，以及外部通过 `expandedRowKeys` 接管状态的受控模式。除了额外内容渲染，当前还支持点击整行展开和自定义展开图标。
+展开行适合在不跳转详情页的前提下，直接在当前表格里展示补充信息。
 
-## 基础配置
+它和树形表格不是同一类能力。树形表格处理的是数据本身有层级；展开行处理的是“当前行需要额外展开一块内容”。
+
+## 基础用法
 
 ```vue
 <script setup lang="ts">
 import { VTable, type ColumnsType, type Expandable } from '@vtable-guild/vtable-guild'
 
-interface DemoRow {
+interface UserRow {
   key: string
   name: string
   role: string
   city: string
 }
 
-const columns: ColumnsType<DemoRow> = [{ title: 'Name', dataIndex: 'name', key: 'name' }]
+const columns: ColumnsType<UserRow> = [{ title: '姓名', dataIndex: 'name', key: 'name' }]
 
-const expandable: Expandable<DemoRow> = {
+const expandable: Expandable<UserRow> = {
   expandRowByClick: true,
-  expandedRowRender: (record) => `${record.name} works as ${record.role} in ${record.city}.`,
+  expandedRowRender: (record) => `${record.name} 负责 ${record.role}，所在城市为 ${record.city}`,
 }
 </script>
 
@@ -28,12 +30,17 @@ const expandable: Expandable<DemoRow> = {
 </template>
 ```
 
-## 受控模式
+## 受控展开
+
+当展开状态要和外部筛选条件、路由状态或其他组件联动时，直接使用 expandedRowKeys。
 
 ```ts
+import { computed, ref } from 'vue'
+import type { Expandable, Key } from '@vtable-guild/vtable-guild'
+
 const expandedRowKeys = ref<Key[]>(['1'])
 
-const expandable = computed<Expandable<DemoRow>>(() => ({
+const expandable = computed<Expandable<UserRow>>(() => ({
   expandedRowKeys: expandedRowKeys.value,
   expandedRowRender: (record) => record.name,
   onExpandedRowsChange: (keys) => {
@@ -42,23 +49,20 @@ const expandable = computed<Expandable<DemoRow>>(() => ({
 }))
 ```
 
-这种模式下，组件只负责发出下一组 key，不会直接改写本地状态。
+## 常见扩展点
 
-## 常用扩展点
+- expandRowByClick，让整行都可点击展开。
+- rowExpandable(record)，按业务条件决定哪些行可以展开。
+- expandIcon(props)，自定义展开图标。
+- showExpandColumn: false，只保留行点击展开，不显示独立展开列。
 
-- `expandRowByClick`：点击整行切换展开状态。
-- `rowExpandable(record)`：按记录决定该行是否可展开。
-- `expandIcon(props)`：替换默认展开图标，适合对齐设计系统按钮样式。
-- `showExpandColumn: false`：隐藏展开列，只保留行点击展开。
+## 适合什么场景
 
-## 对照示例来源
+- 行内详情预览。
+- 补充说明、标签、备注信息。
+- 不值得单独跳转详情页，但信息又明显超出单元格承载范围的内容。
 
-- playground 入口：playground/src/pages/AdvancedPage.vue
-- 当前测试覆盖：packages/table/src/composables/useExpand.test.ts、packages/table/src/components/VTable.test.ts
+## 相关页面
 
-<PlaygroundDemo
-  title="展开行对照页"
-  route="/advanced"
-  note="该页覆盖受控 expandedRowKeys、整行点击展开、自定义 expandIcon，以及隐藏展开列的用法。"
-  :height="760"
-/>
+- [树形表格](/guide/tree-table)
+- [自定义行与插槽](/guide/api-wiring-and-slots)

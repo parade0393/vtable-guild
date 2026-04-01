@@ -1,47 +1,60 @@
-# 架构设计
+# 为什么这样设计
 
-这一页整理自仓库内现有的架构文档，目的是让后续补测试、补文档、接发布流程时有统一参照。
+这一页是可选参考，不是大多数使用者的必读内容。
 
-## 项目定位
+如果你只是想把表格接进项目，优先看快速开始、迁移、功能页和 API 就够了。只有在你要评估长期采用、做二次封装或统一主题治理时，这一页才值得读。
 
-`vtable-guild` 是一个 Vue 3 表格组件库，目标不是重新定义表格 API，而是在现有 UI 生态里提供更强的可替换方案。
+## 1. 分包职责为什么要拆开
 
-- 功能层面对齐 `ant-design-vue` Table 的常见能力。
-- 样式层通过 tailwind-variants 和 CSS token 支持预设与覆盖。
-- 工程层使用 pnpm workspace + Turborepo 维护多包发布。
+你真正会接触到的其实只有两层：
 
-## 包结构
+- @vtable-guild/vtable-guild，聚合入口，适合大多数业务项目直接使用。
+- createVTableGuild，全局配置入口，用来切预设、语言和全局主题。
 
-- `@vtable-guild/core`：主题合并、Vue 插件、基础组件、工具函数。
-- `@vtable-guild/icons`：表格相关 SVG 图标。
-- `@vtable-guild/theme`：主题对象、预设解析、CSS token 和预设样式入口。
-- `@vtable-guild/table`：`VTable`、表格 composables、类型定义与子组件。
-- `@vtable-guild/vtable-guild`：聚合入口，面向大多数使用方。
+底层分包的意义在于把职责拆清楚：
 
-## 三层主题覆盖
+- @vtable-guild/table 负责表格能力本身。
+- @vtable-guild/theme 负责预设和样式基线。
+- @vtable-guild/core 负责插件和配置上下文。
 
-主题优先级从低到高分三层：
+对使用者来说，这种拆法的价值不是“方便研究源码”，而是让接入、主题切换和后续封装边界更稳定。
 
-1. `@vtable-guild/theme` 默认主题与预设。
-2. `createVTableGuild({ theme, themePreset })` 提供的全局覆盖。
-3. `VTable` 实例上的 `ui` 和 `class`。
+## 2. 为什么主题要做成三层
 
-这套结构让库可以同时兼容预设对齐和局部改造，不需要为单个业务场景复制整套主题。
+如果主题只有一层，通常会出现两个问题：
 
-## 数据处理主链路
+- 全局改起来太重，单页不好做例外。
+- 单页改起来太散，最后全是业务样式补丁。
 
-`VTable` 的内部处理顺序是：
+vtable-guild 把主题拆成三层，就是为了解决这个问题：
 
-1. 响应式列过滤
-2. `useColumns` 生成叶子列和表头结构
-3. `useFilter` 处理筛选
-4. `useSorter` 处理排序
-5. `useTreeData` 和 `useSelection` 等高级能力再接入展示阶段
+1. 预设负责整体视觉基线。
+2. createVTableGuild 的全局 theme 负责应用级统一覆盖。
+3. 实例 ui 负责单张表格的局部调整。
 
-这个顺序直接决定了测试优先级，因此阶段 7 先补 composable 单测，再补组件交互测试。
+这意味着你既能快速接入 antdv 或 element-plus 风格，也能只改一张表的表头、单元格或根容器样式，而不必复制整套主题。
 
-## 当前工程状态
+## 3. 为什么它适合从现有表格迁移
 
-- Monorepo 基建、主题系统、表格主体能力和 playground 已具备。
-- 当前缺口集中在测试覆盖、文档站内容和发布前验收。
-- Changesets、CI 和 release workflow 已完成第一版接入，接下来需要用更多测试和文档把它们托住。
+VTable 的思路不是让你重新学习一套完全不同的表格模型，而是把常见能力继续留在 columns 和 props 里：
+
+- 排序、筛选、选择、树形和展开行都通过声明式配置组合。
+- 虚拟滚动、列宽拖拽和主题覆盖作为增强能力直接叠加。
+- 原本散在业务页面里的很多交互和样式补丁，可以回收到表格本体上。
+
+这也是它适合替换现有业务表格的原因。你迁移的重点更多是确认边界，而不是整页推倒重写。
+
+## 什么时候值得看这页
+
+下面这些情况再回来看就够了：
+
+- 你在评估是否长期采用 vtable-guild。
+- 你要做企业内部二次封装。
+- 你要统一多条业务线的表格主题。
+- 你想理解为什么 themePreset、theme 和 ui 要分开使用。
+
+## 相关页面
+
+- [为什么选择 vtable-guild](/guide/why)
+- [三层主题覆盖](/guide/theme-overrides)
+- [API Reference](/guide/api-reference)
