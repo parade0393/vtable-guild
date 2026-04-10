@@ -28,13 +28,48 @@
 如果你希望从聚合包接入：
 
 ```bash
-pnpm add @vtable-guild/vtable-guild @vtable-guild/theme vue
+pnpm add @vtable-guild/vtable-guild @vtable-guild/theme
+pnpm add -D tailwindcss @tailwindcss/vite
 ```
 
 如果你只需要表格与主题：
 
 ```bash
-pnpm add @vtable-guild/table @vtable-guild/theme @vtable-guild/core vue
+pnpm add @vtable-guild/table @vtable-guild/theme @vtable-guild/core
+pnpm add -D tailwindcss @tailwindcss/vite
+```
+
+> `vue` 已在各包的 `peerDependencies` 中声明，无需重复安装。
+
+## Setup
+
+### 1. 配置 Vite 插件
+
+在 `vite.config.ts` 中注册 `@tailwindcss/vite`：
+
+```ts
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import tailwindcss from '@tailwindcss/vite'
+
+export default defineConfig({
+  plugins: [vue(), tailwindcss()],
+})
+```
+
+### 2. 引入样式
+
+在项目的 CSS 入口文件（如 `main.css`）中添加：
+
+```css
+@import 'tailwindcss';
+@import '@vtable-guild/theme/css';
+```
+
+然后在 `main.ts` 中导入该 CSS 文件：
+
+```ts
+import './main.css'
 ```
 
 ## Quick Start
@@ -142,8 +177,3 @@ playground/
 site/
 docs/
 ```
-
-## Roadmap
-
-- 近期重点：补齐 `packages/table` 测试、初始化 `site/` 文档站、打通首次发布流程。
-- 设计与实现背景见 `docs/` 目录，当前执行计划以 [docs/roadmap.md](./docs/roadmap.md) 为准。

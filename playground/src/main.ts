@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import './main.css'
-import { createVTableGuild } from '@vtable-guild/core'
+import { createVTableGuild } from '@vtable-guild/vtable-guild'
 import { router } from './router'
 import Antd from 'ant-design-vue'
 
