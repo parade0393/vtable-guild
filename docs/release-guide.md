@@ -230,3 +230,12 @@ pnpm changeset status
 ### Q: linked 模式下只改了一个包，其他包版本也会跳吗？
 
 是的，linked 保证所有包版本号一致。只要有任何一个包的 changeset，所有 linked 包都会同步 bump 版本。这是有意为之的设计，方便用户统一升级。
+
+### Q: CI 发布报 403 Forbidden / Two-factor authentication required？
+
+npm 已于 2025 年 11 月废除 Legacy Token（Classic Token）。现在 CI 发布必须使用 **Granular Access Token** 并开启 **Bypass two-factor authentication**：
+
+1. npmjs.com → 头像 → **Access Tokens** → **Generate New Token** → **Granular Access Token**
+2. Packages and scopes → **Read and write**
+3. **Bypass two-factor authentication** → **Enabled**
+4. 更新 GitHub repo → Settings → Secrets → `NPM_TOKEN`
