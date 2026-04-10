@@ -18,7 +18,7 @@
     ]
   ],
   "access": "public",
-  "baseBranch": "main",
+  "baseBranch": "master",
   "updateInternalDependencies": "patch",
   "ignore": ["@vtable-guild/playground", "@vtable-guild/site"]
 }
