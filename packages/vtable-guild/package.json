@@ -1,6 +1,6 @@
 {
   "name": "@vtable-guild/vtable-guild",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "A highly customizable Vue 3 Table component library powered by tailwind-variants",
   "type": "module",
   "files": [

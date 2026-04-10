@@ -1,6 +1,6 @@
 {
   "name": "@vtable-guild/core",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Core utilities and theme system for vtable-guild",
   "type": "module",
   "files": [

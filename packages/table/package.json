@@ -1,6 +1,6 @@
 {
   "name": "@vtable-guild/table",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Table component for vtable-guild",
   "type": "module",
   "files": [
