@@ -627,7 +627,7 @@ describe('VTable', () => {
       },
     })
 
-    expect(wrapper.get('[aria-label="Open filters"]').exists()).toBe(true)
+    expect(wrapper.find('[aria-label="Open filters"]').exists()).toBe(true)
 
     wrapper.unmount()
   })

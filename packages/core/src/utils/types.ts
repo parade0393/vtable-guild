@@ -38,7 +38,7 @@ export type SlotProps<T extends ThemeConfig> = Partial<Record<keyof T['slots'] &
 export type DeepPartial<T> = {
   [K in keyof T]?: T[K] extends Array<infer U>
     ? Array<DeepPartial<U>>
-    : T[K] extends Record<string, unknown>
+    : T[K] extends object
       ? DeepPartial<T[K]>
       : T[K]
 }
