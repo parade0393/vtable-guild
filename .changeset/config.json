@@ -3,7 +3,7 @@
   "changelog": [
     "@changesets/cli/changelog",
     {
-      "repo": "vtable-guild/vtable-guild"
+      "repo": "parade0393/vtable-guild"
     }
   ],
   "commit": false,

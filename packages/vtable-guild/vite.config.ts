@@ -18,6 +18,7 @@ export default defineConfig({
       external: [
         'vue',
         '@vtable-guild/core',
+        '@vtable-guild/icons',
         '@vtable-guild/theme',
         '@vtable-guild/table',
         'tailwind-variants',

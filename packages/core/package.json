@@ -28,6 +28,26 @@
   "peerDependencies": {
     "vue": "^3.5.0"
   },
+  "author": "parade0393",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/parade0393/vtable-guild",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/parade0393/vtable-guild#readme",
+  "bugs": {
+    "url": "https://github.com/parade0393/vtable-guild/issues"
+  },
+  "keywords": [
+    "vue",
+    "vue3",
+    "table",
+    "component",
+    "tailwind",
+    "tailwind-variants",
+    "theme"
+  ],
+  "sideEffects": false,
   "publishConfig": {
     "access": "public"
   },

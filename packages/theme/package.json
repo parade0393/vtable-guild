@@ -29,6 +29,28 @@
   "devDependencies": {
     "@vtable-guild/core": "workspace:*"
   },
+  "author": "parade0393",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/parade0393/vtable-guild",
+    "directory": "packages/theme"
+  },
+  "homepage": "https://github.com/parade0393/vtable-guild#readme",
+  "bugs": {
+    "url": "https://github.com/parade0393/vtable-guild/issues"
+  },
+  "keywords": [
+    "vue",
+    "vue3",
+    "table",
+    "theme",
+    "tailwind",
+    "css",
+    "preset"
+  ],
+  "sideEffects": [
+    "css/**"
+  ],
   "publishConfig": {
     "access": "public"
   },
