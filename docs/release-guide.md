@@ -70,7 +70,7 @@ git commit -m "feat(table): add xxx feature"
 ### 3. 推送到远端
 
 ```bash
-git push origin main
+git push origin master
 ```
 
 推送后，GitHub Actions 自动接管后续流程。
@@ -80,7 +80,7 @@ git push origin main
 ## CI 自动发布流程
 
 ```
-push to main
+push to master
     │
     ▼
 .github/workflows/ci.yml
@@ -109,7 +109,7 @@ push to main
 
 **关键点：**
 
-- 每次 push 到 main 后，changesets/action 会做二选一：
+- 每次 push 到 master 后，changesets/action 会做二选一：
   - 存在 changeset 文件 → **打开/更新 Release PR**（不发布）
   - Release PR 被合并 → **执行发布**（消费 changeset，推送到 npm）
 - 开发者唯一需要做的就是：**合并 Release PR**
@@ -125,18 +125,20 @@ push to main
 pnpm changeset
 
 # 2. 应用版本号（本地预览）
-pnpm version
+pnpm run version:packages
 # 此命令会：更新各包 package.json 版本、生成 CHANGELOG.md、删除 changeset 文件
 
 # 3. 提交版本变更
 git add .
 git commit -m "chore(release): version packages"
-git push origin main
+git push origin master
 
-# CI 检测到没有待消费的 changeset（已被 pnpm version 消费）→ 自动执行 changeset publish
+# CI 检测到没有待消费的 changeset（已被 pnpm run version:packages 消费）→ 自动执行 changeset publish
 ```
 
 > **注意**：如果使用 CI 自动流程，可以跳过第 2、3 步，直接 push 后让 CI 创建 Release PR，合并即可。
+>
+> 不要使用 `pnpm version`，它会命中 pnpm 自带命令而不是根脚本，导致 Changesets 不会真正生成版本变更。
 
 ---
 

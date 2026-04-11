@@ -26,7 +26,7 @@
     "site:build": "pnpm --filter @vtable-guild/site build",
     "site:preview": "pnpm --filter @vtable-guild/site preview",
     "changeset": "changeset",
-    "version": "changeset version",
+    "version:packages": "changeset version",
     "release": "pnpm lint && pnpm type-check && pnpm test && pnpm build && changeset publish"
   },
   "config": {

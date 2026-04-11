@@ -157,7 +157,7 @@ pnpm site:dev
 ## Release Flow
 
 - `pnpm changeset`：记录本次包变更。
-- `pnpm version`：应用版本号与 changelog 变更。
+- `pnpm run version:packages`：应用版本号与 changelog 变更。
 - `pnpm release`：执行 lint、type-check、test、build 并发布到 npm。
 
 GitHub Actions 已预留两条工作流：
