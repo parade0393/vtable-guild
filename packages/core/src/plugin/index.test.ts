@@ -44,11 +44,11 @@ describe('createVTableGuild', () => {
     expect(document.documentElement.getAttribute('data-vtg-preset')).toBe('element-plus')
   })
 
-  it('removes the preset attribute for the default antdv preset', () => {
+  it('sets the preset attribute for the default antdv preset', () => {
     syncDocumentPresetAttr('element-plus')
     syncDocumentPresetAttr('antdv')
 
-    expect(document.documentElement.hasAttribute('data-vtg-preset')).toBe(false)
+    expect(document.documentElement.getAttribute('data-vtg-preset')).toBe('antdv')
   })
 })
 

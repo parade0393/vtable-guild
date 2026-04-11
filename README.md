@@ -132,8 +132,9 @@ const dataSource: UserRow[] = [
 ## Theme Presets
 
 - 默认导入 `@vtable-guild/theme/css` 时使用 `antdv` 预设。
-- 如需切换到 `element-plus` 预设，可以在默认样式后继续引入 `@vtable-guild/theme/css/presets/element-plus`。
+- 如需切换到 `element-plus` 预设，请保留默认样式入口，并在后面继续引入 `@vtable-guild/theme/css/presets/element-plus`。
 - 运行时通过 `createVTableGuild({ themePreset })` 控制主题预设，并可通过 `theme` 与组件 `ui` props 做覆盖。
+- 使用者不需要手动在 HTML 上添加 `data-vtg-preset` 属性，插件会自动同步。
 
 ```ts
 import '@vtable-guild/theme/css'
@@ -161,8 +162,8 @@ pnpm site:dev
 
 GitHub Actions 已预留两条工作流：
 
-- `CI`：在 PR 和 `main` 分支上运行 lint、type-check、test、build。
-- `Release`：在 `main` 分支上由 Changesets 生成版本 PR，或在存在变更集时自动发布。
+- `CI`：在 PR 和 `master` 分支上运行 lint、type-check、test、build。
+- `Release`：在 `master` 分支上由 Changesets 生成版本 PR，或在存在变更集时自动发布。
 
 ## Monorepo Structure
 

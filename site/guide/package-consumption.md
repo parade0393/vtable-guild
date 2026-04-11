@@ -46,7 +46,7 @@ import '@vtable-guild/theme/css'
 import '@vtable-guild/theme/css'
 ```
 
-这会加载默认的 antdv 预设样式。
+这会加载默认的 antdv 预设样式，以及主题运行所需的基础样式能力。
 
 ### element-plus 视觉预设
 
@@ -66,6 +66,13 @@ app.use(
   }),
 )
 ```
+
+这里要同时做两件事：
+
+- CSS 层保留 `@vtable-guild/theme/css`，再追加 `@vtable-guild/theme/css/presets/element-plus`
+- JS 层把 `themePreset` 切到 `element-plus`
+
+使用者不需要手动在 HTML 上添加 `data-vtg-preset` 属性，`createVTableGuild` 会自动同步当前预设。
 
 样式入口和运行时 preset 需要保持一致，否则你会得到不完整的视觉结果。
 

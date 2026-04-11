@@ -14,11 +14,6 @@ export const VTABLE_GUILD_INJECTION_KEY: InjectionKey<VTableGuildContext> = Symb
 export function syncDocumentPresetAttr(themePreset: VTableGuildContext['themePreset']) {
   if (typeof document === 'undefined') return
 
-  if (themePreset === 'antdv') {
-    document.documentElement.removeAttribute('data-vtg-preset')
-    return
-  }
-
   document.documentElement.setAttribute('data-vtg-preset', themePreset)
 }
 

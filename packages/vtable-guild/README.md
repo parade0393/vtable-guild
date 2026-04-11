@@ -12,7 +12,7 @@ pnpm add @vtable-guild/vtable-guild
 
 ```ts
 import { createVTableGuild } from '@vtable-guild/vtable-guild'
-import '@vtable-guild/theme/css/presets/antdv'
+import '@vtable-guild/theme/css'
 
 const app = createApp(App)
 app.use(createVTableGuild())

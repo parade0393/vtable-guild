@@ -22,7 +22,20 @@ app.use(
 )
 ```
 
-如果你改成 element-plus，也要记得在样式入口里补上对应 preset 文件，详见 [包导入与样式](/guide/package-consumption)。
+如果你改成 element-plus，需要同时完成两步：
+
+```ts
+import '@vtable-guild/theme/css'
+import '@vtable-guild/theme/css/presets/element-plus'
+
+app.use(
+  createVTableGuild({
+    themePreset: 'element-plus',
+  }),
+)
+```
+
+你不需要手动在 HTML 上添加 `data-vtg-preset` 属性，插件会自动处理。更多样式接入方式见 [包导入与样式](/guide/package-consumption)。
 
 ## 内置语言
 

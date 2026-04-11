@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, provide, ref, watch } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
-import { VTableGuildConfigProvider } from '@vtable-guild/core'
+import { VTableGuildConfigProvider, syncDocumentPresetAttr } from '@vtable-guild/core'
 import type { ThemePresetName } from '@vtable-guild/core'
 import type { BuiltInLocaleName } from '@vtable-guild/theme'
 import zhCN from 'ant-design-vue/es/locale/zh_CN'
@@ -19,18 +19,7 @@ provide(PLAYGROUND_CONTEXT_KEY, {
   antLocale: currentAntdvLocale,
 })
 
-function syncHtmlPreset(preset: ThemePresetName) {
-  if (typeof document === 'undefined') return
-
-  if (preset === 'element-plus') {
-    document.documentElement.setAttribute('data-vtg-preset', 'element-plus')
-    return
-  }
-
-  document.documentElement.removeAttribute('data-vtg-preset')
-}
-
-watch(currentPreset, syncHtmlPreset, { immediate: true })
+watch(currentPreset, syncDocumentPresetAttr, { immediate: true })
 watch(
   currentLocale,
   (locale) => {
