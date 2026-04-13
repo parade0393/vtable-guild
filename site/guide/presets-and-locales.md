@@ -22,12 +22,9 @@ app.use(
 )
 ```
 
-如果你改成 element-plus，需要同时完成两步：
+如果你改成 element-plus，直接在 JS 侧切换即可，无需追加 CSS（`@vtable-guild/theme/css` 已内含所有预设样式）：
 
 ```ts
-import '@vtable-guild/theme/css'
-import '@vtable-guild/theme/css/presets/element-plus'
-
 app.use(
   createVTableGuild({
     themePreset: 'element-plus',

@@ -50,14 +50,7 @@ import '@vtable-guild/theme/css'
 
 ### element-plus 视觉预设
 
-如果你要使用 element-plus 风格，请继续追加对应样式文件：
-
-```ts
-import '@vtable-guild/theme/css'
-import '@vtable-guild/theme/css/presets/element-plus'
-```
-
-同时在插件初始化时切换预设：
+`@vtable-guild/theme/css` 已内含所有预设的样式，无需追加额外 CSS。只需在插件初始化时切换 `themePreset`：
 
 ```ts
 app.use(
@@ -67,14 +60,7 @@ app.use(
 )
 ```
 
-这里要同时做两件事：
-
-- CSS 层保留 `@vtable-guild/theme/css`，再追加 `@vtable-guild/theme/css/presets/element-plus`
-- JS 层把 `themePreset` 切到 `element-plus`
-
 使用者不需要手动在 HTML 上添加 `data-vtg-preset` 属性，`createVTableGuild` 会自动同步当前预设。
-
-样式入口和运行时 preset 需要保持一致，否则你会得到不完整的视觉结果。
 
 ## 全局主题与语言入口
 

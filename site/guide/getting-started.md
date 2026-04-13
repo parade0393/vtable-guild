@@ -46,7 +46,7 @@ app.component('VTable', VTable)
 app.mount('#app')
 ```
 
-默认预设是 antdv。如果你要切到 element-plus 风格，需要保留 `@vtable-guild/theme/css`，再追加 `@vtable-guild/theme/css/presets/element-plus`，并把 `themePreset` 设为 `element-plus`。使用者不需要手动添加 HTML 属性，详见 [包导入与样式](/guide/package-consumption)。
+默认预设是 antdv。如果你要切到 element-plus 风格，只需把 `themePreset` 设为 `element-plus`，无需追加 CSS——`@vtable-guild/theme/css` 已包含所有预设样式。使用者不需要手动添加 HTML 属性，详见 [包导入与样式](/guide/package-consumption)。
 
 ## 最小可用示例
 
