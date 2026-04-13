@@ -2,15 +2,7 @@
 
 SVG icon Vue components for vtable-guild. Provides icons used internally by `@vtable-guild/table`.
 
-## Installation
-
-```bash
-pnpm add @vtable-guild/icons
-```
-
-## Documentation
-
-See the [full documentation](https://github.com/parade0393/vtable-guild#readme) for usage details.
+> 此包为 `@vtable-guild/table` 的内部依赖，会随 table 包自动安装，不需要手动安装。
 
 ## License
 

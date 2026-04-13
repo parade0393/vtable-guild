@@ -131,14 +131,14 @@ const dataSource: UserRow[] = [
 
 ## Theme Presets
 
-- 默认导入 `@vtable-guild/theme/css` 时使用 `antdv` 预设。
-- 如需切换到 `element-plus` 预设，请保留默认样式入口，并在后面继续引入 `@vtable-guild/theme/css/presets/element-plus`。
+- 默认导入 `@vtable-guild/theme/css` 时使用 `antdv` 预设（所有预设样式已统一包含在内）。
+- 切换预设只需在 JS 侧指定 `themePreset`，无需追加额外的 CSS import。
 - 运行时通过 `createVTableGuild({ themePreset })` 控制主题预设，并可通过 `theme` 与组件 `ui` props 做覆盖。
 - 使用者不需要手动在 HTML 上添加 `data-vtg-preset` 属性，插件会自动同步。
 
 ```ts
-import '@vtable-guild/theme/css'
-import '@vtable-guild/theme/css/presets/element-plus'
+// 切换到 element-plus 预设，只需改 JS 侧，无需追加 CSS
+app.use(createVTableGuild({ themePreset: 'element-plus' }))
 ```
 
 ## Workspace Commands

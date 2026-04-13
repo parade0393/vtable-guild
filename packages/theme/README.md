@@ -10,18 +10,13 @@ pnpm add @vtable-guild/theme
 
 ## Usage
 
-Import the CSS that matches your target preset:
+Import the CSS entry (all presets are included):
 
 ```ts
-// ant-design-vue preset (default)
 import '@vtable-guild/theme/css'
-
-// element-plus preset
-import '@vtable-guild/theme/css'
-import '@vtable-guild/theme/css/presets/element-plus'
 ```
 
-Set `themePreset` at runtime with `createVTableGuild({ themePreset })`. You do not need to manually add `data-vtg-preset` attributes.
+Set `themePreset` at runtime with `createVTableGuild({ themePreset })` to switch between `antdv` (default) and `element-plus`. You do not need to manually add `data-vtg-preset` attributes.
 
 ## Documentation
 
