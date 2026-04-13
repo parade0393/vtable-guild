@@ -1,5 +1,13 @@
 # @vtable-guild/theme
 
+## 2.0.0
+
+### Minor Changes
+
+- [`f3f1eae`](https://github.com/parade0393/vtable-guild/commit/f3f1eaed310ab6c6d77b4bd9bc4d0149aba05d29) Thanks [@parade0393](https://github.com/parade0393)! - Bundle all theme presets in main CSS entry
+
+  `@import '@vtable-guild/theme/css'` now includes both `antdv` (default) and `element-plus` presets. The element-plus preset no longer has a `:where(:root)` fallback — it only activates via `[data-vtg-preset='element-plus']`, which `createVTableGuild({ themePreset: 'element-plus' })` sets automatically. No extra CSS import is needed when switching presets.
+
 ## 1.0.2
 
 ### Patch Changes
