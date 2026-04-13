@@ -89,29 +89,28 @@ push to master
     ├── pnpm test
     └── pnpm build
     │
-    ▼ (并行触发)
+    ▼ (CI 成功后才触发，通过 workflow_run 事件)
 .github/workflows/release.yml
     │
     ├── 检测 .changeset/ 中是否有未消费的 changeset
     │
     ├── 有 changeset → 创建/更新 "chore(release): version packages" PR
-    │       └── PR 内容：自动更新各包 version + 生成 CHANGELOG.md
+    │       └── PR 内容：自动更新各包 version + 生成 CHANGELOG.md（含 PR 链接/作者）
     │
     └── 无 changeset（即合并了 Version PR）→ 执行发布
-            ├── pnpm release
-            │     ├── pnpm lint
-            │     ├── pnpm type-check
-            │     ├── pnpm test
+            ├── pnpm publish-packages
             │     ├── pnpm build
-            │     └── changeset publish  ──→  发布到 npm
+            │     └── changeset publish --provenance  ──→  发布到 npm（含供应链签名）
             └── 创建 GitHub Release + Tag
 ```
 
 **关键点：**
 
-- 每次 push 到 master 后，changesets/action 会做二选一：
+- Release workflow 通过 `workflow_run` 事件触发，**必须等 CI 全部通过才会运行**，不会在 lint/test 失败时发布
+- 每次触发后，changesets/action 会做二选一：
   - 存在 changeset 文件 → **打开/更新 Release PR**（不发布）
   - Release PR 被合并 → **执行发布**（消费 changeset，推送到 npm）
+- 发布时使用 `--provenance` 标志，包详情页会显示 npm provenance 供应链签名
 - 开发者唯一需要做的就是：**合并 Release PR**
 
 ---
@@ -150,18 +149,38 @@ git push origin master
 # 确保本地已登录 npm
 npm login
 
-# 确认构建产物是最新的
-pnpm build
-
-# 发布所有包（lint + type-check + test + build + changeset publish）
+# 发布所有包（lint + type-check + test + build + publish）
 pnpm release
 ```
 
 > `pnpm release` 脚本定义在根 `package.json`：
 >
 > ```json
-> "release": "pnpm lint && pnpm type-check && pnpm test && pnpm build && changeset publish"
+> "release": "pnpm lint && pnpm type-check && pnpm test && pnpm publish-packages"
 > ```
+>
+> `publish-packages` 脚本：`pnpm build && changeset publish --provenance`
+
+### 发布前预览（dry-run）
+
+在正式发布前，可以通过以下命令预览将要发布的包和版本号，不会实际推送到 npm：
+
+```bash
+pnpm release:dry
+```
+
+### 本地运行 version:packages
+
+`pnpm version:packages` 在本地运行需要 `GITHUB_TOKEN`（用于生成含 PR 链接的 CHANGELOG）：
+
+```bash
+# 在 https://github.com/settings/tokens/new 创建 PAT
+# 勾选 read:user 和 repo:status 权限
+$env:GITHUB_TOKEN = "ghp_your_token"
+pnpm version:packages
+```
+
+在 CI 中 `GITHUB_TOKEN` 由 Actions 自动注入，无需手动处理。
 
 ---
 
