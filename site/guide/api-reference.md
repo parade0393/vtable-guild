@@ -97,6 +97,8 @@ extra.action 当前会返回 sort、filter 或 select，便于业务区分触发
 | footer               | 自定义页脚区域。       |
 | summary              | 自定义摘要区域。       |
 
+> 以上是 **Vue 插槽**。若要通过 class 覆盖样式，请查看 [ui Slot 参考](/guide/ui-slots-reference)，其中列出了所有 60+ 个 `ui` prop 可用的 theme slot。
+
 ## rowSelection 常查字段
 
 | 字段                                     | 说明                       |

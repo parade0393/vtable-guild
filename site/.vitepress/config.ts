@@ -46,6 +46,7 @@ export default defineConfig({
           items: [
             { text: '三层主题覆盖', link: '/guide/theme-overrides' },
             { text: '预设与语言', link: '/guide/presets-and-locales' },
+            { text: 'ui Slot 参考', link: '/guide/ui-slots-reference' },
           ],
         },
         {

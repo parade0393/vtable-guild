@@ -1,5 +1,16 @@
 # @vtable-guild/core
 
+## 2.0.1
+
+### Patch Changes
+
+- fix: 修复外部项目类型提示缺失，增强 theme 配置类型推导
+  - core: 新增 VTableGuildThemeOverridesMap 可增强接口，createVTableGuild 的 theme 参数现在有完整的 key 和 slot 级别类型补全
+  - theme: 通过 module augmentation 注入内置组件的精确 ThemeConfig 类型
+  - table: 修复 .d.ts 中 import 路径为工作区相对路径的问题，新增 tsconfig.build.json
+  - theme/table: dts 构建配置添加 paths 清空，防止 workspace paths 泄漏到声明文件
+  - docs: 新增 ui Slot 参考页，列出全部 60+ theme slot 及使用示例
+
 ## 1.0.2
 
 ### Patch Changes

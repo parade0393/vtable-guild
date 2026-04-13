@@ -10,6 +10,7 @@ export default defineConfig({
     vueJsx(),
     dts({
       exclude: ['**/*.test.ts', '**/*.spec.ts'],
+      tsconfigPath: './tsconfig.build.json',
     }),
   ],
   build: {

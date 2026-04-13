@@ -98,7 +98,28 @@ export interface VTableGuildLocale {
 
 export type LocaleName = string
 export type LocaleRegistry = Record<LocaleName, VTableGuildLocale>
-export type VTableGuildThemeOverrides = Record<string, Partial<ThemeConfig>>
+
+/**
+ * 可通过 module augmentation 扩展的组件主题映射接口。
+ *
+ * `@vtable-guild/theme` 会自动增强该接口，注入所有内置组件的精确主题类型，
+ * 使 `createVTableGuild({ theme: { table: { slots: { ... } } } })` 拥有完整补全。
+ *
+ * 用户也可在自己的项目中继续增强：
+ * ```ts
+ * declare module '@vtable-guild/core' {
+ *   interface VTableGuildThemeOverridesMap {
+ *     myComponent: DeepPartial<MyThemeConfig>
+ *   }
+ * }
+ * ```
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface VTableGuildThemeOverridesMap {}
+
+export type VTableGuildThemeOverrides = {
+  [K in keyof VTableGuildThemeOverridesMap]?: VTableGuildThemeOverridesMap[K]
+} & Record<string, Partial<ThemeConfig>>
 
 /**
  * createVTableGuild() 的配置参数。

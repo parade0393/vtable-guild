@@ -1,6 +1,21 @@
 # vtable-guild
 
-`vtable-guild` 是一个面向 Vue 3 UI 生态的表格组件库，目标是在保留现有设计体系的前提下，替换原生表格组件中较难扩展的部分。当前预设围绕 `ant-design-vue` 和 `element-plus` 对齐，主题系统采用默认主题、全局配置、实例 props 三层合并模型。
+`vtable-guild` 是一个面向 Vue 3 的高度可定制表格组件库，设计目标是在保留现有设计体系的前提下，无缝替换 `ant-design-vue` 或 `element-plus` Table 组件中难以扩展的部分。
+
+**为什么不直接用他们的原生 Table？**
+
+- `ant-design-vue` 使用原生滚动条，出现滚动条时表头会多渲染一个空列来对齐，视觉上不美；且不支持虚拟滚动
+- `element-plus` 的 `el-table` 不支持纯配置驱动，`el-table-v2` 虽支持虚拟滚动但 API 体验差
+- 两者均缺乏统一的主题扩展机制
+
+**vtable-guild 的策略：**
+
+- API 对齐 `ant-design-vue Table`，迁移成本低
+- 滚动条方案参考 `element-plus`，视觉更一致
+- 内置虚拟滚动，开箱即用
+- 三层主题合并模型（默认主题 → 全局配置 → 实例 props），覆盖粒度细至单个 slot
+
+当前内置预设：`antdv`（默认）、`element-plus`。
 
 ## Packages
 
@@ -14,7 +29,6 @@
 
 - 基础表格、排序、筛选、选择、树形和虚拟滚动能力已进入可集成状态。
 - Playground 已覆盖 `ant-design-vue` 与 `element-plus` 两套预设对照页面。
-- 当前正在补齐阶段 7/8：table 测试、VitePress 文档站、Changesets 与 CI/CD 发布流程。
 
 ## Requirements
 
@@ -25,21 +39,10 @@
 
 ## Install
 
-如果你希望从聚合包接入：
-
 ```bash
 pnpm add @vtable-guild/vtable-guild @vtable-guild/theme
 pnpm add -D tailwindcss @tailwindcss/vite
 ```
-
-如果你只需要表格与主题：
-
-```bash
-pnpm add @vtable-guild/table @vtable-guild/theme @vtable-guild/core
-pnpm add -D tailwindcss @tailwindcss/vite
-```
-
-> `vue` 已在各包的 `peerDependencies` 中声明，无需重复安装。
 
 ## Setup
 
@@ -82,19 +85,14 @@ import '@vtable-guild/theme/css'
 
 const app = createApp(App)
 
-app.use(
-  createVTableGuild({
-    themePreset: 'antdv',
-  }),
-)
-
+app.use(createVTableGuild())
 app.component('VTable', VTable)
 app.mount('#app')
 ```
 
 ```vue
 <script setup lang="ts">
-import { VTable, type ColumnsType } from '@vtable-guild/vtable-guild'
+import type { ColumnsType } from '@vtable-guild/vtable-guild'
 
 interface UserRow {
   key: string
@@ -134,7 +132,6 @@ const dataSource: UserRow[] = [
 - 默认导入 `@vtable-guild/theme/css` 时使用 `antdv` 预设（所有预设样式已统一包含在内）。
 - 切换预设只需在 JS 侧指定 `themePreset`，无需追加额外的 CSS import。
 - 运行时通过 `createVTableGuild({ themePreset })` 控制主题预设，并可通过 `theme` 与组件 `ui` props 做覆盖。
-- 使用者不需要手动在 HTML 上添加 `data-vtg-preset` 属性，插件会自动同步。
 
 ```ts
 // 切换到 element-plus 预设，只需改 JS 侧，无需追加 CSS
@@ -152,29 +149,4 @@ pnpm lint
 pnpm type-check
 pnpm build
 pnpm site:dev
-```
-
-## Release Flow
-
-- `pnpm changeset`：记录本次包变更。
-- `pnpm run version:packages`：应用版本号与 changelog 变更。
-- `pnpm release`：执行 lint、type-check、test、build 并发布到 npm。
-
-GitHub Actions 已预留两条工作流：
-
-- `CI`：在 PR 和 `master` 分支上运行 lint、type-check、test、build。
-- `Release`：在 `master` 分支上由 Changesets 生成版本 PR，或在存在变更集时自动发布。
-
-## Monorepo Structure
-
-```text
-packages/
-	core/
-	icons/
-	table/
-	theme/
-	vtable-guild/
-playground/
-site/
-docs/
 ```

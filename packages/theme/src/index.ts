@@ -1,5 +1,8 @@
 // packages/theme/src/index.ts
 
+// ---------- Module Augmentation ----------
+import './augment'
+
 // ---------- 主题定义 ----------
 export { tableTheme, TABLE_ALIGN_CLASSES } from './table'
 export { buttonTheme } from './button'

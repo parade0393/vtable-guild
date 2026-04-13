@@ -70,5 +70,6 @@ app.use(
 
 ## 相关页面
 
+- [ui Slot 参考](/guide/ui-slots-reference)
 - [预设与语言](/guide/presets-and-locales)
 - [包导入与样式](/guide/package-consumption)

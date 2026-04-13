@@ -13,6 +13,7 @@ export type {
   SlotProps,
   VTableGuildOptions,
   VTableGuildContext,
+  VTableGuildThemeOverridesMap,
   ThemePresetName,
   VTableGuildLocale,
   VTableGuildTableLocale,
