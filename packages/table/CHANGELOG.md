@@ -1,5 +1,12 @@
 # @vtable-guild/table
 
+## 2.0.0
+
+### Patch Changes
+
+- Updated dependencies [[`f3f1eae`](https://github.com/parade0393/vtable-guild/commit/f3f1eaed310ab6c6d77b4bd9bc4d0149aba05d29)]:
+  - @vtable-guild/theme@2.0.0
+
 ## 1.0.2
 
 ### Patch Changes
