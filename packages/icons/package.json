@@ -1,6 +1,6 @@
 {
   "name": "@vtable-guild/icons",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "SVG icon components for vtable-guild",
   "type": "module",
   "files": [
@@ -19,7 +19,8 @@
     "build": "vite build",
     "dev": "vite build --watch",
     "type-check": "vue-tsc --build",
-    "test": "vitest run --config ../../vitest.config.ts --project icons --passWithNoTests"
+    "test": "vitest run --config ../../vitest.config.ts --project icons --passWithNoTests",
+    "prepublishOnly": "node -e \"if(!require('fs').existsSync('dist'))throw new Error('dist not found, run pnpm build first')\""
   },
   "peerDependencies": {
     "vue": "^3.5.0"

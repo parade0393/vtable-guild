@@ -24,7 +24,8 @@
     "build": "vite build",
     "dev": "vite build --watch",
     "type-check": "vue-tsc --build",
-    "test": "vitest run --config ../../vitest.config.ts --project theme"
+    "test": "vitest run --config ../../vitest.config.ts --project theme",
+    "prepublishOnly": "node -e \"if(!require('fs').existsSync('dist'))throw new Error('dist not found, run pnpm build first')\""
   },
   "devDependencies": {
     "@vtable-guild/core": "workspace:*"

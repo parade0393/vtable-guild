@@ -27,7 +27,9 @@
     "site:preview": "pnpm --filter @vtable-guild/site preview",
     "changeset": "changeset",
     "version:packages": "changeset version",
-    "release": "pnpm lint && pnpm type-check && pnpm test && pnpm build && changeset publish"
+    "publish-packages": "pnpm build && changeset publish --provenance",
+    "release": "pnpm lint && pnpm type-check && pnpm test && pnpm publish-packages",
+    "release:dry": "pnpm build && changeset publish --dry-run"
   },
   "config": {
     "commitizen": {
@@ -40,6 +42,7 @@
     ]
   },
   "devDependencies": {
+    "@changesets/changelog-github": "^0.6.0",
     "@changesets/cli": "^2.30.0",
     "@commitlint/cli": "^20.3.0",
     "@commitlint/config-conventional": "^20.3.0",
