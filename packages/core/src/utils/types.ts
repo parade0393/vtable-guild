@@ -119,7 +119,7 @@ export interface VTableGuildThemeOverridesMap {}
 
 export type VTableGuildThemeOverrides = {
   [K in keyof VTableGuildThemeOverridesMap]?: VTableGuildThemeOverridesMap[K]
-} & Record<string, Partial<ThemeConfig>>
+}
 
 /**
  * createVTableGuild() 的配置参数。

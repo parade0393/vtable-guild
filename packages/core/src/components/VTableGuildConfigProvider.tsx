@@ -37,17 +37,17 @@ export default defineComponent({
     const parentContext = inject<VTableGuildContext | null>(VTABLE_GUILD_INJECTION_KEY, null)
 
     const mergedTheme = computed<VTableGuildThemeOverrides>(() => {
-      const parent = parentContext?.theme ?? {}
-      const child = props.theme ?? {}
-      if (!Object.keys(child).length) return parent
+      const parent = parentContext?.theme ?? ({} as Record<string, Partial<ThemeConfig>>)
+      const child = props.theme ?? ({} as Record<string, Partial<ThemeConfig>>)
+      if (!Object.keys(child).length) return parent as VTableGuildThemeOverrides
       const keys = new Set([...Object.keys(parent), ...Object.keys(child)])
-      const result: VTableGuildThemeOverrides = {}
+      const result = {} as Record<string, Partial<ThemeConfig>>
       for (const key of keys) {
-        const b = parent[key]
-        const o = child[key]
+        const b = (parent as Record<string, Partial<ThemeConfig>>)[key]
+        const o = (child as Record<string, Partial<ThemeConfig>>)[key]
         result[key] = b && o ? mergeThemeConfigs(b as ThemeConfig, o) : (o ?? b!)
       }
-      return result
+      return result as VTableGuildThemeOverrides
     })
 
     const mergedLocales = computed(() => ({

@@ -54,7 +54,9 @@ export function useTheme<T extends ThemeConfig>(
   // 仅在 variant props 变化时重算，ui/class 变化不触发
   const _slotFns = computed(() => {
     const resolvedDefaultTheme = unref(defaultTheme)
-    const globalTheme = globalContext?.theme?.[componentName] as Partial<ThemeConfig> | undefined
+    const globalTheme = (
+      globalContext?.theme as Record<string, Partial<ThemeConfig>> | undefined
+    )?.[componentName]
     const merged = mergeThemeConfigs(resolvedDefaultTheme, globalTheme)
     const tvResult = tv(merged as Parameters<typeof tv>[0])
 

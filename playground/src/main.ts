@@ -12,7 +12,14 @@ const app = createApp(App)
 // ---- 全局主题配置（Layer 2） ----
 const vtg = createVTableGuild({
   themePreset: 'antdv',
-  theme: {},
+  theme: {
+    table: {
+      slots: {
+        root: '',
+      },
+    },
+    button: {},
+  },
 })
 app.use(Antd)
 app.use(vtg)

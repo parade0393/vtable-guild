@@ -1,7 +1,28 @@
 // packages/theme/src/index.ts
 
 // ---------- Module Augmentation ----------
-import './augment'
+// 内联 declare module 块，确保 vite-plugin-dts 将其保留在 dist/index.d.ts 中。
+// （原 augment.ts 中的副作用导入被 dts 构建时剥离，导致外部项目无法获取类型增强。）
+import type { DeepPartial } from '@vtable-guild/core'
+import type { TableThemeConfig } from './table'
+import type { ButtonThemeConfig } from './button'
+import type { CheckboxThemeConfig } from './checkbox'
+import type { RadioThemeConfig } from './radio'
+import type { InputThemeConfig } from './input'
+import type { TooltipThemeConfig } from './tooltip'
+import type { ScrollbarThemeConfig } from './scrollbar'
+
+declare module '@vtable-guild/core' {
+  interface VTableGuildThemeOverridesMap {
+    table: DeepPartial<TableThemeConfig>
+    button: DeepPartial<ButtonThemeConfig>
+    checkbox: DeepPartial<CheckboxThemeConfig>
+    radio: DeepPartial<RadioThemeConfig>
+    input: DeepPartial<InputThemeConfig>
+    tooltip: DeepPartial<TooltipThemeConfig>
+    scrollbar: DeepPartial<ScrollbarThemeConfig>
+  }
+}
 
 // ---------- 主题定义 ----------
 export { tableTheme, TABLE_ALIGN_CLASSES } from './table'

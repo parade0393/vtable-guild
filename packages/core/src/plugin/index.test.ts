@@ -4,6 +4,13 @@ import { describe, expect, it } from 'vitest'
 import { VTableGuildConfigProvider } from '../index'
 import { createVTableGuild, syncDocumentPresetAttr, VTABLE_GUILD_INJECTION_KEY } from './index'
 
+// Test-only augmentation: register a fake 'badge' component key
+declare module '../utils/types' {
+  interface VTableGuildThemeOverridesMap {
+    badge: DeepPartial<ThemeConfig>
+  }
+}
+
 const ContextProbe = defineComponent({
   name: 'ContextProbe',
   setup() {
