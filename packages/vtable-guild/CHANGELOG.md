@@ -1,5 +1,19 @@
 # @vtable-guild/vtable-guild
 
+## 2.0.3
+
+### Patch Changes
+
+- [`4e7ff0e`](https://github.com/parade0393/vtable-guild/commit/4e7ff0ed7803c48cbf52c49717d00f5103f00307) Thanks [@parade0393](https://github.com/parade0393)! - fix: 修复外部项目的 theme 类型提示与模块增强导出
+  - core: 收紧 `VTableGuildThemeOverrides`，改为通过 `VTableGuildThemeOverridesMap` 做类型扩展
+  - theme: 将模块增强内联到入口声明，确保生成的 `dist/index.d.ts` 保留组件主题类型
+  - vtable-guild: 同步发布聚合包，带出类型修复
+
+- Updated dependencies [[`4e7ff0e`](https://github.com/parade0393/vtable-guild/commit/4e7ff0ed7803c48cbf52c49717d00f5103f00307)]:
+  - @vtable-guild/core@2.0.3
+  - @vtable-guild/theme@2.0.3
+  - @vtable-guild/table@2.0.3
+
 ## 2.0.2
 
 ### Patch Changes
