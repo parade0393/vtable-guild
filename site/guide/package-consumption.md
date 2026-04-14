@@ -2,8 +2,8 @@
 
 vtable-guild 是一个多包仓库。对使用者来说，通常只需要理解两件事：
 
-- 你是用聚合入口，还是按包拆分接入。
-- 你希望页面默认呈现哪套视觉预设。
+- 你是用聚合入口，还是按包拆分接入
+- 你希望页面默认呈现哪套视觉预设
 
 ## 推荐的接入方式
 
@@ -46,11 +46,11 @@ import '@vtable-guild/theme/css'
 import '@vtable-guild/theme/css'
 ```
 
-这会加载默认的 antdv 预设样式，以及主题运行所需的基础样式能力。
+这会加载默认的 `antdv` 预设样式，以及主题运行所需的基础 CSS。
 
 ### element-plus 视觉预设
 
-`@vtable-guild/theme/css` 已内含所有预设的样式，无需追加额外 CSS。只需在插件初始化时切换 `themePreset`：
+`@vtable-guild/theme/css` 已包含所有预设的样式，无需追加额外 CSS。只需在插件初始化时切换 `themePreset`：
 
 ```ts
 app.use(
@@ -64,13 +64,18 @@ app.use(
 
 ## 全局主题与语言入口
 
-createVTableGuild 支持这些全局配置：
+`createVTableGuild` 支持这些全局配置：
 
-- themePreset: 选择 antdv 或 element-plus
-- theme: 组件级主题覆盖
-- locale: 当前语言标识
-- locales: 自定义语言包注册表
-- localeOverrides: 当前语言包的局部覆写
+- `themePreset`
+  选择 `antdv` 或 `element-plus`
+- `theme`
+  组件级主题覆盖
+- `locale`
+  当前语言标识
+- `locales`
+  自定义语言包注册表
+- `localeOverrides`
+  当前语言包的局部覆盖
 
 示例：
 
@@ -93,9 +98,19 @@ app.use(
 )
 ```
 
+## 三种常见的样式入口
+
+在实际项目里，主题相关的入口通常有三种：
+
+- 想切换整套视觉基线，用 `themePreset`
+- 想统一全应用规则，用全局 `theme`
+- 想改单个实例，用 `ui` 和 `class`
+
+如果你只是改颜色、字号、间距、hover 背景这类 token，优先覆盖 CSS 变量，而不是直接改 class 结构。相关说明见 [Table CSS 变量参考](/guide/theme-tokens)。
+
 ## 单实例覆盖
 
-当你不想动全局 preset，只想调整一张表格时，优先用 ui 与 class：
+当你不想动全局 preset，只想调整一张表时，优先用 `ui` 和 `class`：
 
 ```vue
 <VTable
@@ -114,4 +129,6 @@ app.use(
 
 - [快速开始](/guide/getting-started)
 - [三层主题覆盖](/guide/theme-overrides)
+- [ui Slot 参考](/guide/ui-slots-reference)
+- [Table CSS 变量参考](/guide/theme-tokens)
 - [预设与语言](/guide/presets-and-locales)

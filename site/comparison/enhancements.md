@@ -1,55 +1,54 @@
-# 增强与独有功能
+# 增强与独有能力
 
-vtable-guild 并不是简单复刻原有表格 API，而是在尽量保留熟悉使用方式的前提下，把一些业务里常见但原表格不擅长的能力内建进去。
+这一页只聚焦“相对原表格方案额外得到什么”，不重复完整教程。需要具体使用方式时，请跳到对应指南页。
 
-## 优化改进的 API
+## 更顺手的 API
 
-### 尺寸命名更直接
+### 尺寸命名更统一
 
-表格尺寸使用 sm、md、lg 三个值，便于和主题系统里的尺寸约定保持一致。
+表格尺寸使用 `sm`、`md`、`lg` 三个值，更方便和主题系统里的尺寸约定保持一致。
 
-### TypeScript 使用链路更顺
+### TypeScript 使用链路更完整
 
-VTable 提供完整的列类型、行数据类型和事件参数类型，适合在业务代码里维持类型推导，而不是依赖大量手写断言。
+VTable 提供明确的列类型、行数据类型、事件参数类型，以及主题 key 和 slot key 的类型边界，适合在业务代码里长期维护。
 
-### slot 级 ui 覆盖
+### 样式覆盖路径更清晰
 
-当你只想改表头、单元格、空态或根节点样式时，可以通过 ui 精确覆写对应 slot，而不必在页面里到处追加选择器。
+除了 Vue slot，本库把样式覆盖拆成三层：
 
-### CSS 变量与预设并行工作
+- `themePreset`
+  切换整体视觉基线
+- 全局 `theme`
+  统一应用级规则
+- 实例级 `ui`
+  处理单表例外
 
-预设负责整体视觉基线，theme 和 ui 负责覆盖细节。这让你既能保持统一外观，也能对个别表格做定制。
+对应说明见 [三层主题覆盖](/guide/theme-overrides)。
 
 ## 更直接的表格能力
 
 ### 虚拟滚动
 
-通过 virtual 与 scroll.y 原生开启，适合长列表和性能敏感场景。这是 ant-design-vue Table 当前不提供的能力。
-
-### 滚动体验优化
-
-这部分优化主要是针对 ant-design-vue 使用语境，而不是把所有预设都写成同一种增强。
-
-- 大数据场景下，可以直接在同一张 VTable 上开启 virtual 与 scroll.y，不需要切到另一套独立表格组件。
-- 非 native 模式下，VTable 会使用 VScrollbar 隐藏原生滚动条并渲染自定义轨道与 thumb，让滚动反馈更稳定。
-- antdv 预设下的滚动条体验做了额外打磨，设计方向参考了 element-plus 的滚动体验。
-
-### 列宽拖拽
-
-对 ant-design-vue 用户来说，resizable、minWidth 和 maxWidth 这组字段并不陌生。vtable-guild 继续保留这套列宽控制心智，并把它作为同一张表格里的内建能力提供。
+通过 `virtual` 配合 `scroll.y` 直接启用，适合长列表和性能敏感页面。详见 [虚拟滚动](/guide/virtualization)。
 
 ### 更直接的视觉状态开关
 
-- striped 用于条纹行。
-- hoverable 用于控制行 hover 高亮。
-- bordered 用于边框模式。
+- `striped`
+  条纹行
+- `hoverable`
+  行 hover 高亮
+- `bordered`
+  边框模式
 
-这些能力都可以直接通过 props 打开，而不是拆散在业务样式里。
-
-### 三层主题系统
-
-你可以在默认主题、createVTableGuild 全局配置和单实例 ui 覆盖之间逐层控制样式，既适合设计系统，也适合局部业务定制。
+这些状态都可以直接通过 props 或主题配置开启，不需要再拆散到业务 CSS 里。
 
 ### 多预设支持
 
-当前内置 antdv 和 element-plus 两套预设，可让同一套表格逻辑接入不同 Vue UI 体系。
+当前内置 `antdv` 和 `element-plus` 两套预设，可让同一套表格逻辑接入不同 Vue UI 体系。详见 [预设与语言](/guide/presets-and-locales)。
+
+## 继续阅读
+
+- [功能对比总览](/comparison/)
+- [虚拟滚动](/guide/virtualization)
+- [列宽拖拽](/guide/column-resize)
+- [三层主题覆盖](/guide/theme-overrides)

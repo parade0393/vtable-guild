@@ -9,9 +9,8 @@ export default defineConfig({
     nav: [
       { text: '首页', link: '/' },
       { text: '指南', link: '/guide/' },
-      { text: '对比与增强', link: '/comparison/' },
+      { text: '对比', link: '/comparison/' },
       { text: 'API', link: '/guide/api-reference' },
-      { text: 'Roadmap', link: '/about/roadmap' },
     ],
     sidebar: {
       '/guide/': [
@@ -45,8 +44,9 @@ export default defineConfig({
           text: '主题系统',
           items: [
             { text: '三层主题覆盖', link: '/guide/theme-overrides' },
-            { text: '预设与语言', link: '/guide/presets-and-locales' },
+            { text: 'Table CSS 变量参考', link: '/guide/theme-tokens' },
             { text: 'ui Slot 参考', link: '/guide/ui-slots-reference' },
+            { text: '预设与语言', link: '/guide/presets-and-locales' },
           ],
         },
         {
@@ -59,17 +59,11 @@ export default defineConfig({
       ],
       '/comparison/': [
         {
-          text: '对比与增强',
+          text: '对比',
           items: [
             { text: '功能对比总览', link: '/comparison/' },
-            { text: '增强与独有功能', link: '/comparison/enhancements' },
+            { text: '增强与独有能力', link: '/comparison/enhancements' },
           ],
-        },
-      ],
-      '/about/': [
-        {
-          text: '项目路线',
-          items: [{ text: 'Roadmap', link: '/about/roadmap' }],
         },
       ],
     },

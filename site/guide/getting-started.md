@@ -1,52 +1,87 @@
 # 快速开始
 
-这一页只解决一件事：让你在已有 Vue 3 项目里尽快跑起第一张 vtable-guild 表格。
+这一页只解决一件事：让你在已有 Vue 3 + Vite 项目里尽快跑起第一张 vtable-guild 表格。
 
 如果你已经在使用 ant-design-vue 或 element-plus，建议先按这里完成初始化，再根据项目情况阅读迁移与主题页面。
 
 ## 环境要求
 
-- Node ^20.19.0 或 >=22.12.0
-- pnpm >=10.28.0
-- Vue ^3.5.0
+- Node `^20.19.0` 或 `>=22.12.0`
+- pnpm `>=10.28.0`
+- Vue `^3.5.0`
+- Vite `^7`
 
 ## 安装
 
-如果你希望用聚合入口接入：
+除了组件包本身，你还需要在宿主项目里安装 Tailwind CSS 4 和 `@tailwindcss/vite`：
 
 ```bash
-pnpm add @vtable-guild/vtable-guild @vtable-guild/theme vue
+pnpm add @vtable-guild/vtable-guild @vtable-guild/theme
+pnpm add -D tailwindcss @tailwindcss/vite
 ```
 
-如果你更偏向按包拆分使用：
+## 配置 Vite
 
-```bash
-pnpm add @vtable-guild/core @vtable-guild/table @vtable-guild/theme vue
+在 `vite.config.ts` 里接入 `@tailwindcss/vite`：
+
+```ts
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import tailwindcss from '@tailwindcss/vite'
+
+export default defineConfig({
+  plugins: [vue(), tailwindcss()],
+})
 ```
 
-如果你的项目需要保持 ant-design-vue 或 element-plus 的整体视觉，也请继续安装并接入对应 UI 库本身。
+## 配置样式入口
+
+在你的全局样式文件里引入 Tailwind CSS 和 vtable-guild 的主题 CSS。
+
+例如 `src/main.css`：
+
+```css
+@import 'tailwindcss';
+@import '@vtable-guild/theme/css';
+```
+
+`@vtable-guild/theme/css` 已包含：
+
+- Tailwind `@theme` token 注册
+- 默认的 `antdv` 预设
+- `element-plus` 预设
+- 组件运行所需的基础样式
+
+如果只是切换预设，不需要额外追加 CSS。
 
 ## 初始化插件
+
+在入口文件里引入全局样式并初始化插件。
+
+例如 `src/main.ts`：
 
 ```ts
 import { createApp } from 'vue'
 import App from './App.vue'
-import { createVTableGuild, VTable } from '@vtable-guild/vtable-guild'
-import '@vtable-guild/theme/css'
+import { createVTableGuild } from '@vtable-guild/vtable-guild'
+import './main.css'
 
 const app = createApp(App)
 
-app.use(
-  createVTableGuild({
-    themePreset: 'antdv',
-  }),
-)
+app.use(createVTableGuild())
 
-app.component('VTable', VTable)
 app.mount('#app')
 ```
 
-默认预设是 antdv。如果你要切到 element-plus 风格，只需把 `themePreset` 设为 `element-plus`，无需追加 CSS——`@vtable-guild/theme/css` 已包含所有预设样式。使用者不需要手动添加 HTML 属性，详见 [包导入与样式](/guide/package-consumption)。
+默认预设是 `antdv`。如果你要切到 `element-plus` 风格，只需把 `themePreset` 设为 `element-plus`：
+
+```ts
+app.use(
+  createVTableGuild({
+    themePreset: 'element-plus',
+  }),
+)
+```
 
 ## 最小可用示例
 
@@ -89,6 +124,6 @@ const dataSource: UserRow[] = [
 
 ## 下一步看什么
 
-- 想评估替换成本，继续看 [从 ant-design-vue 迁移](/guide/migration-from-antd)。
-- 想统一视觉体系，继续看 [三层主题覆盖](/guide/theme-overrides) 和 [预设与语言](/guide/presets-and-locales)。
-- 想确认差异化能力，继续看 [功能对比总览](/comparison/)。
+- 想评估替换成本，继续看 [从 ant-design-vue 迁移](/guide/migration-from-antd)
+- 想统一视觉体系，继续看 [三层主题覆盖](/guide/theme-overrides) 和 [Table CSS 变量参考](/guide/theme-tokens)
+- 想确认差异化能力，继续看 [功能对比总览](/comparison/)

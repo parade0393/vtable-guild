@@ -4,46 +4,43 @@ layout: home
 hero:
   name: vtable-guild
   text: 面向 ant-design-vue 和 element-plus 用户的高性能表格替换方案
-  tagline: 兼容常用 Table API，内置虚拟滚动、列宽拖拽、斑马纹和主题预设切换，把熟悉的业务表格升级成更强的实现。
+  tagline: 内置虚拟滚动、主题预设与三层样式覆盖，让复杂业务表格不再靠额外补丁拼装。
   actions:
     - theme: brand
       text: 快速开始
       link: /guide/getting-started
     - theme: alt
-      text: 查看功能对比
+      text: 功能对比
       link: /comparison/
 
 features:
-  - title: API 高度兼容
-    details: 保留常见的列配置、排序、筛选、选择和 change 事件模型，迁移已有 antd-vue 表格代码时不需要从零重写。
-  - title: 虚拟滚动
-    details: 原生支持 virtual 与 scroll.y 组合，在大数据量场景下维持可用的渲染性能。这是 ant-design-vue Table 不提供的能力。
-  - title: 列宽拖拽
-    details: 通过 resizable、minWidth 和 maxWidth 直接开启列宽调整，不依赖额外第三方库。
-  - title: 主题预设
-    details: 同一套表格逻辑可切换 antdv 与 element-plus 视觉预设，便于在不同 Vue UI 体系中接入。
-  - title: 三层主题覆盖
-    details: 默认主题、createVTableGuild 全局配置与实例级 ui 覆盖按顺序合并，适合从统一规范到局部定制的多层需求。
-  - title: 开箱即用
-    details: bordered、striped、hoverable 等常见视觉状态可以直接通过 props 打开，不再依赖 rowClassName 或样式补丁。
+  - title: 迁移成本可控
+    details: 保留熟悉的 columns、排序、筛选、选择和 change 事件模型，适合从现有表格逐步迁移，而不是推倒重写。
+  - title: 内置大表格能力
+    details: 同一套表格模型里直接提供虚拟滚动、固定列和列宽拖拽，不需要再拆出另一套列表方案。
+  - title: 主题系统清晰
+    details: 通过 themePreset、全局 theme、实例级 ui 三层分工管理样式，既能统一规范，也能保留局部例外。
+  - title: 多预设接入
+    details: 同一套表格逻辑可以在 antdv 和 element-plus 两套视觉体系下接入，适合已有 Vue UI 生态项目。
+  - title: 视觉状态直接开启
+    details: striped、hoverable、bordered 等常见视觉状态都可以直接通过 props 或主题配置开启。
+  - title: TypeScript 体验完整
+    details: 列类型、主题 key、slot key 和事件参数都有明确类型边界，适合在业务代码里长期维护。
 ---
 
-## 谁适合使用
+## 适合谁
 
 vtable-guild 面向已经在项目中使用 ant-design-vue 或 element-plus 的团队。
 
-如果你希望保留熟悉的列定义和交互模式，但又需要虚拟滚动、列宽拖拽、slot 级样式覆盖和更稳定的主题扩展能力，这个库比继续堆叠原表格的定制代码更合适。
+如果你希望保留熟悉的表格使用方式，但又需要更稳定的虚拟滚动、列宽控制、主题扩展和更可维护的样式覆盖模型，这个库比继续在原表格外堆补丁更合适。
 
-## 你能得到什么
+## 你会先看哪条路线
 
-- 对常见 Table 使用方式更友好的迁移成本。
-- 面向复杂业务表格的增强能力，而不是只换一层皮肤。
-- 从预设切换到局部覆写的一套统一主题模型。
-- 更清晰的表格能力边界，避免在业务项目里反复补 CSS hack。
-
-## 推荐阅读顺序
-
-1. 从 [快速开始](/guide/getting-started) 完成安装与初始化。
-2. 如果你来自 ant-design-vue，接着看 [从 ant-design-vue 迁移](/guide/migration-from-antd)。
-3. 如果你在评估替换价值，先看 [功能对比总览](/comparison/) 和 [增强与独有功能](/comparison/enhancements)。
-4. 需要按视觉体系接入时，再看 [三层主题覆盖](/guide/theme-overrides) 与 [预设与语言](/guide/presets-and-locales)。
+- 想尽快接入：
+  看 [快速开始](/guide/getting-started)
+- 想先判断值不值得替换：
+  看 [功能对比总览](/comparison/) 和 [为什么选择 vtable-guild](/guide/why)
+- 想统一视觉体系：
+  看 [三层主题覆盖](/guide/theme-overrides) 和 [Table CSS 变量参考](/guide/theme-tokens)
+- 想直接查 API：
+  看 [API Reference](/guide/api-reference)
