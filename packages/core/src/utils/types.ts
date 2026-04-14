@@ -43,6 +43,66 @@ export type DeepPartial<T> = {
       : T[K]
 }
 
+type ThemeSlotKeys<T extends ThemeConfig> = keyof T['slots'] & string
+
+type ThemeVariantOverrides<T extends ThemeConfig> = {
+  [TVariant in keyof NonNullable<T['variants']>]?: NonNullable<
+    T['variants']
+  >[TVariant] extends Record<string, unknown>
+    ? {
+        [TValue in keyof NonNullable<T['variants']>[TVariant]]?: NonNullable<
+          T['variants']
+        >[TVariant][TValue] extends string
+          ? string
+          : Partial<Record<ThemeSlotKeys<T>, string>>
+      }
+    : never
+}
+
+type ThemeDefaultVariantOverrides<T extends ThemeConfig> = {
+  [TVariant in keyof NonNullable<T['defaultVariants']>]?: NonNullable<
+    T['defaultVariants']
+  >[TVariant] extends boolean
+    ? boolean
+    : string
+}
+
+type ThemeCompoundRuleOverride<T, TSlotKey extends string> = T extends string
+  ? string
+  : T extends boolean
+    ? boolean
+    : T extends readonly (infer U)[]
+      ? Array<U extends string ? Extract<U, TSlotKey> : ThemeCompoundRuleOverride<U, TSlotKey>>
+      : T extends object
+        ? {
+            [K in keyof T]?: K extends 'class'
+              ? string
+              : K extends 'slots'
+                ? T[K] extends readonly (infer U)[]
+                  ? Array<Extract<U, TSlotKey>>
+                  : ThemeCompoundRuleOverride<T[K], TSlotKey>
+                : ThemeCompoundRuleOverride<T[K], TSlotKey>
+          }
+        : T
+
+/**
+ * Theme override type used by `createVTableGuild({ theme })` and nested config providers.
+ *
+ * It preserves slot / variant keys for completion while widening override values back to
+ * writable types such as `string`.
+ */
+export type ThemeOverrideConfig<T extends ThemeConfig> = {
+  slots?: Partial<Record<ThemeSlotKeys<T>, string>>
+  variants?: ThemeVariantOverrides<T>
+  defaultVariants?: ThemeDefaultVariantOverrides<T>
+  compoundVariants?: T extends { compoundVariants?: readonly (infer U)[] }
+    ? Array<ThemeCompoundRuleOverride<U, ThemeSlotKeys<T>>>
+    : never
+  compoundSlots?: T extends { compoundSlots?: readonly (infer U)[] }
+    ? Array<ThemeCompoundRuleOverride<U, ThemeSlotKeys<T>>>
+    : never
+}
+
 // ---------- 主题预设相关 ----------
 
 /**
@@ -109,7 +169,7 @@ export type LocaleRegistry = Record<LocaleName, VTableGuildLocale>
  * ```ts
  * declare module '@vtable-guild/core' {
  *   interface VTableGuildThemeOverridesMap {
- *     myComponent: DeepPartial<MyThemeConfig>
+ *     myComponent: ThemeOverrideConfig<MyThemeConfig>
  *   }
  * }
  * ```

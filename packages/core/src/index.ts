@@ -10,6 +10,7 @@ export type {
   LocaleName,
   LocaleRegistry,
   ThemeConfig,
+  ThemeOverrideConfig,
   SlotProps,
   VTableGuildOptions,
   VTableGuildContext,

@@ -7,7 +7,7 @@ import { createVTableGuild, syncDocumentPresetAttr, VTABLE_GUILD_INJECTION_KEY }
 // Test-only augmentation: register a fake 'badge' component key
 declare module '../utils/types' {
   interface VTableGuildThemeOverridesMap {
-    badge: DeepPartial<ThemeConfig>
+    badge: ThemeOverrideConfig<ThemeConfig>
   }
 }
 
