@@ -14,7 +14,7 @@
 
 1. 从 [快速开始](/guide/getting-started) 完成安装、样式引入和插件初始化。
 2. 如果你已有 ant-design-vue Table，继续看 [从 ant-design-vue 迁移](/guide/migration-from-antd)。
-3. 根据项目结构选择 [包导入与样式](/guide/package-consumption) 的接入方式。
+3. 继续看 [安装与使用](/guide/installation)，确认样式入口、主题预设和常见接入方式。
 
 ### 如果你正在实现具体功能
 
@@ -36,7 +36,7 @@
 
 ### 如果你要理解设计取舍
 
-- 想理解为什么分包、为什么主题要分层：
+- 想理解为什么主题要分层、为什么接入方式保持单一：
   看 [为什么这样设计](/guide/architecture)
 - 想快速查字段名、事件、slot 和常用类型：
   看 [API Reference](/guide/api-reference)

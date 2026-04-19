@@ -48,7 +48,7 @@ createVTableGuild({
 
 ```ts
 import { createApp } from 'vue'
-import { createVTableGuild } from '@vtable-guild/core'
+import { createVTableGuild } from '@vtable-guild/vtable-guild'
 
 const app = createApp(App)
 
@@ -174,4 +174,4 @@ createVTableGuild({
 - [ui Slot 参考](/guide/ui-slots-reference)
 - [Table CSS 变量参考](/guide/theme-tokens)
 - [预设与语言](/guide/presets-and-locales)
-- [包导入与样式](/guide/package-consumption)
+- [安装与使用](/guide/installation)

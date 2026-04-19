@@ -16,7 +16,7 @@
 
 ## 版本策略
 
-所有包采用 **linked（联动）** 版本模式：`@vtable-guild/core`、`@vtable-guild/icons`、`@vtable-guild/table`、`@vtable-guild/theme`、`@vtable-guild/vtable-guild` 始终保持同一版本号，简化用户心智。
+对外只发布一个包：`@vtable-guild/vtable-guild`。内部源码模块继续保留，但不再作为公开 npm 包发布。
 
 版本语义遵循 [Semantic Versioning](https://semver.org/):
 
@@ -50,7 +50,7 @@ pnpm changeset
 
 交互式提示：
 
-1. **选择受影响的包** — 使用空格选中（linked 模式下任选一个即可，版本号会联动）
+1. **选择受影响的包** — 只选择 `@vtable-guild/vtable-guild`
 2. **选择 bump 类型** — `major` / `minor` / `patch`
 3. **填写变更描述** — 一句话概括此次变更，将出现在 CHANGELOG 中
 
@@ -120,7 +120,7 @@ push to master
 首次发布需要手动创建 changeset 并推送：
 
 ```bash
-# 1. 创建 changeset，选择所有包，选择 minor（建议首次用 0.1.0）
+# 1. 创建 changeset，选择 @vtable-guild/vtable-guild，选择 minor（建议首次用 0.1.0）
 pnpm changeset
 
 # 2. 应用版本号（本地预览）
@@ -232,7 +232,7 @@ pnpm version:packages
 npm 已发布的包版本**无法删除**（超过 72 小时后），但可以：
 
 - 发布一个新的 patch 版本修复问题
-- 使用 `npm deprecate @vtable-guild/table@x.x.x "use x.x.x instead"` 标记废弃
+- 发布一个新的 patch 版本修复问题
 
 ### Q: 如何跳过某次 push 的发布检测？
 
@@ -248,9 +248,9 @@ git commit -m "docs: update readme [skip ci]"
 pnpm changeset status
 ```
 
-### Q: linked 模式下只改了一个包，其他包版本也会跳吗？
+### Q: 内部模块改动后，为什么还是只选择一个 changeset？
 
-是的，linked 保证所有包版本号一致。只要有任何一个包的 changeset，所有 linked 包都会同步 bump 版本。这是有意为之的设计，方便用户统一升级。
+因为对外只有 `@vtable-guild/vtable-guild` 一个公开发布物。无论内部源码改动发生在什么模块，changeset 都只面向这个公开包。
 
 ### Q: CI 发布报 403 Forbidden / Two-factor authentication required？
 

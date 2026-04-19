@@ -17,14 +17,6 @@
 
 当前内置预设：`antdv`（默认）、`element-plus`。
 
-## Packages
-
-- `@vtable-guild/core`：主题系统、基础组件、插件与工具函数。
-- `@vtable-guild/icons`：表格相关 SVG 图标组件。
-- `@vtable-guild/theme`：主题对象、预设解析器和 CSS token。
-- `@vtable-guild/table`：`VTable` 组件、composables 和类型定义。
-- `@vtable-guild/vtable-guild`：聚合入口，统一导出 core、theme、table。
-
 ## Status
 
 - 基础表格、排序、筛选、选择、树形和虚拟滚动能力已进入可集成状态。
@@ -40,7 +32,7 @@
 ## Install
 
 ```bash
-pnpm add @vtable-guild/vtable-guild @vtable-guild/theme
+pnpm add @vtable-guild/vtable-guild
 pnpm add -D tailwindcss @tailwindcss/vite
 ```
 
@@ -66,7 +58,7 @@ export default defineConfig({
 
 ```css
 @import 'tailwindcss';
-@import '@vtable-guild/theme/css';
+@import '@vtable-guild/vtable-guild/css';
 ```
 
 然后在 `main.ts` 中导入该 CSS 文件：
@@ -81,7 +73,7 @@ import './main.css'
 import { createApp } from 'vue'
 import App from './App.vue'
 import { createVTableGuild, VTable } from '@vtable-guild/vtable-guild'
-import '@vtable-guild/theme/css'
+import '@vtable-guild/vtable-guild/css'
 
 const app = createApp(App)
 
@@ -129,7 +121,7 @@ const dataSource: UserRow[] = [
 
 ## Theme Presets
 
-- 默认导入 `@vtable-guild/theme/css` 时使用 `antdv` 预设（所有预设样式已统一包含在内）。
+- 默认导入 `@vtable-guild/vtable-guild/css` 时使用 `antdv` 预设（所有预设样式已统一包含在内）。
 - 切换预设只需在 JS 侧指定 `themePreset`，无需追加额外的 CSS import。
 - 运行时通过 `createVTableGuild({ themePreset })` 控制主题预设，并可通过 `theme` 与组件 `ui` props 做覆盖。
 

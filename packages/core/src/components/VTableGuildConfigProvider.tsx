@@ -8,7 +8,7 @@ import type {
   VTableGuildContext,
   VTableGuildLocale,
   VTableGuildThemeOverrides,
-} from '../utils/types'
+} from '../index'
 import { mergeDeep } from '../utils/mergeDeep'
 import { mergeThemeConfigs } from '../composables/useTheme'
 import { VTABLE_GUILD_INJECTION_KEY } from '../plugin/index'

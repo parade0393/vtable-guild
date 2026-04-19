@@ -22,7 +22,7 @@ app.use(
 )
 ```
 
-如果你改成 element-plus，直接在 JS 侧切换即可，无需追加 CSS（`@vtable-guild/theme/css` 已内含所有预设样式）：
+如果你改成 element-plus，直接在 JS 侧切换即可，无需追加 CSS（`@vtable-guild/vtable-guild/css` 已内含所有预设样式）：
 
 ```ts
 app.use(
@@ -32,7 +32,7 @@ app.use(
 )
 ```
 
-你不需要手动在 HTML 上添加 `data-vtg-preset` 属性，插件会自动处理。更多样式接入方式见 [包导入与样式](/guide/package-consumption)。
+你不需要手动在 HTML 上添加 `data-vtg-preset` 属性，插件会自动处理。更多接入方式见 [安装与使用](/guide/installation)。
 
 ## 内置语言
 
@@ -99,4 +99,4 @@ app.use(
 ## 相关页面
 
 - [三层主题覆盖](/guide/theme-overrides)
-- [包导入与样式](/guide/package-consumption)
+- [安装与使用](/guide/installation)

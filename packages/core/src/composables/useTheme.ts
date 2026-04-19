@@ -4,7 +4,7 @@ import { computed, inject, unref, type MaybeRef } from 'vue'
 import { cn } from '../utils/tv'
 import { tv } from '../utils/tv'
 import { VTABLE_GUILD_INJECTION_KEY } from '../plugin/index'
-import type { ThemeConfig, VTableGuildContext } from '../utils/types'
+import type { ThemeConfig, VTableGuildContext } from '../index'
 
 /**
  * 三层主题合并 composable。

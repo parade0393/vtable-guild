@@ -14,7 +14,7 @@
 ```
 
 > [!TIP]
-> 安装并导入 `@vtable-guild/theme` 后，在 TypeScript 项目中 `ui` prop 的所有 slot key 都有自动补全。
+> 安装并导入 `@vtable-guild/vtable-guild` 后，在 TypeScript 项目中 `ui` prop 的所有 slot key 都有自动补全。
 
 ---
 

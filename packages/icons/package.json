@@ -1,6 +1,7 @@
 {
   "name": "@vtable-guild/icons",
   "version": "1.0.2",
+  "private": true,
   "description": "SVG icon components for vtable-guild",
   "type": "module",
   "files": [

@@ -16,7 +16,7 @@
 除了组件包本身，你还需要在宿主项目里安装 Tailwind CSS 4 和 `@tailwindcss/vite`：
 
 ```bash
-pnpm add @vtable-guild/vtable-guild @vtable-guild/theme
+pnpm add @vtable-guild/vtable-guild
 pnpm add -D tailwindcss @tailwindcss/vite
 ```
 
@@ -42,10 +42,10 @@ export default defineConfig({
 
 ```css
 @import 'tailwindcss';
-@import '@vtable-guild/theme/css';
+@import '@vtable-guild/vtable-guild/css';
 ```
 
-`@vtable-guild/theme/css` 已包含：
+`@vtable-guild/vtable-guild/css` 已包含：
 
 - Tailwind `@theme` token 注册
 - 默认的 `antdv` 预设

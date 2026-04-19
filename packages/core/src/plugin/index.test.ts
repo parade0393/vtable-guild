@@ -1,11 +1,12 @@
 import { defineComponent, h, inject } from 'vue'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
+import type { ThemeConfig, ThemeOverrideConfig } from '../index'
 import { VTableGuildConfigProvider } from '../index'
 import { createVTableGuild, syncDocumentPresetAttr, VTABLE_GUILD_INJECTION_KEY } from './index'
 
 // Test-only augmentation: register a fake 'badge' component key
-declare module '../utils/types' {
+declare module '../index' {
   interface VTableGuildThemeOverridesMap {
     badge: ThemeOverrideConfig<ThemeConfig>
   }

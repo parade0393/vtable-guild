@@ -1,6 +1,6 @@
 # @vtable-guild/vtable-guild
 
-All-in-one entry package for vtable-guild — re-exports everything from `@vtable-guild/table`, `@vtable-guild/core`, `@vtable-guild/icons`, and `@vtable-guild/theme`.
+Single public package for vtable-guild. Install one package, import one runtime entry, and use one CSS entry.
 
 ## Installation
 
@@ -12,7 +12,7 @@ pnpm add @vtable-guild/vtable-guild
 
 ```ts
 import { createVTableGuild } from '@vtable-guild/vtable-guild'
-import '@vtable-guild/theme/css'
+import '@vtable-guild/vtable-guild/css'
 
 const app = createApp(App)
 app.use(createVTableGuild())

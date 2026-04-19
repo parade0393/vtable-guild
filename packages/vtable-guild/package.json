@@ -10,23 +10,37 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs"
+    },
+    "./css": {
+      "style": "./dist/css/index.css",
+      "default": "./dist/css/index.css"
+    },
+    "./css/tokens": {
+      "style": "./dist/css/tokens.css",
+      "default": "./dist/css/tokens.css"
+    },
+    "./css/transitions": {
+      "style": "./dist/css/transitions.css",
+      "default": "./dist/css/transitions.css"
+    },
+    "./css/presets/antdv": {
+      "style": "./dist/css/presets/antdv.css",
+      "default": "./dist/css/presets/antdv.css"
+    },
+    "./css/presets/element-plus": {
+      "style": "./dist/css/presets/element-plus.css",
+      "default": "./dist/css/presets/element-plus.css"
     }
   },
   "main": "./dist/index.mjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "vite build",
+    "build": "vite build && node ./scripts/copy-theme-css.mjs",
     "dev": "vite build --watch",
-    "type-check": "vue-tsc --build",
+    "type-check": "vue-tsc --project ./tsconfig.build.json --noEmit",
     "test": "vitest run --config ../../vitest.config.ts --project vtable-guild --passWithNoTests",
     "prepublishOnly": "node -e \"if(!require('fs').existsSync('dist'))throw new Error('dist not found, run pnpm build first')\""
-  },
-  "dependencies": {
-    "@vtable-guild/core": "workspace:*",
-    "@vtable-guild/icons": "workspace:*",
-    "@vtable-guild/theme": "workspace:*",
-    "@vtable-guild/table": "workspace:*"
   },
   "peerDependencies": {
     "vue": "^3.5.0"

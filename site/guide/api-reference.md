@@ -6,9 +6,8 @@
 
 ## 常用导出
 
-- @vtable-guild/vtable-guild，聚合导出，适合大多数业务项目。
-- @vtable-guild/table，直接导出 VTable、VTableSummary 和表格类型。
-- @vtable-guild/core，导出 createVTableGuild、VTableGuildConfigProvider 和通用类型。
+- `@vtable-guild/vtable-guild`
+  对外唯一安装与导入入口。`VTable`、`VTableSummary`、`createVTableGuild`、`VTableGuildConfigProvider` 和常用类型都从这里导出。
 
 ## VTable 核心 Props
 

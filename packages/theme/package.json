@@ -1,6 +1,7 @@
 {
   "name": "@vtable-guild/theme",
   "version": "2.0.3",
+  "private": true,
   "description": "Default theme definitions for vtable-guild",
   "type": "module",
   "files": [

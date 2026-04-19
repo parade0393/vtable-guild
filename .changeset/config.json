@@ -8,17 +8,16 @@
   ],
   "commit": false,
   "fixed": [],
-  "linked": [
-    [
-      "@vtable-guild/core",
-      "@vtable-guild/icons",
-      "@vtable-guild/table",
-      "@vtable-guild/theme",
-      "@vtable-guild/vtable-guild"
-    ]
-  ],
+  "linked": [],
   "access": "public",
   "baseBranch": "master",
   "updateInternalDependencies": "patch",
-  "ignore": ["@vtable-guild/playground", "@vtable-guild/site"]
+  "ignore": [
+    "@vtable-guild/core",
+    "@vtable-guild/icons",
+    "@vtable-guild/table",
+    "@vtable-guild/theme",
+    "@vtable-guild/playground",
+    "@vtable-guild/site"
+  ]
 }

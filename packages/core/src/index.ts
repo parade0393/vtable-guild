@@ -3,6 +3,13 @@
 // ---------- Utils ----------
 export { tv, cn } from './utils/tv'
 export { optionalProp, requiredProp, optionalBoolProp, optionalStringProp } from './utils/props'
+import type {
+  DeepPartial,
+  LocaleName,
+  LocaleRegistry,
+  ThemePresetName,
+  VTableGuildLocale,
+} from './utils/types'
 
 // ---------- Types ----------
 export type {
@@ -12,9 +19,6 @@ export type {
   ThemeConfig,
   ThemeOverrideConfig,
   SlotProps,
-  VTableGuildOptions,
-  VTableGuildContext,
-  VTableGuildThemeOverridesMap,
   ThemePresetName,
   VTableGuildLocale,
   VTableGuildTableLocale,
@@ -24,6 +28,30 @@ export type {
   VTableGuildTableLoadingLocale,
   VTableGuildTableSelectionLocale,
 } from './utils/types'
+
+// 可由 @vtable-guild/theme 或业务项目通过 module augmentation 扩展。
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface VTableGuildThemeOverridesMap {}
+
+export type VTableGuildThemeOverrides = {
+  [K in keyof VTableGuildThemeOverridesMap]?: VTableGuildThemeOverridesMap[K]
+}
+
+export interface VTableGuildOptions {
+  themePreset?: ThemePresetName
+  theme?: VTableGuildThemeOverrides
+  locale?: LocaleName
+  locales?: LocaleRegistry
+  localeOverrides?: DeepPartial<VTableGuildLocale>
+}
+
+export interface VTableGuildContext {
+  themePreset: ThemePresetName
+  theme: VTableGuildThemeOverrides
+  locale: LocaleName
+  locales: LocaleRegistry
+  localeOverrides: DeepPartial<VTableGuildLocale>
+}
 
 // ---------- Composables ----------
 export { useTheme, mergeThemeConfigs } from './composables/useTheme'

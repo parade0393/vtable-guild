@@ -1,7 +1,7 @@
 // packages/core/src/plugin/index.ts
 
 import { reactive, type InjectionKey, type Plugin } from 'vue'
-import type { VTableGuildOptions, VTableGuildContext } from '../utils/types'
+import type { VTableGuildOptions, VTableGuildContext } from '../index'
 
 /**
  * 全局配置的 injection key。
