@@ -152,18 +152,6 @@ importers:
 
   packages/vtable-guild:
     dependencies:
-      '@vtable-guild/core':
-        specifier: workspace:*
-        version: link:../core
-      '@vtable-guild/icons':
-        specifier: workspace:*
-        version: link:../icons
-      '@vtable-guild/table':
-        specifier: workspace:*
-        version: link:../table
-      '@vtable-guild/theme':
-        specifier: workspace:*
-        version: link:../theme
       vue:
         specifier: ^3.5.0
         version: 3.5.26(typescript@5.9.3)
