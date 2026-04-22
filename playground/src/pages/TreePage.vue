@@ -4,8 +4,8 @@ import { ConfigProvider as AConfigProvider, Table as ATable } from 'ant-design-v
 import { ElTable, ElTableColumn } from 'element-plus'
 import 'element-plus/es/components/table/style/css'
 import 'element-plus/es/components/table-column/style/css'
-import { VTable } from '@vtable-guild/table'
-import type { ColumnsType, RowSelection } from '@vtable-guild/table'
+import { VTable } from '@vtable-guild/vtable-guild'
+import type { ColumnsType, RowSelection } from '@vtable-guild/vtable-guild'
 import { PLAYGROUND_CONTEXT_KEY } from '../playgroundContext'
 
 interface TreeRow extends Record<string, unknown> {

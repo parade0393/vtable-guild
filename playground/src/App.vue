@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, provide, ref, watch } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
-import { VTableGuildConfigProvider, syncDocumentPresetAttr } from '@vtable-guild/core'
-import type { ThemePresetName } from '@vtable-guild/core'
-import type { BuiltInLocaleName } from '@vtable-guild/theme'
+import { VTableGuildConfigProvider, syncDocumentPresetAttr } from '@vtable-guild/vtable-guild'
+import type { ThemePresetName } from '@vtable-guild/vtable-guild'
+import type { BuiltInLocaleName } from '@vtable-guild/vtable-guild'
 import zhCN from 'ant-design-vue/es/locale/zh_CN'
 import enUS from 'ant-design-vue/es/locale/en_US'
 import PlaygroundPresetScope from './components/PlaygroundPresetScope.vue'

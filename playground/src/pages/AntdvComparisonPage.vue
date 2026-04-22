@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ConfigProvider as AConfigProvider, Table as ATable } from 'ant-design-vue'
-import { VTable } from '@vtable-guild/table'
+import { VTable } from '@vtable-guild/vtable-guild'
 import {
   dataSource,
   isSelected,

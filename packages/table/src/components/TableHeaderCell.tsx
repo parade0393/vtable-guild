@@ -322,9 +322,9 @@ export default defineComponent({
       if (total > 0 && props.cell.colEnd < total - 1) {
         const isBordered = tableContext.bordered?.value ?? false
         if (isBordered) {
-          return 'last:border-r last:border-[var(--vtg-table-border-color)]'
+          return 'last:border-r last:border-[color:var(--vtg-table-border-color)]'
         }
-        return 'last:before:bg-[var(--vtg-table-header-split-color)]'
+        return 'last:before:bg-[color:var(--vtg-table-header-split-color)]'
       }
       return ''
     })

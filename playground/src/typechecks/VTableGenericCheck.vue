@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { VTable, type ColumnsType } from '@vtable-guild/table'
+import { VTable, type ColumnsType } from '@vtable-guild/vtable-guild'
 
 interface DemoRow {
   id: string

@@ -1,6 +1,6 @@
 import type { ComputedRef, InjectionKey, Ref } from 'vue'
-import type { ThemePresetName } from '@vtable-guild/core'
-import type { BuiltInLocaleName } from '@vtable-guild/theme'
+import type { ThemePresetName } from '@vtable-guild/vtable-guild'
+import type { BuiltInLocaleName } from '@vtable-guild/vtable-guild'
 
 export interface PlaygroundContextValue {
   preset: Ref<ThemePresetName>

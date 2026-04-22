@@ -1,0 +1,33 @@
+@source '../dist/index.d.ts';
+@source '../dist/index.mjs';
+@source '../src';
+@source '../../table/src';
+
+/* @vtable-guild/theme/css — tokens.css */
+
+/*
+ * 仅负责 Tailwind CSS 4 主题注册。
+ *
+ * ⚠️ 不在此文件定义任何 CSS 变量值！
+ * 所有值由 preset CSS 提供（如 presets/antdv.css）。
+ *
+ * 职责：
+ * 1. @source — 扫描 dist 目录中的 class 名
+ * 2. @theme — 将语义 token 注册为 Tailwind 主题色
+ *    使得 bg-surface、text-on-surface 等 utility class 可用
+ */
+
+@theme {
+  --color-surface: var(--color-surface);
+  --color-surface-hover: var(--color-surface-hover);
+  --color-elevated: var(--color-elevated);
+  --color-on-surface: var(--color-on-surface);
+  --color-muted: var(--color-muted);
+  --color-default: var(--color-default);
+  --color-primary: var(--color-primary);
+  --color-primary-hover: var(--color-primary-hover);
+  --color-text-disabled: var(--color-text-disabled);
+  --color-control-item-hover-bg: var(--color-control-item-hover-bg);
+  --color-control-item-active-bg: var(--color-control-item-active-bg);
+  --color-control-item-active-hover-bg: var(--color-control-item-active-hover-bg);
+}

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, h, inject, ref } from 'vue'
 import { ConfigProvider as AConfigProvider, Table as ATable } from 'ant-design-vue'
-import { VTable } from '@vtable-guild/table'
-import type { ColumnsType, RowSelection, SelectionItem } from '@vtable-guild/table'
+import { VTable } from '@vtable-guild/vtable-guild'
+import type { ColumnsType, RowSelection, SelectionItem } from '@vtable-guild/vtable-guild'
 import { dataSource, type DemoRow } from '../filterMatrixShared'
 import { PLAYGROUND_CONTEXT_KEY } from '../playgroundContext'
 

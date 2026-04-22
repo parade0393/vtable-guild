@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, h, ref } from 'vue'
 import { ConfigProvider as AConfigProvider, Table as ATable } from 'ant-design-vue'
-import { VTable } from '@vtable-guild/table'
-import type { ColumnsType, Expandable, Key, RowSelection } from '@vtable-guild/table'
+import { VTable } from '@vtable-guild/vtable-guild'
+import type { ColumnsType, Expandable, Key, RowSelection } from '@vtable-guild/vtable-guild'
 import { dataSource, type DemoRow } from '../filterMatrixShared'
 
 defineProps<{

@@ -31,7 +31,7 @@ export const antdvTableTheme = {
     wrapper: 'w-full overflow-auto',
     table: [
       'w-full border-separate border-spacing-0',
-      'bg-[var(--vtg-table-bg)]',
+      'bg-[color:var(--vtg-table-bg)]',
       'text-[color:var(--vtg-table-text-color)]',
     ].join(' '),
     thead: '',
@@ -42,20 +42,20 @@ export const antdvTableTheme = {
     groupedHeaderTd: '',
     th: [
       'relative text-left font-semibold',
-      'bg-[var(--vtg-table-header-bg)]',
+      'bg-[color:var(--vtg-table-header-bg)]',
       'text-[color:var(--vtg-table-header-color)]',
-      'border-b border-[var(--vtg-table-border-color)]',
+      'border-b border-[color:var(--vtg-table-border-color)]',
       // 表头 cell 间分割线（::before 伪元素）
       'before:absolute before:end-0 before:top-1/2 before:-translate-y-1/2',
       'before:block before:w-px before:h-[1.6em]',
-      'before:bg-[var(--vtg-table-header-split-color)]',
+      'before:bg-[color:var(--vtg-table-header-split-color)]',
       'last:before:bg-transparent',
     ].join(' '),
     td: [
       'align-middle',
-      'bg-[var(--vtg-table-bg)]',
+      'bg-[color:var(--vtg-table-bg)]',
       'text-[color:var(--vtg-table-text-color)]',
-      'border-b border-[var(--vtg-table-border-color)]',
+      'border-b border-[color:var(--vtg-table-border-color)]',
     ].join(' '),
     empty: 'text-center text-[color:var(--color-text-disabled)]',
     loading: [
@@ -67,7 +67,7 @@ export const antdvTableTheme = {
     bodyCellEllipsis: 'block min-w-0 overflow-hidden text-ellipsis whitespace-nowrap',
 
     // ---- 排序相关 ----
-    thSortable: 'cursor-pointer select-none hover:bg-[var(--vtg-table-header-sort-hover-bg)]',
+    thSortable: 'cursor-pointer select-none hover:bg-[color:var(--vtg-table-header-sort-hover-bg)]',
     sortButton: 'inline-flex flex-col items-center justify-center text-xs leading-none ml-1',
     sortIconDown: '-mt-[0.225em]',
     sortAreaOuter: 'flex flex-auto min-w-0',
@@ -145,8 +145,8 @@ export const antdvTableTheme = {
       'inline-flex items-center justify-center text-[length:20px] leading-none text-[color:var(--color-primary)]',
 
     // ---- 行选中背景 ----
-    tdSelected: 'bg-[var(--vtg-table-row-selected-bg)]',
-    tdSelectedHover: 'group-hover/row:bg-[var(--vtg-table-row-selected-hover-bg)]',
+    tdSelected: 'bg-[color:var(--vtg-table-row-selected-bg)]',
+    tdSelectedHover: 'group-hover/row:bg-[color:var(--vtg-table-row-selected-hover-bg)]',
 
     // ---- 选择下拉相关 ----
     selectionDropdown: [
@@ -163,19 +163,21 @@ export const antdvTableTheme = {
       'inline-flex items-center justify-center cursor-pointer ml-0.5 text-[10px] text-[color:var(--color-sorter-icon)] hover:text-[color:var(--color-primary)] transition-colors',
 
     // ---- 标题/页脚/摘要行 ----
-    title: ['bg-[var(--vtg-table-header-bg)]', 'text-[color:var(--vtg-table-text-color)]'].join(
-      ' ',
-    ),
-    footer: ['bg-[var(--vtg-table-header-bg)]', 'text-[color:var(--vtg-table-text-color)]'].join(
-      ' ',
-    ),
+    title: [
+      'bg-[color:var(--vtg-table-header-bg)]',
+      'text-[color:var(--vtg-table-text-color)]',
+    ].join(' '),
+    footer: [
+      'bg-[color:var(--vtg-table-header-bg)]',
+      'text-[color:var(--vtg-table-text-color)]',
+    ].join(' '),
     summary: '',
-    summaryRow: 'bg-[var(--vtg-table-header-bg)]',
+    summaryRow: 'bg-[color:var(--vtg-table-header-bg)]',
     summaryCell: [
       'font-semibold',
-      'bg-[var(--vtg-table-header-bg)]',
+      'bg-[color:var(--vtg-table-header-bg)]',
       'text-[color:var(--vtg-table-text-color)]',
-      'border-b border-[var(--vtg-table-border-color)]',
+      'border-b border-[color:var(--vtg-table-border-color)]',
     ].join(' '),
 
     // ---- 固定列/固定表头 ----
@@ -207,8 +209,8 @@ export const antdvTableTheme = {
     expandIcon: [
       'relative inline-flex h-[17px] w-[17px] shrink-0 items-center justify-center',
       'origin-center scale-[0.941176] p-0 leading-[17px]',
-      'rounded-[6px] border border-[var(--vtg-table-border-color,#d9d9d9)]',
-      'bg-[var(--vtg-table-bg,#fff)] text-[color:var(--vtg-table-text-color)]',
+      'rounded-[6px] border border-[color:var(--vtg-table-border-color,#d9d9d9)]',
+      'bg-[color:var(--vtg-table-bg,#fff)] text-[color:var(--vtg-table-text-color)]',
       'cursor-pointer align-sub select-none transition-[border-color,background-color,color] duration-200',
       'hover:border-[color:var(--color-primary)] hover:text-[color:var(--color-primary)]',
       'focus:border-[color:var(--color-primary)] focus:text-[color:var(--color-primary)]',
@@ -231,8 +233,8 @@ export const antdvTableTheme = {
     treeExpandIcon: [
       'relative me-2 inline-flex h-[17px] w-[17px] shrink-0 items-center justify-center',
       'origin-center scale-[0.941176] p-0 leading-[17px]',
-      'rounded-[6px] border border-[var(--vtg-table-border-color,#d9d9d9)]',
-      'bg-[var(--vtg-table-bg,#fff)] text-[color:var(--vtg-table-text-color)]',
+      'rounded-[6px] border border-[color:var(--vtg-table-border-color,#d9d9d9)]',
+      'bg-[color:var(--vtg-table-bg,#fff)] text-[color:var(--vtg-table-text-color)]',
       'cursor-pointer align-sub select-none transition-[border-color,background-color,color] duration-200',
       'hover:border-[color:var(--color-primary)] hover:text-[color:var(--color-primary)]',
       'focus:border-[color:var(--color-primary)] focus:text-[color:var(--color-primary)]',
@@ -253,7 +255,7 @@ export const antdvTableTheme = {
     treeExpandIconSymbolExpanded: '',
     treeExpandIconSymbolCollapsed: '',
     expandedRow: '',
-    expandedRowCell: 'bg-[var(--vtg-table-expanded-row-bg,#fafafa)]',
+    expandedRowCell: 'bg-[color:var(--vtg-table-expanded-row-bg,#fafafa)]',
 
     // ---- 列拖拽调整宽度 ----
     resizeHandle: '',
@@ -266,14 +268,14 @@ export const antdvTableTheme = {
     },
     bordered: {
       true: {
-        root: 'border border-[var(--vtg-table-border-color)] rounded-[8px] overflow-hidden',
+        root: 'border border-[color:var(--vtg-table-border-color)] rounded-[8px] overflow-hidden',
         table: '',
-        th: 'border-r border-[var(--vtg-table-border-color)] last:border-r-0 before:hidden',
-        td: 'border-r border-[var(--vtg-table-border-color)] last:border-r-0',
+        th: 'border-r border-[color:var(--vtg-table-border-color)] last:border-r-0 before:hidden',
+        td: 'border-r border-[color:var(--vtg-table-border-color)] last:border-r-0',
         tbody: '[&>tr:last-child>td]:border-b-0',
-        title: 'border-b border-[var(--vtg-table-border-color)]',
-        footer: 'border-t border-[var(--vtg-table-border-color)]',
-        summaryCell: 'border-r border-[var(--vtg-table-border-color)] last:border-r-0',
+        title: 'border-b border-[color:var(--vtg-table-border-color)]',
+        footer: 'border-t border-[color:var(--vtg-table-border-color)]',
+        summaryCell: 'border-r border-[color:var(--vtg-table-border-color)] last:border-r-0',
       },
     },
     striped: {
@@ -283,7 +285,7 @@ export const antdvTableTheme = {
     },
     hoverable: {
       true: {
-        td: 'group-hover/row:bg-[var(--vtg-table-row-hover-bg)]',
+        td: 'group-hover/row:bg-[color:var(--vtg-table-row-hover-bg)]',
       },
     },
     loading: {

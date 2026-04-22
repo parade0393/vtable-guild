@@ -51,7 +51,7 @@ export default defineComponent({
 
       const fallbackButtonBaseClass = isTree
         ? 'relative inline-flex h-5 w-5 shrink-0 items-center justify-center align-middle text-[color:var(--vtg-table-text-color)] transition-[color,border-color,background-color,transform] duration-200'
-        : 'relative inline-flex h-[17px] w-[17px] shrink-0 items-center justify-center align-middle border border-[var(--vtg-table-border-color,#d9d9d9)] bg-[var(--vtg-table-bg,#fff)] text-[color:var(--vtg-table-text-color)] transition-[color,border-color,background-color,transform] duration-200'
+        : 'relative inline-flex h-[17px] w-[17px] shrink-0 items-center justify-center align-middle border border-[color:var(--vtg-table-border-color,#d9d9d9)] bg-[color:var(--vtg-table-bg,#fff)] text-[color:var(--vtg-table-text-color)] transition-[color,border-color,background-color,transform] duration-200'
       const fallbackSymbolBaseClass =
         'inline-flex items-center justify-center transition-transform duration-200 [&>svg]:h-[1em] [&>svg]:w-[1em]'
       const fallbackSpacedClass = isTree ? 'me-2 w-5 invisible' : 'invisible'

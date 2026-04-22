@@ -1,3 +1,2 @@
 @import 'tailwindcss';
-@import '@vtable-guild/theme/css';
-@import '@vtable-guild/theme/css/presets/element-plus';
+@import '@vtable-guild/vtable-guild/css';

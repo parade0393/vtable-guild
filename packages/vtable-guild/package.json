@@ -4,7 +4,8 @@
   "description": "A highly customizable Vue 3 Table component library powered by tailwind-variants",
   "type": "module",
   "files": [
-    "dist"
+    "dist",
+    "css"
   ],
   "exports": {
     ".": {
@@ -12,24 +13,24 @@
       "import": "./dist/index.mjs"
     },
     "./css": {
-      "style": "./dist/css/index.css",
-      "default": "./dist/css/index.css"
+      "style": "./css/index.css",
+      "default": "./css/index.css"
     },
     "./css/tokens": {
-      "style": "./dist/css/tokens.css",
-      "default": "./dist/css/tokens.css"
+      "style": "./css/tokens.css",
+      "default": "./css/tokens.css"
     },
     "./css/transitions": {
-      "style": "./dist/css/transitions.css",
-      "default": "./dist/css/transitions.css"
+      "style": "./css/transitions.css",
+      "default": "./css/transitions.css"
     },
     "./css/presets/antdv": {
-      "style": "./dist/css/presets/antdv.css",
-      "default": "./dist/css/presets/antdv.css"
+      "style": "./css/presets/antdv.css",
+      "default": "./css/presets/antdv.css"
     },
     "./css/presets/element-plus": {
-      "style": "./dist/css/presets/element-plus.css",
-      "default": "./dist/css/presets/element-plus.css"
+      "style": "./css/presets/element-plus.css",
+      "default": "./css/presets/element-plus.css"
     }
   },
   "main": "./dist/index.mjs",

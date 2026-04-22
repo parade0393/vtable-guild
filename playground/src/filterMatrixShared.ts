@@ -1,6 +1,6 @@
 import { computed, h, reactive, ref, type ComputedRef, type Ref, type VNodeChild } from 'vue'
 import type { TableColumnType } from 'ant-design-vue'
-import type { ColumnType } from '@vtable-guild/table'
+import type { ColumnType } from '@vtable-guild/vtable-guild'
 
 export type FilterValue = string | number | boolean
 

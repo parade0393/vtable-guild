@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, inject, provide, reactive } from 'vue'
-import type { ThemePresetName, VTableGuildContext } from '@vtable-guild/core'
-import { VTABLE_GUILD_INJECTION_KEY } from '@vtable-guild/core'
+import type { ThemePresetName, VTableGuildContext } from '@vtable-guild/vtable-guild'
+import { VTABLE_GUILD_INJECTION_KEY } from '@vtable-guild/vtable-guild'
 
 const props = defineProps<{
   preset: ThemePresetName

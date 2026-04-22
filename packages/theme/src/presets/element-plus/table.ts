@@ -34,30 +34,30 @@ export const elementPlusTableTheme = {
     wrapper: 'w-full overflow-auto',
     table: [
       'w-full border-separate border-spacing-0',
-      'bg-[var(--vtg-table-bg)]',
+      'bg-[color:var(--vtg-table-bg)]',
       'text-[color:var(--vtg-table-text-color)]',
     ].join(' '),
     thead: '',
     tbody: '',
     tr: 'group/row transition-colors',
-    groupedHeaderTable: 'border border-[var(--vtg-table-border-color)]',
+    groupedHeaderTable: 'border border-[color:var(--vtg-table-border-color)]',
     groupedHeaderTh: [
-      'border-r border-[var(--vtg-table-border-color)] last:border-r-0',
+      'border-r border-[color:var(--vtg-table-border-color)] last:border-r-0',
       'bg-[color:var(--color-surface-hover)]',
     ].join(' '),
-    groupedHeaderTd: 'border-r border-[var(--vtg-table-border-color)] last:border-r-0',
+    groupedHeaderTd: 'border-r border-[color:var(--vtg-table-border-color)] last:border-r-0',
     th: [
       'relative text-left font-semibold',
-      'bg-[var(--vtg-table-header-bg)]',
+      'bg-[color:var(--vtg-table-header-bg)]',
       'text-[color:var(--vtg-table-header-color)]',
-      'border-b border-[var(--vtg-table-border-color)]',
+      'border-b border-[color:var(--vtg-table-border-color)]',
       // Element Plus: 无表头分割线
     ].join(' '),
     td: [
       'align-middle',
-      'bg-[var(--vtg-table-bg)]',
+      'bg-[color:var(--vtg-table-bg)]',
       'text-[color:var(--vtg-table-text-color)]',
-      'border-b border-[var(--vtg-table-border-color)]',
+      'border-b border-[color:var(--vtg-table-border-color)]',
     ].join(' '),
     empty: 'py-5 text-center text-[color:var(--color-muted)]',
     loading: [
@@ -149,20 +149,21 @@ export const elementPlusTableTheme = {
 
     // ---- 标题/页脚/摘要行 ----
     title: [
-      'bg-[var(--vtg-table-header-bg)]',
+      'bg-[color:var(--vtg-table-header-bg)]',
       'text-[color:var(--vtg-table-text-color)]',
       'font-medium',
     ].join(' '),
-    footer: ['bg-[var(--vtg-table-header-bg)]', 'text-[color:var(--vtg-table-text-color)]'].join(
-      ' ',
-    ),
+    footer: [
+      'bg-[color:var(--vtg-table-header-bg)]',
+      'text-[color:var(--vtg-table-text-color)]',
+    ].join(' '),
     summary: '',
-    summaryRow: 'bg-[var(--vtg-table-header-bg)]',
+    summaryRow: 'bg-[color:var(--vtg-table-header-bg)]',
     summaryCell: [
       'font-medium',
-      'bg-[var(--vtg-table-header-bg)]',
+      'bg-[color:var(--vtg-table-header-bg)]',
       'text-[color:var(--vtg-table-text-color)]',
-      'border-b border-[var(--vtg-table-border-color)]',
+      'border-b border-[color:var(--vtg-table-border-color)]',
     ].join(' '),
 
     // ---- 固定列/固定表头 ----
@@ -206,7 +207,7 @@ export const elementPlusTableTheme = {
     treeExpandIconSymbolExpanded: 'rotate-90',
     treeExpandIconSymbolCollapsed: 'rotate-0',
     expandedRow: '',
-    expandedRowCell: 'bg-[var(--vtg-table-expanded-row-bg,#fafafa)]',
+    expandedRowCell: 'bg-[color:var(--vtg-table-expanded-row-bg,#fafafa)]',
 
     // ---- 列拖拽调整宽度 ----
     resizeHandle: '',
@@ -219,24 +220,24 @@ export const elementPlusTableTheme = {
     },
     bordered: {
       true: {
-        root: 'border border-[var(--vtg-table-border-color)] overflow-hidden',
+        root: 'border border-[color:var(--vtg-table-border-color)] overflow-hidden',
         table: '',
-        th: 'border-r border-[var(--vtg-table-border-color)] last:border-r-0',
-        td: 'border-r border-[var(--vtg-table-border-color)] last:border-r-0',
+        th: 'border-r border-[color:var(--vtg-table-border-color)] last:border-r-0',
+        td: 'border-r border-[color:var(--vtg-table-border-color)] last:border-r-0',
         tbody: '[&>tr:last-child>td]:border-b-0',
-        title: 'border-b border-[var(--vtg-table-border-color)]',
-        footer: 'border-t border-[var(--vtg-table-border-color)]',
-        summaryCell: 'border-r border-[var(--vtg-table-border-color)] last:border-r-0',
+        title: 'border-b border-[color:var(--vtg-table-border-color)]',
+        footer: 'border-t border-[color:var(--vtg-table-border-color)]',
+        summaryCell: 'border-r border-[color:var(--vtg-table-border-color)] last:border-r-0',
       },
     },
     striped: {
       true: {
-        td: 'group-even/row:bg-[var(--vtg-table-row-striped-bg)]',
+        td: 'group-even/row:bg-[color:var(--vtg-table-row-striped-bg)]',
       },
     },
     hoverable: {
       true: {
-        td: 'group-hover/row:bg-[var(--vtg-table-row-hover-bg)]',
+        td: 'group-hover/row:bg-[color:var(--vtg-table-row-hover-bg)]',
       },
     },
   },

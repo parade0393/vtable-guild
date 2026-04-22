@@ -4,9 +4,9 @@ import { ElTable, ElTableColumn, ElLoading } from 'element-plus'
 import 'element-plus/es/components/table/style/css'
 import 'element-plus/es/components/table-column/style/css'
 import 'element-plus/es/components/loading/style/css'
-import { VTable } from '@vtable-guild/table'
-import type { ColumnsType } from '@vtable-guild/table'
-import { VTABLE_GUILD_INJECTION_KEY, type VTableGuildContext } from '@vtable-guild/core'
+import { VTable } from '@vtable-guild/vtable-guild'
+import type { ColumnsType } from '@vtable-guild/vtable-guild'
+import { VTABLE_GUILD_INJECTION_KEY, type VTableGuildContext } from '@vtable-guild/vtable-guild'
 import {
   dataSource,
   ellipsisDemoColumns,

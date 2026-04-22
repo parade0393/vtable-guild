@@ -3,7 +3,7 @@
  * AntdvFull — 全量 API 验证页
  *
  * 目的：逐一对齐 ant-design-vue Table 文档的全部 demo，
- * 验证 @vtable-guild/table 的 API 完整性和 TS 类型友好度。
+ * 验证 @vtable-guild/vtable-guild 的 API 完整性和 TS 类型友好度。
  *
  * ── 未实现 / 刻意跳过的 antdv API ──
  * | 功能                       | antdv API                        | 状态               |
@@ -17,7 +17,7 @@
  */
 
 import { h, ref, reactive, computed } from 'vue'
-import { VTable, VTableSummary } from '@vtable-guild/table'
+import { VTable, VTableSummary } from '@vtable-guild/vtable-guild'
 import { SmileOutlined, SearchOutlined, DownOutlined } from '@ant-design/icons-vue'
 import { Tag as ATag, Space as ASpace } from 'ant-design-vue'
 import type {
@@ -37,7 +37,7 @@ import type {
   CustomFilterDropdownSlotProps,
   Breakpoint,
   VTablePublicProps,
-} from '@vtable-guild/table'
+} from '@vtable-guild/vtable-guild'
 
 // ============================================================
 // 共享数据
