@@ -1,5 +1,15 @@
 # @vtable-guild/vtable-guild
 
+## 2.0.5
+
+### Patch Changes
+
+- [`b6b51d2`](https://github.com/parade0393/vtable-guild/commit/b6b51d2f005acd16a3e920b65649df06248f94a7) Thanks [@parade0393](https://github.com/parade0393)! - fix: ensure single-package CSS integration works in both workspace dev and published usage
+  - keep @vtable-guild/vtable-guild/css as the canonical CSS entry and package-level published asset
+  - align playground integration with documented usage by importing package CSS from the CSS entry file
+  - fix aggregated CSS copy/rewrite flow so style resolution does not break after packaging
+  - normalize table-related arbitrary utility color classes for reliable Tailwind generation
+
 ## 2.0.4
 
 ### Patch Changes
