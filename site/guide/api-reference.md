@@ -21,6 +21,103 @@
 | childrenColumnName | 树形数据的子节点字段名，默认是 children。              |
 | indentSize         | 树形缩进宽度，默认 15。                                |
 
+## Column 配置
+
+每个列对象支持以下字段：
+
+### 基础字段
+
+| 字段      | 类型                          | 说明                                             |
+| --------- | ----------------------------- | ------------------------------------------------ |
+| key       | string \| number              | 列唯一标识，建议显式传入。                       |
+| title     | VNodeChild \| 函数            | 列标题，可以是字符串、VNode 或渲染函数。         |
+| dataIndex | string \| string[]            | 数据字段路径，如 'name' 或 ['address', 'city']。 |
+| width     | number \| string              | 列宽度，支持数字（px）或字符串（如 '20%'）。     |
+| align     | 'left' \| 'center' \| 'right' | 列对齐方式。                                     |
+| ellipsis  | boolean                       | 是否自动省略过长内容。                           |
+| className | string                        | 列单元格额外 class。                             |
+| colSpan   | number                        | 表头单元格跨列数。                               |
+
+### 自定义渲染
+
+| 字段             | 类型                                           | 说明                                                                                                                       |
+| ---------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| customRender     | (ctx) => VNodeChild \| RenderedCell            | 自定义单元格内容渲染。ctx 包含 text、value、record、index、renderIndex、column。返回 VNode 或 `{ children, props }` 对象。 |
+| customCell       | (record, index, column) => CellAdditionalProps | 为单元格注入额外属性（class、style、事件、rowSpan、colSpan）。                                                             |
+| customHeaderCell | (column, index) => CellAdditionalProps         | 为表头单元格注入额外属性。                                                                                                 |
+
+**customRender 使用说明：**
+
+在 `.vue` 文件的 `<script setup lang="ts">` 中，使用 `h` 函数：
+
+```ts
+customRender: ({ text, record }) => h('span', { style: { color: 'blue' } }, String(text))
+```
+
+在 `.vue` 文件的 `<script setup lang="tsx">` 中，可以直接使用 TSX 语法：
+
+```tsx
+customRender: ({ text }) => <span style={{ color: 'red' }}>{String(text)}</span>
+```
+
+或者将 columns 定义在单独的 `.tsx` 文件中：
+
+```tsx
+// columns.tsx
+export const columns = [
+  {
+    title: 'Name',
+    customRender: ({ text }) => <span style={{ color: 'red' }}>{String(text)}</span>,
+  },
+]
+```
+
+返回 `RenderedCell` 对象可以同时设置内容和单元格属性：
+
+```ts
+customRender: ({ text, index }) =>
+  index === 0
+    ? { children: String(text), props: { colSpan: 2, style: { fontWeight: 'bold' } } }
+    : String(text)
+```
+
+### 固定列与调整
+
+| 字段      | 类型              | 说明                            |
+| --------- | ----------------- | ------------------------------- |
+| fixed     | 'left' \| 'right' | 固定列位置。                    |
+| resizable | boolean           | 是否可拖拽调整列宽。            |
+| minWidth  | number            | 拖拽调整时的最小列宽，默认 50。 |
+| maxWidth  | number            | 拖拽调整时的最大列宽。          |
+
+### 排序
+
+| 字段              | 类型                           | 说明                                                                        |
+| ----------------- | ------------------------------ | --------------------------------------------------------------------------- |
+| sorter            | boolean \| 函数 \| 对象        | 排序器。true 使用默认排序，函数为自定义比较，对象支持 compare 和 multiple。 |
+| sortOrder         | 'ascend' \| 'descend' \| null  | 受控排序方向。                                                              |
+| defaultSortOrder  | 'ascend' \| 'descend' \| null  | 默认排序方向。                                                              |
+| sortDirections    | Array\<'ascend' \| 'descend'\> | 支持的排序方向，默认 ['ascend', 'descend']。                                |
+| showSorterTooltip | boolean \| 对象                | 是否显示排序提示。                                                          |
+
+### 筛选
+
+| 字段                 | 类型                                 | 说明                    |
+| -------------------- | ------------------------------------ | ----------------------- |
+| filters              | Array\<{ text, value }\>             | 筛选菜单项。            |
+| onFilter             | (value, record) => boolean           | 筛选函数。              |
+| filteredValue        | Array\<string \| number \| boolean\> | 受控筛选值。            |
+| defaultFilteredValue | Array\<string \| number \| boolean\> | 默认筛选值。            |
+| filterMultiple       | boolean                              | 是否多选，默认 true。   |
+| filterMode           | 'menu' \| 'tree'                     | 筛选模式，默认 'menu'。 |
+| filterSearch         | boolean \| 函数                      | 是否支持筛选项搜索。    |
+
+### 多级表头
+
+| 字段     | 类型                | 说明                     |
+| -------- | ------------------- | ------------------------ |
+| children | Array\<ColumnType\> | 子列配置，用于多级表头。 |
+
 ### 视觉与布局
 
 | Prop        | 说明                                                |
