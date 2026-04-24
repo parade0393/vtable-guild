@@ -37,7 +37,7 @@
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "vite build && node ./scripts/copy-theme-css.mjs",
+    "build": "vite build && node ./scripts/copy-theme-css.mjs && node ./scripts/append-augmentation.mjs",
     "dev": "vite build --watch",
     "type-check": "vue-tsc --project ./tsconfig.build.json --noEmit",
     "test": "vitest run --config ../../vitest.config.ts --project vtable-guild --passWithNoTests",

@@ -11,7 +11,8 @@ export default defineConfig({
     dts({
       exclude: ['**/*.test.ts', '**/*.spec.ts', '**/*.typecheck.ts', '**/*.typecheck.spec.ts'],
       tsconfigPath: './tsconfig.build.json',
-      rollupTypes: true,
+      rollupTypes: false,
+      insertTypesEntry: true,
     }),
   ],
   resolve: {
