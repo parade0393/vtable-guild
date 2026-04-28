@@ -34,7 +34,7 @@
 | dataIndex | string \| string[]            | 数据字段路径，如 'name' 或 ['address', 'city']。 |
 | width     | number \| string              | 列宽度，支持数字（px）或字符串（如 '20%'）。     |
 | align     | 'left' \| 'center' \| 'right' | 列对齐方式。                                     |
-| ellipsis  | boolean                       | 是否自动省略过长内容。                           |
+| ellipsis  | boolean                       | 是否自动省略过长内容；默认只影响 body cell。     |
 | className | string                        | 列单元格额外 class。                             |
 | colSpan   | number                        | 表头单元格跨列数。                               |
 
@@ -120,17 +120,18 @@ customRender: ({ text, index }) =>
 
 ### 视觉与布局
 
-| Prop        | 说明                                                |
-| ----------- | --------------------------------------------------- |
-| size        | 表格尺寸，可选 sm、md、lg。                         |
-| bordered    | 是否显示边框。                                      |
-| striped     | 是否开启斑马纹。                                    |
-| hoverable   | 是否开启行 hover 高亮。                             |
-| tableLayout | 表格布局模式。                                      |
-| showHeader  | 是否显示表头。                                      |
-| scroll      | 横向和纵向滚动配置；提供 y 时会形成固定表头滚动区。 |
-| sticky      | 粘性表头或滚动条配置。                              |
-| virtual     | 是否启用虚拟滚动，必须配合 scroll.y。               |
+| Prop           | 说明                                                            |
+| -------------- | --------------------------------------------------------------- |
+| size           | 表格尺寸，可选 sm、md、lg。                                     |
+| bordered       | 是否显示边框。                                                  |
+| striped        | 是否开启斑马纹。                                                |
+| hoverable      | 是否开启行 hover 高亮。                                         |
+| tableLayout    | 表格布局模式。                                                  |
+| showHeader     | 是否显示表头。                                                  |
+| headerEllipsis | 是否让开启了 `column.ellipsis` 的列表头也单行省略；默认 false。 |
+| scroll         | 横向和纵向滚动配置；提供 y 时会形成固定表头滚动区。             |
+| sticky         | 粘性表头或滚动条配置。                                          |
+| virtual        | 是否启用虚拟滚动，必须配合 scroll.y。                           |
 
 ### 主题与语言
 

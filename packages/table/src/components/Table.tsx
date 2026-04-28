@@ -152,6 +152,7 @@ export default defineComponent({
       default: undefined,
     },
     showHeader: { type: Boolean, default: true },
+    headerEllipsis: { type: Boolean, default: false },
     rowClassName: {
       type: [String, Function] as PropType<
         string | ((record: TableRecord, index: number, indent: number) => string)
@@ -833,6 +834,7 @@ export default defineComponent({
       showSorterTooltip: computed(
         () => props.showSorterTooltip ?? presetConfig.value.showSorterTooltip,
       ),
+      headerEllipsis: computed(() => props.headerEllipsis),
       subThemeSlots,
       presetConfig,
       themePreset: effectiveThemePreset,

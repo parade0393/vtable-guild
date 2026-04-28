@@ -333,6 +333,14 @@ export default defineComponent({
       return tableContext.getColumnTitle?.(props.cell.column) ?? props.cell.column.title ?? ''
     })
 
+    const shouldApplyHeaderEllipsis = computed(() => {
+      if (!props.cell.isLeaf || !leafColumn.value?.ellipsis) {
+        return false
+      }
+
+      return tableContext.headerEllipsis?.value === true
+    })
+
     const headerContent = computed(() => {
       if (tableContext.headerCell) {
         const slotContent = tableContext.headerCell({
@@ -590,7 +598,15 @@ export default defineComponent({
 
       const sorterContent = (
         <span class={sortAreaWrapperClass}>
-          <span class={sortAreaTitleClass}>{headerContent.value}</span>
+          <span
+            class={cn(
+              sortAreaTitleClass,
+              shouldApplyHeaderEllipsis.value &&
+                'block min-w-0 overflow-hidden text-ellipsis whitespace-nowrap',
+            )}
+          >
+            {headerContent.value}
+          </span>
           {isSortable.value && <SortButton sortOrder={sortOrder.value} />}
         </span>
       )

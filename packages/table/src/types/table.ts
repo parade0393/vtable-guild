@@ -190,6 +190,12 @@ export interface TableProps<TRecord extends object = Record<string, any>> {
   /** 是否显示表头 */
   showHeader?: boolean
 
+  /**
+   * 是否让开启了 column.ellipsis 的列表头也应用单行省略。
+   * 默认 false，保持表头换行。
+   */
+  headerEllipsis?: boolean
+
   /** 行 class */
   rowClassName?: string | RowClassName<TRecord>
 

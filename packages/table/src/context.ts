@@ -136,6 +136,9 @@ export interface TableContext {
   /** 表级别 showSorterTooltip 配置 */
   showSorterTooltip?: ComputedRef<boolean>
 
+  /** 表级别 headerEllipsis 配置 */
+  headerEllipsis?: ComputedRef<boolean>
+
   /** 子组件主题 slot class 映射 */
   subThemeSlots?: ComputedRef<SubThemeSlots>
 

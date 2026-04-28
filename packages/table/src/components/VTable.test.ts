@@ -4,7 +4,7 @@ import { h, nextTick } from 'vue'
 import { createVTableGuild } from '@vtable-guild/core'
 import VTable from './VTable.vue'
 import { VTableSummary } from '../index'
-import type { ColumnsType } from '../types'
+import type { ColumnsType, TableProps } from '../types'
 
 interface DemoRow extends Record<string, unknown> {
   key: string
@@ -31,13 +31,14 @@ const baseColumns: ColumnsType<DemoRow> = [
   { title: 'Status', key: 'status', dataIndex: 'status' },
 ]
 
-function mountTable(columns: ColumnsType<DemoRow>) {
+function mountTable(columns: ColumnsType<DemoRow>, extraProps: Partial<TableProps<DemoRow>> = {}) {
   return mount(VTable<DemoRow>, {
     attachTo: document.body,
     props: {
       rowKey: 'key',
       columns,
       dataSource,
+      ...extraProps,
     },
   })
 }
@@ -52,6 +53,10 @@ function findTableHeaderCell(wrapper: VueWrapper, title: string) {
     throw new Error(`Header cell not found: ${title}`)
   }
   return cell
+}
+
+function hasHeaderEllipsisClass(wrapper: VueWrapper, title: string) {
+  return findTableHeaderCell(wrapper, title).find('.whitespace-nowrap').exists()
 }
 
 function findBodyButton(text: string) {
@@ -105,6 +110,111 @@ describe('VTable', () => {
     expect(getBodyRows(wrapper)).toHaveLength(3)
     expect(getBodyRows(wrapper)[0].text()).toContain('Charlie')
     expect(getBodyRows(wrapper)[1].text()).toContain('Alice')
+
+    wrapper.unmount()
+  })
+
+  it('keeps header text wrapping by default when column ellipsis is enabled', () => {
+    const columns: ColumnsType<DemoRow> = [
+      {
+        title: 'Long Long Long Header',
+        key: 'name',
+        dataIndex: 'name',
+        ellipsis: true,
+      },
+    ]
+
+    const wrapper = mountTable(columns)
+
+    expect(hasHeaderEllipsisClass(wrapper, 'Long Long Long Header')).toBe(false)
+
+    wrapper.unmount()
+  })
+
+  it('applies header ellipsis only to ellipsis columns when headerEllipsis is enabled', () => {
+    const columns: ColumnsType<DemoRow> = [
+      {
+        title: 'Long Long Long Header',
+        key: 'name',
+        dataIndex: 'name',
+        ellipsis: true,
+      },
+      {
+        title: 'Another Long Long Long Header',
+        key: 'status',
+        dataIndex: 'status',
+      },
+    ]
+
+    const wrapper = mountTable(columns, {
+      headerEllipsis: true,
+    })
+
+    expect(hasHeaderEllipsisClass(wrapper, 'Long Long Long Header')).toBe(true)
+    expect(hasHeaderEllipsisClass(wrapper, 'Another Long Long Long Header')).toBe(false)
+
+    wrapper.unmount()
+  })
+
+  it('keeps sorter and filter controls visible when header ellipsis is enabled', () => {
+    const columns: ColumnsType<DemoRow> = [
+      {
+        title: 'Sortable Long Long Long Header',
+        key: 'name',
+        dataIndex: 'name',
+        ellipsis: true,
+        sorter: true,
+      },
+      {
+        title: 'Filterable Long Long Long Header',
+        key: 'status',
+        dataIndex: 'status',
+        ellipsis: true,
+        filters: [
+          { text: 'Active', value: 'active' },
+          { text: 'Paused', value: 'paused' },
+        ],
+        onFilter: (value, record) => record.status === value,
+      },
+    ]
+
+    const wrapper = mountTable(columns, {
+      headerEllipsis: true,
+    })
+
+    const sortableHeader = findTableHeaderCell(wrapper, 'Sortable Long Long Long Header')
+    const filterableHeader = findTableHeaderCell(wrapper, 'Filterable Long Long Long Header')
+
+    expect(hasHeaderEllipsisClass(wrapper, 'Sortable Long Long Long Header')).toBe(true)
+    expect(sortableHeader.find('[aria-hidden="true"]').exists()).toBe(true)
+    expect(hasHeaderEllipsisClass(wrapper, 'Filterable Long Long Long Header')).toBe(true)
+    expect(filterableHeader.find('[aria-label="筛选"]').exists()).toBe(true)
+
+    wrapper.unmount()
+  })
+
+  it('does not apply header ellipsis to grouped header cells', () => {
+    const columns: ColumnsType<DemoRow> = [
+      {
+        title: 'Grouped Long Long Long Header',
+        key: 'group',
+        children: [
+          {
+            title: 'Child Long Long Long Header',
+            key: 'name',
+            dataIndex: 'name',
+            ellipsis: true,
+          },
+        ],
+      },
+    ]
+
+    const wrapper = mountTable(columns, {
+      headerEllipsis: true,
+    })
+
+    expect(hasHeaderEllipsisClass(wrapper, 'Grouped Long Long Long Header')).toBe(false)
+    expect(hasHeaderEllipsisClass(wrapper, 'Child Long Long Long Header')).toBe(true)
 
     wrapper.unmount()
   })
