@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
+  base: '/vtable-guild/',
   lang: 'zh-CN',
   title: 'vtable-guild',
   description: '面向 ant-design-vue 和 element-plus 用户的高性能表格替换方案。',
