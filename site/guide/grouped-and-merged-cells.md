@@ -65,6 +65,15 @@ const columns = [
 - 表格一旦同时叠加固定列、多级表头和合并单元格，先保证布局稳定，再叠加其他交互。
 - 如果只是想强调某些单元格样式，不要急着用合并，优先考虑 ui、customRender 或 summary。
 
+## 合并单元格的 hover 行为
+
+当表格开启 `hoverable`（默认为 `true`）时，hover 高亮会正确处理跨行合并的情况：
+
+- hover 任意一行时，该行所有单元格高亮，包括跨行合并单元格（即使它的起始行不在当前行）。
+- hover 跨行合并单元格本身时，它所跨越的所有行都会整体高亮。
+
+这与 ant-design-vue 的行为一致，通过 JS 区间重叠判断实现，不依赖 CSS group-hover。
+
 ## 相关页面
 
 - [标题与摘要行](/guide/title-footer-summary)

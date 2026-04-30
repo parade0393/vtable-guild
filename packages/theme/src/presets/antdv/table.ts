@@ -146,7 +146,9 @@ export const antdvTableTheme = {
 
     // ---- 行选中背景 ----
     tdSelected: 'bg-[color:var(--vtg-table-row-selected-bg)]',
-    tdSelectedHover: 'group-hover/row:bg-[color:var(--vtg-table-row-selected-hover-bg)]',
+    tdSelectedHover: 'bg-[color:var(--vtg-table-row-selected-hover-bg)]',
+    tdRowHover: 'bg-[color:var(--vtg-table-row-hover-bg)]',
+    tdRowSelectedHover: 'bg-[color:var(--vtg-table-row-selected-hover-bg)]',
 
     // ---- 选择下拉相关 ----
     selectionDropdown: [
@@ -284,9 +286,7 @@ export const antdvTableTheme = {
       },
     },
     hoverable: {
-      true: {
-        td: 'group-hover/row:bg-[color:var(--vtg-table-row-hover-bg)]',
-      },
+      true: {},
     },
     loading: {
       true: {

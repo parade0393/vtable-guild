@@ -3,7 +3,7 @@ import { cn, Tooltip } from '@vtable-guild/core'
 import { TABLE_ALIGN_CLASSES } from '@vtable-guild/theme'
 import type { CellAdditionalProps, ColumnType } from '../types'
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
-import { getByDataIndex } from '../composables'
+import { getByDataIndex, isInHoverRange } from '../composables'
 import { getColumnKey } from '../composables/useSorter'
 import {
   isRenderedCell,
@@ -90,6 +90,39 @@ export default defineComponent({
 
     const isRowSelected = computed(() => selectionState.value.checked)
 
+    const isHovered = computed(() =>
+      isInHoverRange(
+        props.rowIndex,
+        resolvedCell.value.rowSpan ?? 1,
+        tableContext.hoverRange?.value ?? null,
+      ),
+    )
+
+    function onCellEnter() {
+      if (!tableContext.hoverable?.value) return
+      const rowSpan = Math.max(1, resolvedCell.value.rowSpan ?? 1)
+      tableContext.setHoverRange?.(props.rowIndex, props.rowIndex + rowSpan - 1)
+    }
+
+    function onCellLeave() {
+      if (!tableContext.hoverable?.value) return
+      tableContext.clearHoverRange?.()
+    }
+
+    function chainEnter(userHandler: unknown) {
+      return (e: MouseEvent) => {
+        onCellEnter()
+        if (typeof userHandler === 'function') userHandler(e)
+      }
+    }
+
+    function chainLeave(userHandler: unknown) {
+      return (e: MouseEvent) => {
+        onCellLeave()
+        if (typeof userHandler === 'function') userHandler(e)
+      }
+    }
+
     const bodyDomProps = computed(() => ({
       ...omitCellProps(resolvedCell.value.renderCellProps),
       ...omitCellProps(resolvedCell.value.customCellProps),
@@ -98,10 +131,16 @@ export default defineComponent({
     const cellClass = computed(() => {
       const alignClass = props.column.align ? TABLE_ALIGN_CLASSES[props.column.align] : ''
       const subThemeSlots = tableContext.subThemeSlots?.value
+      const hovering = isHovered.value && tableContext.hoverable?.value
       const selectedClasses =
         isRowSelected.value && subThemeSlots
-          ? cn(subThemeSlots.tdSelected, subThemeSlots.tdSelectedHover)
+          ? cn(
+              subThemeSlots.tdSelected,
+              hovering ? subThemeSlots.tdRowSelectedHover : subThemeSlots.tdSelectedHover,
+            )
           : ''
+      const hoverClass =
+        hovering && subThemeSlots && !isRowSelected.value ? subThemeSlots.tdRowHover : ''
 
       return cn(
         props.tdClass,
@@ -112,6 +151,7 @@ export default defineComponent({
         resolvedCell.value.renderCellProps?.class,
         resolvedCell.value.renderCellProps?.className,
         selectedClasses,
+        hoverClass,
         fixedClass.value,
       )
     })
@@ -233,18 +273,23 @@ export default defineComponent({
 
         const hasRenderCell = !!sel?.renderCell
 
+        const hovering = isHovered.value && tableContext.hoverable?.value
         const cellSelClass = cn(
           props.tdClass,
           hasRenderCell ? 'text-center' : 'text-center leading-[0]',
           props.column.className,
           selectionCellProps?.class,
           selectionCellProps?.className,
-          isRowSelected.value &&
-            tableContext.subThemeSlots?.value &&
-            cn(
-              tableContext.subThemeSlots.value.tdSelected,
-              tableContext.subThemeSlots.value.tdSelectedHover,
-            ),
+          isRowSelected.value && tableContext.subThemeSlots?.value
+            ? cn(
+                tableContext.subThemeSlots.value.tdSelected,
+                hovering
+                  ? tableContext.subThemeSlots.value.tdRowSelectedHover
+                  : tableContext.subThemeSlots.value.tdSelectedHover,
+              )
+            : hovering && tableContext.subThemeSlots?.value
+              ? tableContext.subThemeSlots.value.tdRowHover
+              : '',
           fixedClass.value,
         )
 
@@ -255,6 +300,8 @@ export default defineComponent({
             style={mergeSelectionCellStyle(selectionCellProps?.style)}
             colspan={colSpan}
             rowspan={rowSpan}
+            onMouseenter={onCellEnter}
+            onMouseleave={onCellLeave}
           >
             {selectionCellContent}
           </td>
@@ -276,7 +323,14 @@ export default defineComponent({
 
         if (exp?.expandIcon) {
           return (
-            <td class={expandCellClass} style={cellStyle.value} colspan={colSpan} rowspan={rowSpan}>
+            <td
+              class={expandCellClass}
+              style={cellStyle.value}
+              colspan={colSpan}
+              rowspan={rowSpan}
+              onMouseenter={onCellEnter}
+              onMouseleave={onCellLeave}
+            >
               {exp.expandIcon({
                 expanded,
                 record: props.record,
@@ -292,7 +346,14 @@ export default defineComponent({
         }
 
         return (
-          <td class={expandCellClass} style={cellStyle.value} colspan={colSpan} rowspan={rowSpan}>
+          <td
+            class={expandCellClass}
+            style={cellStyle.value}
+            colspan={colSpan}
+            rowspan={rowSpan}
+            onMouseenter={onCellEnter}
+            onMouseleave={onCellLeave}
+          >
             <ExpandIcon
               expanded={expanded}
               expandable={canExpand}
@@ -357,6 +418,8 @@ export default defineComponent({
           style={cellStyle.value}
           colspan={colSpan}
           rowspan={rowSpan}
+          onMouseenter={chainEnter(bodyDomProps.value.onMouseenter)}
+          onMouseleave={chainLeave(bodyDomProps.value.onMouseleave)}
         >
           {treeIndent}
           {treeExpandBtn}

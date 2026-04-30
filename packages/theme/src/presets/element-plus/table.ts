@@ -133,6 +133,8 @@ export const elementPlusTableTheme = {
     // ---- 行选中背景 ----
     tdSelected: '',
     tdSelectedHover: '',
+    tdRowHover: 'bg-[color:var(--vtg-table-row-hover-bg)]',
+    tdRowSelectedHover: '',
 
     // ---- 选择下拉相关 ----
     selectionDropdown: [
@@ -236,9 +238,7 @@ export const elementPlusTableTheme = {
       },
     },
     hoverable: {
-      true: {
-        td: 'group-hover/row:bg-[color:var(--vtg-table-row-hover-bg)]',
-      },
+      true: {},
     },
   },
   compoundSlots: [

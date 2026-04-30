@@ -85,23 +85,15 @@ createVTableGuild({
 })
 ```
 
-### 示例二：统一改 hover 行背景
+### 示例二：统一改 hover 行背景色
 
-```ts
-createVTableGuild({
-  theme: {
-    table: {
-      variants: {
-        hoverable: {
-          true: {
-            td: 'group-hover/row:bg-blue-50',
-          },
-        },
-      },
-    },
-  },
-})
+```css
+:root {
+  --vtg-table-row-hover-bg: #e6f7ff;
+}
 ```
+
+覆盖 CSS 变量是最推荐的方式，hover 高亮由 JS 状态驱动，能正确处理跨行合并单元格。
 
 ### 示例三：统一改默认 size
 

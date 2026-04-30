@@ -15,3 +15,6 @@ export type { ScrollConfig, FixedOffset } from './useScroll'
 export { useExpand } from './useExpand'
 
 export { useResize } from './useResize'
+
+export { useHoverState, isInHoverRange } from './useHoverState'
+export type { HoverState } from './useHoverState'

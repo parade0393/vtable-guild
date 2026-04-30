@@ -62,11 +62,9 @@ createVTableGuild({
 
 ## 快速示例：修改行 hover 背景色
 
-行 hover 效果由 `hoverable` variant 控制，最终作用于 `td` slot。你有三种方式自定义 hover 背景色：
+行 hover 效果由 `hoverable` variant 控制，hover 高亮通过 JS 状态驱动，能正确处理跨行合并单元格。自定义 hover 背景色推荐覆盖 CSS 变量：
 
-### 方式一：覆盖 CSS 变量
-
-最简单的方式是只改 token 值，不改 class 结构：
+### 方式一：覆盖 CSS 变量（推荐）
 
 ```css
 :root {
@@ -74,10 +72,10 @@ createVTableGuild({
 }
 ```
 
-### 方式二：通过 `ui` prop
+### 方式二：通过 `ui` prop 覆盖 `tdRowHover` slot
 
 ```vue
-<VTable :columns="columns" :data-source="data" :ui="{ td: 'group-hover/row:bg-blue-50' }" />
+<VTable :columns="columns" :data-source="data" :ui="{ tdRowHover: 'bg-blue-50' }" />
 ```
 
 ### 方式三：通过全局 `theme`
@@ -87,12 +85,8 @@ app.use(
   createVTableGuild({
     theme: {
       table: {
-        variants: {
-          hoverable: {
-            true: {
-              td: 'group-hover/row:bg-blue-50',
-            },
-          },
+        slots: {
+          tdRowHover: 'bg-blue-50',
         },
       },
     },
@@ -202,10 +196,12 @@ app.use(
 
 ### 行选中
 
-| Slot              | 说明                            |
-| ----------------- | ------------------------------- |
-| `tdSelected`      | 选中行的 `<td>` 背景。          |
-| `tdSelectedHover` | 选中行 hover 时的 `<td>` 背景。 |
+| Slot                 | 说明                                    |
+| -------------------- | --------------------------------------- |
+| `tdSelected`         | 选中行的 `<td>` 背景。                  |
+| `tdSelectedHover`    | 选中行静态背景叠加层（非 hover 状态）。 |
+| `tdRowHover`         | hover 时普通行的 `<td>` 背景。          |
+| `tdRowSelectedHover` | hover 时选中行的 `<td>` 背景叠加层。    |
 
 ### 行选择下拉
 

@@ -45,6 +45,7 @@ import { useExpand } from '../composables/useExpand'
 import { useResize } from '../composables/useResize'
 import { useVirtual } from '../composables/useVirtual'
 import { useTreeData } from '../composables/useTreeData'
+import { useHoverState } from '../composables/useHoverState'
 
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 import { resolveTablePresetConfig } from '../preset-config'
@@ -478,6 +479,8 @@ export default defineComponent({
       onExpandedRowsChange: props.onExpandedRowsChange,
     })
 
+    const { hoverRange, setHoverRange, clearHoverRange } = useHoverState(100)
+
     /** Final display data — flat records after tree expansion */
     const displayData = computed(() => {
       if (!isTreeData.value) return processedData.value
@@ -813,6 +816,8 @@ export default defineComponent({
       expandedRow: themeSlots.expandedRow(),
       expandedRowCell: themeSlots.expandedRowCell(),
       resizeHandle: themeSlots.resizeHandle(),
+      tdRowHover: themeSlots.tdRowHover(),
+      tdRowSelectedHover: themeSlots.tdRowSelectedHover(),
     }))
 
     const presetConfig = computed(() => resolveTablePresetConfig(effectiveThemePreset.value))
@@ -879,6 +884,10 @@ export default defineComponent({
       toggleTreeExpand,
       isTreeExpanded,
       treeIndentSize,
+      hoverRange,
+      setHoverRange,
+      clearHoverRange,
+      hoverable: computed(() => props.hoverable !== false),
     })
 
     return () => {

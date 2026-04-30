@@ -1,4 +1,4 @@
-import type { ComputedRef, InjectionKey, Slots } from 'vue'
+import type { ComputedRef, InjectionKey, Ref, Slots } from 'vue'
 import type { LocaleName, ThemePresetName, VTableGuildTableLocale } from '@vtable-guild/core'
 import type {
   CellAdditionalProps,
@@ -88,6 +88,8 @@ export interface SubThemeSlots {
   expandedRow: string
   expandedRowCell: string
   resizeHandle: string
+  tdRowHover: string
+  tdRowSelectedHover: string
 }
 
 /**
@@ -255,6 +257,12 @@ export interface TableContext {
   isTreeExpanded?: (key: Key) => boolean
   /** 树形缩进宽度 */
   treeIndentSize?: ComputedRef<number>
+
+  // ---- Hover state ----
+  hoverRange?: Ref<readonly [number, number] | null>
+  setHoverRange?: (startRow: number, endRow: number) => void
+  clearHoverRange?: () => void
+  hoverable?: ComputedRef<boolean>
 }
 
 /**
