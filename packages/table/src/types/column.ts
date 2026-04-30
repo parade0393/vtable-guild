@@ -60,10 +60,10 @@ export interface RenderedCell {
   children?: VNodeChild
 }
 
-export type GetComponentProps<TData> = (
+export type GetComponentProps<TData, TRecord extends object = Record<string, any>> = (
   data: TData,
-  index?: number,
-  column?: ColumnType<any>,
+  index: number,
+  column?: ColumnType<TRecord>,
 ) => CellAdditionalProps | undefined
 
 export interface ColumnTitleProps<TRecord extends object = Record<string, any>> {
@@ -93,8 +93,8 @@ export interface ColumnType<TRecord extends object = Record<string, any>> {
   className?: string
   colSpan?: number
   customRender?: (ctx: CustomRenderContext<TRecord>) => VNodeChild | RenderedCell
-  customCell?: GetComponentProps<TRecord>
-  customHeaderCell?: GetComponentProps<ColumnType<TRecord> | ColumnGroupType<TRecord>>
+  customCell?: GetComponentProps<TRecord, TRecord>
+  customHeaderCell?: GetComponentProps<ColumnType<TRecord> | ColumnGroupType<TRecord>, TRecord>
 
   /** 固定列。'left' 固定到左侧，'right' 固定到右侧。 */
   fixed?: 'left' | 'right'
