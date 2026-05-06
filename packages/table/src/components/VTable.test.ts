@@ -3,7 +3,7 @@ import { mount, type VueWrapper } from '@vue/test-utils'
 import { h, nextTick } from 'vue'
 import { createVTableGuild } from '@vtable-guild/core'
 import VTable from './VTable.vue'
-import { VTableSummary } from '../index'
+import { VTableSummary, EXPAND_COLUMN, SELECTION_COLUMN, VTable as VTableExport } from '../index'
 import type { ColumnsType, TableProps } from '../types'
 
 interface DemoRow extends Record<string, unknown> {
@@ -775,5 +775,97 @@ describe('VTable', () => {
     )
 
     wrapper.unmount()
+  })
+
+  describe('column placement sentinels', () => {
+    it('places EXPAND_COLUMN at sentinel position when expandable is enabled', () => {
+      const columns: ColumnsType<DemoRow> = [
+        baseColumns[0],
+        EXPAND_COLUMN,
+        baseColumns[1],
+        baseColumns[2],
+      ]
+      const wrapper = mountTable(columns, {
+        expandable: {
+          expandedRowRender: (record) => h('p', record.name),
+        },
+      })
+
+      const headers = wrapper.findAll('thead th')
+      // header titles: ['Name', '', 'Age', 'Status'] — second cell is the empty expand column
+      expect(headers[0].text()).toBe('Name')
+      expect(headers[1].text()).toBe('')
+      expect(headers[2].text()).toBe('Age')
+      expect(headers[3].text()).toBe('Status')
+
+      // body row: first non-data cell is the expand trigger at index 1
+      const firstRow = wrapper.findAll('tbody tr')[0]
+      const cells = firstRow.findAll('td')
+      // Expand-icon column is at second visible position
+      expect(cells[1].find('button[aria-label="Expand row"]').exists()).toBe(true)
+
+      wrapper.unmount()
+    })
+
+    it('places SELECTION_COLUMN at sentinel position when rowSelection is enabled', () => {
+      const columns: ColumnsType<DemoRow> = [
+        baseColumns[0],
+        baseColumns[1],
+        SELECTION_COLUMN,
+        baseColumns[2],
+      ]
+      const wrapper = mountTable(columns, {
+        rowSelection: { type: 'checkbox' },
+      })
+
+      const headers = wrapper.findAll('thead th')
+      // header order: Name, Age, <selection>, Status
+      expect(headers[0].text()).toBe('Name')
+      expect(headers[1].text()).toBe('Age')
+      expect(headers[3].text()).toBe('Status')
+      // selection column header has the select-all checkbox
+      expect(headers[2].find('[role="checkbox"]').exists()).toBe(true)
+
+      const firstRow = wrapper.findAll('tbody tr')[0]
+      const cells = firstRow.findAll('td')
+      // body row checkbox is at index 2
+      expect(cells[2].find('[role="checkbox"]').exists()).toBe(true)
+
+      wrapper.unmount()
+    })
+
+    it('drops sentinel when its corresponding feature is disabled, and dedupes repeats', () => {
+      const columns: ColumnsType<DemoRow> = [
+        EXPAND_COLUMN, // no expandable → silently dropped
+        baseColumns[0],
+        SELECTION_COLUMN,
+        baseColumns[1],
+        SELECTION_COLUMN, // duplicate → only the first is honored
+        baseColumns[2],
+      ]
+      const wrapper = mountTable(columns, {
+        rowSelection: { type: 'checkbox' },
+      })
+
+      const headers = wrapper.findAll('thead th')
+      // expected order: Name, <selection>, Age, Status — no expand col
+      expect(headers).toHaveLength(4)
+      expect(headers[0].text()).toBe('Name')
+      expect(headers[1].find('[role="checkbox"]').exists()).toBe(true)
+      expect(headers[2].text()).toBe('Age')
+      expect(headers[3].text()).toBe('Status')
+
+      wrapper.unmount()
+    })
+
+    it('exposes EXPAND_COLUMN / SELECTION_COLUMN as static properties on VTable', () => {
+      // Mirrors the SELECTION_ALL / SELECTION_INVERT / SELECTION_NONE static-property pattern.
+      const VTableWithStatics = VTableExport as unknown as {
+        EXPAND_COLUMN: typeof EXPAND_COLUMN
+        SELECTION_COLUMN: typeof SELECTION_COLUMN
+      }
+      expect(VTableWithStatics.EXPAND_COLUMN).toBe(EXPAND_COLUMN)
+      expect(VTableWithStatics.SELECTION_COLUMN).toBe(SELECTION_COLUMN)
+    })
   })
 })

@@ -38,6 +38,9 @@ function flattenColumns<TRecord extends Record<string, unknown>>(
   const result: ColumnType<TRecord>[] = []
 
   for (const column of columns) {
+    // Skip sentinel placeholders (EXPAND_COLUMN / SELECTION_COLUMN)
+    if (typeof column === 'symbol') continue
+
     if (isColumnGroup(column)) {
       result.push(...flattenColumns(column.children))
       continue
@@ -63,7 +66,11 @@ function buildHeaderRows<TRecord extends Record<string, unknown>>(
 
     let currentColStart = colStart
 
-    return rowColumns.filter(Boolean).map((column) => {
+    const realColumns = rowColumns.filter(
+      (column): column is ColumnType<TRecord> | ColumnGroupType<TRecord> =>
+        Boolean(column) && typeof column !== 'symbol',
+    )
+    return realColumns.map((column) => {
       const isLeaf = !isColumnGroup(column) || column.children.length === 0
       let leafColumns: ColumnType<TRecord>[] = isLeaf ? [column as ColumnType<TRecord>] : []
       let colSpan = 1

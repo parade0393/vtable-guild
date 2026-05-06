@@ -48,6 +48,7 @@ import { useTreeData } from '../composables/useTreeData'
 import { useHoverState } from '../composables/useHoverState'
 
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
+import { EXPAND_COLUMN, SELECTION_COLUMN } from '../constants'
 import { resolveTablePresetConfig } from '../preset-config'
 import TableHeader from './TableHeader'
 import TableBody from './TableBody'
@@ -109,6 +110,12 @@ function filterResponsiveColumns<TRecord extends Record<string, unknown>>(
   screens: Set<Breakpoint>,
 ): ColumnsType<TRecord> {
   return columns.reduce<ColumnsType<TRecord>>((result, column) => {
+    // 占位 sentinel（EXPAND_COLUMN / SELECTION_COLUMN）原样穿过，
+    // 在 displayColumnTree 阶段统一替换为真实列对象。
+    if (typeof column === 'symbol') {
+      result.push(column)
+      return result
+    }
     if (
       column.responsive?.length &&
       !column.responsive.some((breakpoint) => screens.has(breakpoint))
@@ -280,7 +287,7 @@ export default defineComponent({
     }
     headerCell: {
       title: VNodeChild | undefined
-      column: ColumnsType<Record<string, unknown>>[number]
+      column: ColumnType<Record<string, unknown>> | ColumnGroupType<Record<string, unknown>>
       index: number
     }
     empty: void
@@ -536,29 +543,56 @@ export default defineComponent({
     const EXPAND_COLUMN_KEY = '__vtg_expand__'
 
     const displayColumnTree = computed<ColumnsType<Record<string, unknown>>>(() => {
-      const cols: ColumnsType<Record<string, unknown>> = [...responsiveColumns.value]
       const exp = props.expandable as Expandable<Record<string, unknown>> | undefined
-      if (exp && exp.showExpandColumn !== false) {
-        const expandCol: ColumnType<Record<string, unknown>> = {
-          key: EXPAND_COLUMN_KEY,
-          title: '',
-          width: exp.columnWidth ?? 48,
-          align: 'center',
-          fixed: exp.fixed,
-        }
-        cols.unshift(expandCol)
-      }
       const sel = props.rowSelection as RowSelection<Record<string, unknown>> | undefined
-      if (sel) {
-        const selColumn: ColumnType<Record<string, unknown>> = {
-          key: SELECTION_COLUMN_KEY,
-          title: '',
-          width: sel.columnWidth ?? 48,
-          align: 'center',
-          fixed: sel.fixed === true ? 'left' : sel.fixed || undefined,
+
+      const expandCol: ColumnType<Record<string, unknown>> | null =
+        exp && exp.showExpandColumn !== false
+          ? {
+              key: EXPAND_COLUMN_KEY,
+              title: '',
+              width: exp.columnWidth ?? 48,
+              align: 'center',
+              fixed: exp.fixed,
+            }
+          : null
+
+      const selCol: ColumnType<Record<string, unknown>> | null = sel
+        ? {
+            key: SELECTION_COLUMN_KEY,
+            title: '',
+            width: sel.columnWidth ?? 48,
+            align: 'center',
+            fixed: sel.fixed === true ? 'left' : sel.fixed || undefined,
+          }
+        : null
+
+      const cols: ColumnsType<Record<string, unknown>> = []
+      let expandPlaced = false
+      let selectionPlaced = false
+
+      for (const col of responsiveColumns.value) {
+        if (col === EXPAND_COLUMN) {
+          if (expandCol && !expandPlaced) {
+            cols.push(expandCol)
+            expandPlaced = true
+          }
+          continue
         }
-        cols.unshift(selColumn)
+        if (col === SELECTION_COLUMN) {
+          if (selCol && !selectionPlaced) {
+            cols.push(selCol)
+            selectionPlaced = true
+          }
+          continue
+        }
+        cols.push(col)
       }
+
+      // 用户没用 sentinel 时退回到现有默认行为：[selection, expand, ...user]
+      if (expandCol && !expandPlaced) cols.unshift(expandCol)
+      if (selCol && !selectionPlaced) cols.unshift(selCol)
+
       return cols
     })
 

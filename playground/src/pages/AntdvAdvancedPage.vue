@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, h, ref } from 'vue'
 import { ConfigProvider as AConfigProvider, Table as ATable } from 'ant-design-vue'
-import { VTable } from '@vtable-guild/vtable-guild'
+import { VTable, EXPAND_COLUMN, SELECTION_COLUMN } from '@vtable-guild/vtable-guild'
 import type { ColumnsType, Expandable, Key, RowSelection } from '@vtable-guild/vtable-guild'
 import { dataSource, type DemoRow } from '../filterMatrixShared'
 
@@ -351,6 +351,34 @@ function apiCustomHeaderRow(_columns: ColumnsType<DemoRow>, index?: number) {
       }
     : {}
 }
+
+// ---- Sentinel-based column placement ----
+// 演示 EXPAND_COLUMN / SELECTION_COLUMN 把展开图标列、复选框列插到列序中间任意位置。
+const sentinelColumns: ColumnsType<DemoRow> = [
+  { title: 'Name', dataIndex: 'name', key: 'name', width: 170 },
+  EXPAND_COLUMN,
+  { title: 'Age', dataIndex: 'age', key: 'age', width: 90, align: 'right' },
+  SELECTION_COLUMN,
+  { title: 'Status', dataIndex: 'status', key: 'status', width: 130 },
+  { title: 'Address', dataIndex: 'address', key: 'address' },
+]
+
+const sentinelExpandable: Expandable<DemoRow> = {
+  expandedRowRender: (record) =>
+    h(
+      'p',
+      { class: 'm-0 text-[12px] text-[color:var(--color-text-secondary)]' },
+      `扩展信息：${record.name} · ${record.address}`,
+    ),
+}
+
+const sentinelSelectedKeys = ref<Key[]>([])
+const sentinelRowSelection = computed<RowSelection<DemoRow>>(() => ({
+  selectedRowKeys: sentinelSelectedKeys.value,
+  onChange: (keys: Key[]) => {
+    sentinelSelectedKeys.value = [...keys]
+  },
+}))
 </script>
 
 <template>
@@ -796,6 +824,33 @@ function apiCustomHeaderRow(_columns: ColumnsType<DemoRow>, index?: number) {
                 </tr>
               </template>
             </VTable>
+          </article>
+        </div>
+      </section>
+      <section class="play-case">
+        <header class="play-case-header">
+          <h3>占位常量控制选择/展开列位置</h3>
+          <p>
+            把 <code>VTable.EXPAND_COLUMN</code> 与
+            <code>VTable.SELECTION_COLUMN</code>（也可直接命名导入）插入
+            <code>columns</code>
+            数组的任意位置，对应的展开图标列、复选框选择列就会出现在该位置而非默认的最左侧。
+            列顺序：<code>Name → 展开 → Age → ☑ → Status → Address</code>。
+          </p>
+        </header>
+        <div class="play-case-body single">
+          <article class="play-card">
+            <header class="play-card-header">
+              <span class="play-tag vtg">vtable-guild</span>
+              <span class="play-card-title">EXPAND_COLUMN / SELECTION_COLUMN</span>
+            </header>
+            <VTable
+              row-key="key"
+              :columns="sentinelColumns"
+              :data-source="dataSource"
+              :expandable="sentinelExpandable"
+              :row-selection="sentinelRowSelection"
+            />
           </article>
         </div>
       </section>

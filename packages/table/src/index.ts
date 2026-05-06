@@ -1,10 +1,22 @@
 import _VTable from './components/VTable.vue'
-import { SELECTION_ALL, SELECTION_INVERT, SELECTION_NONE } from './constants'
+import {
+  SELECTION_ALL,
+  SELECTION_INVERT,
+  SELECTION_NONE,
+  EXPAND_COLUMN,
+  SELECTION_COLUMN,
+} from './constants'
 import _VTableSummary from './components/VTableSummary'
 import _VTableSummaryRow from './components/VTableSummaryRow'
 import _VTableSummaryCell from './components/VTableSummaryCell'
 
-const VTable = Object.assign(_VTable, { SELECTION_ALL, SELECTION_INVERT, SELECTION_NONE } as const)
+const VTable = Object.assign(_VTable, {
+  SELECTION_ALL,
+  SELECTION_INVERT,
+  SELECTION_NONE,
+  EXPAND_COLUMN,
+  SELECTION_COLUMN,
+} as const)
 const VTableSummary = _VTableSummary
 const VTableSummaryRow = _VTableSummaryRow
 const VTableSummaryCell = _VTableSummaryCell
@@ -17,6 +29,8 @@ export {
   SELECTION_ALL,
   SELECTION_INVERT,
   SELECTION_NONE,
+  EXPAND_COLUMN,
+  SELECTION_COLUMN,
 }
 
 export type {
@@ -53,6 +67,9 @@ export type {
   RowSelectionType,
   SelectionItem,
   SelectionSentinel,
+  ColumnSentinel,
+  ExpandColumnSentinel,
+  SelectionColumnSentinel,
   Expandable,
 } from './types'
 export type { SummaryFixed } from './components/VTableSummary'

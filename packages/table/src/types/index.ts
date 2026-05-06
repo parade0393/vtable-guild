@@ -46,4 +46,9 @@ export type {
   SelectionItem,
   Expandable,
 } from './table'
-export type { SelectionSentinel } from '../constants'
+export type {
+  SelectionSentinel,
+  ColumnSentinel,
+  ExpandColumnSentinel,
+  SelectionColumnSentinel,
+} from '../constants'

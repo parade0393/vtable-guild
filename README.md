@@ -145,6 +145,25 @@ const dataSource: UserRow[] = [
 </template>
 ```
 
+## 调整选择列 / 展开列位置
+
+借鉴 ant-design-vue 的 `Table.EXPAND_COLUMN` / `Table.SELECTION_COLUMN` 设计，把这两个占位常量插入 `columns` 数组的任意位置，对应的展开图标列、复选框选择列就会出现在该位置而非默认的最左侧。仅在对应特性 (`expandable` / `rowSelection`) 启用时生效；同一类型的占位常量重复出现时只在第一次位置生效。
+
+```ts
+import { VTable, EXPAND_COLUMN, SELECTION_COLUMN } from '@vtable-guild/vtable-guild'
+// 也可以用 VTable.EXPAND_COLUMN / VTable.SELECTION_COLUMN
+
+const columns = [
+  { title: 'Name', dataIndex: 'name', key: 'name' },
+  EXPAND_COLUMN,
+  { title: 'Age', dataIndex: 'age', key: 'age' },
+  SELECTION_COLUMN,
+  { title: 'Address', dataIndex: 'address', key: 'address' },
+]
+```
+
+> 占位常量只识别 `columns` 顶层位置，不会进入 `ColumnGroupType.children` 内查找——这一点与 ant-design-vue 一致。
+
 ## Theme Presets
 
 - 默认导入 `@vtable-guild/vtable-guild/css` 时使用 `antdv` 预设（所有预设样式已统一包含在内）。

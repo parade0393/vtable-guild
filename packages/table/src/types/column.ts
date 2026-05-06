@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { CSSProperties, VNodeChild } from 'vue'
 import type { CustomFilterDropdownSlotProps } from './table'
+import type { ColumnSentinel } from '../constants'
 
 /** 行唯一标识 */
 export type Key = string | number
@@ -285,7 +286,7 @@ export interface ColumnGroupType<TRecord extends object = Record<string, any>> e
  * columns prop 的类型。
  */
 export type ColumnsType<TRecord extends object = Record<string, any>> = Array<
-  ColumnType<TRecord> | ColumnGroupType<TRecord>
+  ColumnType<TRecord> | ColumnGroupType<TRecord> | ColumnSentinel
 >
 
 /**
