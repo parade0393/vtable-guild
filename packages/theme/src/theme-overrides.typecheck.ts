@@ -13,19 +13,19 @@ const tableOverride = {
       },
     },
     size: {
-      lg: {
+      large: {
         td: 'px-8',
       },
     },
   },
   defaultVariants: {
     hoverable: false,
-    size: 'md',
+    size: 'middle',
   },
   compoundSlots: [
     {
       slots: ['th', 'td'],
-      size: 'lg',
+      size: 'large',
       class: 'text-red-500',
     },
   ],

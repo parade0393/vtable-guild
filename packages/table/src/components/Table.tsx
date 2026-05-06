@@ -40,6 +40,7 @@ import {
   type TableSlots,
 } from '@vtable-guild/theme'
 import { useColumns, useSorter, useFilter, useSelection } from '../composables'
+import { getEllipsisConfig } from '../utils/cell'
 import { useScroll, type ScrollConfig } from '../composables/useScroll'
 import { useExpand } from '../composables/useExpand'
 import { useResize } from '../composables/useResize'
@@ -123,6 +124,9 @@ function filterResponsiveColumns<TRecord extends Record<string, unknown>>(
       return result
     }
 
+    // fixed: true → 'left'，与 ant-design-vue 对齐
+    const normalizedFixed = column.fixed === true ? 'left' : column.fixed
+
     if ('children' in column && Array.isArray(column.children)) {
       const children = filterResponsiveColumns(column.children, screens)
       if (children.length === 0) {
@@ -131,12 +135,13 @@ function filterResponsiveColumns<TRecord extends Record<string, unknown>>(
 
       result.push({
         ...column,
+        fixed: normalizedFixed,
         children,
       } as ColumnGroupType<TRecord>)
       return result
     }
 
-    result.push(column)
+    result.push(normalizedFixed === column.fixed ? column : { ...column, fixed: normalizedFixed })
     return result
   }, [])
 }
@@ -150,8 +155,13 @@ export default defineComponent({
       type: [String, Function] as PropType<string | ((record: TableRecord) => Key)>,
       default: 'key',
     },
-    loading: { type: Boolean, default: false },
-    size: { type: String as PropType<'sm' | 'md' | 'lg'>, default: undefined },
+    loading: {
+      type: [Boolean, Object] as PropType<
+        boolean | { spinning?: boolean; indicator?: VNodeChild; tip?: string }
+      >,
+      default: false,
+    },
+    size: { type: String as PropType<'small' | 'middle' | 'large'>, default: undefined },
     bordered: { type: Boolean, default: false },
     striped: { type: Boolean, default: false },
     hoverable: { type: Boolean, default: true },
@@ -553,7 +563,7 @@ export default defineComponent({
               title: '',
               width: exp.columnWidth ?? 48,
               align: 'center',
-              fixed: exp.fixed,
+              fixed: exp.fixed === true ? 'left' : exp.fixed,
             }
           : null
 
@@ -620,7 +630,7 @@ export default defineComponent({
     )
 
     const hasEllipsisColumns = computed(() =>
-      dataLeafColumns.value.some((column) => column.ellipsis),
+      dataLeafColumns.value.some((column) => getEllipsisConfig(column).enabled),
     )
 
     const shouldExpandTableWidth = computed(
@@ -956,12 +966,29 @@ export default defineComponent({
         tableStyle.width = shouldExpandTableWidth.value ? 'max-content' : '100%'
       }
 
+      const loadingValue = props.loading
+      const loadingActive =
+        loadingValue === true ||
+        (typeof loadingValue === 'object' &&
+          loadingValue !== null &&
+          loadingValue.spinning !== false)
+      const loadingIndicator =
+        typeof loadingValue === 'object' && loadingValue !== null
+          ? loadingValue.indicator
+          : undefined
+      const loadingTip =
+        typeof loadingValue === 'object' && loadingValue !== null ? loadingValue.tip : undefined
+
       const loadingOverlay =
-        props.loading &&
+        loadingActive &&
         (slots.loading ? (
           <TableLoading loadingClass={themeSlots.loading()}>{slots.loading()}</TableLoading>
         ) : (
-          <TableLoading loadingClass={themeSlots.loading()} />
+          <TableLoading
+            loadingClass={themeSlots.loading()}
+            indicator={loadingIndicator}
+            tip={loadingTip}
+          />
         ))
 
       // ---- Dual-table mode (scroll.y set) ----

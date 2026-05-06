@@ -62,7 +62,7 @@ app.use(
           td: 'align-top',
         },
         defaultVariants: {
-          size: 'sm',
+          size: 'small',
         },
       },
     },
@@ -102,7 +102,7 @@ createVTableGuild({
   theme: {
     table: {
       defaultVariants: {
-        size: 'sm',
+        size: 'small',
       },
     },
   },

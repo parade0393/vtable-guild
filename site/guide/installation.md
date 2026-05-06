@@ -128,7 +128,7 @@ app.use(
           th: 'bg-slate-50 font-medium',
         },
         defaultVariants: {
-          size: 'sm',
+          size: 'small',
         },
       },
     },

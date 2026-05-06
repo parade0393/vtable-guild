@@ -216,9 +216,9 @@ export const elementPlusTableTheme = {
   },
   variants: {
     size: {
-      lg: {},
-      md: {},
-      sm: {},
+      large: {},
+      middle: {},
+      small: {},
     },
     bordered: {
       true: {
@@ -244,25 +244,25 @@ export const elementPlusTableTheme = {
   compoundSlots: [
     {
       slots: ['th', 'td', 'title', 'footer', 'summaryCell'],
-      size: 'lg',
+      size: 'large',
       class:
         'px-[var(--vtg-table-cell-padding-inline-lg)] py-[var(--vtg-table-cell-padding-block-lg)]',
     },
     {
       slots: ['th', 'td', 'title', 'footer', 'summaryCell'],
-      size: 'md',
+      size: 'middle',
       class:
         'px-[var(--vtg-table-cell-padding-inline-md)] py-[var(--vtg-table-cell-padding-block-md)]',
     },
     {
       slots: ['th', 'td', 'title', 'footer', 'summaryCell'],
-      size: 'sm',
+      size: 'small',
       class:
         'px-[var(--vtg-table-cell-padding-inline-sm)] py-[var(--vtg-table-cell-padding-block-sm)]',
     },
   ],
   defaultVariants: {
-    size: 'md',
+    size: 'middle',
     bordered: false,
     striped: false,
     hoverable: true,

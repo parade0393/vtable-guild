@@ -14,7 +14,7 @@ defineProps<{
   locale: Record<string, unknown>
 }>()
 
-const demoSize = ref<'sm' | 'md' | 'lg'>('md')
+const demoSize = ref<'small' | 'middle' | 'large'>('middle')
 const hoverable = ref(true)
 
 const baseColumns: ColumnsType<DemoRow> = [
@@ -301,7 +301,7 @@ const compactRows = computed(() => dataSource.slice(0, 4))
               <p>size 同步切换</p>
             </div>
             <ATable
-              :size="demoSize === 'sm' ? 'small' : demoSize === 'lg' ? 'large' : 'middle'"
+              :size="demoSize"
               :columns="baseColumns"
               :data-source="compactRows"
               :pagination="false"

@@ -6,6 +6,7 @@ import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 import { getByDataIndex, isInHoverRange } from '../composables'
 import { getColumnKey } from '../composables/useSorter'
 import {
+  getEllipsisConfig,
   isRenderedCell,
   omitCellProps,
   resolveBodyCell,
@@ -391,22 +392,27 @@ export default defineComponent({
           <ExpandIcon expanded={false} expandable={false} variant="tree" />
         ) : null
 
-      const mainContent = props.column.ellipsis ? (
-        <Tooltip
-          block
-          title={resolvedCell.value.tooltipText}
-          placement="top"
-          open={ellipsisTooltipOpen.value}
-        >
-          <div
-            ref={ellipsisContentRef}
-            class={props.bodyCellEllipsisClass}
-            onMouseenter={updateEllipsisTooltipState}
-            onMouseleave={closeEllipsisTooltip}
+      const ellipsisCfg = getEllipsisConfig(props.column)
+      const mainContent = ellipsisCfg.enabled ? (
+        ellipsisCfg.showTitle ? (
+          <Tooltip
+            block
+            title={resolvedCell.value.tooltipText}
+            placement="top"
+            open={ellipsisTooltipOpen.value}
           >
-            {resolvedCell.value.content}
-          </div>
-        </Tooltip>
+            <div
+              ref={ellipsisContentRef}
+              class={props.bodyCellEllipsisClass}
+              onMouseenter={updateEllipsisTooltipState}
+              onMouseleave={closeEllipsisTooltip}
+            >
+              {resolvedCell.value.content}
+            </div>
+          </Tooltip>
+        ) : (
+          <div class={props.bodyCellEllipsisClass}>{resolvedCell.value.content}</div>
+        )
       ) : (
         resolvedCell.value.content
       )

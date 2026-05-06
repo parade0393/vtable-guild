@@ -28,7 +28,7 @@
   对应 `theme.table.slots.td`
 - `hoverable.true.td`
   对应 `theme.table.variants.hoverable.true.td`
-- `size: 'sm'`
+- `size: 'small'`
   对应 `theme.table.defaultVariants.size = 'sm'`
 
 也就是说，这页可以当成“Table 主题系统可覆盖项总表”来看。
@@ -51,7 +51,7 @@ createVTableGuild({
         },
       },
       defaultVariants: {
-        size: 'sm',
+        size: 'small',
       },
     },
   },

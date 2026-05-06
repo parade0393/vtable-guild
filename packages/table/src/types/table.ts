@@ -54,8 +54,8 @@ export interface Expandable<TRecord extends object = Record<string, any>> {
   onExpandedRowsChange?: (expandedKeys: Key[]) => void
   /** 展开列宽度 */
   columnWidth?: number | string
-  /** 展开列固定位置 */
-  fixed?: 'left' | 'right'
+  /** 展开列固定位置。`true` 等价于 `'left'`（与 ant-design-vue 对齐）。 */
+  fixed?: 'left' | 'right' | true
   /** 默认展开所有行 */
   defaultExpandAllRows?: boolean
   /** 判断行是否可展开 */
@@ -169,10 +169,14 @@ export interface TableProps<TRecord extends object = Record<string, any>> {
   columns: ColumnsType<TRecord>
   /** 行唯一标识 */
   rowKey?: string | ((record: TRecord) => Key)
-  /** 加载状态 */
-  loading?: boolean
-  /** 尺寸：lg(默认) / md / sm */
-  size?: 'sm' | 'md' | 'lg'
+  /**
+   * 加载状态。
+   * - `boolean`：纯开关，使用预设的 loading 图标
+   * - 对象形式 `{ spinning, indicator, tip }`：自定义指示器 / 提示文本（与 ant-design-vue 对齐）
+   */
+  loading?: boolean | { spinning?: boolean; indicator?: VNodeChild; tip?: string }
+  /** 尺寸：与 ant-design-vue 对齐，`large`(默认) / `middle` / `small` */
+  size?: 'small' | 'middle' | 'large'
   /** 显示边框 */
   bordered?: boolean
   /** 斑马纹 */

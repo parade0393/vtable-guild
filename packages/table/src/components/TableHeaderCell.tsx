@@ -17,7 +17,7 @@ import { SELECTION_ALL, SELECTION_INVERT, SELECTION_NONE } from '../constants'
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 import type { HeaderCellMeta } from '../composables/useColumns'
 import { getColumnKey } from '../composables/useSorter'
-import { getCellSpan, omitCellProps } from '../utils/cell'
+import { getCellSpan, getEllipsisConfig, omitCellProps } from '../utils/cell'
 import { ensureValidVNode } from '../utils/vnode'
 import SortButton from './SortButton'
 import FilterIcon from './FilterIcon'
@@ -334,10 +334,11 @@ export default defineComponent({
     })
 
     const shouldApplyHeaderEllipsis = computed(() => {
-      if (!props.cell.isLeaf || !leafColumn.value?.ellipsis) {
-        return false
-      }
-
+      if (!props.cell.isLeaf) return false
+      const lc = leafColumn.value
+      if (!lc) return false
+      const cfg = getEllipsisConfig(lc)
+      if (!cfg.enabled) return false
       return tableContext.headerEllipsis?.value === true
     })
 

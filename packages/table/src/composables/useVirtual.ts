@@ -4,7 +4,7 @@ import type { ComputedRef } from 'vue'
 export interface UseVirtualOptions {
   virtual: () => boolean | undefined
   scrollY: () => number | string | undefined
-  size: () => 'sm' | 'md' | 'lg' | undefined
+  size: () => 'small' | 'middle' | 'large' | undefined
 }
 
 export interface UseVirtualReturn {
@@ -18,9 +18,9 @@ export interface UseVirtualReturn {
 
 /** Row height estimates per table size */
 const SIZE_ITEM_HEIGHT: Record<string, number> = {
-  sm: 39,
-  md: 47,
-  lg: 55,
+  small: 39,
+  middle: 47,
+  large: 55,
 }
 
 export function useVirtual(options: UseVirtualOptions): UseVirtualReturn {
@@ -29,7 +29,7 @@ export function useVirtual(options: UseVirtualOptions): UseVirtualReturn {
   })
 
   const itemHeight = computed(() => {
-    const s = options.size() ?? 'md'
+    const s = options.size() ?? 'middle'
     return SIZE_ITEM_HEIGHT[s] ?? 47
   })
 

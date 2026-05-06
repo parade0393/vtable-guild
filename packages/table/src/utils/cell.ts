@@ -129,3 +129,20 @@ export function resolveBodyCell<TRecord extends Record<string, unknown>>(options
     rowSpan: rowSpan ?? 1,
   }
 }
+
+/**
+ * 解析 column.ellipsis 配置（与 ant-design-vue 对齐）。
+ *
+ * - `true` → 启用省略 + 省略 tooltip
+ * - `{ showTitle: false }` → 启用省略，不显示 tooltip（即不渲染 hover 内容卡片）
+ * - 其它 falsy → 不启用省略
+ */
+export function getEllipsisConfig(column: ColumnType): {
+  enabled: boolean
+  showTitle: boolean
+} {
+  const e = column.ellipsis
+  if (e === true) return { enabled: true, showTitle: true }
+  if (e && typeof e === 'object') return { enabled: true, showTitle: e.showTitle !== false }
+  return { enabled: false, showTitle: false }
+}

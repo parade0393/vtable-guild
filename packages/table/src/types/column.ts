@@ -90,15 +90,22 @@ export interface ColumnType<TRecord extends object = Record<string, any>> {
   dataIndex?: DataIndex
   width?: number | string
   align?: AlignType
-  ellipsis?: boolean
+  /**
+   * 单元格内容超出时省略并显示 tooltip。
+   * - `true`：省略 + 鼠标悬停显示完整内容
+   * - `{ showTitle: false }`：省略但不显示 tooltip（与 ant-design-vue 对齐）
+   */
+  ellipsis?: boolean | { showTitle?: boolean }
   className?: string
   colSpan?: number
   customRender?: (ctx: CustomRenderContext<TRecord>) => VNodeChild | RenderedCell
   customCell?: GetComponentProps<TRecord, TRecord>
   customHeaderCell?: GetComponentProps<ColumnType<TRecord> | ColumnGroupType<TRecord>, TRecord>
 
-  /** 固定列。'left' 固定到左侧，'right' 固定到右侧。 */
-  fixed?: 'left' | 'right'
+  /**
+   * 固定列。`'left'` / `'right'` 固定到对应侧；`true` 等价于 `'left'`（与 ant-design-vue 对齐）。
+   */
+  fixed?: 'left' | 'right' | true
 
   /** 是否可拖拽调整列宽 */
   resizable?: boolean

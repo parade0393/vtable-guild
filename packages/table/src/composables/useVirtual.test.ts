@@ -10,7 +10,7 @@ describe('useVirtual', () => {
     const api = useVirtual({
       virtual: () => virtual.value,
       scrollY: () => scrollY.value,
-      size: () => 'md',
+      size: () => 'middle',
     })
 
     expect(api.enabled.value).toBe(false)
@@ -23,7 +23,7 @@ describe('useVirtual', () => {
   })
 
   it('derives item height from the table size preset', () => {
-    const size = ref<'sm' | 'md' | 'lg' | undefined>('sm')
+    const size = ref<'small' | 'middle' | 'large' | undefined>('small')
 
     const api = useVirtual({
       virtual: () => true,
@@ -33,10 +33,10 @@ describe('useVirtual', () => {
 
     expect(api.itemHeight.value).toBe(39)
 
-    size.value = 'md'
+    size.value = 'middle'
     expect(api.itemHeight.value).toBe(47)
 
-    size.value = 'lg'
+    size.value = 'large'
     expect(api.itemHeight.value).toBe(55)
 
     size.value = undefined
@@ -49,7 +49,7 @@ describe('useVirtual', () => {
     const api = useVirtual({
       virtual: () => true,
       scrollY: () => scrollY.value,
-      size: () => 'md',
+      size: () => 'middle',
     })
 
     expect(api.listHeight.value).toBe(320)

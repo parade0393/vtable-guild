@@ -1035,7 +1035,7 @@ const nestedExpandable: Expandable<NestedParent> = {
 // 23. 紧凑型 / 大小
 // ============================================================
 
-const sizeRef = ref<'sm' | 'md' | 'lg'>('lg')
+const sizeRef = ref<'small' | 'middle' | 'large'>('large')
 
 const sizeColumns: ColumnsType<BasicRecord> = [
   { title: 'Name', dataIndex: 'name' },
