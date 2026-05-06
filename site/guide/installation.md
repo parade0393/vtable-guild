@@ -44,6 +44,43 @@ import { createVTableGuild, VTable } from '@vtable-guild/vtable-guild'
 
 切换预设时不需要额外再导入其他 CSS。
 
+## 与 unlayered CSS reset 共存
+
+::: warning 必读：与 ant-design-vue / normalize.css 等 reset 共存
+本库基于 Tailwind v4，所有 utility 都生成在 `@layer utilities` 内。按 [CSS Cascade Layers 规范](https://developer.mozilla.org/en-US/docs/Web/CSS/@layer)，**unlayered（未进任何层）的普通 CSS 规则会胜过任何 layer 内的规则**，与特异性无关。
+:::
+
+如果项目里同时引入了未分层的全局 reset，例如：
+
+- `ant-design-vue/dist/reset.css`
+- `normalize.css`
+- 任何手写的全局 reset
+
+它们里面诸如 `button { color: inherit }`、`input { ... }` 之类的规则会**压住**本库 Button、Input 等组件依赖的 Tailwind utility。典型症状：筛选弹窗里「重置 / 确定」按钮的文字颜色看上去是 ant-design-vue 的全局 `rgba(0,0,0,0.88)`，而不是预期的主色 / 白色。
+
+### 正确接法
+
+用 `@import` 的 `layer()` 修饰符把 reset 显式收进一个比 `utilities` 更早的 layer，并在最前面**先声明 layer 顺序**：
+
+```css
+@layer antd-reset, theme, base, components, utilities;
+
+@import 'ant-design-vue/dist/reset.css' layer(antd-reset);
+@import 'tailwindcss';
+@import '@vtable-guild/vtable-guild/css';
+```
+
+要点：
+
+- `@layer name1, name2, ...;` 声明必须出现在所有 `@import` 之前，否则顺序无效。
+- `antd-reset` 写在 `utilities` 之前，意味着 utilities 优先级更高，能盖掉 reset 里的元素级规则。
+- **同时把 `main.ts` 里类似 `import 'ant-design-vue/dist/reset.css'` 的 JS 侧副作用 import 删掉**，统一交给 CSS 侧的 `@import ... layer(...)` 管理。JS 侧 import 的 CSS 会绕过 `layer()`，再次回到 unlayered，问题就会复现。
+- 同样的写法适用于 `normalize.css`、`element-plus/dist/index.css` 中未分层的部分等：把它们都按相同模式收进自定义 layer。
+
+### 验证
+
+在浏览器 DevTools Elements 面板选中按钮，查看 Computed → `color`。修复前来源是 reset.css 里的 `button { color: inherit }`；修复后来源应当是 `.text-white { color: var(--color-white) }` 或对应的 `text-[color:var(--color-...)]` 规则。
+
 ## 插件初始化
 
 ```ts

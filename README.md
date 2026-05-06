@@ -67,6 +67,32 @@ export default defineConfig({
 import './main.css'
 ```
 
+> [!IMPORTANT] 与 unlayered CSS reset 共存（ant-design-vue / normalize.css 等）
+>
+> 本库基于 Tailwind v4，所有 utility 都生成在 `@layer utilities` 内。按 [CSS Cascade Layers 规范](https://developer.mozilla.org/en-US/docs/Web/CSS/@layer)，**unlayered（未进任何层）的普通 CSS 规则会胜过任何 layer 内的规则**，与特异性无关。
+>
+> 因此如果你的项目同时引入了未分层的 CSS reset，例如：
+>
+> - `ant-design-vue/dist/reset.css`
+> - `normalize.css`
+> - 任何手写的全局 reset
+>
+> 它们里面诸如 `button { color: inherit }`、`input { ... }` 之类的规则会**压住**本库 Button、Input 等组件依赖的 Tailwind utility（典型症状：筛选弹窗里的「重置 / 确定」按钮文字颜色丢失）。
+>
+> **正确接法**：用 `@import` 的 `layer()` 修饰符把 reset 显式收进一个比 `utilities` 更早的 layer，并在最前面声明 layer 顺序：
+>
+> ```css
+> @layer antd-reset, theme, base, components, utilities;
+>
+> @import 'ant-design-vue/dist/reset.css' layer(antd-reset);
+> @import 'tailwindcss';
+> @import '@vtable-guild/vtable-guild/css';
+> ```
+>
+> 同时把 `main.ts` 里 `import 'ant-design-vue/dist/reset.css'` 这种 JS 侧的副作用 import 去掉，统一交给 CSS 侧的 `@import ... layer(...)` 管理（JS import 会绕过 layer 修饰符）。
+>
+> playground 没遇到这个问题，是因为它没引 `ant-design-vue/dist/reset.css`；但生产项目通常都需要这份 reset，请按上面写法接入。
+
 ## Quick Start
 
 ```ts
