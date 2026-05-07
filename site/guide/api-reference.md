@@ -27,16 +27,16 @@
 
 ### 基础字段
 
-| 字段      | 类型                          | 说明                                             |
-| --------- | ----------------------------- | ------------------------------------------------ |
-| key       | string \| number              | 列唯一标识，建议显式传入。                       |
-| title     | VNodeChild \| 函数            | 列标题，可以是字符串、VNode 或渲染函数。         |
-| dataIndex | string \| string[]            | 数据字段路径，如 'name' 或 ['address', 'city']。 |
-| width     | number \| string              | 列宽度，支持数字（px）或字符串（如 '20%'）。     |
-| align     | 'left' \| 'center' \| 'right' | 列对齐方式。                                     |
-| ellipsis  | boolean                       | 是否自动省略过长内容；默认只影响 body cell。     |
-| className | string                        | 列单元格额外 class。                             |
-| colSpan   | number                        | 表头单元格跨列数。                               |
+| 字段      | 类型                               | 说明                                                                                                |
+| --------- | ---------------------------------- | --------------------------------------------------------------------------------------------------- |
+| key       | string \| number                   | 列唯一标识，建议显式传入。                                                                          |
+| title     | VNodeChild \| 函数                 | 列标题，可以是字符串、VNode 或渲染函数。                                                            |
+| dataIndex | string \| string[]                 | 数据字段路径，如 'name' 或 ['address', 'city']。                                                    |
+| width     | number \| string                   | 列宽度，支持数字（px）或字符串（如 '20%'）。                                                        |
+| align     | 'left' \| 'center' \| 'right'      | 列对齐方式。                                                                                        |
+| ellipsis  | boolean \| { showTitle?: boolean } | 是否自动省略过长内容；`showTitle: false` 时仍省略但不再弹 hover tooltip（与 ant-design-vue 对齐）。 |
+| className | string                             | 列单元格额外 class。                                                                                |
+| colSpan   | number                             | 表头单元格跨列数。                                                                                  |
 
 ### 自定义渲染
 
@@ -83,12 +83,12 @@ customRender: ({ text, index }) =>
 
 ### 固定列与调整
 
-| 字段      | 类型              | 说明                            |
-| --------- | ----------------- | ------------------------------- |
-| fixed     | 'left' \| 'right' | 固定列位置。                    |
-| resizable | boolean           | 是否可拖拽调整列宽。            |
-| minWidth  | number            | 拖拽调整时的最小列宽，默认 50。 |
-| maxWidth  | number            | 拖拽调整时的最大列宽。          |
+| 字段      | 类型                      | 说明                                                         |
+| --------- | ------------------------- | ------------------------------------------------------------ |
+| fixed     | 'left' \| 'right' \| true | 固定列位置；`true` 等同 `'left'`（与 ant-design-vue 对齐）。 |
+| resizable | boolean                   | 是否可拖拽调整列宽。                                         |
+| minWidth  | number                    | 拖拽调整时的最小列宽，默认 50。                              |
+| maxWidth  | number                    | 拖拽调整时的最大列宽。                                       |
 
 ### 排序
 
@@ -120,18 +120,19 @@ customRender: ({ text, index }) =>
 
 ### 视觉与布局
 
-| Prop           | 说明                                                            |
-| -------------- | --------------------------------------------------------------- |
-| size           | 表格尺寸，可选 sm、md、lg。                                     |
-| bordered       | 是否显示边框。                                                  |
-| striped        | 是否开启斑马纹。                                                |
-| hoverable      | 是否开启行 hover 高亮。                                         |
-| tableLayout    | 表格布局模式。                                                  |
-| showHeader     | 是否显示表头。                                                  |
-| headerEllipsis | 是否让开启了 `column.ellipsis` 的列表头也单行省略；默认 false。 |
-| scroll         | 横向和纵向滚动配置；提供 y 时会形成固定表头滚动区。             |
-| sticky         | 粘性表头或滚动条配置。                                          |
-| virtual        | 是否启用虚拟滚动，必须配合 scroll.y。                           |
+| Prop           | 说明                                                                                    |
+| -------------- | --------------------------------------------------------------------------------------- |
+| size           | 表格尺寸，可选 `small` / `middle` / `large`（默认 `large`，与 ant-design-vue 对齐）。   |
+| loading        | 加载态。`boolean` 或 `{ spinning?, indicator?, tip? }` 对象（与 ant-design-vue 对齐）。 |
+| bordered       | 是否显示边框。                                                                          |
+| striped        | 是否开启斑马纹。                                                                        |
+| hoverable      | 是否开启行 hover 高亮。                                                                 |
+| tableLayout    | 表格布局模式。                                                                          |
+| showHeader     | 是否显示表头。                                                                          |
+| headerEllipsis | 是否让开启了 `column.ellipsis` 的列表头也单行省略；默认 false。                         |
+| scroll         | 横向和纵向滚动配置；提供 y 时会形成固定表头滚动区。                                     |
+| sticky         | 粘性表头或滚动条配置。                                                                  |
+| virtual        | 是否启用虚拟滚动，必须配合 scroll.y。                                                   |
 
 ### 主题与语言
 
@@ -176,7 +177,6 @@ customRender: ({ text, index }) =>
 
 - change 事件当前不包含 pagination 参数，签名为 (filters, sorter, extra)。
 - resizeColumn 事件参数顺序为 (column, width)。
-- size 取值为 sm / md / lg，而不是 small / middle / large。
 
 extra.action 当前会返回 sort、filter 或 select，便于业务区分触发来源。
 
@@ -211,15 +211,15 @@ extra.action 当前会返回 sort、filter 或 select，便于业务区分触发
 
 ## expandable 常查字段
 
-| 字段              | 说明                     |
-| ----------------- | ------------------------ |
-| expandedRowRender | 展开内容渲染函数。       |
-| expandRowByClick  | 点击整行展开。           |
-| expandIcon        | 自定义展开图标。         |
-| rowExpandable     | 控制某一行是否允许展开。 |
-| columnWidth       | 展开列宽度。             |
-| fixed             | 展开列固定位置。         |
-| showExpandColumn  | 是否显示展开列。         |
+| 字段              | 说明                                                                         |
+| ----------------- | ---------------------------------------------------------------------------- |
+| expandedRowRender | 展开内容渲染函数。                                                           |
+| expandRowByClick  | 点击整行展开。                                                               |
+| expandIcon        | 自定义展开图标。                                                             |
+| rowExpandable     | 控制某一行是否允许展开。                                                     |
+| columnWidth       | 展开列宽度。                                                                 |
+| fixed             | 展开列固定位置；接受 `'left'` / `'right'` / `true`（`true` 等同 `'left'`）。 |
+| showExpandColumn  | 是否显示展开列。                                                             |
 
 ## VTableSummary
 

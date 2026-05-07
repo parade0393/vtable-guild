@@ -3,7 +3,7 @@
 固定列适合字段很多、横向滚动明显的宽表。它依赖两部分同时成立：
 
 - 表格提供 `scroll.x`，形成横向滚动区
-- 需要固定的列声明 `fixed: 'left'` 或 `fixed: 'right'`
+- 需要固定的列声明 `fixed: 'left'` 或 `fixed: 'right'`；`fixed: true` 是 `fixed: 'left'` 的简写（与 ant-design-vue 对齐）
 
 ## 基础示例
 

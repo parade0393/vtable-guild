@@ -47,17 +47,17 @@
 
 ## 排版与间距变量
 
-| 变量名                               | 作用                       |
-| ------------------------------------ | -------------------------- |
-| `--vtg-table-font-family`            | 表格字体族                 |
-| `--vtg-table-font-size`              | 表格字号                   |
-| `--vtg-table-line-height`            | 表格行高                   |
-| `--vtg-table-cell-padding-inline-lg` | `size='lg'` 的横向 padding |
-| `--vtg-table-cell-padding-block-lg`  | `size='lg'` 的纵向 padding |
-| `--vtg-table-cell-padding-inline-md` | `size='md'` 的横向 padding |
-| `--vtg-table-cell-padding-block-md`  | `size='md'` 的纵向 padding |
-| `--vtg-table-cell-padding-inline-sm` | `size='sm'` 的横向 padding |
-| `--vtg-table-cell-padding-block-sm`  | `size='sm'` 的纵向 padding |
+| 变量名                               | 作用                           |
+| ------------------------------------ | ------------------------------ |
+| `--vtg-table-font-family`            | 表格字体族                     |
+| `--vtg-table-font-size`              | 表格字号                       |
+| `--vtg-table-line-height`            | 表格行高                       |
+| `--vtg-table-cell-padding-inline-lg` | `size='large'` 的横向 padding  |
+| `--vtg-table-cell-padding-block-lg`  | `size='large'` 的纵向 padding  |
+| `--vtg-table-cell-padding-inline-md` | `size='middle'` 的横向 padding |
+| `--vtg-table-cell-padding-block-md`  | `size='middle'` 的纵向 padding |
+| `--vtg-table-cell-padding-inline-sm` | `size='small'` 的横向 padding  |
+| `--vtg-table-cell-padding-block-sm`  | `size='small'` 的纵向 padding  |
 
 ## 空态与加载变量
 

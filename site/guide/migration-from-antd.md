@@ -32,7 +32,13 @@ vtable-guild 的设计方向是兼容高频表格使用方式，而不是逐项�
 - 当前没有内置 pagination。
 - change 事件签名为 (filters, sorter, extra)，不包含 ant-design-vue 里的 pagination 参数。
 - resizeColumn 事件参数顺序为 (column, width)，而 ant-design-vue 文档里的顺序是 (width, column)。
-- size 取值为 sm / md / lg，而不是 small / middle / large。
+
+下列以前需要调整、现在已与 ant-design-vue 完全对齐，可直接迁移：
+
+- `column.fixed: true` 等同 `'left'`
+- `loading` 接受 `boolean` 或 `{ spinning?, indicator?, tip? }` 对象
+- `column.ellipsis` 接受 `boolean` 或 `{ showTitle?: boolean }`
+- `size` 三档命名为 `small` / `middle` / `large`
 
 ## 常见映射
 

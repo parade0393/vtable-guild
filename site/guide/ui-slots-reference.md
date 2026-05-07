@@ -29,7 +29,7 @@
 - `hoverable.true.td`
   对应 `theme.table.variants.hoverable.true.td`
 - `size: 'small'`
-  对应 `theme.table.defaultVariants.size = 'sm'`
+  对应 `theme.table.defaultVariants.size = 'small'`
 
 也就是说，这页可以当成“Table 主题系统可覆盖项总表”来看。
 
@@ -275,13 +275,13 @@ app.use(
 
 除了直接的 slot 覆盖，主题还通过 variant 控制条件样式。它们可以通过 props 控制，也可以通过全局 `theme.table.variants` 和 `theme.table.defaultVariants` 调整。
 
-| Variant     | 值                 | 默认值  | 影响的 Slot                                                   |
-| ----------- | ------------------ | ------- | ------------------------------------------------------------- |
-| `size`      | `lg` / `md` / `sm` | `lg`    | `th`、`td`、`title`、`footer`、`summaryCell` 的 padding       |
-| `bordered`  | `true` / `false`   | `false` | `root`、`th`、`td`、`tbody`、`title`、`footer`、`summaryCell` |
-| `striped`   | `true` / `false`   | `false` | `td`，偶数行背景                                              |
-| `hoverable` | `true` / `false`   | `true`  | `td`，行 hover 背景                                           |
-| `loading`   | `true` / `false`   | 无      | `table`，半透明和禁交互状态                                   |
+| Variant     | 值                           | 默认值  | 影响的 Slot                                                   |
+| ----------- | ---------------------------- | ------- | ------------------------------------------------------------- |
+| `size`      | `small` / `middle` / `large` | `large` | `th`、`td`、`title`、`footer`、`summaryCell` 的 padding       |
+| `bordered`  | `true` / `false`             | `false` | `root`、`th`、`td`、`tbody`、`title`、`footer`、`summaryCell` |
+| `striped`   | `true` / `false`             | `false` | `td`，偶数行背景                                              |
+| `hoverable` | `true` / `false`             | `true`  | `td`，行 hover 背景                                           |
+| `loading`   | `true` / `false`             | 无      | `table`，半透明和禁交互状态                                   |
 
 ## 进一步阅读
 
