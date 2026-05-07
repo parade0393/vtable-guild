@@ -250,7 +250,7 @@ function handleElementSelectionChange(rows: TreeRow[]) {
             <VTable
               :data-source="treeData as any"
               :columns="columns as any"
-              size="md"
+              size="middle"
               row-key="key"
             />
           </article>
@@ -311,7 +311,7 @@ function handleElementSelectionChange(rows: TreeRow[]) {
               :data-source="treeData as any"
               :columns="columns as any"
               default-expand-all-rows
-              size="md"
+              size="middle"
               row-key="key"
             />
           </article>
@@ -374,7 +374,7 @@ function handleElementSelectionChange(rows: TreeRow[]) {
               :data-source="treeData as any"
               :columns="columns as any"
               :row-selection="rowSelection as any"
-              size="md"
+              size="middle"
               row-key="key"
             />
           </article>
@@ -433,7 +433,7 @@ function handleElementSelectionChange(rows: TreeRow[]) {
               :data-source="treeData as any"
               :columns="columns as any"
               :indent-size="30"
-              size="md"
+              size="middle"
               row-key="key"
             />
           </article>
@@ -492,7 +492,7 @@ function handleElementSelectionChange(rows: TreeRow[]) {
               :data-source="treeData as any"
               :columns="columns as any"
               :row-selection="cascadeRowSelection as any"
-              size="md"
+              size="middle"
               row-key="key"
             />
           </article>

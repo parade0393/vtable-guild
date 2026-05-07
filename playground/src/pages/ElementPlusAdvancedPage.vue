@@ -399,7 +399,7 @@ function elementCompositeSpanMethod({
             </div>
             <p>真实验证目标</p>
           </div>
-          <VTable :data-source="dataSource" :columns="fixedColumns" size="md" row-key="key" />
+          <VTable :data-source="dataSource" :columns="fixedColumns" size="middle" row-key="key" />
         </article>
       </div>
     </section>
@@ -443,7 +443,7 @@ function elementCompositeSpanMethod({
             :data-source="dataSource"
             :columns="scrollYColumns"
             :scroll="{ y: 200 }"
-            size="md"
+            size="middle"
             row-key="key"
           />
         </article>
@@ -502,7 +502,7 @@ function elementCompositeSpanMethod({
             :data-source="dataSource"
             :columns="expandColumns"
             :expandable="controlledExpandable as any"
-            size="md"
+            size="middle"
             row-key="key"
           />
         </article>
@@ -552,7 +552,7 @@ function elementCompositeSpanMethod({
             :columns="summaryColumns"
             :title="() => 'Table Title'"
             :footer="() => 'Table Footer'"
-            size="md"
+            size="middle"
             row-key="key"
           />
         </article>
@@ -580,7 +580,7 @@ function elementCompositeSpanMethod({
           <VTable
             :data-source="dataSource.slice(0, 4)"
             :columns="resizeColumns"
-            size="md"
+            size="middle"
             row-key="key"
             @resize-column="(col: any, w: number) => console.log('resize', col.title, w)"
           />
@@ -634,7 +634,7 @@ function elementCompositeSpanMethod({
             :data-source="dataSource.slice(0, 4)"
             :columns="groupedColumns"
             :scroll="{ x: 960 }"
-            size="md"
+            size="middle"
             row-key="key"
           />
         </article>
@@ -681,7 +681,12 @@ function elementCompositeSpanMethod({
             </div>
             <p>customCell + customRender</p>
           </div>
-          <VTable :data-source="mergeDataSource" :columns="mergedColumns" size="md" row-key="key" />
+          <VTable
+            :data-source="mergeDataSource"
+            :columns="mergedColumns"
+            size="middle"
+            row-key="key"
+          />
         </article>
       </div>
     </section>
@@ -736,7 +741,7 @@ function elementCompositeSpanMethod({
             :data-source="mergeDataSource"
             :columns="compositeColumns"
             :row-selection="compositeRowSelection as any"
-            size="md"
+            size="middle"
             row-key="key"
           />
         </article>
@@ -783,7 +788,7 @@ function elementCompositeSpanMethod({
             :data-source="dataSource"
             :columns="expandColumns"
             :expandable="hiddenExpandExpandable as any"
-            size="md"
+            size="middle"
             row-key="key"
           />
         </article>
@@ -832,7 +837,7 @@ function elementCompositeSpanMethod({
             :row-class-name="apiRowClassName"
             :custom-row="apiCustomRow"
             :custom-header-row="apiCustomHeaderRow"
-            size="md"
+            size="middle"
             row-key="key"
           >
             <template #headerCell="{ title, column }">

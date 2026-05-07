@@ -421,7 +421,7 @@ const sentinelRowSelection = computed<RowSelection<DemoRow>>(() => ({
             <div class="play-panel__head">
               <h3>VTable <span class="play-badge play-badge--accent">guild</span></h3>
             </div>
-            <VTable :data-source="dataSource" :columns="fixedColumns" size="md" row-key="key" />
+            <VTable :data-source="dataSource" :columns="fixedColumns" size="middle" row-key="key" />
           </article>
         </div>
       </section>
@@ -457,7 +457,7 @@ const sentinelRowSelection = computed<RowSelection<DemoRow>>(() => ({
               :data-source="dataSource"
               :columns="scrollYColumns"
               :scroll="{ y: 200 }"
-              size="md"
+              size="middle"
               row-key="key"
             />
           </article>
@@ -501,7 +501,7 @@ const sentinelRowSelection = computed<RowSelection<DemoRow>>(() => ({
               :data-source="dataSource"
               :columns="expandColumns"
               :expandable="controlledExpandable as any"
-              size="md"
+              size="middle"
               row-key="key"
             />
           </article>
@@ -544,7 +544,7 @@ const sentinelRowSelection = computed<RowSelection<DemoRow>>(() => ({
               :footer="() => 'Table Footer'"
               :pagination="false"
               bordered
-              size="md"
+              size="middle"
               row-key="key"
             />
           </article>
@@ -569,7 +569,7 @@ const sentinelRowSelection = computed<RowSelection<DemoRow>>(() => ({
             <VTable
               :data-source="dataSource.slice(0, 4)"
               :columns="resizeColumns"
-              size="md"
+              size="middle"
               row-key="key"
               @resize-column="(col: any, w: number) => console.log('resize', col.title, w)"
             />
@@ -610,7 +610,7 @@ const sentinelRowSelection = computed<RowSelection<DemoRow>>(() => ({
               :data-source="dataSource.slice(0, 4)"
               :columns="groupedColumns"
               :scroll="{ x: 960 }"
-              size="md"
+              size="middle"
               row-key="key"
             />
           </article>
@@ -648,7 +648,7 @@ const sentinelRowSelection = computed<RowSelection<DemoRow>>(() => ({
             <VTable
               :data-source="mergeDataSource"
               :columns="mergedColumns"
-              size="md"
+              size="middle"
               row-key="key"
             />
           </article>
@@ -689,7 +689,7 @@ const sentinelRowSelection = computed<RowSelection<DemoRow>>(() => ({
               :data-source="mergeDataSource"
               :columns="compositeColumns"
               :row-selection="compositeRowSelection as any"
-              size="md"
+              size="middle"
               row-key="key"
             />
           </article>
@@ -736,7 +736,7 @@ const sentinelRowSelection = computed<RowSelection<DemoRow>>(() => ({
               :data-source="dataSource"
               :columns="expandColumns"
               :expandable="hiddenExpandExpandable as any"
-              size="md"
+              size="middle"
               row-key="key"
             />
           </article>
@@ -785,7 +785,7 @@ const sentinelRowSelection = computed<RowSelection<DemoRow>>(() => ({
               :row-class-name="apiRowClassName"
               :custom-row="apiCustomRow"
               :custom-header-row="apiCustomHeaderRow"
-              size="md"
+              size="middle"
               row-key="key"
             >
               <template #headerCell="{ title, column }">

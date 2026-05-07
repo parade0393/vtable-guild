@@ -98,7 +98,7 @@ const displayData = computed(() => bigData.value.slice(0, rowCount.value))
         :columns="basicColumns"
         :scroll="{ y: 400 }"
         :virtual="true"
-        size="md"
+        size="middle"
         row-key="key"
       />
     </section>
@@ -119,7 +119,7 @@ const displayData = computed(() => bigData.value.slice(0, rowCount.value))
         :columns="fixedColumns"
         :scroll="{ y: 400 }"
         :virtual="true"
-        size="md"
+        size="middle"
         row-key="key"
       />
     </section>
@@ -137,7 +137,7 @@ const displayData = computed(() => bigData.value.slice(0, rowCount.value))
         :data-source="bigData.slice(0, 50)"
         :columns="basicColumns"
         :scroll="{ y: 300 }"
-        size="md"
+        size="middle"
         row-key="key"
       />
     </section>

@@ -1596,9 +1596,9 @@ function cancelRow() {
       <header class="play-case__header">23. 紧凑型 / 大小</header>
       <div class="play-panel">
         <a-radio-group v-model:value="sizeRef" style="margin-bottom: 16px">
-          <a-radio value="lg">Large</a-radio>
-          <a-radio value="md">Middle</a-radio>
-          <a-radio value="sm">Small</a-radio>
+          <a-radio value="large">Large</a-radio>
+          <a-radio value="middle">Middle</a-radio>
+          <a-radio value="small">Small</a-radio>
         </a-radio-group>
         <VTable :columns="sizeColumns" :data-source="sizeData" :size="sizeRef" bordered>
           <template #title>Header</template>

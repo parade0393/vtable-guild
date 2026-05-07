@@ -16,7 +16,7 @@ import {
 
 const vLoading = ElLoading.directive
 
-const demoSize = ref<'sm' | 'md' | 'lg'>('md')
+const demoSize = ref<'small' | 'middle' | 'large'>('middle')
 const hoverable = ref(true)
 
 const baseColumns: ColumnsType<DemoRow> = [
@@ -28,10 +28,10 @@ const baseColumns: ColumnsType<DemoRow> = [
 
 const compactRows = computed(() => dataSource.slice(0, 4))
 
-const elSizeMap: Record<string, '' | 'small' | 'large'> = {
-  sm: 'small',
-  md: '',
-  lg: 'large',
+const elSizeMap: Record<'small' | 'middle' | 'large', '' | 'small' | 'large'> = {
+  small: 'small',
+  middle: '',
+  large: 'large',
 }
 
 const parentContext = inject<VTableGuildContext | null>(VTABLE_GUILD_INJECTION_KEY, null)
@@ -320,12 +320,12 @@ provide(
           <p class="play-case__index">06</p>
           <h2>Size</h2>
         </div>
-        <p class="play-case__desc">验证点：sm / md / lg 的行高、字号和操作密度。</p>
+        <p class="play-case__desc">验证点：small / middle / large 的行高、字号和操作密度。</p>
       </header>
       <div class="play-toolbar">
-        <button type="button" class="play-ghost-button" @click="demoSize = 'sm'">sm</button>
-        <button type="button" class="play-ghost-button" @click="demoSize = 'md'">md</button>
-        <button type="button" class="play-ghost-button" @click="demoSize = 'lg'">lg</button>
+        <button type="button" class="play-ghost-button" @click="demoSize = 'small'">small</button>
+        <button type="button" class="play-ghost-button" @click="demoSize = 'middle'">middle</button>
+        <button type="button" class="play-ghost-button" @click="demoSize = 'large'">large</button>
       </div>
       <div class="play-compare-grid">
         <article class="play-panel">
