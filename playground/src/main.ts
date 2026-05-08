@@ -17,13 +17,6 @@ const vtg = createVTableGuild({
       slots: {
         root: '',
       },
-      variants: {
-        hoverable: {
-          true: {
-            td: 'group-hover/row:bg-blue-50',
-          },
-        },
-      },
     },
     button: {},
   },

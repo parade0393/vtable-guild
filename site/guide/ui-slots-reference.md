@@ -196,12 +196,11 @@ app.use(
 
 ### 行选中
 
-| Slot                 | 说明                                    |
-| -------------------- | --------------------------------------- |
-| `tdSelected`         | 选中行的 `<td>` 背景。                  |
-| `tdSelectedHover`    | 选中行静态背景叠加层（非 hover 状态）。 |
-| `tdRowHover`         | hover 时普通行的 `<td>` 背景。          |
-| `tdRowSelectedHover` | hover 时选中行的 `<td>` 背景叠加层。    |
+| Slot                 | 说明                                 |
+| -------------------- | ------------------------------------ |
+| `tdSelected`         | 选中行的 `<td>` 背景。               |
+| `tdRowHover`         | hover 时普通行的 `<td>` 背景。       |
+| `tdRowSelectedHover` | hover 时选中行的 `<td>` 背景叠加层。 |
 
 ### 行选择下拉
 

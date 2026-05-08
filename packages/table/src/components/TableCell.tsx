@@ -135,10 +135,7 @@ export default defineComponent({
       const hovering = isHovered.value && tableContext.hoverable?.value
       const selectedClasses =
         isRowSelected.value && subThemeSlots
-          ? cn(
-              subThemeSlots.tdSelected,
-              hovering ? subThemeSlots.tdRowSelectedHover : subThemeSlots.tdSelectedHover,
-            )
+          ? cn(subThemeSlots.tdSelected, hovering ? subThemeSlots.tdRowSelectedHover : '')
           : ''
       const hoverClass =
         hovering && subThemeSlots && !isRowSelected.value ? subThemeSlots.tdRowHover : ''
@@ -284,9 +281,7 @@ export default defineComponent({
           isRowSelected.value && tableContext.subThemeSlots?.value
             ? cn(
                 tableContext.subThemeSlots.value.tdSelected,
-                hovering
-                  ? tableContext.subThemeSlots.value.tdRowSelectedHover
-                  : tableContext.subThemeSlots.value.tdSelectedHover,
+                hovering ? tableContext.subThemeSlots.value.tdRowSelectedHover : '',
               )
             : hovering && tableContext.subThemeSlots?.value
               ? tableContext.subThemeSlots.value.tdRowHover
@@ -315,10 +310,21 @@ export default defineComponent({
         const expanded = key !== undefined && (tableContext.isExpanded?.(key) ?? false)
         const canExpand = tableContext.isRowExpandable?.(props.record) ?? false
 
+        const subThemeSlots = tableContext.subThemeSlots?.value
+        const hovering = isHovered.value && tableContext.hoverable?.value
+        const expandSelectedClass =
+          isRowSelected.value && subThemeSlots
+            ? cn(subThemeSlots.tdSelected, hovering ? subThemeSlots.tdRowSelectedHover : '')
+            : ''
+        const expandHoverClass =
+          hovering && subThemeSlots && !isRowSelected.value ? subThemeSlots.tdRowHover : ''
+
         const expandCellClass = cn(
           props.tdClass,
           'text-center',
           props.column.className,
+          expandSelectedClass,
+          expandHoverClass,
           fixedClass.value,
         )
 

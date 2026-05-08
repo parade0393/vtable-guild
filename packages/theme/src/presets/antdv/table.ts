@@ -146,7 +146,6 @@ export const antdvTableTheme = {
 
     // ---- 行选中背景 ----
     tdSelected: 'bg-[color:var(--vtg-table-row-selected-bg)]',
-    tdSelectedHover: 'bg-[color:var(--vtg-table-row-selected-hover-bg)]',
     tdRowHover: 'bg-[color:var(--vtg-table-row-hover-bg)]',
     tdRowSelectedHover: 'bg-[color:var(--vtg-table-row-selected-hover-bg)]',
 

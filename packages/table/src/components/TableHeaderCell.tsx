@@ -360,12 +360,14 @@ export default defineComponent({
     const cellClass = computed(() => {
       const alignClass = props.cell.column.align ? TABLE_ALIGN_CLASSES[props.cell.column.align] : ''
       const sortableClass = isSortable.value ? tableContext.subThemeSlots?.value.thSortable : ''
+      const isExpandHeader = leafColumn.value?.key === '__vtg_expand__'
       return cn(
         props.thClass,
         alignClass,
         sortableClass,
         groupedHeaderClass.value,
         props.cell.column.className,
+        isExpandHeader ? 'before:hidden' : '',
         headerCellProps.value?.class,
         headerCellProps.value?.className,
         fixedClass.value,

@@ -44,3 +44,6 @@ site/.vitepress/dist
 
 # turbo
 .turbo
+
+# Generated CSS copy from @vtable-guild/theme
+packages/vtable-guild/css/

@@ -54,7 +54,6 @@ export interface SubThemeSlots {
   emptyText: string
   loadingSpinner: string
   tdSelected: string
-  tdSelectedHover: string
   selectionDropdown: string
   selectionDropdownItem: string
   selectionExtra: string

@@ -74,15 +74,13 @@ const controlledExpandable = computed<Expandable<DemoRow>>(() => ({
     ),
 }))
 
-const antExpandable = computed(() => ({
-  expandedRowRender: (record: DemoRow) => expandableContent(record),
-  expandedRowKeys: controlledExpandedKeys.value,
-  expandRowByClick: true,
-  rowExpandable: (record: DemoRow) => record.status !== 'Draft',
-  onExpandedRowsChange: (keys: Key[]) => {
-    controlledExpandedKeys.value = [...keys]
-  },
-}))
+const antExpandedRowRender = (record: DemoRow) => expandableContent(record)
+
+const antRowExpandable = (record: DemoRow) => record.status !== 'Draft'
+
+function handleAntExpandedRowsChange(keys: Key[]) {
+  controlledExpandedKeys.value = [...keys]
+}
 
 const hiddenExpandExpandable = computed<Expandable<DemoRow>>(() => ({
   expandedRowRender: (record) => expandableContent(record),
@@ -363,6 +361,15 @@ const sentinelColumns: ColumnsType<DemoRow> = [
   { title: 'Address', dataIndex: 'address', key: 'address' },
 ]
 
+const antSentinelColumns = [
+  { title: 'Name', dataIndex: 'name', key: 'name', width: 170 },
+  ATable.EXPAND_COLUMN,
+  { title: 'Age', dataIndex: 'age', key: 'age', width: 90, align: 'right' },
+  ATable.SELECTION_COLUMN,
+  { title: 'Status', dataIndex: 'status', key: 'status', width: 130 },
+  { title: 'Address', dataIndex: 'address', key: 'address' },
+]
+
 const sentinelExpandable: Expandable<DemoRow> = {
   expandedRowRender: (record) =>
     h(
@@ -372,7 +379,22 @@ const sentinelExpandable: Expandable<DemoRow> = {
     ),
 }
 
+const antSentinelExpandedRowRender = (record: DemoRow) =>
+  h(
+    'p',
+    { class: 'm-0 text-[12px] text-[color:var(--color-text-secondary)]' },
+    `扩展信息：${record.name} · ${record.address}`,
+  )
+
 const sentinelSelectedKeys = ref<Key[]>([])
+
+const antSentinelRowSelection = computed(() => ({
+  selectedRowKeys: sentinelSelectedKeys.value,
+  onChange: (keys: Key[]) => {
+    sentinelSelectedKeys.value = [...keys]
+  },
+}))
+
 const sentinelRowSelection = computed<RowSelection<DemoRow>>(() => ({
   selectedRowKeys: sentinelSelectedKeys.value,
   onChange: (keys: Key[]) => {
@@ -487,10 +509,14 @@ const sentinelRowSelection = computed<RowSelection<DemoRow>>(() => ({
             <ATable
               :data-source="dataSource"
               :columns="expandColumns as any"
-              :expandable="antExpandable"
+              :expanded-row-render="antExpandedRowRender"
+              :expanded-row-keys="controlledExpandedKeys"
+              :expand-row-by-click="true"
+              :row-expandable="antRowExpandable"
               :pagination="false"
               size="middle"
               row-key="key"
+              @expanded-rows-change="handleAntExpandedRowsChange"
             />
           </article>
           <article class="play-panel play-panel--accent">
@@ -828,28 +854,47 @@ const sentinelRowSelection = computed<RowSelection<DemoRow>>(() => ({
         </div>
       </section>
       <section class="play-case">
-        <header class="play-case-header">
-          <h3>占位常量控制选择/展开列位置</h3>
-          <p>
-            把 <code>VTable.EXPAND_COLUMN</code> 与
-            <code>VTable.SELECTION_COLUMN</code>（也可直接命名导入）插入
-            <code>columns</code>
-            数组的任意位置，对应的展开图标列、复选框选择列就会出现在该位置而非默认的最左侧。
-            列顺序：<code>Name → 展开 → Age → ☑ → Status → Address</code>。
+        <header class="play-case__header">
+          <div>
+            <p class="play-case__index">Case 11</p>
+            <h2>占位常量控制选择 / 展开列位置</h2>
+          </div>
+          <p class="play-case__desc">
+            对比 ant-design-vue 与 VTable 的 EXPAND_COLUMN / SELECTION_COLUMN：把占位常量插入
+            columns 数组任意位置，列顺序应保持 Name → 展开 → Age → ☑ → Status → Address。
           </p>
         </header>
-        <div class="play-case-body single">
-          <article class="play-card">
-            <header class="play-card-header">
-              <span class="play-tag vtg">vtable-guild</span>
-              <span class="play-card-title">EXPAND_COLUMN / SELECTION_COLUMN</span>
-            </header>
+        <p class="play-inline-note">
+          sentinelSelectedKeys = [{{ sentinelSelectedKeys.join(', ') || 'none' }}]
+        </p>
+        <div class="play-compare-grid">
+          <article class="play-panel">
+            <div class="play-panel__head">
+              <h3>ant-design-vue <span class="play-badge">reference</span></h3>
+              <p>Table.EXPAND_COLUMN / Table.SELECTION_COLUMN</p>
+            </div>
+            <ATable
+              row-key="key"
+              :columns="antSentinelColumns as any"
+              :data-source="dataSource"
+              :expanded-row-render="antSentinelExpandedRowRender"
+              :row-selection="antSentinelRowSelection"
+              :pagination="false"
+              size="middle"
+            />
+          </article>
+          <article class="play-panel play-panel--accent">
+            <div class="play-panel__head">
+              <h3>VTable <span class="play-badge play-badge--accent">guild</span></h3>
+              <p>EXPAND_COLUMN / SELECTION_COLUMN</p>
+            </div>
             <VTable
               row-key="key"
               :columns="sentinelColumns"
               :data-source="dataSource"
               :expandable="sentinelExpandable"
               :row-selection="sentinelRowSelection"
+              size="middle"
             />
           </article>
         </div>

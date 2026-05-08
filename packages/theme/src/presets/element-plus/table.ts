@@ -132,7 +132,6 @@ export const elementPlusTableTheme = {
 
     // ---- 行选中背景 ----
     tdSelected: '',
-    tdSelectedHover: '',
     tdRowHover: 'bg-[color:var(--vtg-table-row-hover-bg)]',
     tdRowSelectedHover: '',
 

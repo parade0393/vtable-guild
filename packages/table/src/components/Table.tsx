@@ -826,7 +826,6 @@ export default defineComponent({
       emptyText: themeSlots.emptyText(),
       loadingSpinner: themeSlots.loadingSpinner(),
       tdSelected: themeSlots.tdSelected(),
-      tdSelectedHover: themeSlots.tdSelectedHover(),
       selectionDropdown: themeSlots.selectionDropdown(),
       selectionDropdownItem: themeSlots.selectionDropdownItem(),
       selectionExtra: themeSlots.selectionExtra(),

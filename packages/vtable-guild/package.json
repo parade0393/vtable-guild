@@ -37,10 +37,12 @@
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "vite build && node ./scripts/copy-theme-css.mjs && node ./scripts/append-augmentation.mjs",
+    "build": "vite build && pnpm copy-css && node ./scripts/append-augmentation.mjs",
+    "copy-css": "node ./scripts/copy-theme-css.mjs",
     "dev": "vite build --watch",
     "type-check": "vue-tsc --project ./tsconfig.build.json --noEmit",
     "test": "vitest run --config ../../vitest.config.ts --project vtable-guild --passWithNoTests",
+    "prepare": "node ./scripts/copy-theme-css.mjs",
     "prepublishOnly": "node -e \"if(!require('fs').existsSync('dist'))throw new Error('dist not found, run pnpm build first')\""
   },
   "peerDependencies": {

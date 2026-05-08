@@ -41,6 +41,10 @@ pnpm commit             # Interactive conventional commit (commitizen)
 # Single package operations
 pnpm --filter @vtable-guild/table build
 pnpm --filter @vtable-guild/core dev
+
+# CSS source lives in packages/theme/css; vtable-guild/css is generated.
+# pnpm install fires `prepare` to copy it. After editing theme/css, re-run:
+pnpm --filter @vtable-guild/vtable-guild copy-css
 ```
 
 ## Architecture
