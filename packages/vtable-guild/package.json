@@ -48,6 +48,12 @@
   "peerDependencies": {
     "vue": "^3.5.0"
   },
+  "devDependencies": {
+    "@vtable-guild/core": "workspace:*",
+    "@vtable-guild/icons": "workspace:*",
+    "@vtable-guild/table": "workspace:*",
+    "@vtable-guild/theme": "workspace:*"
+  },
   "author": "parade0393",
   "repository": {
     "type": "git",

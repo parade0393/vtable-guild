@@ -305,6 +305,74 @@ describe('VTable', () => {
     wrapper.unmount()
   })
 
+  it('closes table-level custom filter dropdown when clicking outside', async () => {
+    const wrapper = mount(VTable<DemoRow>, {
+      attachTo: document.body,
+      props: {
+        rowKey: 'key',
+        columns: [
+          { title: 'Name', key: 'name', dataIndex: 'name' },
+          {
+            title: 'Status',
+            key: 'status',
+            dataIndex: 'status',
+            filters: [
+              { text: 'Active', value: 'active' },
+              { text: 'Paused', value: 'paused' },
+            ],
+            customFilterDropdown: true,
+            onFilter: (value, record) => record.status === value,
+          },
+        ],
+        dataSource,
+      },
+      slots: {
+        customFilterDropdown: () =>
+          h('div', { 'data-testid': 'table-custom-filter' }, 'Table custom filter'),
+      },
+    })
+
+    await wrapper.get('[aria-label="筛选"]').trigger('click')
+    await nextTick()
+    await nextTick()
+
+    expect(document.body.querySelector('[data-testid="table-custom-filter"]')).not.toBeNull()
+
+    document.body.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }))
+    await nextTick()
+
+    expect(document.body.querySelector('[data-testid="table-custom-filter"]')).toBeNull()
+
+    wrapper.unmount()
+  })
+
+  it('closes column-level custom filter dropdown when clicking outside', async () => {
+    const columns: ColumnsType<DemoRow> = [
+      { title: 'Name', key: 'name', dataIndex: 'name' },
+      {
+        title: 'Status',
+        key: 'status',
+        dataIndex: 'status',
+        filterDropdown: () =>
+          h('div', { 'data-testid': 'column-custom-filter' }, 'Column custom filter'),
+      },
+    ]
+    const wrapper = mountTable(columns)
+
+    await wrapper.get('[aria-label="筛选"]').trigger('click')
+    await nextTick()
+    await nextTick()
+
+    expect(document.body.querySelector('[data-testid="column-custom-filter"]')).not.toBeNull()
+
+    document.body.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }))
+    await nextTick()
+
+    expect(document.body.querySelector('[data-testid="column-custom-filter"]')).toBeNull()
+
+    wrapper.unmount()
+  })
+
   it('renders expanded content when clicking a row with expandRowByClick', async () => {
     const columns: ColumnsType<DemoRow> = [{ title: 'Name', key: 'name', dataIndex: 'name' }]
     const wrapper = mount(VTable<DemoRow>, {

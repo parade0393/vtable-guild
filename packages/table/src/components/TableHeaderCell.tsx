@@ -729,13 +729,15 @@ export default defineComponent({
 
             return (
               <Teleport to={popupContainer}>
-                <div
-                  ref={customDropdownRef}
-                  class={tableContext.subThemeSlots?.value.filterDropdown}
-                  style={getPopupPositionStyle(getAnchorRect(), popupContainer, 150)}
-                >
-                  {customContent}
-                </div>
+                {filterDropdownVisible.value && (
+                  <div
+                    ref={customDropdownRef}
+                    class={tableContext.subThemeSlots?.value.filterDropdown}
+                    style={getPopupPositionStyle(getAnchorRect(), popupContainer, 150)}
+                  >
+                    {customContent}
+                  </div>
+                )}
               </Teleport>
             )
           }
