@@ -39,4 +39,4 @@
 - 想理解为什么主题要分层、为什么接入方式保持单一：
   看 [为什么这样设计](/guide/architecture)
 - 想快速查字段名、事件、slot 和常用类型：
-  看 [API Reference](/guide/api-reference)
+  看 [API Reference](/guide/api-reference) 和 [类型参考](/guide/type-reference)

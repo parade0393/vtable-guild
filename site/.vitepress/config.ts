@@ -55,6 +55,7 @@ export default defineConfig({
           items: [
             { text: '为什么这样设计', link: '/guide/architecture' },
             { text: 'API Reference', link: '/guide/api-reference' },
+            { text: '类型参考', link: '/guide/type-reference' },
           ],
         },
       ],

@@ -92,3 +92,4 @@ const columns = [
 
 - [筛选](/guide/filtering)
 - [API Reference](/guide/api-reference)
+- [类型参考](/guide/type-reference)

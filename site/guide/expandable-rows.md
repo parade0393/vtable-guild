@@ -49,3 +49,5 @@ const expandable: Expandable<UserRow> = {
 
 - [树形表格](/guide/tree-table)
 - [自定义行与插槽](/guide/api-wiring-and-slots)
+- [API Reference](/guide/api-reference)
+- [类型参考](/guide/type-reference)

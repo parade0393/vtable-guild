@@ -87,3 +87,4 @@ const rowSelection = computed<RowSelection<UserRow>>(() => ({
 
 - [树形表格](/guide/tree-table)
 - [API Reference](/guide/api-reference)
+- [类型参考](/guide/type-reference)

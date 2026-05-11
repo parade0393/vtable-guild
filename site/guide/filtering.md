@@ -77,3 +77,4 @@ const dataSource: UserRow[] = [
 
 - [排序](/guide/sorting)
 - [API Reference](/guide/api-reference)
+- [类型参考](/guide/type-reference)

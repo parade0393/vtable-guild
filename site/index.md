@@ -43,4 +43,4 @@ vtable-guild 面向已经在项目中使用 ant-design-vue 或 element-plus 的�
 - 想统一视觉体系：
   看 [三层主题覆盖](/guide/theme-overrides) 和 [Table CSS 变量参考](/guide/theme-tokens)
 - 想直接查 API：
-  看 [API Reference](/guide/api-reference)
+  看 [API Reference](/guide/api-reference) 和 [类型参考](/guide/type-reference)
