@@ -1,5 +1,18 @@
 # @vtable-guild/vtable-guild
 
+## 2.1.0
+
+### Minor Changes
+
+- [`e84a3a2`](https://github.com/parade0393/vtable-guild/commit/e84a3a268c85292605f74d20aa740c3f86d6ab6e) Thanks [@parade0393](https://github.com/parade0393)! - Align the table API more closely with ant-design-vue, including fixed columns,
+  loading options, ellipsis behavior, and size naming.
+
+  Add `EXPAND_COLUMN` and `SELECTION_COLUMN` sentinel support for controlling
+  expand and selection column placement.
+
+  Fix filter and sorter dropdown interactions, improve external CSS utility
+  coverage, and update compatibility, installation, and type reference docs.
+
 ## 2.0.6
 
 ### Patch Changes
