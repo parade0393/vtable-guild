@@ -431,6 +431,10 @@ export default defineComponent({
     }
 
     const sortAreaHovered = ref(false)
+    const filterIconHovered = ref(false)
+    const sorterTooltipOpen = computed(
+      () => showTooltip.value && sortAreaHovered.value && !filterIconHovered.value,
+    )
 
     function handleHeaderMouseEnter(event: MouseEvent) {
       const onMouseenter = headerDomProps.value.onMouseenter
@@ -452,6 +456,14 @@ export default defineComponent({
       if (showTooltip.value) {
         sortAreaHovered.value = false
       }
+    }
+
+    function handleFilterIconMouseEnter() {
+      filterIconHovered.value = true
+    }
+
+    function handleFilterIconMouseLeave() {
+      filterIconHovered.value = false
     }
 
     function handleCellClick(event: MouseEvent) {
@@ -641,7 +653,7 @@ export default defineComponent({
       const sortAreaOuterClass = tableContext.subThemeSlots?.value.sortAreaOuter
       const sortArea = showTooltip.value ? (
         <span class={sortAreaOuterClass}>
-          <Tooltip block title={tooltipTitle} placement="top" open={sortAreaHovered.value}>
+          <Tooltip block title={tooltipTitle} placement="top" open={sorterTooltipOpen.value}>
             {sorterContent}
           </Tooltip>
         </span>
@@ -660,6 +672,8 @@ export default defineComponent({
                   tableContext.subThemeSlots?.value.filterIcon,
                 )}
                 ref={filterAnchorRef}
+                onMouseenter={handleFilterIconMouseEnter}
+                onMouseleave={handleFilterIconMouseLeave}
                 onMousedown={(e: MouseEvent) => e.stopPropagation()}
                 onClick={(e: MouseEvent) => {
                   e.stopPropagation()
@@ -681,6 +695,8 @@ export default defineComponent({
                   tableContext.subThemeSlots?.value.filterIcon,
                 )}
                 ref={filterAnchorRef}
+                onMouseenter={handleFilterIconMouseEnter}
+                onMouseleave={handleFilterIconMouseLeave}
                 onMousedown={(e: MouseEvent) => e.stopPropagation()}
                 onClick={(e: MouseEvent) => {
                   e.stopPropagation()
@@ -698,6 +714,8 @@ export default defineComponent({
             <span
               ref={filterAnchorRef}
               class={tableContext.subThemeSlots?.value.filterIconWrapper}
+              onMouseenter={handleFilterIconMouseEnter}
+              onMouseleave={handleFilterIconMouseLeave}
               onMousedown={(e: MouseEvent) => e.stopPropagation()}
             >
               <FilterIcon active={isFiltered.value} onClick={() => toggleFilterDropdown()} />

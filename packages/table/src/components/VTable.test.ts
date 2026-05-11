@@ -302,6 +302,21 @@ describe('VTable', () => {
 
     expect(document.body.querySelector('[role="tooltip"]')?.textContent).toContain('点击升序')
 
+    const filterTrigger = wrapper.get('[aria-label="筛选"]').element.parentElement
+    if (!filterTrigger) {
+      throw new Error('Filter trigger wrapper not found')
+    }
+
+    filterTrigger.dispatchEvent(new MouseEvent('mouseenter'))
+    await nextTick()
+
+    expect(document.body.querySelector('[role="tooltip"]')).toBeNull()
+
+    filterTrigger.dispatchEvent(new MouseEvent('mouseleave'))
+    await nextTick()
+
+    expect(document.body.querySelector('[role="tooltip"]')?.textContent).toContain('点击升序')
+
     await findTableHeaderCell(wrapper, 'Age').trigger('mouseleave')
     await nextTick()
 
