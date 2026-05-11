@@ -5,6 +5,21 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**", ".vitepress/dist/**"]
     },
+    "@vtable-guild/vtable-guild#build": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "../core/src/**",
+        "../icons/src/**",
+        "../theme/src/**",
+        "../theme/css/**",
+        "../table/src/**",
+        "../*/package.json",
+        "vite.config.ts",
+        "scripts/**"
+      ],
+      "outputs": ["dist/**", "css/**"]
+    },
     "dev": {
       "dependsOn": ["^build"],
       "cache": false,
