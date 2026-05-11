@@ -360,11 +360,13 @@ export default defineComponent({
     const cellClass = computed(() => {
       const alignClass = props.cell.column.align ? TABLE_ALIGN_CLASSES[props.cell.column.align] : ''
       const sortableClass = isSortable.value ? tableContext.subThemeSlots?.value.thSortable : ''
+      const sortedClass = sortOrder.value ? tableContext.subThemeSlots?.value.thSorted : ''
       const isExpandHeader = leafColumn.value?.key === '__vtg_expand__'
       return cn(
         props.thClass,
         alignClass,
         sortableClass,
+        sortedClass,
         groupedHeaderClass.value,
         props.cell.column.className,
         isExpandHeader ? 'before:hidden' : '',
@@ -429,6 +431,28 @@ export default defineComponent({
     }
 
     const sortAreaHovered = ref(false)
+
+    function handleHeaderMouseEnter(event: MouseEvent) {
+      const onMouseenter = headerDomProps.value.onMouseenter
+      if (typeof onMouseenter === 'function') {
+        onMouseenter(event)
+      }
+
+      if (showTooltip.value) {
+        sortAreaHovered.value = true
+      }
+    }
+
+    function handleHeaderMouseLeave(event: MouseEvent) {
+      const onMouseleave = headerDomProps.value.onMouseleave
+      if (typeof onMouseleave === 'function') {
+        onMouseleave(event)
+      }
+
+      if (showTooltip.value) {
+        sortAreaHovered.value = false
+      }
+    }
 
     function handleCellClick(event: MouseEvent) {
       const onClick = headerCellProps.value?.onClick
@@ -616,15 +640,7 @@ export default defineComponent({
 
       const sortAreaOuterClass = tableContext.subThemeSlots?.value.sortAreaOuter
       const sortArea = showTooltip.value ? (
-        <span
-          class={sortAreaOuterClass}
-          onMouseenter={() => {
-            sortAreaHovered.value = true
-          }}
-          onMouseleave={() => {
-            sortAreaHovered.value = false
-          }}
-        >
+        <span class={sortAreaOuterClass}>
           <Tooltip block title={tooltipTitle} placement="top" open={sortAreaHovered.value}>
             {sorterContent}
           </Tooltip>
@@ -639,7 +655,10 @@ export default defineComponent({
           if (column.filterIcon) {
             return (
               <span
-                class={tableContext.subThemeSlots?.value.filterIconWrapper}
+                class={cn(
+                  tableContext.subThemeSlots?.value.filterIconWrapper,
+                  tableContext.subThemeSlots?.value.filterIcon,
+                )}
                 ref={filterAnchorRef}
                 onMousedown={(e: MouseEvent) => e.stopPropagation()}
                 onClick={(e: MouseEvent) => {
@@ -657,7 +676,10 @@ export default defineComponent({
           if (tableContext.customFilterIcon) {
             return (
               <span
-                class={tableContext.subThemeSlots?.value.filterIconWrapper}
+                class={cn(
+                  tableContext.subThemeSlots?.value.filterIconWrapper,
+                  tableContext.subThemeSlots?.value.filterIcon,
+                )}
                 ref={filterAnchorRef}
                 onMousedown={(e: MouseEvent) => e.stopPropagation()}
                 onClick={(e: MouseEvent) => {
@@ -771,6 +793,8 @@ export default defineComponent({
           colspan={colSpan}
           rowspan={rowSpan}
           onClick={handleCellClick}
+          onMouseenter={handleHeaderMouseEnter}
+          onMouseleave={handleHeaderMouseLeave}
           aria-sort={leafColumn.value ? getAriaSortValue(sortOrder.value) : undefined}
         >
           <span class={cn('flex items-center', props.headerCellInnerClass)}>

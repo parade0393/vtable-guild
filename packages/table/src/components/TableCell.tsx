@@ -133,6 +133,8 @@ export default defineComponent({
       const alignClass = props.column.align ? TABLE_ALIGN_CLASSES[props.column.align] : ''
       const subThemeSlots = tableContext.subThemeSlots?.value
       const hovering = isHovered.value && tableContext.hoverable?.value
+      const sortedClass =
+        tableContext.isColumnSorted?.(props.column) && subThemeSlots ? subThemeSlots.tdSorted : ''
       const selectedClasses =
         isRowSelected.value && subThemeSlots
           ? cn(subThemeSlots.tdSelected, hovering ? subThemeSlots.tdRowSelectedHover : '')
@@ -148,6 +150,7 @@ export default defineComponent({
         resolvedCell.value.customCellProps?.className,
         resolvedCell.value.renderCellProps?.class,
         resolvedCell.value.renderCellProps?.className,
+        sortedClass,
         selectedClasses,
         hoverClass,
         fixedClass.value,
@@ -312,6 +315,8 @@ export default defineComponent({
 
         const subThemeSlots = tableContext.subThemeSlots?.value
         const hovering = isHovered.value && tableContext.hoverable?.value
+        const sortedClass =
+          tableContext.isColumnSorted?.(props.column) && subThemeSlots ? subThemeSlots.tdSorted : ''
         const expandSelectedClass =
           isRowSelected.value && subThemeSlots
             ? cn(subThemeSlots.tdSelected, hovering ? subThemeSlots.tdRowSelectedHover : '')
@@ -323,6 +328,7 @@ export default defineComponent({
           props.tdClass,
           'text-center',
           props.column.className,
+          sortedClass,
           expandSelectedClass,
           expandHoverClass,
           fixedClass.value,

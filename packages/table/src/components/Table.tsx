@@ -784,6 +784,10 @@ export default defineComponent({
       })
     }
 
+    function isColumnSorted(column: ColumnType<Record<string, unknown>>): boolean {
+      return Boolean(column.sorter && getSortOrder(column))
+    }
+
     const scrollbarViewStyle = {
       width: '100%',
       minWidth: '100%',
@@ -792,6 +796,8 @@ export default defineComponent({
     // ---- provide context ----
     const subThemeSlots = computed(() => ({
       thSortable: themeSlots.thSortable(),
+      thSorted: themeSlots.thSorted(),
+      tdSorted: themeSlots.tdSorted(),
       sortButton: themeSlots.sortButton(),
       sortIconDown: themeSlots.sortIconDown(),
       sortAreaOuter: themeSlots.sortAreaOuter(),
@@ -820,6 +826,7 @@ export default defineComponent({
       filterDropdownTreeItem: themeSlots.filterDropdownTreeItem(),
       filterDropdownTreeContentWrapper: themeSlots.filterDropdownTreeContentWrapper(),
       filterDropdownTreeItemSelected: themeSlots.filterDropdownTreeItemSelected(),
+      filterDropdownTreeItemMatched: themeSlots.filterDropdownTreeItemMatched(),
       filterDropdownTreeCheckAll: themeSlots.filterDropdownTreeCheckAll(),
       emptyWrapper: themeSlots.emptyWrapper(),
       emptyIcon: themeSlots.emptyIcon(),
@@ -874,6 +881,7 @@ export default defineComponent({
       empty: slots.empty,
       getSortOrder,
       toggleSortOrder,
+      isColumnSorted,
       getFilteredValue,
       confirmFilter,
       resetFilter,

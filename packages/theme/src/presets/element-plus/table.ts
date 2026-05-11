@@ -70,6 +70,8 @@ export const elementPlusTableTheme = {
 
     // ---- 排序相关 ----
     thSortable: 'cursor-pointer select-none',
+    thSorted: '',
+    tdSorted: '',
     sortButton: 'inline-flex flex-col items-center justify-center text-xs leading-none ml-1',
     sortIconDown: '-mt-[5px]',
     sortAreaOuter: 'flex min-w-0',
@@ -108,6 +110,7 @@ export const elementPlusTableTheme = {
       'flex items-center gap-2 px-3 py-1.5 rounded-sm flex-1 min-w-0',
     filterDropdownTreeItemSelected:
       'bg-[color:var(--color-control-item-active-bg)] hover:bg-[color:var(--color-control-item-active-hover-bg)] text-[color:var(--color-primary)] font-medium',
+    filterDropdownTreeItemMatched: 'font-medium text-[color:var(--color-primary)]',
     filterDropdownTreeCheckAll: 'flex items-center cursor-pointer',
     filterDropdownActions:
       'flex items-center justify-between gap-2 px-2 py-2 border-t border-[color:var(--color-default)]',

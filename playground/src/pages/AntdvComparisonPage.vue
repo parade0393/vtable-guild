@@ -33,12 +33,12 @@ const state = useFilterMatrixState()
       <section class="play-metrics">
         <article class="play-metric-card">
           <span class="play-metric-card__label">Case count</span>
-          <strong>12</strong>
+          <strong>13</strong>
           <p>筛选 API 每个功能点一个案例。</p>
         </article>
         <article class="play-metric-card">
           <span class="play-metric-card__label">Parity</span>
-          <strong>12 / 12 real native parity</strong>
+          <strong>13 / 13 real native parity</strong>
           <p>ant-design-vue 可做完整高级筛选对照。</p>
         </article>
         <article class="play-metric-card">
@@ -346,6 +346,51 @@ const state = useFilterMatrixState()
         <header class="play-case__header">
           <div>
             <p class="play-case__index">07</p>
+            <h2>树形筛选搜索</h2>
+          </div>
+          <p class="play-case__desc">验证点：树形搜索只高亮匹配节点，不过滤树形选项数据源。</p>
+        </header>
+        <div class="play-compare-grid">
+          <article class="play-panel">
+            <div class="play-panel__head">
+              <div>
+                <span class="play-badge">reference</span>
+                <h3>ant-design-vue</h3>
+              </div>
+              <p>真实原生对照</p>
+            </div>
+            <ATable
+              :columns="state.antTreeSearchColumns"
+              :data-source="dataSource"
+              :pagination="false"
+              @change="
+                (...args: unknown[]) =>
+                  state.onReferenceChange('ATable tree filter search', ...args)
+              "
+            />
+          </article>
+
+          <article class="play-panel play-panel--accent">
+            <div class="play-panel__head">
+              <div>
+                <span class="play-badge play-badge--accent">vtable-guild</span>
+                <h3>antdv preset</h3>
+              </div>
+              <p>`filterMode: 'tree' + filterSearch`</p>
+            </div>
+            <VTable
+              :columns="state.vtableTreeSearchColumns"
+              :data-source="dataSource"
+              @change="state.onVTableChange"
+            />
+          </article>
+        </div>
+      </section>
+
+      <section class="play-case">
+        <header class="play-case__header">
+          <div>
+            <p class="play-case__index">08</p>
             <h2>表级自定义筛选图标</h2>
           </div>
           <p class="play-case__desc">
@@ -398,7 +443,7 @@ const state = useFilterMatrixState()
       <section class="play-case">
         <header class="play-case__header">
           <div>
-            <p class="play-case__index">08</p>
+            <p class="play-case__index">09</p>
             <h2>列级自定义筛选图标</h2>
           </div>
           <p class="play-case__desc">
@@ -444,7 +489,7 @@ const state = useFilterMatrixState()
       <section class="play-case">
         <header class="play-case__header">
           <div>
-            <p class="play-case__index">09</p>
+            <p class="play-case__index">10</p>
             <h2>表级自定义筛选下拉</h2>
           </div>
           <p class="play-case__desc">
@@ -533,7 +578,7 @@ const state = useFilterMatrixState()
       <section class="play-case">
         <header class="play-case__header">
           <div>
-            <p class="play-case__index">10</p>
+            <p class="play-case__index">11</p>
             <h2>列级自定义筛选下拉</h2>
           </div>
           <p class="play-case__desc">
@@ -579,7 +624,7 @@ const state = useFilterMatrixState()
       <section class="play-case">
         <header class="play-case__header">
           <div>
-            <p class="play-case__index">11</p>
+            <p class="play-case__index">12</p>
             <h2>受控下拉显隐</h2>
           </div>
           <p class="play-case__desc">
@@ -633,7 +678,7 @@ const state = useFilterMatrixState()
       <section class="play-case">
         <header class="play-case__header">
           <div>
-            <p class="play-case__index">12</p>
+            <p class="play-case__index">13</p>
             <h2>高亮态覆盖</h2>
           </div>
           <p class="play-case__desc">

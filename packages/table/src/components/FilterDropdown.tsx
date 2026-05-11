@@ -178,28 +178,10 @@ export default defineComponent({
       return items.filter((item) => matchesSearch(item, input))
     }
 
-    function filterItemsTree(items: ColumnFilterItem[], input: string): ColumnFilterItem[] {
-      const result: ColumnFilterItem[] = []
-      for (const item of items) {
-        if (item.children?.length) {
-          const filteredChildren = filterItemsTree(item.children, input)
-          if (filteredChildren.length > 0 || matchesSearch(item, input)) {
-            result.push({
-              ...item,
-              children: filteredChildren.length > 0 ? filteredChildren : item.children,
-            })
-          }
-        } else if (matchesSearch(item, input)) {
-          result.push(item)
-        }
-      }
-      return result
-    }
-
     const filteredFilters = computed(() => {
       if (!props.filterSearch || !searchText.value) return props.filters
       if (props.filterMode === 'tree') {
-        return filterItemsTree(props.filters, searchText.value)
+        return props.filters
       }
       return filterItemsFlat(props.filters, searchText.value)
     })
@@ -213,6 +195,7 @@ export default defineComponent({
       () =>
         Boolean(props.filterSearch) &&
         searchText.value.trim().length > 0 &&
+        props.filterMode !== 'tree' &&
         !hasFilteredResults.value,
     )
 
@@ -335,6 +318,10 @@ export default defineComponent({
       const isTreeParent = Boolean(item.children?.length)
       const expanded = isExpanded(item.value)
       const useListRadioSemantics = !props.multiple && isHighlightMode.value
+      const matchedByTreeSearch =
+        props.filterMode === 'tree' &&
+        searchText.value.trim().length > 0 &&
+        matchesSearch(item, searchText.value)
 
       let indeterminate = false
       if (isTreeMultiple.value && isTreeParent) {
@@ -406,7 +393,15 @@ export default defineComponent({
                   : tableContext.subThemeSlots?.value.filterDropdownItemHover,
               ]}
             >
-              <span class="text-[color:var(--color-on-surface)]">{item.text}</span>
+              <span
+                class={[
+                  'text-[color:var(--color-on-surface)]',
+                  matchedByTreeSearch &&
+                    tableContext.subThemeSlots?.value.filterDropdownTreeItemMatched,
+                ]}
+              >
+                {item.text}
+              </span>
             </div>
           </li>
         )

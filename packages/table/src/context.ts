@@ -20,6 +20,8 @@ import type { SummaryFixed } from './components/VTableSummary'
 /** 子组件主题 slot class 映射 */
 export interface SubThemeSlots {
   thSortable: string
+  thSorted: string
+  tdSorted: string
   sortButton: string
   sortIconDown: string
   sortAreaOuter: string
@@ -47,6 +49,7 @@ export interface SubThemeSlots {
   filterDropdownTreeItem: string
   filterDropdownTreeContentWrapper: string
   filterDropdownTreeItemSelected: string
+  filterDropdownTreeItemMatched: string
   filterDropdownTreeCheckAll: string
   filterDropdownListEmpty: string
   emptyWrapper: string
@@ -117,6 +120,8 @@ export interface TableContext {
   getSortOrder?: (column: ColumnType<Record<string, unknown>>) => SortOrder
   /** 切换某列的排序方向 */
   toggleSortOrder?: (column: ColumnType<Record<string, unknown>>) => void
+  /** 判断某列是否处于排序状态 */
+  isColumnSorted?: (column: ColumnType<Record<string, unknown>>) => boolean
 
   /** 获取某列的当前筛选值 */
   getFilteredValue?: (column: ColumnType<Record<string, unknown>>) => (string | number | boolean)[]

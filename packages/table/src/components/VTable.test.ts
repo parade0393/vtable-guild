@@ -251,6 +251,99 @@ describe('VTable', () => {
     wrapper.unmount()
   })
 
+  it('applies antdv sorted background classes to the active sort column', async () => {
+    const columns: ColumnsType<DemoRow> = [
+      { title: 'Name', key: 'name', dataIndex: 'name' },
+      { title: 'Age', key: 'age', dataIndex: 'age', sorter: true },
+    ]
+
+    const wrapper = mountTable(columns)
+
+    await findTableHeaderCell(wrapper, 'Age').trigger('click')
+    await nextTick()
+
+    const ageHeader = findTableHeaderCell(wrapper, 'Age')
+    const ageCells = getBodyRows(wrapper).map((row) => row.findAll('td')[1])
+    const sortedBodyCells = ageCells.every((cell) =>
+      cell.classes().includes('bg-[color:var(--vtg-table-body-sort-bg)]'),
+    )
+
+    expect(ageHeader.classes()).toContain('bg-[color:var(--vtg-table-header-sort-bg)]')
+    expect(sortedBodyCells).toBe(true)
+
+    wrapper.unmount()
+  })
+
+  it('shows sorter tooltip from the whole grouped header leaf cell', async () => {
+    const columns: ColumnsType<DemoRow> = [
+      {
+        title: 'Profile',
+        key: 'profile',
+        children: [
+          {
+            title: 'Age',
+            key: 'age',
+            dataIndex: 'age',
+            sorter: true,
+            filters: [
+              { text: 'Active', value: 'active' },
+              { text: 'Paused', value: 'paused' },
+            ],
+            onFilter: (value, record) => record.status === value,
+          },
+        ],
+      },
+    ]
+
+    const wrapper = mountTable(columns)
+
+    await findTableHeaderCell(wrapper, 'Age').trigger('mouseenter')
+    await nextTick()
+
+    expect(document.body.querySelector('[role="tooltip"]')?.textContent).toContain('点击升序')
+
+    await findTableHeaderCell(wrapper, 'Age').trigger('mouseleave')
+    await nextTick()
+
+    expect(document.body.querySelector('[role="tooltip"]')).toBeNull()
+
+    wrapper.unmount()
+  })
+
+  it('uses clickable hover styling for custom filter icons without sorter', () => {
+    const columns: ColumnsType<DemoRow> = [
+      {
+        title: 'Status',
+        key: 'status',
+        dataIndex: 'status',
+        filters: [
+          { text: 'Active', value: 'active' },
+          { text: 'Paused', value: 'paused' },
+        ],
+        onFilter: (value, record) => record.status === value,
+      },
+    ]
+
+    const wrapper = mount(VTable<DemoRow>, {
+      attachTo: document.body,
+      props: {
+        rowKey: 'key',
+        columns,
+        dataSource,
+      },
+      slots: {
+        customFilterIcon: () => h('span', { 'data-testid': 'custom-filter-icon' }, 'filter'),
+      },
+    })
+
+    const trigger = wrapper.get('[aria-label="筛选"]')
+    expect(trigger.classes()).toEqual(
+      expect.arrayContaining(['cursor-pointer', 'hover:bg-black/6']),
+    )
+
+    wrapper.unmount()
+  })
+
   it('emits change with filtered data when confirming a filter', async () => {
     const columns: ColumnsType<DemoRow> = [
       { title: 'Name', key: 'name', dataIndex: 'name' },
@@ -301,6 +394,97 @@ describe('VTable', () => {
     ).toEqual(['1', '3'])
     expect(getBodyRows(wrapper)).toHaveLength(2)
     expect(getBodyRows(wrapper).every((row) => row.text().includes('active'))).toBe(true)
+
+    wrapper.unmount()
+  })
+
+  it('keeps tree filter search data intact and highlights matching nodes only', async () => {
+    const columns: ColumnsType<DemoRow> = [
+      {
+        title: 'Status',
+        key: 'status',
+        dataIndex: 'status',
+        filters: [
+          {
+            text: 'Active group',
+            value: 'active-group',
+            children: [{ text: 'Active', value: 'active' }],
+          },
+          {
+            text: 'Paused group',
+            value: 'paused-group',
+            children: [{ text: 'Paused', value: 'paused' }],
+          },
+        ],
+        filterMode: 'tree',
+        filterSearch: true,
+        onFilter: (value, record) => record.status === value,
+      },
+    ]
+
+    const wrapper = mountTable(columns)
+
+    await wrapper.get('[aria-label="筛选"]').trigger('click')
+    await nextTick()
+
+    const input = document.body.querySelector('input')
+    if (!input) {
+      throw new Error('Filter search input not found')
+    }
+
+    input.value = 'Active'
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+    await nextTick()
+
+    const optionTexts = Array.from(document.body.querySelectorAll('li')).map((item) =>
+      item.textContent?.trim(),
+    )
+    const activeLabel = Array.from(document.body.querySelectorAll('span')).find(
+      (item) => item.textContent?.trim() === 'Active',
+    )
+
+    expect(optionTexts).toEqual(
+      expect.arrayContaining(['Active group', 'Active', 'Paused group', 'Paused']),
+    )
+    expect(activeLabel?.classList.contains('font-medium')).toBe(true)
+
+    wrapper.unmount()
+  })
+
+  it('continues to filter menu mode options when filterSearch is enabled', async () => {
+    const columns: ColumnsType<DemoRow> = [
+      {
+        title: 'Status',
+        key: 'status',
+        dataIndex: 'status',
+        filters: [
+          { text: 'Active', value: 'active' },
+          { text: 'Paused', value: 'paused' },
+        ],
+        filterSearch: true,
+        onFilter: (value, record) => record.status === value,
+      },
+    ]
+
+    const wrapper = mountTable(columns)
+
+    await wrapper.get('[aria-label="筛选"]').trigger('click')
+    await nextTick()
+
+    const input = document.body.querySelector('input')
+    if (!input) {
+      throw new Error('Filter search input not found')
+    }
+
+    input.value = 'Active'
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+    await nextTick()
+
+    const optionTexts = Array.from(document.body.querySelectorAll('li')).map((item) =>
+      item.textContent?.trim(),
+    )
+
+    expect(optionTexts).toEqual(['Active'])
 
     wrapper.unmount()
   })

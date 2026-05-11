@@ -68,6 +68,8 @@
 
   /* 排序 hover 背景 */
   --vtg-table-header-sort-hover-bg: rgb(0 0 0 / 4%);
+  --vtg-table-header-sort-bg: #f0f0f0;
+  --vtg-table-body-sort-bg: #fafafa;
 
   /* 排序图标不活跃色 */
   --color-sorter-icon: rgb(0 0 0 / 29%);
@@ -144,6 +146,8 @@
 
   /* 排序 hover 背景 */
   --vtg-table-header-sort-hover-bg: rgb(255 255 255 / 4%);
+  --vtg-table-header-sort-bg: #262626;
+  --vtg-table-body-sort-bg: #1d1d1d;
 
   /* 排序图标不活跃色 */
   --color-sorter-icon: rgb(255 255 255 / 29%);

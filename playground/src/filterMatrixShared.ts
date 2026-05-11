@@ -54,6 +54,7 @@ export interface FilterMatrixState {
   antDefaultResetColumns: TableColumnType<DemoRow>[]
   antSearchColumns: TableColumnType<DemoRow>[]
   antTreeColumns: TableColumnType<DemoRow>[]
+  antTreeSearchColumns: TableColumnType<DemoRow>[]
   antTableIconApproxColumns: TableColumnType<DemoRow>[]
   antColumnIconColumns: TableColumnType<DemoRow>[]
   antTableDropdownApproxColumns: TableColumnType<DemoRow>[]
@@ -66,6 +67,7 @@ export interface FilterMatrixState {
   vtableDefaultResetColumns: ColumnType<DemoRow>[]
   vtableSearchColumns: ColumnType<DemoRow>[]
   vtableTreeColumns: ColumnType<DemoRow>[]
+  vtableTreeSearchColumns: ColumnType<DemoRow>[]
   vtableTableIconColumns: ColumnType<DemoRow>[]
   vtableColumnIconColumns: ColumnType<DemoRow>[]
   vtableTableDropdownColumns: ColumnType<DemoRow>[]
@@ -594,6 +596,18 @@ export function useFilterMatrixState(): FilterMatrixState {
     }),
   )
 
+  const antTreeSearchColumns = createAntColumns(
+    createAntFilterColumn({
+      title: 'Region / City',
+      dataIndex: 'city',
+      key: 'region-tree-search',
+      filters: regionTreeFilters,
+      filterMode: 'tree',
+      filterSearch: true,
+      onFilter: matchRegionOrCity,
+    }),
+  )
+
   const vtableTreeColumns = createVTableColumns(
     createVTableFilterColumn({
       title: 'Region / City',
@@ -601,6 +615,18 @@ export function useFilterMatrixState(): FilterMatrixState {
       key: 'region-tree',
       filters: regionTreeFilters,
       filterMode: 'tree',
+      onFilter: matchRegionOrCity,
+    }),
+  )
+
+  const vtableTreeSearchColumns = createVTableColumns(
+    createVTableFilterColumn({
+      title: 'Region / City',
+      dataIndex: 'city',
+      key: 'region-tree-search',
+      filters: regionTreeFilters,
+      filterMode: 'tree',
+      filterSearch: true,
       onFilter: matchRegionOrCity,
     }),
   )
@@ -773,6 +799,7 @@ export function useFilterMatrixState(): FilterMatrixState {
     antDefaultResetColumns,
     antSearchColumns,
     antTreeColumns,
+    antTreeSearchColumns,
     antTableIconApproxColumns,
     antColumnIconColumns,
     antTableDropdownApproxColumns,
@@ -785,6 +812,7 @@ export function useFilterMatrixState(): FilterMatrixState {
     vtableDefaultResetColumns,
     vtableSearchColumns,
     vtableTreeColumns,
+    vtableTreeSearchColumns,
     vtableTableIconColumns,
     vtableColumnIconColumns,
     vtableTableDropdownColumns,

@@ -68,6 +68,8 @@ export const antdvTableTheme = {
 
     // ---- 排序相关 ----
     thSortable: 'cursor-pointer select-none hover:bg-[color:var(--vtg-table-header-sort-hover-bg)]',
+    thSorted: 'bg-[color:var(--vtg-table-header-sort-bg)] before:!bg-transparent',
+    tdSorted: 'bg-[color:var(--vtg-table-body-sort-bg)]',
     sortButton: 'inline-flex flex-col items-center justify-center text-xs leading-none ml-1',
     sortIconDown: '-mt-[0.225em]',
     sortAreaOuter: 'flex flex-auto min-w-0',
@@ -107,6 +109,7 @@ export const antdvTableTheme = {
       'flex min-h-6 flex-1 min-w-0 items-center gap-2 rounded-[6px] px-1 py-0',
     filterDropdownTreeItemSelected:
       'bg-[color:var(--color-control-item-active-bg)] hover:bg-[color:var(--color-control-item-active-bg)]',
+    filterDropdownTreeItemMatched: 'font-medium',
     filterDropdownTreeCheckAll: 'flex items-center w-full mb-1 ms-1',
     filterDropdownActions:
       'flex items-center justify-between gap-2 px-2 py-2 border-t border-[color:var(--color-default)]',
