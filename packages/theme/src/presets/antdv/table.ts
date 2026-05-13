@@ -23,7 +23,7 @@ export const TABLE_ALIGN_CLASSES = {
 export const antdvTableTheme = {
   slots: {
     root: [
-      'relative w-full',
+      'relative w-full min-w-0',
       'font-[family-name:var(--vtg-table-font-family)]',
       'text-[length:var(--vtg-table-font-size)]',
       'leading-[var(--vtg-table-line-height)]',
