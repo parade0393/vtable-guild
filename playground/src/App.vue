@@ -122,7 +122,6 @@ onBeforeUnmount(() => {
   background:
     radial-gradient(circle at top left, rgb(255 255 255 / 65%), transparent 28%),
     linear-gradient(135deg, #efe6d6 0%, #f6efe3 42%, #ece6da 100%);
-  font-family: 'Segoe UI', sans-serif;
 }
 
 .play-nav {

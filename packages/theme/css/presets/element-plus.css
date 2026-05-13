@@ -16,7 +16,7 @@
 
   /* 排版 */
   --font-family-base:
-    'Helvetica Neue', helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑',
+    inter, helvetica neue, helvetica, pingfang sc, hiragino sans gb, microsoft yahei, 微软雅黑,
     arial, sans-serif;
 
   /* 表面/背景 */
