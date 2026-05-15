@@ -93,6 +93,8 @@ export const antdvTableTheme = {
     filterDropdownItem: 'flex items-center cursor-pointer',
     filterDropdownItemSelected:
       'bg-[color:var(--color-control-item-active-bg)] hover:bg-[color:var(--color-control-item-active-hover-bg)]',
+    // antdv 单选与多选选中态一致，无需独立样式
+    filterDropdownItemSelectedSingle: '',
     filterDropdownItemHover: 'hover:bg-[color:var(--color-control-item-hover-bg)]',
     // 树形筛选 switcher 图标
     filterDropdownSwitcher:
@@ -113,6 +115,9 @@ export const antdvTableTheme = {
     filterDropdownTreeCheckAll: 'flex items-center w-full mb-1 ms-1',
     filterDropdownActions:
       'flex items-center justify-between gap-2 px-2 py-2 border-t border-[color:var(--color-default)]',
+    // antdv 底部按钮使用默认 Button 样式，无需额外覆盖
+    filterDropdownResetButton: '',
+    filterDropdownConfirmButton: '',
     filterDropdownSearch: 'p-2 border-b border-[color:var(--color-default)]',
     filterDropdownSearchField: [
       'flex items-center gap-1 px-[11px] h-[32px] min-w-[140px]',
