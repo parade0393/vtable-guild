@@ -1,5 +1,15 @@
 # @vtable-guild/vtable-guild
 
+## 2.1.1
+
+### Patch Changes
+
+- [`b1be02b`](https://github.com/parade0393/vtable-guild/commit/b1be02bded36fe2686f92cecc07d08ef2bf79116) Thanks [@parade0393](https://github.com/parade0393)! - fix: align element-plus theme styles and add feature limitation docs
+  - align element-plus filter dropdown styles with upstream
+  - add min-w-0 to table root to constrain width in flex/grid parents
+  - refine element-plus font stack and drop playground override
+  - document tree table lazy loading and expand row preserve-expanded-content limitations
+
 ## 2.1.0
 
 ### Minor Changes
