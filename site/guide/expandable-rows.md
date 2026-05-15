@@ -45,6 +45,10 @@ const expandable: Expandable<UserRow> = {
 - 补充说明、标签、备注信息
 - 内容明显超出单元格承载范围，但又不值得单独跳转详情页
 
+## 已知限制
+
+- **不支持 preserve-expanded-content**：收起行时，展开内容会从 DOM 中销毁，再次展开时重新渲染。element-plus 原版 Table（2.9.7+）提供了 `preserve-expanded-content` 属性来保留已展开内容的 DOM 状态，当前 vtable-guild 尚未实现该能力。如果展开内容包含表单或有状态组件，收起后状态会丢失。
+
 ## 相关页面
 
 - [树形表格](/guide/tree-table)
