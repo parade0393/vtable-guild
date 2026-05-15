@@ -33,8 +33,14 @@ export interface SubThemeSlots {
   filterDropdownList: string
   filterDropdownItem: string
   filterDropdownItemSelected: string
+  /** 仅 element-plus 等单选高亮场景需要 — 单选选中态独立样式（如 primary 底 + 白字）。未定义时回退到 filterDropdownItemSelected */
+  filterDropdownItemSelectedSingle?: string
   filterDropdownItemHover: string
   filterDropdownActions: string
+  /** 底部 Reset 按钮的 class 注入位 — 用于 preset 把 Button 视觉降级为纯文本风格 */
+  filterDropdownResetButton?: string
+  /** 底部 Confirm 按钮的 class 注入位 */
+  filterDropdownConfirmButton?: string
   filterDropdownSearch: string
   filterDropdownSearchField: string
   filterDropdownSearchIcon: string

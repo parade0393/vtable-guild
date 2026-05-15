@@ -84,37 +84,57 @@ export const elementPlusTableTheme = {
       'inline-flex items-center justify-center cursor-pointer transition-colors text-sm px-1 self-stretch',
 
     // ---- 筛选下拉相关 ----
+    // 与 element-plus 官方 .el-table-filter 1:1 对齐：
+    // 2px 圆角、border-color-lighter、--el-box-shadow-light 等价的浅阴影
     filterDropdown: [
-      'rounded bg-[color:var(--color-surface)] shadow-lg border border-[color:var(--color-default)]',
+      'rounded-[2px] bg-[color:var(--color-surface)]',
+      'border border-[color:var(--vtg-border-color-lighter,var(--color-default))]',
+      'shadow-[0_0_12px_rgba(0,0,0,0.12)]',
       'font-[family-name:var(--vtg-table-font-family)]',
       'text-[length:var(--vtg-table-font-size)] leading-[var(--vtg-table-line-height)]',
       'text-[color:var(--vtg-table-text-color)]',
     ].join(' '),
-    filterDropdownList: 'p-1.5 m-0 list-none min-w-[120px]',
-    filterDropdownItem: 'flex items-center cursor-pointer',
+    // .el-table-filter__list: padding 5px 0; min-width 100px
+    filterDropdownList: 'py-[5px] px-0 m-0 list-none min-w-[100px]',
+    // li 自身只控制指针；hover/selected/padding 全在 contentWrapper
+    filterDropdownItem: 'cursor-pointer',
+    // 多选选中（默认 selected 槽）：仅 checkbox label 变 primary 色，无背景；
+    // 通过 [--color-on-surface:...] 重定义子 span 颜色（FilterDropdown.tsx 内 span 使用 text-[color:var(--color-on-surface)]）
     filterDropdownItemSelected:
-      'bg-[color:var(--color-control-item-active-bg)] hover:bg-[color:var(--color-control-item-active-hover-bg)] text-[color:var(--color-primary)] font-medium',
-    filterDropdownItemHover: 'hover:bg-[color:var(--color-control-item-hover-bg)]',
+      '[--color-on-surface:var(--color-primary)] font-medium hover:bg-[color:var(--color-control-item-hover-bg)]',
+    // 单选选中（element-plus highlight 模式）：primary 底 + 白字 → 复用 var 重定义
+    filterDropdownItemSelectedSingle:
+      'bg-[color:var(--color-primary)] [--color-on-surface:#ffffff] hover:bg-[color:var(--color-primary)]',
+    // hover：浅蓝底 + primary 文字（仅未选中态生效，与 element-plus 一致）
+    filterDropdownItemHover:
+      'hover:bg-[color:var(--color-control-item-hover-bg)] hover:[--color-on-surface:var(--color-primary)]',
     // 树形筛选 switcher 图标
     filterDropdownSwitcher:
       'inline-flex items-center justify-center w-6 h-6 cursor-pointer text-xs text-[color:var(--color-muted)] transition-transform duration-200',
     filterDropdownSwitcherExpanded: 'rotate-0',
     filterDropdownSwitcherCollapsed: '-rotate-90',
     filterDropdownSwitcherNoop: 'cursor-default invisible',
-    // 内容包裹层（checkbox + 文字），hover/selected 仅在此
-    filterDropdownContentWrapper: 'flex items-center gap-2 px-3 py-1.5 rounded-sm flex-1 min-w-0',
-    filterDropdownTreeWrapper: 'p-1.5',
+    // 内容包裹层（checkbox + 文字），整行响应 hover/active；line-height 36px + padding 0 10px = 整行点击区
+    filterDropdownContentWrapper: 'flex items-center gap-2 leading-[36px] px-[10px] flex-1 min-w-0',
+    filterDropdownTreeWrapper: 'py-[5px]',
     filterDropdownTreeList: 'm-0 p-0 list-none [--vtg-table-filter-tree-indent-size:24px]',
     filterDropdownTreeItem: 'flex items-center cursor-pointer',
     filterDropdownTreeContentWrapper:
-      'flex items-center gap-2 px-3 py-1.5 rounded-sm flex-1 min-w-0',
+      'flex items-center gap-2 leading-[36px] px-[10px] flex-1 min-w-0',
+    // 树形多选：与 menu 多选同款（primary 文字、无 bg）
     filterDropdownTreeItemSelected:
-      'bg-[color:var(--color-control-item-active-bg)] hover:bg-[color:var(--color-control-item-active-hover-bg)] text-[color:var(--color-primary)] font-medium',
-    filterDropdownTreeItemMatched: 'font-medium text-[color:var(--color-primary)]',
-    filterDropdownTreeCheckAll: 'flex items-center cursor-pointer',
+      '[--color-on-surface:var(--color-primary)] font-medium hover:bg-[color:var(--color-control-item-hover-bg)]',
+    filterDropdownTreeItemMatched: 'font-medium',
+    filterDropdownTreeCheckAll: 'flex items-center cursor-pointer px-[10px] leading-[36px]',
+    // .el-table-filter__bottom: padding 8px + border-top；按钮顺序 Confirm 在左、Reset 在右 → flex-row-reverse
     filterDropdownActions:
-      'flex items-center justify-between gap-2 px-2 py-2 border-t border-[color:var(--color-default)]',
-    filterDropdownSearch: 'px-2 pt-2 pb-1',
+      'flex flex-row-reverse items-center justify-end gap-3 px-2 py-2 border-t border-[color:var(--vtg-border-color-lighter,var(--color-default))]',
+    // 底部按钮：覆盖 Button 的 type='primary'/'link' 视觉，降级为 element-plus 的纯文本风格（12px / 无背景边框 / hover→primary）
+    filterDropdownConfirmButton:
+      'bg-transparent border-0 shadow-none text-[color:var(--vtg-table-text-color)] hover:bg-transparent hover:text-[color:var(--color-primary)] active:bg-transparent text-[12px] px-[3px] h-auto leading-none',
+    filterDropdownResetButton:
+      'bg-transparent border-0 shadow-none text-[color:var(--vtg-table-text-color)] hover:bg-transparent hover:text-[color:var(--color-primary)] active:bg-transparent text-[12px] px-[3px] h-auto leading-none disabled:text-[color:var(--color-text-disabled,#a8abb2)] disabled:cursor-not-allowed',
+    filterDropdownSearch: 'px-[10px] pt-2 pb-1',
     filterDropdownSearchField:
       'flex items-center gap-2 rounded-[var(--vtg-input-border-radius)] border border-[color:var(--color-default)] bg-[color:var(--color-surface)] px-2',
     filterDropdownSearchIcon:

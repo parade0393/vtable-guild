@@ -11,7 +11,8 @@ export const elementPlusTableLocale = {
     searchPlaceholder: '搜索筛选项',
     emptyText: '暂无匹配数据',
     resetText: '重置',
-    confirmText: '确定',
+    // 与 element-plus 官方 zh-cn locale 对齐：el.table.confirmFilter = '筛选'
+    confirmText: '筛选',
     selectAllText: '全选',
   },
   empty: {
@@ -38,7 +39,7 @@ export const elementPlusTableEnUSLocale = {
     searchPlaceholder: 'Search filters',
     emptyText: 'No matching data',
     resetText: 'Reset',
-    confirmText: 'Confirm',
+    confirmText: 'Filter',
     selectAllText: 'Select all items',
   },
   empty: {

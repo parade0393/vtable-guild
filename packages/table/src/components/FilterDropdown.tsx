@@ -418,7 +418,9 @@ export default defineComponent({
             class={[
               contentWrapperClass,
               selected
-                ? tableContext.subThemeSlots?.value.filterDropdownItemSelected
+                ? (!props.multiple &&
+                    tableContext.subThemeSlots?.value.filterDropdownItemSelectedSingle) ||
+                  tableContext.subThemeSlots?.value.filterDropdownItemSelected
                 : tableContext.subThemeSlots?.value.filterDropdownItemHover,
             ]}
             onClick={() => toggleItem(item.value, item)}
@@ -561,7 +563,7 @@ export default defineComponent({
                         </div>
                       </div>
                     )}
-                    <Scrollbar maxHeight="264px">
+                    <Scrollbar maxHeight="var(--vtg-table-filter-dropdown-max-height, 264px)">
                       <ul class={listClass}>
                         {renderFilterItems(filteredFilters.value)}
                         {showSearchEmptyState.value && (
@@ -573,7 +575,7 @@ export default defineComponent({
                     </Scrollbar>
                   </div>
                 ) : (
-                  <Scrollbar maxHeight="264px">
+                  <Scrollbar maxHeight="var(--vtg-table-filter-dropdown-max-height, 264px)">
                     <ul
                       role={!props.multiple && isHighlightMode.value ? 'radiogroup' : undefined}
                       class={listClass}
@@ -592,12 +594,18 @@ export default defineComponent({
                   <Button
                     type="link"
                     size="sm"
+                    class={tableContext.subThemeSlots?.value.filterDropdownResetButton}
                     disabled={localSelectedKeys.value.length === 0}
                     onClick={handleReset}
                   >
                     {filterDropdownLocale.value?.resetText ?? '重置'}
                   </Button>
-                  <Button type="primary" size="sm" onClick={handleConfirm}>
+                  <Button
+                    type="primary"
+                    size="sm"
+                    class={tableContext.subThemeSlots?.value.filterDropdownConfirmButton}
+                    onClick={handleConfirm}
+                  >
                     {filterDropdownLocale.value?.confirmText ?? '确 定'}
                   </Button>
                 </div>

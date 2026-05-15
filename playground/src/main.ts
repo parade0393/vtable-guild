@@ -4,6 +4,8 @@ import './main.css'
 import { createVTableGuild } from '@vtable-guild/vtable-guild'
 import { router } from './router'
 import Antd from 'ant-design-vue'
+import ElementPlus from 'element-plus'
+import zhCn from 'element-plus/es/locale/lang/zh-cn'
 
 // Playground CSS 入口（Tailwind + 语义化 token）
 
@@ -23,5 +25,8 @@ const vtg = createVTableGuild({
 })
 app.use(Antd)
 app.use(vtg)
+app.use(ElementPlus, {
+  locale: zhCn,
+})
 app.use(router)
 app.mount('#app')

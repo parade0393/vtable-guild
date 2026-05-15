@@ -34,6 +34,12 @@
   --color-border: #dcdfe6;
   --color-border-hover: #c0c4cc;
 
+  /* element-plus filter-panel 用 --el-border-color-lighter (#e4e7ed) 作为边框，比 --color-default 略浅一档 */
+  --vtg-border-color-lighter: #e4e7ed;
+
+  /* element-plus filter-panel .el-table-filter__wrap 的 max-height */
+  --vtg-table-filter-dropdown-max-height: 280px;
+
   /* 主题色 */
   --color-primary: #409eff;
   --color-primary-hover: #66b1ff;
@@ -145,6 +151,7 @@
   --color-default: #363637;
   --color-border: #4c4d4f;
   --color-border-hover: #636466;
+  --vtg-border-color-lighter: #414243;
   --color-primary: #409eff;
   --color-primary-hover: #66b1ff;
   --color-primary-active: #337ecc;
