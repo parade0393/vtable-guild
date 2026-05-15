@@ -12,11 +12,19 @@
 pnpm add @vtable-guild/vtable-guild vue
 ```
 
-如果宿主项目还没有 Tailwind CSS 4 和 `@tailwindcss/vite`，再补上：
+如果宿主项目还没有 Tailwind CSS，根据版本选择安装：
 
-```bash
+::: code-group
+
+```bash [Tailwind CSS 4（推荐）]
 pnpm add -D tailwindcss @tailwindcss/vite
 ```
+
+```bash [Tailwind CSS 3]
+pnpm add -D tailwindcss@^3 postcss autoprefixer
+```
+
+:::
 
 ## 运行时入口
 
@@ -28,12 +36,27 @@ import { createVTableGuild, VTable } from '@vtable-guild/vtable-guild'
 
 ## 样式入口
 
-在全局样式入口文件中引入：
+::: code-group
 
-```css
+```css [Tailwind CSS 4]
 @import 'tailwindcss';
 @import '@vtable-guild/vtable-guild/css';
 ```
+
+```css [Tailwind CSS 3]
+@import 'ant-design-vue/dist/reset.css';
+@import '@vtable-guild/vtable-guild/css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+:::
+
+::: warning Tailwind CSS 3 注意
+`@import` 必须在 `@tailwind` 指令之前，否则 PostCSS 会报错。
+:::
 
 `@vtable-guild/vtable-guild/css` 已包含：
 
@@ -44,10 +67,79 @@ import { createVTableGuild, VTable } from '@vtable-guild/vtable-guild'
 
 切换预设时不需要额外再导入其他 CSS。
 
+## Tailwind CSS 3 配置文件
+
+使用 Tailwind CSS 3 时，需要创建两个额外的配置文件：
+
+### postcss.config.js
+
+```js
+export default {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+}
+```
+
+### tailwind.config.js
+
+需要手动完成两件事：
+
+1. **扫描库的 dist 目录**（替代 v4 的 `@source` 指令）
+2. **注册语义色 token**（替代 v4 的 `@theme` 块）
+
+```js
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    './index.html',
+    './src/**/*.{vue,js,ts,jsx,tsx}',
+    './node_modules/@vtable-guild/vtable-guild/dist/**/*.{js,ts,mjs}',
+  ],
+  theme: {
+    extend: {
+      colors: {
+        surface: 'var(--color-surface)',
+        'surface-hover': 'var(--color-surface-hover)',
+        elevated: 'var(--color-elevated)',
+        'on-surface': 'var(--color-on-surface)',
+        muted: 'var(--color-muted)',
+        default: 'var(--color-default)',
+        primary: 'var(--color-primary)',
+        'primary-hover': 'var(--color-primary-hover)',
+        'text-disabled': 'var(--color-text-disabled)',
+        'control-item-hover-bg': 'var(--color-control-item-hover-bg)',
+        'control-item-active-bg': 'var(--color-control-item-active-bg)',
+        'control-item-active-hover-bg': 'var(--color-control-item-active-hover-bg)',
+      },
+    },
+  },
+  plugins: [],
+}
+```
+
+### Vite 配置
+
+不需要 `@tailwindcss/vite` 插件，Tailwind 通过 PostCSS 自动处理：
+
+```ts
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+
+export default defineConfig({
+  plugins: [vue()],
+})
+```
+
 ## 与 unlayered CSS reset 共存
 
-::: warning 必读：与 ant-design-vue / normalize.css 等 reset 共存
+::: warning 必读：与 ant-design-vue / normalize.css 等 reset 共存（仅 Tailwind CSS 4）
 本库基于 Tailwind v4，所有 utility 都生成在 `@layer utilities` 内。按 [CSS Cascade Layers 规范](https://developer.mozilla.org/en-US/docs/Web/CSS/@layer)，**unlayered（未进任何层）的普通 CSS 规则会胜过任何 layer 内的规则**，与特异性无关。
+:::
+
+::: tip Tailwind CSS 3 用户
+Tailwind CSS 3 不使用 CSS Cascade Layers，utility 类直接生成为普通 CSS 规则，不存在此问题。直接按上方的样式入口顺序引入即可。
 :::
 
 如果项目里同时引入了未分层的全局 reset，例如：
@@ -58,7 +150,7 @@ import { createVTableGuild, VTable } from '@vtable-guild/vtable-guild'
 
 它们里面诸如 `button { color: inherit }`、`input { ... }` 之类的规则会**压住**本库 Button、Input 等组件依赖的 Tailwind utility。典型症状：筛选弹窗里「重置 / 确定」按钮的文字颜色看上去是 ant-design-vue 的全局 `rgba(0,0,0,0.88)`，而不是预期的主色 / 白色。
 
-### 正确接法
+### 正确接法（Tailwind CSS 4）
 
 用 `@import` 的 `layer()` 修饰符把 reset 显式收进一个比 `utilities` 更早的 layer，并在最前面**先声明 layer 顺序**：
 

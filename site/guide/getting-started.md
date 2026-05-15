@@ -9,9 +9,11 @@
 - Node `^20.19.0` 或 `>=22.12.0`
 - pnpm `>=10.28.0`
 - Vue `^3.5.0`
-- Vite `^7`
+- Vite `^7`（Tailwind CSS 4）/ Vite `^5`（Tailwind CSS 3）
 
-## 安装
+## Tailwind CSS 4（推荐）
+
+### 安装
 
 除了组件包本身，你还需要在宿主项目里安装 Tailwind CSS 4 和 `@tailwindcss/vite`：
 
@@ -20,7 +22,7 @@ pnpm add @vtable-guild/vtable-guild
 pnpm add -D tailwindcss @tailwindcss/vite
 ```
 
-## 配置 Vite
+### 配置 Vite
 
 在 `vite.config.ts` 里接入 `@tailwindcss/vite`：
 
@@ -34,7 +36,7 @@ export default defineConfig({
 })
 ```
 
-## 配置样式入口
+### 配置样式入口
 
 在你的全局样式文件里引入 Tailwind CSS 和 vtable-guild 的主题 CSS。
 
@@ -53,6 +55,95 @@ export default defineConfig({
 - 组件运行所需的基础样式
 
 如果只是切换预设，不需要额外追加 CSS。
+
+## Tailwind CSS 3
+
+如果你的项目仍在使用 Tailwind CSS 3，也可以正常接入。核心区别是需要额外的配置文件来替代 v4 的 CSS 内联配置。
+
+### 安装
+
+```bash
+pnpm add @vtable-guild/vtable-guild
+pnpm add -D tailwindcss@^3 postcss autoprefixer
+```
+
+### 配置 PostCSS
+
+创建 `postcss.config.js`：
+
+```js
+export default {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+}
+```
+
+### 配置 Tailwind
+
+创建 `tailwind.config.js`，需要手动完成两件事：
+
+1. **扫描库的 dist 目录**（替代 v4 的 `@source` 指令）
+2. **注册语义色 token**（替代 v4 的 `@theme` 块）
+
+```js
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    './index.html',
+    './src/**/*.{vue,js,ts,jsx,tsx}',
+    './node_modules/@vtable-guild/vtable-guild/dist/**/*.{js,ts,mjs}',
+  ],
+  theme: {
+    extend: {
+      colors: {
+        surface: 'var(--color-surface)',
+        'surface-hover': 'var(--color-surface-hover)',
+        elevated: 'var(--color-elevated)',
+        'on-surface': 'var(--color-on-surface)',
+        muted: 'var(--color-muted)',
+        default: 'var(--color-default)',
+        primary: 'var(--color-primary)',
+        'primary-hover': 'var(--color-primary-hover)',
+        'text-disabled': 'var(--color-text-disabled)',
+        'control-item-hover-bg': 'var(--color-control-item-hover-bg)',
+        'control-item-active-bg': 'var(--color-control-item-active-bg)',
+        'control-item-active-hover-bg': 'var(--color-control-item-active-hover-bg)',
+      },
+    },
+  },
+  plugins: [],
+}
+```
+
+### 配置样式入口
+
+```css
+@import 'ant-design-vue/dist/reset.css';
+@import '@vtable-guild/vtable-guild/css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+::: warning 注意顺序
+`@import` 必须在 `@tailwind` 指令之前，否则 PostCSS 会报错。
+:::
+
+### Vite 配置
+
+不需要 `@tailwindcss/vite` 插件，Tailwind 通过 PostCSS 自动处理：
+
+```ts
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+
+export default defineConfig({
+  plugins: [vue()],
+})
+```
 
 ## 初始化插件
 
