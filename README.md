@@ -175,15 +175,10 @@ const columns = [
 app.use(createVTableGuild({ themePreset: 'element-plus' }))
 ```
 
-## Workspace Commands
+## 致谢
 
-```bash
-pnpm install
-pnpm dev
-pnpm playground
-pnpm test
-pnpm lint
-pnpm type-check
-pnpm build
-pnpm site:dev
-```
+- [ant-design-vue](https://antdv.com/components/overview) —— API 的「老师」，列配置、change 事件、双轨受控全套都在向它致敬
+- [antdvNext](https://www.antdv-next.com/) —— 使用了它的虚拟列表组件
+- [Nuxt UI](https://ui.nuxt.com/) —— 三层主题模型的灵感来源，slots / variants / `ui` prop 这套理念全部来自它
+- [tailwind-variants](https://www.tailwind-variants.org/) —— 真正让主题系统跑起来的胶水，slots 合并、variant 计算、tailwind-merge 集成都靠它
+- [liunx.do](https://linux.do/) 学AI，上L站
