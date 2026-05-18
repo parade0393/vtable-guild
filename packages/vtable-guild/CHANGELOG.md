@@ -1,5 +1,11 @@
 # @vtable-guild/vtable-guild
 
+## 2.1.2
+
+### Patch Changes
+
+- [`dcac8da`](https://github.com/parade0393/vtable-guild/commit/dcac8daf01f26240a4fc5efd6ced8cf392995833) Thanks [@parade0393](https://github.com/parade0393)! - Fix Tailwind CSS 3 consumption by shipping a prebuilt `css/tailwind3` entry that includes the component theme CSS and generated utilities.
+
 ## 2.1.1
 
 ### Patch Changes
