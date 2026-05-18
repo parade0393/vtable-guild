@@ -1,4 +1,5 @@
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/parade0393/vtable-guild)
+
 # vtable-guild
 
 `vtable-guild` 是一个面向 Vue 3 的高度可定制表格组件库，设计目标是在保留现有设计体系的前提下，无缝替换 `ant-design-vue` 或 `element-plus` Table 组件中难以扩展的部分。
@@ -60,6 +61,17 @@ export default defineConfig({
 ```css
 @import 'tailwindcss';
 @import '@vtable-guild/vtable-guild/css';
+```
+
+Tailwind CSS 3 项目使用专门入口，组件库内部依赖的 utilities 已预生成，不需要在 `tailwind.config.js` 里扫描本库或复制语义色 token：
+
+```css
+@import 'ant-design-vue/dist/reset.css';
+@import '@vtable-guild/vtable-guild/css/tailwind3';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 ```
 
 然后在 `main.ts` 中导入该 CSS 文件：

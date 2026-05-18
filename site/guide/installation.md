@@ -45,7 +45,7 @@ import { createVTableGuild, VTable } from '@vtable-guild/vtable-guild'
 
 ```css [Tailwind CSS 3]
 @import 'ant-design-vue/dist/reset.css';
-@import '@vtable-guild/vtable-guild/css';
+@import '@vtable-guild/vtable-guild/css/tailwind3';
 
 @tailwind base;
 @tailwind components;
@@ -69,7 +69,7 @@ import { createVTableGuild, VTable } from '@vtable-guild/vtable-guild'
 
 ## Tailwind CSS 3 配置文件
 
-使用 Tailwind CSS 3 时，需要创建两个额外的配置文件：
+使用 Tailwind CSS 3 时，组件库内部依赖的 utilities 已由 `@vtable-guild/vtable-guild/css/tailwind3` 预生成。你的 `tailwind.config.js` 只需要扫描业务项目自己的文件。
 
 ### postcss.config.js
 
@@ -84,37 +84,11 @@ export default {
 
 ### tailwind.config.js
 
-需要手动完成两件事：
-
-1. **扫描库的 dist 目录**（替代 v4 的 `@source` 指令）
-2. **注册语义色 token**（替代 v4 的 `@theme` 块）
-
 ```js
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    './index.html',
-    './src/**/*.{vue,js,ts,jsx,tsx}',
-    './node_modules/@vtable-guild/vtable-guild/dist/**/*.{js,ts,mjs}',
-  ],
-  theme: {
-    extend: {
-      colors: {
-        surface: 'var(--color-surface)',
-        'surface-hover': 'var(--color-surface-hover)',
-        elevated: 'var(--color-elevated)',
-        'on-surface': 'var(--color-on-surface)',
-        muted: 'var(--color-muted)',
-        default: 'var(--color-default)',
-        primary: 'var(--color-primary)',
-        'primary-hover': 'var(--color-primary-hover)',
-        'text-disabled': 'var(--color-text-disabled)',
-        'control-item-hover-bg': 'var(--color-control-item-hover-bg)',
-        'control-item-active-bg': 'var(--color-control-item-active-bg)',
-        'control-item-active-hover-bg': 'var(--color-control-item-active-hover-bg)',
-      },
-    },
-  },
+  content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
+  theme: { extend: {} },
   plugins: [],
 }
 ```

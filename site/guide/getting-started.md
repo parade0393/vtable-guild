@@ -58,7 +58,7 @@ export default defineConfig({
 
 ## Tailwind CSS 3
 
-如果你的项目仍在使用 Tailwind CSS 3，也可以正常接入。核心区别是需要额外的配置文件来替代 v4 的 CSS 内联配置。
+如果你的项目仍在使用 Tailwind CSS 3，也可以正常接入。核心区别是使用专门的 Tailwind 3 样式入口，它已经预生成组件库内部需要的 utilities。
 
 ### 安装
 
@@ -82,37 +82,13 @@ export default {
 
 ### 配置 Tailwind
 
-创建 `tailwind.config.js`，需要手动完成两件事：
-
-1. **扫描库的 dist 目录**（替代 v4 的 `@source` 指令）
-2. **注册语义色 token**（替代 v4 的 `@theme` 块）
+创建 `tailwind.config.js`，只需要扫描业务项目自己的文件：
 
 ```js
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    './index.html',
-    './src/**/*.{vue,js,ts,jsx,tsx}',
-    './node_modules/@vtable-guild/vtable-guild/dist/**/*.{js,ts,mjs}',
-  ],
-  theme: {
-    extend: {
-      colors: {
-        surface: 'var(--color-surface)',
-        'surface-hover': 'var(--color-surface-hover)',
-        elevated: 'var(--color-elevated)',
-        'on-surface': 'var(--color-on-surface)',
-        muted: 'var(--color-muted)',
-        default: 'var(--color-default)',
-        primary: 'var(--color-primary)',
-        'primary-hover': 'var(--color-primary-hover)',
-        'text-disabled': 'var(--color-text-disabled)',
-        'control-item-hover-bg': 'var(--color-control-item-hover-bg)',
-        'control-item-active-bg': 'var(--color-control-item-active-bg)',
-        'control-item-active-hover-bg': 'var(--color-control-item-active-hover-bg)',
-      },
-    },
-  },
+  content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
+  theme: { extend: {} },
   plugins: [],
 }
 ```
@@ -121,7 +97,7 @@ export default {
 
 ```css
 @import 'ant-design-vue/dist/reset.css';
-@import '@vtable-guild/vtable-guild/css';
+@import '@vtable-guild/vtable-guild/css/tailwind3';
 
 @tailwind base;
 @tailwind components;

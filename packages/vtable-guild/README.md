@@ -18,6 +18,12 @@ const app = createApp(App)
 app.use(createVTableGuild())
 ```
 
+Tailwind CSS 3 users should import the prebuilt compatibility CSS instead:
+
+```ts
+import '@vtable-guild/vtable-guild/css/tailwind3'
+```
+
 ```vue
 <template>
   <VTable :columns="columns" :data-source="data" />

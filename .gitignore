@@ -8,9 +8,11 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+.pnpm-store
 .DS_Store
 dist
 dist-ssr
+output
 coverage
 *.local
 

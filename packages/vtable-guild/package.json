@@ -24,6 +24,14 @@
       "style": "./css/transitions.css",
       "default": "./css/transitions.css"
     },
+    "./css/tailwind3": {
+      "style": "./css/tailwind3.css",
+      "default": "./css/tailwind3.css"
+    },
+    "./css/tailwind3-utilities": {
+      "style": "./css/tailwind3-utilities.css",
+      "default": "./css/tailwind3-utilities.css"
+    },
     "./css/presets/antdv": {
       "style": "./css/presets/antdv.css",
       "default": "./css/presets/antdv.css"
@@ -52,7 +60,9 @@
     "@vtable-guild/core": "workspace:*",
     "@vtable-guild/icons": "workspace:*",
     "@vtable-guild/table": "workspace:*",
-    "@vtable-guild/theme": "workspace:*"
+    "@vtable-guild/theme": "workspace:*",
+    "postcss": "^8.5.6",
+    "tailwindcss3": "npm:tailwindcss@^3.4.19"
   },
   "author": "parade0393",
   "repository": {
@@ -74,7 +84,10 @@
     "element-plus",
     "customizable"
   ],
-  "sideEffects": false,
+  "sideEffects": [
+    "css/**",
+    "dist/css/**"
+  ],
   "publishConfig": {
     "access": "public"
   },
