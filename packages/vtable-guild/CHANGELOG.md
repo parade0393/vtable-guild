@@ -1,5 +1,11 @@
 # @vtable-guild/vtable-guild
 
+## 2.1.3
+
+### Patch Changes
+
+- [`2acf06f`](https://github.com/parade0393/vtable-guild/commit/2acf06f749e1a1fb2fec652968fae9fcd5d8824a) Thanks [@parade0393](https://github.com/parade0393)! - Add type declarations for CSS subpath exports and document Ant Design Vue-aligned table column type aliases.
+
 ## 2.1.2
 
 ### Patch Changes
