@@ -1,3 +1,4 @@
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/parade0393/vtable-guild)
 # vtable-guild
 
 `vtable-guild` 是一个面向 Vue 3 的高度可定制表格组件库，设计目标是在保留现有设计体系的前提下，无缝替换 `ant-design-vue` 或 `element-plus` Table 组件中难以扩展的部分。
