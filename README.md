@@ -123,7 +123,7 @@ app.mount('#app')
 
 ```vue
 <script setup lang="ts">
-import type { ColumnsType } from '@vtable-guild/vtable-guild'
+import type { TableColumnsType } from '@vtable-guild/vtable-guild'
 
 interface UserRow {
   key: string
@@ -132,7 +132,7 @@ interface UserRow {
   status: string
 }
 
-const columns: ColumnsType<UserRow> = [
+const columns: TableColumnsType<UserRow> = [
   { title: 'Name', dataIndex: 'name', key: 'name', width: 180 },
   { title: 'Age', dataIndex: 'age', key: 'age', width: 96, align: 'right', sorter: true },
   {

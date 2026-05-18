@@ -8,7 +8,7 @@
 
 ```vue
 <script setup lang="ts">
-import { VTable, type ColumnsType } from '@vtable-guild/vtable-guild'
+import { VTable, type TableColumnsType } from '@vtable-guild/vtable-guild'
 
 interface UserRow {
   key: string
@@ -16,7 +16,7 @@ interface UserRow {
   status: 'active' | 'paused'
 }
 
-const columns: ColumnsType<UserRow> = [
+const columns: TableColumnsType<UserRow> = [
   { title: '姓名', dataIndex: 'name', key: 'name' },
   {
     title: '状态',

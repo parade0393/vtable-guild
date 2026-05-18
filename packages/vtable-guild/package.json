@@ -13,30 +13,37 @@
       "import": "./dist/index.mjs"
     },
     "./css": {
+      "types": "./css/index.d.ts",
       "style": "./css/index.css",
       "default": "./css/index.css"
     },
     "./css/tokens": {
+      "types": "./css/tokens.d.ts",
       "style": "./css/tokens.css",
       "default": "./css/tokens.css"
     },
     "./css/transitions": {
+      "types": "./css/transitions.d.ts",
       "style": "./css/transitions.css",
       "default": "./css/transitions.css"
     },
     "./css/tailwind3": {
+      "types": "./css/tailwind3.d.ts",
       "style": "./css/tailwind3.css",
       "default": "./css/tailwind3.css"
     },
     "./css/tailwind3-utilities": {
+      "types": "./css/tailwind3-utilities.d.ts",
       "style": "./css/tailwind3-utilities.css",
       "default": "./css/tailwind3-utilities.css"
     },
     "./css/presets/antdv": {
+      "types": "./css/presets/antdv.d.ts",
       "style": "./css/presets/antdv.css",
       "default": "./css/presets/antdv.css"
     },
     "./css/presets/element-plus": {
+      "types": "./css/presets/element-plus.d.ts",
       "style": "./css/presets/element-plus.css",
       "default": "./css/presets/element-plus.css"
     }

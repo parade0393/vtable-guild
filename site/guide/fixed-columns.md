@@ -9,7 +9,7 @@
 
 ```vue
 <script setup lang="ts">
-import { VTable, type ColumnsType } from '@vtable-guild/vtable-guild'
+import { VTable, type TableColumnsType } from '@vtable-guild/vtable-guild'
 
 interface UserRow {
   key: string
@@ -19,7 +19,7 @@ interface UserRow {
   address: string
 }
 
-const columns: ColumnsType<UserRow> = [
+const columns: TableColumnsType<UserRow> = [
   { title: '姓名', dataIndex: 'name', key: 'name', width: 160, fixed: 'left' },
   { title: '年龄', dataIndex: 'age', key: 'age', width: 96, align: 'right' },
   { title: '状态', dataIndex: 'status', key: 'status', width: 140 },

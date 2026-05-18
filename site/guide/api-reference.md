@@ -2,7 +2,7 @@
 
 这一页是组件行为参考：查 props、events、slots、默认值和受控规则。
 
-如果你要查 `ColumnsType`、`Breakpoint`、`RowSelection` 等 TypeScript 类型的完整关系，请看 [类型参考](/guide/type-reference)。这一页只引用类型名，不重复展开类型定义。
+如果你要查 `TableColumnsType`、`Breakpoint`、`RowSelection` 等 TypeScript 类型的完整关系，请看 [类型参考](/guide/type-reference)。这一页只引用类型名，不重复展开类型定义。
 
 ## 导入入口
 
@@ -14,7 +14,7 @@ import {
   VTableSummary,
   EXPAND_COLUMN,
   SELECTION_COLUMN,
-  type ColumnsType,
+  type TableColumnsType,
   type RowSelection,
   type Expandable,
 } from '@vtable-guild/vtable-guild'
@@ -24,13 +24,13 @@ import {
 
 ### 数据与结构
 
-| Prop                 | 类型                                                        | 默认值       | 说明                                   |
-| -------------------- | ----------------------------------------------------------- | ------------ | -------------------------------------- |
-| `dataSource`         | `TRecord[]`                                                 | `[]`         | 表格数据源。                           |
-| `columns`            | [`ColumnsType<TRecord>`](/guide/type-reference#columnstype) | `[]`         | 列配置，支持叶子列、列组和列占位常量。 |
-| `rowKey`             | `string \| (record) => Key`                                 | -            | 行唯一标识，建议显式传入。             |
-| `childrenColumnName` | `string`                                                    | `'children'` | 树形数据的子节点字段名。               |
-| `indentSize`         | `number`                                                    | `15`         | 树形数据缩进宽度，单位 px。            |
+| Prop                 | 类型                                                             | 默认值       | 说明                                   |
+| -------------------- | ---------------------------------------------------------------- | ------------ | -------------------------------------- |
+| `dataSource`         | `TRecord[]`                                                      | `[]`         | 表格数据源。                           |
+| `columns`            | [`TableColumnsType<TRecord>`](/guide/type-reference#columnstype) | `[]`         | 列配置，支持叶子列、列组和列占位常量。 |
+| `rowKey`             | `string \| (record) => Key`                                      | -            | 行唯一标识，建议显式传入。             |
+| `childrenColumnName` | `string`                                                         | `'children'` | 树形数据的子节点字段名。               |
+| `indentSize`         | `number`                                                         | `15`         | 树形数据缩进宽度，单位 px。            |
 
 ### 视觉与布局
 

@@ -16,7 +16,7 @@
 
 ```vue
 <script setup lang="ts">
-import { VTable, type ColumnsType } from '@vtable-guild/vtable-guild'
+import { VTable, type TableColumnsType } from '@vtable-guild/vtable-guild'
 
 interface ScoreRow {
   key: string
@@ -24,7 +24,7 @@ interface ScoreRow {
   score: number
 }
 
-const columns: ColumnsType<ScoreRow> = [
+const columns: TableColumnsType<ScoreRow> = [
   { title: '姓名', dataIndex: 'name', key: 'name' },
   {
     title: '分数',
@@ -52,11 +52,11 @@ const dataSource: ScoreRow[] = [
 
 ```ts
 import { computed, ref } from 'vue'
-import type { SortOrder } from '@vtable-guild/vtable-guild'
+import type { SortOrder, TableColumnsType } from '@vtable-guild/vtable-guild'
 
 const scoreOrder = ref<SortOrder>('ascend')
 
-const columns = computed(() => [
+const columns = computed<TableColumnsType<ScoreRow>>(() => [
   { title: '姓名', dataIndex: 'name', key: 'name' },
   {
     title: '分数',

@@ -6,7 +6,7 @@
 
 ```vue
 <script setup lang="ts">
-import { VTable, type ColumnsType, type Expandable } from '@vtable-guild/vtable-guild'
+import { VTable, type TableColumnsType, type Expandable } from '@vtable-guild/vtable-guild'
 
 interface UserRow {
   key: string
@@ -15,7 +15,7 @@ interface UserRow {
   city: string
 }
 
-const columns: ColumnsType<UserRow> = [{ title: '姓名', dataIndex: 'name', key: 'name' }]
+const columns: TableColumnsType<UserRow> = [{ title: '姓名', dataIndex: 'name', key: 'name' }]
 
 const expandable: Expandable<UserRow> = {
   expandRowByClick: true,

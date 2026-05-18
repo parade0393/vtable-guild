@@ -154,7 +154,7 @@ app.use(
 
 ```vue
 <script setup lang="ts">
-import { VTable, type ColumnsType } from '@vtable-guild/vtable-guild'
+import { VTable, type TableColumnsType } from '@vtable-guild/vtable-guild'
 
 interface UserRow {
   key: string
@@ -163,7 +163,7 @@ interface UserRow {
   status: string
 }
 
-const columns: ColumnsType<UserRow> = [
+const columns: TableColumnsType<UserRow> = [
   { title: 'Name', key: 'name', dataIndex: 'name', width: 180 },
   { title: 'Age', key: 'age', dataIndex: 'age', width: 96, align: 'right', sorter: true },
   {

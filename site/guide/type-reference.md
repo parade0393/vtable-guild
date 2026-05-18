@@ -5,8 +5,15 @@
 所有类型都推荐从 `@vtable-guild/vtable-guild` 导入。
 
 ```ts
-import type { ColumnsType, ColumnType, RowSelection, Expandable } from '@vtable-guild/vtable-guild'
+import type {
+  TableColumnType,
+  TableColumnsType,
+  RowSelection,
+  Expandable,
+} from '@vtable-guild/vtable-guild'
 ```
+
+如果你正在对齐 ant-design-vue 的列类型命名，优先使用 `TableColumnType` 和 `TableColumnsType`。它们分别等价于 `ColumnType` 和 `ColumnsType`。
 
 ## 表格核心类型
 
@@ -83,12 +90,15 @@ interface ColumnFilterItem {
 叶子列配置。它承载数据读取、渲染、排序、筛选、固定列、列宽拖拽和响应式可见性等能力。
 
 ```ts
-const columns: ColumnType<UserRow>[] = [
-  { title: 'Name', dataIndex: 'name', key: 'name', sorter: true },
-]
+const nameColumn: TableColumnType<UserRow> = {
+  title: 'Name',
+  dataIndex: 'name',
+  key: 'name',
+  sorter: true,
+}
 ```
 
-多数业务场景优先使用 [`ColumnsType`](#columnstype)，因为它同时支持列组和占位常量。
+多数业务场景优先使用 [`TableColumnsType`](#columnstype)，因为它同时支持列组和占位常量。
 
 ### ColumnGroupType
 
@@ -113,7 +123,7 @@ type ColumnsType<TRecord> = Array<ColumnType<TRecord> | ColumnGroupType<TRecord>
 ```
 
 ```ts
-const columns: ColumnsType<UserRow> = [
+const columns: TableColumnsType<UserRow> = [
   { title: 'Name', dataIndex: 'name', key: 'name' },
   { title: 'Age', dataIndex: 'age', key: 'age', responsive: ['md', 'lg', 'xl'] },
 ]
@@ -326,7 +336,7 @@ import { SELECTION_ALL, SELECTION_INVERT, SELECTION_NONE } from '@vtable-guild/v
 ```ts
 import { EXPAND_COLUMN, SELECTION_COLUMN } from '@vtable-guild/vtable-guild'
 
-const columns: ColumnsType<UserRow> = [
+const columns: TableColumnsType<UserRow> = [
   { title: 'Name', dataIndex: 'name', key: 'name' },
   EXPAND_COLUMN,
   SELECTION_COLUMN,

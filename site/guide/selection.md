@@ -8,7 +8,7 @@ rowSelection 用来开启行选择列，并统一管理单选、多选、全选�
 
 ```vue
 <script setup lang="ts">
-import { VTable, type ColumnsType, type RowSelection } from '@vtable-guild/vtable-guild'
+import { VTable, type TableColumnsType, type RowSelection } from '@vtable-guild/vtable-guild'
 
 interface UserRow {
   key: string
@@ -16,7 +16,7 @@ interface UserRow {
   disabled?: boolean
 }
 
-const columns: ColumnsType<UserRow> = [{ title: '姓名', dataIndex: 'name', key: 'name' }]
+const columns: TableColumnsType<UserRow> = [{ title: '姓名', dataIndex: 'name', key: 'name' }]
 
 const rowSelection: RowSelection<UserRow> = {
   type: 'checkbox',

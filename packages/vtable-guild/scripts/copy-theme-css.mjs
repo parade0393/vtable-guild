@@ -93,6 +93,23 @@ async function writeTailwind3Css(targetDir) {
   writeFileSync(resolve(targetDir, 'tailwind3-utilities.css'), utilitiesCss)
 }
 
+function writeCssTypeDeclarations(targetDir) {
+  const declaration = 'declare const href: string\n\nexport default href\n'
+  const files = [
+    'index.d.ts',
+    'tokens.d.ts',
+    'transitions.d.ts',
+    'tailwind3.d.ts',
+    'tailwind3-utilities.d.ts',
+    'presets/antdv.d.ts',
+    'presets/element-plus.d.ts',
+  ]
+
+  for (const file of files) {
+    writeFileSync(resolve(targetDir, file), declaration)
+  }
+}
+
 for (const targetDir of [distTargetDir, packageTargetDir]) {
   rmSync(targetDir, { force: true, recursive: true })
   mkdirSync(targetDir, { recursive: true })
@@ -134,3 +151,7 @@ rewriteTokensSource(resolve(packageTargetDir, 'tokens.css'), [
 ])
 
 await Promise.all([writeTailwind3Css(distTargetDir), writeTailwind3Css(packageTargetDir)])
+
+for (const targetDir of [distTargetDir, packageTargetDir]) {
+  writeCssTypeDeclarations(targetDir)
+}
