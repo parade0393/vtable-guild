@@ -1,35 +1,39 @@
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/parade0393/vtable-guild)
 
+<p align="center">
+  <a href="./README.md">English</a> | <a href="./README.zh-CN.md">中文</a>
+</p>
+
 # vtable-guild
 
-`vtable-guild` 是一个面向 Vue 3 的高度可定制表格组件库，设计目标是在保留现有设计体系的前提下，无缝替换 `ant-design-vue` 或 `element-plus` Table 组件中难以扩展的部分。
+`vtable-guild` is a highly customizable Vue 3 table component library designed to seamlessly replace the hard-to-extend parts of `ant-design-vue` or `element-plus` Table components while preserving your existing design system.
 
-**为什么不直接用他们的原生 Table？**
+**Why not use their native Tables directly?**
 
-- `ant-design-vue` 使用原生滚动条，出现滚动条时表头会多渲染一个空列来对齐，视觉上不美；且不支持虚拟滚动
-- `element-plus` 的 `el-table` 不支持纯配置驱动，`el-table-v2` 虽支持虚拟滚动但 API 体验差
-- 两者均缺乏统一的主题扩展机制
+- `ant-design-vue` uses native scrollbars; when a scrollbar appears, the table header renders an extra empty column for alignment, which looks awkward. It also lacks virtual scrolling.
+- `element-plus`'s `el-table` doesn't support pure configuration-driven usage, and while `el-table-v2` supports virtual scrolling, its API is cumbersome.
+- Both lack a unified theme extensibility mechanism.
 
-**vtable-guild 的策略：**
+**vtable-guild's approach:**
 
-- API 对齐 `ant-design-vue Table`，迁移成本低
-- 滚动条方案参考 `element-plus`，视觉更一致
-- 内置虚拟滚动，开箱即用
-- 三层主题合并模型（默认主题 → 全局配置 → 实例 props），覆盖粒度细至单个 slot
+- API aligned with `ant-design-vue Table` — low migration cost
+- Scrollbar approach inspired by `element-plus` — more consistent visuals
+- Built-in virtual scrolling — out of the box
+- Three-layer theme merging model (default theme → global config → instance props) — fine-grained overrides down to individual slots
 
-当前内置预设：`antdv`（默认）、`element-plus`。
+Built-in presets: `antdv` (default), `element-plus`.
 
 ## Status
 
-- 基础表格、排序、筛选、选择、树形和虚拟滚动能力已进入可集成状态。
-- Playground 已覆盖 `ant-design-vue` 与 `element-plus` 两套预设对照页面。
+- Basic table, sorting, filtering, selection, tree data, and virtual scrolling are ready for integration.
+- Playground covers comparison pages for both `ant-design-vue` and `element-plus` presets.
 
 ## Requirements
 
 - Node `^20.19.0 || >=22.12.0`
 - `pnpm >=10.28.0`
 - Vue `^3.5.0`
-- 使用方需要自行安装并接入目标 UI 库，例如 `ant-design-vue` 或 `element-plus`
+- You need to install and set up the target UI library yourself, e.g. `ant-design-vue` or `element-plus`
 
 ## Install
 
@@ -40,9 +44,9 @@ pnpm add -D tailwindcss @tailwindcss/vite
 
 ## Setup
 
-### 1. 配置 Vite 插件
+### 1. Configure Vite Plugin
 
-在 `vite.config.ts` 中注册 `@tailwindcss/vite`：
+Register `@tailwindcss/vite` in your `vite.config.ts`:
 
 ```ts
 import { defineConfig } from 'vite'
@@ -54,16 +58,16 @@ export default defineConfig({
 })
 ```
 
-### 2. 引入样式
+### 2. Import Styles
 
-在项目的 CSS 入口文件（如 `main.css`）中添加：
+Add the following to your CSS entry file (e.g. `main.css`):
 
 ```css
 @import 'tailwindcss';
 @import '@vtable-guild/vtable-guild/css';
 ```
 
-Tailwind CSS 3 项目使用专门入口，组件库内部依赖的 utilities 已预生成，不需要在 `tailwind.config.js` 里扫描本库或复制语义色 token：
+For Tailwind CSS 3 projects, use the dedicated entry point. The utilities this library depends on are pre-generated, so you don't need to scan this package or copy semantic color tokens in `tailwind.config.js`:
 
 ```css
 @import 'ant-design-vue/dist/reset.css';
@@ -74,25 +78,25 @@ Tailwind CSS 3 项目使用专门入口，组件库内部依赖的 utilities 已
 @tailwind utilities;
 ```
 
-然后在 `main.ts` 中导入该 CSS 文件：
+Then import the CSS file in `main.ts`:
 
 ```ts
 import './main.css'
 ```
 
-> [!IMPORTANT] 与 unlayered CSS reset 共存（ant-design-vue / normalize.css 等）
+> [!IMPORTANT] Coexisting with unlayered CSS resets (ant-design-vue / normalize.css etc.)
 >
-> 本库基于 Tailwind v4，所有 utility 都生成在 `@layer utilities` 内。按 [CSS Cascade Layers 规范](https://developer.mozilla.org/en-US/docs/Web/CSS/@layer)，**unlayered（未进任何层）的普通 CSS 规则会胜过任何 layer 内的规则**，与特异性无关。
+> This library is built on Tailwind v4, where all utilities are generated inside `@layer utilities`. Per the [CSS Cascade Layers spec](https://developer.mozilla.org/en-US/docs/Web/CSS/@layer), **unlayered (not in any layer) normal CSS rules win over any rules inside a layer**, regardless of specificity.
 >
-> 因此如果你的项目同时引入了未分层的 CSS reset，例如：
+> If your project also imports an unlayered CSS reset such as:
 >
 > - `ant-design-vue/dist/reset.css`
 > - `normalize.css`
-> - 任何手写的全局 reset
+> - Any hand-written global reset
 >
-> 它们里面诸如 `button { color: inherit }`、`input { ... }` 之类的规则会**压住**本库 Button、Input 等组件依赖的 Tailwind utility（典型症状：筛选弹窗里的「重置 / 确定」按钮文字颜色丢失）。
+> Rules like `button { color: inherit }`, `input { ... }` will **override** the Tailwind utilities this library's Button, Input, and other components rely on (typical symptom: text color missing on "Reset / OK" buttons in filter dropdowns).
 >
-> **正确接法**：用 `@import` 的 `layer()` 修饰符把 reset 显式收进一个比 `utilities` 更早的 layer，并在最前面声明 layer 顺序：
+> **Correct setup**: use the `layer()` modifier on `@import` to explicitly place the reset in a layer before `utilities`, and declare the layer order upfront:
 >
 > ```css
 > @layer antd-reset, theme, base, components, utilities;
@@ -102,9 +106,9 @@ import './main.css'
 > @import '@vtable-guild/vtable-guild/css';
 > ```
 >
-> 同时把 `main.ts` 里 `import 'ant-design-vue/dist/reset.css'` 这种 JS 侧的副作用 import 去掉，统一交给 CSS 侧的 `@import ... layer(...)` 管理（JS import 会绕过 layer 修饰符）。
+> Also remove any JS-side side-effect imports like `import 'ant-design-vue/dist/reset.css'` from `main.ts` — let the CSS-side `@import ... layer(...)` handle it instead (JS imports bypass the layer modifier).
 >
-> playground 没遇到这个问题，是因为它没引 `ant-design-vue/dist/reset.css`；但生产项目通常都需要这份 reset，请按上面写法接入。
+> The playground doesn't hit this issue because it doesn't import `ant-design-vue/dist/reset.css`; but production projects typically need that reset, so please follow the setup above.
 
 ## Quick Start
 
@@ -158,13 +162,13 @@ const dataSource: UserRow[] = [
 </template>
 ```
 
-## 调整选择列 / 展开列位置
+## Adjusting Selection / Expand Column Positions
 
-借鉴 ant-design-vue 的 `Table.EXPAND_COLUMN` / `Table.SELECTION_COLUMN` 设计，把这两个占位常量插入 `columns` 数组的任意位置，对应的展开图标列、复选框选择列就会出现在该位置而非默认的最左侧。仅在对应特性 (`expandable` / `rowSelection`) 启用时生效；同一类型的占位常量重复出现时只在第一次位置生效。
+Inspired by ant-design-vue's `Table.EXPAND_COLUMN` / `Table.SELECTION_COLUMN` design, you can insert these two placeholder constants anywhere in the `columns` array. The corresponding expand icon column or checkbox selection column will appear at that position instead of the default leftmost position. This only takes effect when the related feature (`expandable` / `rowSelection`) is enabled; duplicate placeholders of the same type only take effect at the first position.
 
 ```ts
 import { VTable, EXPAND_COLUMN, SELECTION_COLUMN } from '@vtable-guild/vtable-guild'
-// 也可以用 VTable.EXPAND_COLUMN / VTable.SELECTION_COLUMN
+// Also available as VTable.EXPAND_COLUMN / VTable.SELECTION_COLUMN
 
 const columns = [
   { title: 'Name', dataIndex: 'name', key: 'name' },
@@ -175,23 +179,23 @@ const columns = [
 ]
 ```
 
-> 占位常量只识别 `columns` 顶层位置，不会进入 `ColumnGroupType.children` 内查找——这一点与 ant-design-vue 一致。
+> Placeholder constants are only recognized at the top level of `columns` — they won't be found inside `ColumnGroupType.children`. This is consistent with ant-design-vue.
 
 ## Theme Presets
 
-- 默认导入 `@vtable-guild/vtable-guild/css` 时使用 `antdv` 预设（所有预设样式已统一包含在内）。
-- 切换预设只需在 JS 侧指定 `themePreset`，无需追加额外的 CSS import。
-- 运行时通过 `createVTableGuild({ themePreset })` 控制主题预设，并可通过 `theme` 与组件 `ui` props 做覆盖。
+- Importing `@vtable-guild/vtable-guild/css` uses the `antdv` preset by default (all preset styles are included in one import).
+- Switching presets only requires specifying `themePreset` on the JS side — no additional CSS imports needed.
+- Control the theme preset at runtime via `createVTableGuild({ themePreset })`, and override via `theme` or component `ui` props.
 
 ```ts
-// 切换到 element-plus 预设，只需改 JS 侧，无需追加 CSS
+// Switch to element-plus preset — JS side only, no extra CSS needed
 app.use(createVTableGuild({ themePreset: 'element-plus' }))
 ```
 
-## 致谢
+## Acknowledgements
 
-- [ant-design-vue](https://antdv.com/components/overview) —— API 的「老师」，列配置、change 事件、双轨受控全套都在向它致敬
-- [antdvNext](https://www.antdv-next.com/) —— 使用了它的虚拟列表组件
-- [Nuxt UI](https://ui.nuxt.com/) —— 三层主题模型的灵感来源，slots / variants / `ui` prop 这套理念全部来自它
-- [tailwind-variants](https://www.tailwind-variants.org/) —— 真正让主题系统跑起来的胶水，slots 合并、variant 计算、tailwind-merge 集成都靠它
-- [liunx.do](https://linux.do/) 学AI，上L站
+- [ant-design-vue](https://antdv.com/components/overview) — the "teacher" for the API; column config, change events, and dual-track controlled mode are all inspired by it
+- [antdvNext](https://www.antdv-next.com/) — virtual list component used from this project
+- [Nuxt UI](https://ui.nuxt.com/) — inspiration for the three-layer theme model; the slots / variants / `ui` prop philosophy all comes from it
+- [tailwind-variants](https://www.tailwind-variants.org/) — the glue that makes the theme system work; slot merging, variant computation, and tailwind-merge integration all rely on it
+- [liunx.do](https://linux.do/) — Learn AI, visit L-Station
