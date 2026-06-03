@@ -1,5 +1,11 @@
 # @vtable-guild/vtable-guild
 
+## 2.1.4
+
+### Patch Changes
+
+- [`4977c79`](https://github.com/parade0393/vtable-guild/commit/4977c791be18d3da33ed7f9e8a957fe009bcc8fc) Thanks [@parade0393](https://github.com/parade0393)! - Add `css/style` as the preferred prebuilt CSS entry and keep `css/tailwind3` as a compatibility alias.
+
 ## 2.1.3
 
 ### Patch Changes
