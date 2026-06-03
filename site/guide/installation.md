@@ -45,7 +45,7 @@ import { createVTableGuild, VTable } from '@vtable-guild/vtable-guild'
 
 ```css [Tailwind CSS 3]
 @import 'ant-design-vue/dist/reset.css';
-@import '@vtable-guild/vtable-guild/css/tailwind3';
+@import '@vtable-guild/vtable-guild/css/style';
 
 @tailwind base;
 @tailwind components;
@@ -58,7 +58,7 @@ import { createVTableGuild, VTable } from '@vtable-guild/vtable-guild'
 `@import` 必须在 `@tailwind` 指令之前，否则 PostCSS 会报错。
 :::
 
-`@vtable-guild/vtable-guild/css` 已包含：
+`@vtable-guild/vtable-guild/css` 和预编译入口 `@vtable-guild/vtable-guild/css/style` 均已包含：
 
 - 默认 `antdv` 预设样式
 - `element-plus` 预设样式
@@ -69,7 +69,9 @@ import { createVTableGuild, VTable } from '@vtable-guild/vtable-guild'
 
 ## Tailwind CSS 3 配置文件
 
-使用 Tailwind CSS 3 时，组件库内部依赖的 utilities 已由 `@vtable-guild/vtable-guild/css/tailwind3` 预生成。你的 `tailwind.config.js` 只需要扫描业务项目自己的文件。
+使用 Tailwind CSS 3 时，组件库内部依赖的 utilities 已由 `@vtable-guild/vtable-guild/css/style` 预生成。你的 `tailwind.config.js` 只需要扫描业务项目自己的文件。
+
+`@vtable-guild/vtable-guild/css/tailwind3` 会作为旧项目的兼容入口继续保留，新项目请使用 `@vtable-guild/vtable-guild/css/style`。
 
 ### postcss.config.js
 

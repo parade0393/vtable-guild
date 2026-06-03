@@ -183,10 +183,10 @@ async function buildTailwind3Utilities() {
   return postprocessTailwind3Utilities(result.css.trim())
 }
 
-async function writeTailwind3Css(targetDir) {
+async function writePrebuiltStyleCss(targetDir) {
   const utilitiesCss = await buildTailwind3Utilities()
-  const tailwind3Css = [
-    '/* @vtable-guild/vtable-guild/css/tailwind3 - Tailwind CSS 3 compatibility entry. */',
+  const prebuiltCss = [
+    '/* @vtable-guild/vtable-guild/css/style - Prebuilt complete CSS entry. */',
     readFileSync(resolve(targetDir, 'presets/antdv.css'), 'utf8').trim(),
     readFileSync(resolve(targetDir, 'presets/element-plus.css'), 'utf8').trim(),
     readFileSync(resolve(targetDir, 'transitions.css'), 'utf8').trim(),
@@ -196,6 +196,12 @@ async function writeTailwind3Css(targetDir) {
     .filter(Boolean)
     .join('\n\n')
 
+  const tailwind3Css = prebuiltCss.replace(
+    '@vtable-guild/vtable-guild/css/style - Prebuilt complete CSS entry.',
+    '@vtable-guild/vtable-guild/css/tailwind3 - Legacy compatibility entry. Prefer @vtable-guild/vtable-guild/css/style.',
+  )
+
+  writeFileSync(resolve(targetDir, 'style.css'), prebuiltCss)
   writeFileSync(resolve(targetDir, 'tailwind3.css'), tailwind3Css)
   writeFileSync(resolve(targetDir, 'tailwind3-utilities.css'), utilitiesCss)
 }
@@ -206,6 +212,7 @@ function writeCssTypeDeclarations(targetDir) {
     'index.d.ts',
     'tokens.d.ts',
     'transitions.d.ts',
+    'style.d.ts',
     'tailwind3.d.ts',
     'tailwind3-utilities.d.ts',
     'presets/antdv.d.ts',
@@ -257,7 +264,7 @@ rewriteTokensSource(resolve(packageTargetDir, 'tokens.css'), [
   "@source '../../icons/src';",
 ])
 
-await Promise.all([writeTailwind3Css(distTargetDir), writeTailwind3Css(packageTargetDir)])
+await Promise.all([writePrebuiltStyleCss(distTargetDir), writePrebuiltStyleCss(packageTargetDir)])
 
 for (const targetDir of [distTargetDir, packageTargetDir]) {
   writeCssTypeDeclarations(targetDir)

@@ -67,16 +67,18 @@ export default defineConfig({
 @import '@vtable-guild/vtable-guild/css';
 ```
 
-Tailwind CSS 3 项目使用专门入口，组件库内部依赖的 utilities 已预生成，不需要在 `tailwind.config.js` 里扫描本库或复制语义色 token：
+Tailwind CSS 3 项目，或希望直接使用预编译样式且不扫描本库的项目，使用 `css/style` 入口。组件库内部依赖的 utilities 已预生成，不需要在 `tailwind.config.js` 里扫描本库或复制语义色 token：
 
 ```css
 @import 'ant-design-vue/dist/reset.css';
-@import '@vtable-guild/vtable-guild/css/tailwind3';
+@import '@vtable-guild/vtable-guild/css/style';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 ```
+
+`@vtable-guild/vtable-guild/css/tailwind3` 会作为旧项目的兼容别名继续保留。
 
 然后在 `main.ts` 中导入该 CSS 文件：
 
@@ -183,7 +185,7 @@ const columns = [
 
 ## Theme Presets
 
-- 默认导入 `@vtable-guild/vtable-guild/css` 时使用 `antdv` 预设（所有预设样式已统一包含在内）。
+- 默认导入 `@vtable-guild/vtable-guild/css` 或预编译入口 `@vtable-guild/vtable-guild/css/style` 时使用 `antdv` 预设（所有预设样式已统一包含在内）。
 - 切换预设只需在 JS 侧指定 `themePreset`，无需追加额外的 CSS import。
 - 运行时通过 `createVTableGuild({ themePreset })` 控制主题预设，并可通过 `theme` 与组件 `ui` props 做覆盖。
 

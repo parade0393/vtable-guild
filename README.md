@@ -67,16 +67,18 @@ Add the following to your CSS entry file (e.g. `main.css`):
 @import '@vtable-guild/vtable-guild/css';
 ```
 
-For Tailwind CSS 3 projects, use the dedicated entry point. The utilities this library depends on are pre-generated, so you don't need to scan this package or copy semantic color tokens in `tailwind.config.js`:
+For Tailwind CSS 3 projects, or projects that want a prebuilt stylesheet without scanning this package, use the `css/style` entry. The utilities this library depends on are pre-generated, so you don't need to scan this package or copy semantic color tokens in `tailwind.config.js`:
 
 ```css
 @import 'ant-design-vue/dist/reset.css';
-@import '@vtable-guild/vtable-guild/css/tailwind3';
+@import '@vtable-guild/vtable-guild/css/style';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 ```
+
+`@vtable-guild/vtable-guild/css/tailwind3` is kept as a legacy compatibility alias for existing projects.
 
 Then import the CSS file in `main.ts`:
 
@@ -183,7 +185,7 @@ const columns = [
 
 ## Theme Presets
 
-- Importing `@vtable-guild/vtable-guild/css` uses the `antdv` preset by default (all preset styles are included in one import).
+- Importing `@vtable-guild/vtable-guild/css` or the prebuilt `@vtable-guild/vtable-guild/css/style` uses the `antdv` preset by default (all preset styles are included in one import).
 - Switching presets only requires specifying `themePreset` on the JS side — no additional CSS imports needed.
 - Control the theme preset at runtime via `createVTableGuild({ themePreset })`, and override via `theme` or component `ui` props.
 

@@ -18,11 +18,13 @@ const app = createApp(App)
 app.use(createVTableGuild())
 ```
 
-Tailwind CSS 3 users should import the prebuilt compatibility CSS instead:
+Tailwind CSS 3 users, or projects that want prebuilt styles without scanning this package, should import the prebuilt CSS instead:
 
 ```ts
-import '@vtable-guild/vtable-guild/css/tailwind3'
+import '@vtable-guild/vtable-guild/css/style'
 ```
+
+`@vtable-guild/vtable-guild/css/tailwind3` is kept as a legacy compatibility alias for existing projects.
 
 ```vue
 <template>

@@ -58,7 +58,7 @@ export default defineConfig({
 
 ## Tailwind CSS 3
 
-如果你的项目仍在使用 Tailwind CSS 3，也可以正常接入。核心区别是使用专门的 Tailwind 3 样式入口，它已经预生成组件库内部需要的 utilities。
+如果你的项目仍在使用 Tailwind CSS 3，也可以正常接入。核心区别是使用预编译样式入口，它已经预生成组件库内部需要的 utilities。
 
 ### 安装
 
@@ -97,12 +97,14 @@ export default {
 
 ```css
 @import 'ant-design-vue/dist/reset.css';
-@import '@vtable-guild/vtable-guild/css/tailwind3';
+@import '@vtable-guild/vtable-guild/css/style';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 ```
+
+`@vtable-guild/vtable-guild/css/tailwind3` 会作为旧项目的兼容入口继续保留，新项目请使用 `@vtable-guild/vtable-guild/css/style`。
 
 ::: warning 注意顺序
 `@import` 必须在 `@tailwind` 指令之前，否则 PostCSS 会报错。

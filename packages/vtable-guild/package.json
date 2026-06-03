@@ -27,6 +27,11 @@
       "style": "./css/transitions.css",
       "default": "./css/transitions.css"
     },
+    "./css/style": {
+      "types": "./css/style.d.ts",
+      "style": "./css/style.css",
+      "default": "./css/style.css"
+    },
     "./css/tailwind3": {
       "types": "./css/tailwind3.d.ts",
       "style": "./css/tailwind3.css",
