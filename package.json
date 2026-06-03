@@ -27,9 +27,9 @@
     "site:preview": "pnpm --filter @vtable-guild/site preview",
     "changeset": "changeset",
     "version:packages": "changeset version",
-    "publish-packages": "pnpm build && changeset publish --provenance",
+    "publish-packages": "pnpm build && node ./scripts/publish-trusted.mjs",
     "release": "pnpm lint && pnpm type-check && pnpm test && pnpm publish-packages",
-    "release:dry": "pnpm build && changeset publish --dry-run"
+    "release:dry": "pnpm build && node ./scripts/publish-trusted.mjs --dry-run"
   },
   "config": {
     "commitizen": {

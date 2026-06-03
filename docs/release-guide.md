@@ -9,7 +9,7 @@
 - [CI 自动发布流程](#ci-自动发布流程)
 - [首次发布](#首次发布)
 - [手动发布（回退方案）](#手动发布回退方案)
-- [NPM Token 配置](#npm-token-配置)
+- [npm Trusted Publisher 配置](#npm-trusted-publisher-配置)
 - [常见问题](#常见问题)
 
 ---
@@ -100,7 +100,7 @@ push to master
     └── 无 changeset（即合并了 Version PR）→ 执行发布
             ├── pnpm publish-packages
             │     ├── pnpm build
-            │     └── changeset publish --provenance  ──→  发布到 npm（含供应链签名）
+            │     └── node ./scripts/publish-trusted.mjs  ──→  通过 npm Trusted Publisher 发布
             └── 创建 GitHub Release + Tag
 ```
 
@@ -110,7 +110,8 @@ push to master
 - 每次触发后，changesets/action 会做二选一：
   - 存在 changeset 文件 → **打开/更新 Release PR**（不发布）
   - Release PR 被合并 → **执行发布**（消费 changeset，推送到 npm）
-- 发布时使用 `--provenance` 标志，包详情页会显示 npm provenance 供应链签名
+- 发布通过 npm Trusted Publisher 的 OIDC 认证完成，不需要 `NPM_TOKEN`
+- Trusted Publisher 会自动生成 npm provenance 供应链签名
 - 开发者唯一需要做的就是：**合并 Release PR**
 
 ---
@@ -132,7 +133,7 @@ git add .
 git commit -m "chore(release): version packages"
 git push origin master
 
-# CI 检测到没有待消费的 changeset（已被 pnpm run version:packages 消费）→ 自动执行 changeset publish
+# CI 检测到没有待消费的 changeset（已被 pnpm run version:packages 消费）→ 自动执行 publish-trusted
 ```
 
 > **注意**：如果使用 CI 自动流程，可以跳过第 2、3 步，直接 push 后让 CI 创建 Release PR，合并即可。
@@ -159,7 +160,7 @@ pnpm release
 > "release": "pnpm lint && pnpm type-check && pnpm test && pnpm publish-packages"
 > ```
 >
-> `publish-packages` 脚本：`pnpm build && changeset publish --provenance`
+> `publish-packages` 脚本：`pnpm build && node ./scripts/publish-trusted.mjs`
 
 ### 发布前预览（dry-run）
 
@@ -184,23 +185,27 @@ pnpm version:packages
 
 ---
 
-## NPM Token 配置
+## npm Trusted Publisher 配置
 
-### 创建 npm Access Token
+CI 发布使用 npm Trusted Publisher，不再配置 `NPM_TOKEN`。
 
-1. 登录 [npmjs.com](https://www.npmjs.com)
-2. 右上角头像 → **Access Tokens**
-3. 点击 **Generate New Token** → 选择 **Automation**（用于 CI，不受 2FA 限制）
-4. 复制生成的 token
+### npmjs.com 配置
 
-### 配置到 GitHub Repository
+1. 打开 npm 包页面 → **Settings** → **Trusted Publisher**
+2. Publisher 选择 **GitHub Actions**
+3. Organization or user: `parade0393`
+4. Repository: `vtable-guild`
+5. Workflow filename: `release.yml`
+6. Permissions 至少勾选 `npm publish`
 
-1. 打开 GitHub 仓库 → **Settings** → **Secrets and variables** → **Actions**
-2. 点击 **New repository secret**
-3. Name: `NPM_TOKEN`，Value: 粘贴上面复制的 token
-4. 点击 **Add secret**
+### GitHub Actions 配置
 
-> `GITHUB_TOKEN` 无需手动配置，GitHub Actions 自动生成。
+- `.github/workflows/release.yml` 必须包含 `permissions.id-token: write`
+- 发布 job 必须运行在 GitHub-hosted runner 上
+- npm CLI 版本必须 `>=11.5.1`，Node.js 版本必须 `>=22.14.0`
+- 只保留 `GITHUB_TOKEN` 供 Changesets 创建 Release PR / GitHub Release；不要再传 `NPM_TOKEN` 或 `NODE_AUTH_TOKEN`
+
+> `GITHUB_TOKEN` 无需手动配置，GitHub Actions 自动生成。npm 发布认证由 OIDC 临时凭据完成。
 
 ---
 
@@ -217,15 +222,15 @@ pnpm version:packages
 
 检查：
 
-- GitHub repo → Settings → Secrets 中是否有 `NPM_TOKEN`
-- npm token 是否过期（Automation 类型 token 默认长期有效，但可手动撤销）
-- GitHub Actions 日志中 `changeset publish` 步骤的输出
+- npm 包 Settings → Trusted Publisher 是否指向 `parade0393/vtable-guild` 和 `release.yml`
+- `.github/workflows/release.yml` 是否有 `permissions.id-token: write`
+- 发布 job 是否运行在 GitHub-hosted runner 上
+- npm CLI 是否为 `>=11.5.1`，Node.js 是否为 `>=22.14.0`
+- GitHub Actions 日志中 `publish-trusted` 步骤的输出
 
 ### Q: 发布时报错 "You must be logged in"？
 
-说明 `NPM_TOKEN` 未正确传入。检查 `.github/workflows/release.yml` 中的 `env` 块，确认 `NODE_AUTH_TOKEN` 或 `NPM_TOKEN` 均已配置。
-
-`setup-node` action 的 `registry-url` 配置了 `https://registry.npmjs.org` 后，会自动将 `NODE_AUTH_TOKEN` 映射为 npm 认证 token。
+说明 npm CLI 没有拿到 OIDC 发布凭据。检查 Trusted Publisher 的仓库和 workflow 文件名是否匹配，以及 workflow 是否包含 `id-token: write`。
 
 ### Q: 想回滚某个版本？
 
@@ -254,9 +259,4 @@ pnpm changeset status
 
 ### Q: CI 发布报 403 Forbidden / Two-factor authentication required？
 
-npm 已于 2025 年 11 月废除 Legacy Token（Classic Token）。现在 CI 发布必须使用 **Granular Access Token** 并开启 **Bypass two-factor authentication**：
-
-1. npmjs.com → 头像 → **Access Tokens** → **Generate New Token** → **Granular Access Token**
-2. Packages and scopes → **Read and write**
-3. **Bypass two-factor authentication** → **Enabled**
-4. 更新 GitHub repo → Settings → Secrets → `NPM_TOKEN`
+CI 不再使用 npm token。优先检查 npm 包是否已经启用 Trusted Publisher，并确认发布 workflow 使用 GitHub-hosted runner、`id-token: write`、Node.js `>=22.14.0` 和 npm `>=11.5.1`。
