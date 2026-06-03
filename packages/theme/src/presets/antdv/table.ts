@@ -9,9 +9,9 @@ import type { ThemeConfig } from '@vtable-guild/core'
  * 亮色/暗色通过 preset CSS（如 presets/antdv.css）中的 :root / .dark 切换。
  *
  * ⚠️ 注意 Tailwind CSS 4 消歧语法：
- * - text-[color:var(...)] 用于文字颜色
- * - text-[length:var(...)] 用于字号
- * - 不要使用 text-[var(...)]，Tailwind 无法推断意图
+ * - 颜色使用 text arbitrary value + CSS variable
+ * - 字号使用 text length arbitrary value + CSS variable
+ * - 不要省略类型提示，Tailwind 无法推断意图
  */
 /** 对齐类映射，由 cell 组件消费，同时确保类名进入 theme dist 被 Tailwind 扫描 */
 export const TABLE_ALIGN_CLASSES = {

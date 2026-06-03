@@ -99,7 +99,7 @@ export const elementPlusTableTheme = {
     // li 自身只控制指针；hover/selected/padding 全在 contentWrapper
     filterDropdownItem: 'cursor-pointer',
     // 多选选中（默认 selected 槽）：仅 checkbox label 变 primary 色，无背景；
-    // 通过 [--color-on-surface:...] 重定义子 span 颜色（FilterDropdown.tsx 内 span 使用 text-[color:var(--color-on-surface)]）
+    // 通过 CSS variable arbitrary property 重定义子 span 颜色。
     filterDropdownItemSelected:
       '[--color-on-surface:var(--color-primary)] font-medium hover:bg-[color:var(--color-control-item-hover-bg)]',
     // 单选选中（element-plus highlight 模式）：primary 底 + 白字 → 复用 var 重定义

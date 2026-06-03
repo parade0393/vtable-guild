@@ -25,6 +25,113 @@ function readRuntimeCss(targetDir) {
     .trim()
 }
 
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function removePlaceholderUtilityRules(css) {
+  return css.replace(/(?:^|\n)[^{}]*\{[^{}]*(?:\.\.\.|var\(\.\.\.\))[^{}]*\}\n?/g, '\n')
+}
+
+function addTwVariableFallbacks(css) {
+  const fallbacks = {
+    '--tw-border-spacing-x': '0',
+    '--tw-border-spacing-y': '0',
+    '--tw-translate-x': '0',
+    '--tw-translate-y': '0',
+    '--tw-rotate': '0',
+    '--tw-skew-x': '0',
+    '--tw-skew-y': '0',
+    '--tw-scale-x': '1',
+    '--tw-scale-y': '1',
+    '--tw-pan-x': ' ',
+    '--tw-pan-y': ' ',
+    '--tw-pinch-zoom': ' ',
+    '--tw-ordinal': ' ',
+    '--tw-slashed-zero': ' ',
+    '--tw-numeric-figure': ' ',
+    '--tw-numeric-spacing': ' ',
+    '--tw-numeric-fraction': ' ',
+    '--tw-ring-inset': ' ',
+    '--tw-ring-offset-width': '0px',
+    '--tw-ring-offset-color': '#fff',
+    '--tw-ring-color': 'rgb(59 130 246 / 0.5)',
+    '--tw-ring-offset-shadow': '0 0 #0000',
+    '--tw-ring-shadow': '0 0 #0000',
+    '--tw-shadow': '0 0 #0000',
+    '--tw-shadow-colored': '0 0 #0000',
+    '--tw-blur': ' ',
+    '--tw-brightness': ' ',
+    '--tw-contrast': ' ',
+    '--tw-grayscale': ' ',
+    '--tw-hue-rotate': ' ',
+    '--tw-invert': ' ',
+    '--tw-saturate': ' ',
+    '--tw-sepia': ' ',
+    '--tw-drop-shadow': ' ',
+    '--tw-backdrop-blur': ' ',
+    '--tw-backdrop-brightness': ' ',
+    '--tw-backdrop-contrast': ' ',
+    '--tw-backdrop-grayscale': ' ',
+    '--tw-backdrop-hue-rotate': ' ',
+    '--tw-backdrop-invert': ' ',
+    '--tw-backdrop-opacity': ' ',
+    '--tw-backdrop-saturate': ' ',
+    '--tw-backdrop-sepia': ' ',
+    '--tw-content': "''",
+  }
+
+  let result = css
+
+  for (const [variable, fallback] of Object.entries(fallbacks)) {
+    result = result.replace(
+      new RegExp(`var\\(${escapeRegExp(variable)}\\)`, 'g'),
+      `var(${variable}, ${fallback})`,
+    )
+  }
+
+  return result
+}
+
+function appendDeclarationIfMissing(body, property, declaration) {
+  if (body.includes(`${property}:`)) return body
+  const indent = body.match(/\n(\s*)[^\n]+/)?.[1] ?? '    '
+  const trimmedBody = body.replace(/\s*$/, '')
+  const separator = trimmedBody.endsWith(';') ? '' : ';'
+
+  return `${trimmedBody}${separator}\n${indent}${declaration}`
+}
+
+function addBorderStyleUtilities(css) {
+  return css.replace(/([^{}]+)\{([^{}]*)\}/g, (match, selector, body) => {
+    let nextBody = body
+
+    if (/\bborder-width\s*:/.test(nextBody)) {
+      nextBody = appendDeclarationIfMissing(nextBody, 'border-style', 'border-style: solid')
+    }
+
+    const sideDeclarations = [
+      ['border-top-width', 'border-top-style', 'border-top-style: solid'],
+      ['border-right-width', 'border-right-style', 'border-right-style: solid'],
+      ['border-bottom-width', 'border-bottom-style', 'border-bottom-style: solid'],
+      ['border-left-width', 'border-left-style', 'border-left-style: solid'],
+    ]
+
+    for (const [widthProperty, styleProperty, declaration] of sideDeclarations) {
+      if (nextBody.includes(`${widthProperty}:`)) {
+        nextBody = appendDeclarationIfMissing(nextBody, styleProperty, declaration)
+      }
+    }
+
+    if (nextBody === body) return match
+    return `${selector}{${nextBody}\n}`
+  })
+}
+
+function postprocessTailwind3Utilities(css) {
+  return addBorderStyleUtilities(addTwVariableFallbacks(removePlaceholderUtilityRules(css))).trim()
+}
+
 async function buildTailwind3Utilities() {
   const [{ default: postcss }, { default: tailwindcss }] = await Promise.all([
     import('postcss'),
@@ -73,7 +180,7 @@ async function buildTailwind3Utilities() {
     from: undefined,
   })
 
-  return result.css.trim()
+  return postprocessTailwind3Utilities(result.css.trim())
 }
 
 async function writeTailwind3Css(targetDir) {
