@@ -1,7 +1,9 @@
-import { defineComponent, ref, h, type PropType, type StyleValue } from 'vue'
+import { defineComponent, inject, ref, h, type PropType, type StyleValue } from 'vue'
 import { useTheme } from '../composables/useTheme'
 import { useScrollbar } from '../composables/useScrollbar'
-import type { ThemeConfig, SlotProps } from '../utils/types'
+import type { ThemeConfig, SlotProps, VTableGuildContext } from '../utils/types'
+import { prefixVtgClassNames } from '../utils/classPrefix'
+import { VTABLE_GUILD_INJECTION_KEY } from '../plugin/index'
 import ScrollbarBar from './ScrollbarBar'
 
 const defaultScrollbarTheme = {
@@ -54,6 +56,7 @@ export default defineComponent({
   },
   emits: ['scroll'],
   setup(props, { emit, slots: vueSlots, expose }) {
+    const globalContext = inject<VTableGuildContext | null>(VTABLE_GUILD_INJECTION_KEY, null)
     const { slots: themeSlots } = useTheme('scrollbar', defaultScrollbarTheme, props)
 
     const wrapRef = ref<HTMLElement | null>(null)
@@ -144,7 +147,17 @@ export default defineComponent({
         >
           <div
             ref={wrapRef}
-            class={[themeSlots.wrap(), props.wrapClass, props.native ? '' : 'scrollbar-none']}
+            class={[
+              themeSlots.wrap(),
+              props.wrapClass,
+              props.native
+                ? ''
+                : prefixVtgClassNames(
+                    'scrollbar-none',
+                    globalContext?.cssMode ?? 'prebuilt',
+                    globalContext?.classPrefix ?? 'vtg',
+                  ),
+            ]}
             style={[wrapStyle as StyleValue, props.wrapStyle ?? {}]}
             onScroll={handleScroll}
           >

@@ -15,6 +15,12 @@ provide(
     get themePreset() {
       return 'element-plus' as const
     },
+    get cssMode() {
+      return parentContext?.cssMode ?? 'prebuilt'
+    },
+    get classPrefix() {
+      return parentContext?.classPrefix ?? 'vtg'
+    },
     get theme() {
       return parentContext?.theme ?? {}
     },

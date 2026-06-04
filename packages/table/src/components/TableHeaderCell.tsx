@@ -311,7 +311,7 @@ export default defineComponent({
         return ''
       }
 
-      return 'before:hidden border-b-0'
+      return tableContext.vtgClass?.('before:hidden border-b-0') ?? ''
     })
 
     // 修复分组表头中「非真正最后一列」被 last: 选择器错误匹配的问题。
@@ -322,9 +322,16 @@ export default defineComponent({
       if (total > 0 && props.cell.colEnd < total - 1) {
         const isBordered = tableContext.bordered?.value ?? false
         if (isBordered) {
-          return 'last:border-r last:border-[color:var(--vtg-table-border-color)]'
+          return (
+            tableContext.vtgClass?.(
+              'last:border-r last:border-[color:var(--vtg-table-border-color)]',
+            ) ?? ''
+          )
         }
-        return 'last:before:bg-[color:var(--vtg-table-header-split-color)]'
+        return (
+          tableContext.vtgClass?.('last:before:bg-[color:var(--vtg-table-header-split-color)]') ??
+          ''
+        )
       }
       return ''
     })
@@ -369,7 +376,7 @@ export default defineComponent({
         sortedClass,
         groupedHeaderClass.value,
         props.cell.column.className,
-        isExpandHeader ? 'before:hidden' : '',
+        isExpandHeader ? tableContext.vtgClass?.('before:hidden') : '',
         headerCellProps.value?.class,
         headerCellProps.value?.className,
         fixedClass.value,
@@ -497,7 +504,9 @@ export default defineComponent({
 
         const cellSelClass = cn(
           props.thClass,
-          hasColumnTitle ? 'text-center before:hidden' : 'text-center before:hidden leading-[0]',
+          tableContext.vtgClass?.(
+            hasColumnTitle ? 'text-center before:hidden' : 'text-center before:hidden leading-[0]',
+          ),
           leafColumn.value.className,
           headerCellProps.value?.class,
           headerCellProps.value?.className,
@@ -569,7 +578,9 @@ export default defineComponent({
         }
 
         const state = tableContext.allCheckedState?.() ?? 'none'
-        const titleNode = columnTitle ? <span class="ml-2">{columnTitle}</span> : null
+        const titleNode = columnTitle ? (
+          <span class={tableContext.vtgClass?.('ml-2')}>{columnTitle}</span>
+        ) : null
 
         return (
           <th
@@ -581,7 +592,9 @@ export default defineComponent({
             onClick={handleCellClick}
           >
             {!hideSelectAll ? (
-              <span class="inline-flex items-center justify-center relative">
+              <span
+                class={tableContext.vtgClass?.('inline-flex items-center justify-center relative')}
+              >
                 <SelectionCheckbox
                   checked={state === 'all'}
                   indeterminate={state === 'partial'}
@@ -593,7 +606,7 @@ export default defineComponent({
                     ref={selectionAnchorRef}
                     class={cn(
                       tableContext.subThemeSlots?.value.selectionExtra,
-                      'absolute left-full top-1/2 -translate-y-1/2',
+                      tableContext.vtgClass?.('absolute left-full top-1/2 -translate-y-1/2'),
                     )}
                     onMouseenter={openSelectionDropdown}
                     onMouseleave={scheduleCloseSelectionDropdown}
@@ -641,7 +654,9 @@ export default defineComponent({
             class={cn(
               sortAreaTitleClass,
               shouldApplyHeaderEllipsis.value &&
-                'block min-w-0 overflow-hidden text-ellipsis whitespace-nowrap',
+                tableContext.vtgClass?.(
+                  'block min-w-0 overflow-hidden text-ellipsis whitespace-nowrap',
+                ),
             )}
           >
             {headerContent.value}
@@ -815,7 +830,9 @@ export default defineComponent({
           onMouseleave={handleHeaderMouseLeave}
           aria-sort={leafColumn.value ? getAriaSortValue(sortOrder.value) : undefined}
         >
-          <span class={cn('flex items-center', props.headerCellInnerClass)}>
+          <span
+            class={cn(tableContext.vtgClass?.('flex items-center'), props.headerCellInnerClass)}
+          >
             {sortArea}
             {hasFilters.value && filterIconContent}
           </span>

@@ -15,12 +15,12 @@
 @import './transitions.css';
 
 /* Hide native scrollbar — used by Scrollbar component */
-.scrollbar-none {
+.vtg-scrollbar-none {
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
 
-.scrollbar-none::-webkit-scrollbar {
+.vtg-scrollbar-none::-webkit-scrollbar {
   display: none;
 }
 

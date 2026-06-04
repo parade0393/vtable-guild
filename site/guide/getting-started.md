@@ -49,10 +49,16 @@ export default defineConfig({
 
 ```css
 @import 'tailwindcss';
-@import '@vtable-guild/vtable-guild/css';
+@import '@vtable-guild/vtable-guild/css/tailwind4';
 ```
 
-`@vtable-guild/vtable-guild/css` 和 `@vtable-guild/vtable-guild/css/style` 均已包含：
+使用 Tailwind 4 入口时，初始化插件也要启用 Tailwind 4 模式：
+
+```ts
+app.use(createVTableGuild({ cssMode: 'tailwind4' }))
+```
+
+`@vtable-guild/vtable-guild/css/style` 和 `@vtable-guild/vtable-guild/css/tailwind4` 均已包含：
 
 - 默认的 `antdv` 预设
 - `element-plus` 预设
@@ -60,6 +66,8 @@ export default defineConfig({
 - 组件运行所需的基础样式
 
 如果只是切换预设，不需要额外追加 CSS。`@vtable-guild/vtable-guild/css/tailwind3` 会作为旧项目兼容入口继续保留，新项目需要预编译 CSS 时请使用 `@vtable-guild/vtable-guild/css/style`。
+
+预编译模式下，库内部 utility class 会输出 `vtg-` 前缀。Tailwind 4 模式下，内部 class 保持无前缀。详细规则见 [包导入与样式](/guide/package-consumption)。
 
 ## 初始化插件
 

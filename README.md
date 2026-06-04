@@ -45,7 +45,37 @@ pnpm add @vtable-guild/vtable-guild
 
 ### 1. Configure Styles
 
-If your project already uses Tailwind CSS 4, install Tailwind and register `@tailwindcss/vite` in your `vite.config.ts`:
+Default setup uses the complete prebuilt stylesheet. It does not require Tailwind CSS and all
+internal utility classes are emitted with the `vtg-` prefix:
+
+```css
+@import 'ant-design-vue/dist/reset.css';
+@import '@vtable-guild/vtable-guild/css/style';
+```
+
+Then import the CSS file in `main.ts`:
+
+```ts
+import './main.css'
+```
+
+```ts
+app.use(createVTableGuild())
+```
+
+In prebuilt mode, user-provided classes are not auto-prefixed. If you want to override an internal
+utility, pass the same prefix as the library uses:
+
+```vue
+<VTable :ui="{ th: 'vtg-px-2' }" />
+```
+
+Passing an unprefixed class such as `px-2` may coexist with the internal `vtg-px-*` class, but it is
+not guaranteed to override it. If you set a custom prefix, use the same prefix in overrides and build
+matching CSS, for example `createVTableGuild({ classPrefix: 'app' })` with CSS generated using
+`VTG_CLASS_PREFIX=app`.
+
+If your project already uses Tailwind CSS 4 and you want unprefixed utilities, install Tailwind and register `@tailwindcss/vite` in your `vite.config.ts`:
 
 ```bash
 pnpm add -D tailwindcss @tailwindcss/vite
@@ -65,23 +95,21 @@ Then add the Tailwind CSS entry to your CSS entry file (e.g. `main.css`):
 
 ```css
 @import 'tailwindcss';
-@import '@vtable-guild/vtable-guild/css';
+@import '@vtable-guild/vtable-guild/css/tailwind4';
 ```
 
-If your project does not use Tailwind CSS, import the complete prebuilt stylesheet instead. You do not need to install Tailwind CSS, configure `@tailwindcss/vite`, scan this package, or copy semantic color tokens:
-
-```css
-@import 'ant-design-vue/dist/reset.css';
-@import '@vtable-guild/vtable-guild/css/style';
-```
-
-`@vtable-guild/vtable-guild/css/tailwind3` is kept as a legacy compatibility alias. New projects should use `@vtable-guild/vtable-guild/css/style` when they need prebuilt CSS.
-
-Then import the CSS file in `main.ts`:
+And enable Tailwind 4 mode in `main.ts`:
 
 ```ts
 import './main.css'
+
+app.use(createVTableGuild({ cssMode: 'tailwind4' }))
 ```
+
+In Tailwind 4 mode, internal classes remain unprefixed, so user overrides can also use normal
+Tailwind classes such as `px-2`. `@vtable-guild/vtable-guild/css/tailwind3` is kept as a legacy
+compatibility alias. New projects should use `@vtable-guild/vtable-guild/css/style` when they need
+prebuilt CSS.
 
 > [!IMPORTANT] Coexisting with unlayered CSS resets (ant-design-vue / normalize.css etc.)
 >
@@ -102,7 +130,7 @@ import './main.css'
 >
 > @import 'ant-design-vue/dist/reset.css' layer(antd-reset);
 > @import 'tailwindcss';
-> @import '@vtable-guild/vtable-guild/css';
+> @import '@vtable-guild/vtable-guild/css/tailwind4';
 > ```
 >
 > Also remove any JS-side side-effect imports like `import 'ant-design-vue/dist/reset.css'` from `main.ts` — let the CSS-side `@import ... layer(...)` handle it instead (JS imports bypass the layer modifier).
@@ -115,7 +143,7 @@ import './main.css'
 import { createApp } from 'vue'
 import App from './App.vue'
 import { createVTableGuild, VTable } from '@vtable-guild/vtable-guild'
-import '@vtable-guild/vtable-guild/css'
+import '@vtable-guild/vtable-guild/css/style'
 
 const app = createApp(App)
 

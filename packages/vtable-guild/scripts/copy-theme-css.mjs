@@ -1,13 +1,98 @@
-import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import {
+  cpSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs'
 import { resolve } from 'node:path'
 
 const packageRoot = resolve(import.meta.dirname, '..')
 const sourceDir = resolve(packageRoot, '../theme/css')
 const distTargetDir = resolve(packageRoot, 'dist/css')
 const packageTargetDir = resolve(packageRoot, 'css')
+const classPrefix = (process.env.VTG_CLASS_PREFIX ?? 'vtg').trim().replace(/-+$/, '') || 'vtg'
 
 function toPosixPath(path) {
   return path.replaceAll('\\', '/')
+}
+
+function listSourceFiles(dir) {
+  const result = []
+  for (const entry of readdirSync(dir)) {
+    const file = resolve(dir, entry)
+    const stat = statSync(file)
+    if (stat.isDirectory()) {
+      result.push(...listSourceFiles(file))
+    } else if (/\.(ts|tsx|js|jsx|vue)$/.test(entry)) {
+      result.push(file)
+    }
+  }
+  return result
+}
+
+function splitAtTopLevelColon(className) {
+  const parts = []
+  let bracketDepth = 0
+  let parenDepth = 0
+  let start = 0
+
+  for (let index = 0; index < className.length; index++) {
+    const char = className[index]
+    if (char === '[') bracketDepth++
+    else if (char === ']') bracketDepth--
+    else if (char === '(') parenDepth++
+    else if (char === ')') parenDepth--
+    else if (char === ':' && bracketDepth === 0 && parenDepth === 0) {
+      parts.push(className.slice(start, index))
+      start = index + 1
+    }
+  }
+
+  parts.push(className.slice(start))
+  return parts
+}
+
+function prefixBaseClass(baseClass) {
+  if (!baseClass || baseClass.startsWith('[') || baseClass.startsWith('--')) return baseClass
+  if (baseClass.startsWith(`${classPrefix}-`)) return baseClass
+  if (baseClass.startsWith(`-${classPrefix}-`)) return baseClass
+  if (baseClass.startsWith('!')) return `!${prefixBaseClass(baseClass.slice(1))}`
+  if (baseClass.startsWith('-')) return `-${classPrefix}-${baseClass.slice(1)}`
+  return `${classPrefix}-${baseClass}`
+}
+
+function prefixClassCandidate(candidate) {
+  const parts = splitAtTopLevelColon(candidate)
+  const baseClass = parts.pop() ?? ''
+  parts.push(prefixBaseClass(baseClass))
+  return parts.join(':')
+}
+
+function buildPrefixedRawContent() {
+  const sourceDirs = [
+    resolve(packageRoot, 'src'),
+    resolve(packageRoot, '../core/src'),
+    resolve(packageRoot, '../icons/src'),
+    resolve(packageRoot, '../table/src'),
+    resolve(packageRoot, '../theme/src'),
+  ]
+
+  const candidates = new Set()
+  for (const dir of sourceDirs) {
+    for (const file of listSourceFiles(dir)) {
+      const content = readFileSync(file, 'utf8')
+      for (const match of content.matchAll(/[!A-Za-z0-9_:/.[\]()%,#>&-]+/g)) {
+        const candidate = match[0]
+        candidates.add(candidate)
+        candidates.add(prefixClassCandidate(candidate))
+      }
+    }
+  }
+
+  return [...candidates].join(' ')
 }
 
 function rewriteTokensSource(tokensPath, sourceDirectives) {
@@ -19,10 +104,18 @@ function rewriteTokensSource(tokensPath, sourceDirectives) {
   writeFileSync(tokensPath, normalized)
 }
 
-function readRuntimeCss(targetDir) {
-  return readFileSync(resolve(targetDir, 'index.css'), 'utf8')
+function readRuntimeCss(targetDir, options = {}) {
+  return applyRuntimeClassPrefix(readFileSync(resolve(targetDir, 'index.css'), 'utf8'), options)
     .replace(/^@import\s+['"].+?['"];\r?\n/gm, '')
     .trim()
+}
+
+function applyRuntimeClassPrefix(css, { mode = 'prebuilt' } = {}) {
+  if (mode === 'tailwind4') {
+    return css.replace(/\.vtg-scrollbar-none/g, '.scrollbar-none')
+  }
+  if (classPrefix === 'vtg') return css
+  return css.replace(/\.vtg-scrollbar-none/g, `.${classPrefix}-scrollbar-none`)
 }
 
 function escapeRegExp(value) {
@@ -150,9 +243,11 @@ async function buildTailwind3Utilities() {
     resolve(packageRoot, '../theme/dist/**/*.{js,mjs}'),
     resolve(packageRoot, '../theme/src/**/*.{ts,tsx,js,jsx,vue}'),
   ].map(toPosixPath)
+  content.push({ raw: buildPrefixedRawContent(), extension: 'html' })
 
   const config = {
     content,
+    prefix: `${classPrefix}-`,
     corePlugins: {
       preflight: false,
     },
@@ -190,7 +285,7 @@ async function writePrebuiltStyleCss(targetDir) {
     readFileSync(resolve(targetDir, 'presets/antdv.css'), 'utf8').trim(),
     readFileSync(resolve(targetDir, 'presets/element-plus.css'), 'utf8').trim(),
     readFileSync(resolve(targetDir, 'transitions.css'), 'utf8').trim(),
-    readRuntimeCss(targetDir),
+    readRuntimeCss(targetDir, { mode: 'prebuilt' }),
     utilitiesCss,
   ]
     .filter(Boolean)
@@ -206,6 +301,21 @@ async function writePrebuiltStyleCss(targetDir) {
   writeFileSync(resolve(targetDir, 'tailwind3-utilities.css'), utilitiesCss)
 }
 
+function writeTailwind4Css(targetDir) {
+  const tailwind4Css = [
+    '/* @vtable-guild/vtable-guild/css/tailwind4 - Tailwind CSS 4 source entry. */',
+    readFileSync(resolve(targetDir, 'tokens.css'), 'utf8').trim(),
+    readFileSync(resolve(targetDir, 'presets/antdv.css'), 'utf8').trim(),
+    readFileSync(resolve(targetDir, 'presets/element-plus.css'), 'utf8').trim(),
+    readFileSync(resolve(targetDir, 'transitions.css'), 'utf8').trim(),
+    readRuntimeCss(targetDir, { mode: 'tailwind4' }),
+  ]
+    .filter(Boolean)
+    .join('\n\n')
+
+  writeFileSync(resolve(targetDir, 'tailwind4.css'), tailwind4Css)
+}
+
 function writeCssTypeDeclarations(targetDir) {
   const declaration = 'declare const href: string\n\nexport default href\n'
   const files = [
@@ -215,6 +325,7 @@ function writeCssTypeDeclarations(targetDir) {
     'style.d.ts',
     'tailwind3.d.ts',
     'tailwind3-utilities.d.ts',
+    'tailwind4.d.ts',
     'presets/antdv.d.ts',
     'presets/element-plus.d.ts',
   ]
@@ -267,5 +378,6 @@ rewriteTokensSource(resolve(packageTargetDir, 'tokens.css'), [
 await Promise.all([writePrebuiltStyleCss(distTargetDir), writePrebuiltStyleCss(packageTargetDir)])
 
 for (const targetDir of [distTargetDir, packageTargetDir]) {
+  writeTailwind4Css(targetDir)
   writeCssTypeDeclarations(targetDir)
 }

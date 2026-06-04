@@ -2,12 +2,19 @@
 
 // ---------- Utils ----------
 export { tv, cn } from './utils/tv'
+export {
+  DEFAULT_VTG_CLASS_PREFIX,
+  normalizeVtgClassPrefix,
+  prefixVtgClassNames,
+  cnByCssMode,
+} from './utils/classPrefix'
 export { optionalProp, requiredProp, optionalBoolProp, optionalStringProp } from './utils/props'
 import type {
   DeepPartial,
   LocaleName,
   LocaleRegistry,
   ThemePresetName,
+  VTableGuildCssMode,
   VTableGuildLocale,
 } from './utils/types'
 
@@ -20,6 +27,7 @@ export type {
   ThemeOverrideConfig,
   SlotProps,
   ThemePresetName,
+  VTableGuildCssMode,
   VTableGuildLocale,
   VTableGuildTableLocale,
   VTableGuildTableHeaderLocale,
@@ -39,6 +47,8 @@ export type VTableGuildThemeOverrides = {
 
 export interface VTableGuildOptions {
   themePreset?: ThemePresetName
+  cssMode?: VTableGuildCssMode
+  classPrefix?: string
   theme?: VTableGuildThemeOverrides
   locale?: LocaleName
   locales?: LocaleRegistry
@@ -47,6 +57,8 @@ export interface VTableGuildOptions {
 
 export interface VTableGuildContext {
   themePreset: ThemePresetName
+  cssMode: VTableGuildCssMode
+  classPrefix: string
   theme: VTableGuildThemeOverrides
   locale: LocaleName
   locales: LocaleRegistry

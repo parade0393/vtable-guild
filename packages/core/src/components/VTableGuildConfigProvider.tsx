@@ -8,8 +8,10 @@ import type {
   VTableGuildContext,
   VTableGuildLocale,
   VTableGuildThemeOverrides,
+  VTableGuildCssMode,
 } from '../index'
 import { mergeDeep } from '../utils/mergeDeep'
+import { normalizeVtgClassPrefix } from '../utils/classPrefix'
 import { mergeThemeConfigs } from '../composables/useTheme'
 import { VTABLE_GUILD_INJECTION_KEY } from '../plugin/index'
 
@@ -18,6 +20,14 @@ export default defineComponent({
   props: {
     theme: {
       type: Object as PropType<VTableGuildThemeOverrides>,
+      default: undefined,
+    },
+    cssMode: {
+      type: String as PropType<VTableGuildCssMode>,
+      default: undefined,
+    },
+    classPrefix: {
+      type: String,
       default: undefined,
     },
     locale: {
@@ -66,6 +76,12 @@ export default defineComponent({
     const context = reactive({
       get themePreset() {
         return parentContext?.themePreset ?? 'antdv'
+      },
+      get cssMode() {
+        return props.cssMode ?? parentContext?.cssMode ?? 'prebuilt'
+      },
+      get classPrefix() {
+        return normalizeVtgClassPrefix(props.classPrefix ?? parentContext?.classPrefix)
       },
       get theme() {
         return mergedTheme.value

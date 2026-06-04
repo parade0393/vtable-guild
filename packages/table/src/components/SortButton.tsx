@@ -31,15 +31,17 @@ export default defineComponent({
         {h((tableContext.presetConfig?.value ?? tablePresetConfigs.antdv).sortAscIcon, {
           class:
             props.sortOrder === 'ascend'
-              ? 'text-[color:var(--color-primary)]'
-              : 'text-[color:var(--color-sorter-icon)]',
+              ? tableContext.vtgClass?.('text-[color:var(--color-primary)]')
+              : tableContext.vtgClass?.('text-[color:var(--color-sorter-icon)]'),
         })}
         {h((tableContext.presetConfig?.value ?? tablePresetConfigs.antdv).sortDescIcon, {
           class: [
             tableContext.subThemeSlots?.value.sortIconDown,
-            props.sortOrder === 'descend'
-              ? 'text-[color:var(--color-primary)]'
-              : 'text-[color:var(--color-sorter-icon)]',
+            tableContext.vtgClass?.(
+              props.sortOrder === 'descend'
+                ? 'text-[color:var(--color-primary)]'
+                : 'text-[color:var(--color-sorter-icon)]',
+            ),
           ],
         })}
       </span>

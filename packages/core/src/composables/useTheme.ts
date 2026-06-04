@@ -5,6 +5,7 @@ import { cn } from '../utils/tv'
 import { tv } from '../utils/tv'
 import { VTABLE_GUILD_INJECTION_KEY } from '../plugin/index'
 import type { ThemeConfig, VTableGuildContext } from '../index'
+import { cnByCssMode, prefixThemeConfig } from '../utils/classPrefix'
 
 /**
  * 三层主题合并 composable。
@@ -49,11 +50,17 @@ export function useTheme<T extends ThemeConfig>(
 ) {
   // ========== Layer 2: 通过 inject 获取全局配置 ==========
   const globalContext = inject<VTableGuildContext | null>(VTABLE_GUILD_INJECTION_KEY, null)
+  const cssMode = computed(() => globalContext?.cssMode ?? 'prebuilt')
+  const classPrefix = computed(() => globalContext?.classPrefix ?? 'vtg')
 
   // 内部 computed：缓存 merge + tv() 的计算结果
   // 仅在 variant props 变化时重算，ui/class 变化不触发
   const _slotFns = computed(() => {
-    const resolvedDefaultTheme = unref(defaultTheme)
+    const resolvedDefaultTheme = prefixThemeConfig(
+      unref(defaultTheme),
+      cssMode.value,
+      classPrefix.value,
+    )
     const globalTheme = (
       globalContext?.theme as Record<string, Partial<ThemeConfig>> | undefined
     )?.[componentName]
@@ -88,7 +95,7 @@ export function useTheme<T extends ThemeConfig>(
       const extraClass = slotName === 'root' ? ((props.class ?? '') as string) : ''
 
       // 通过 cn() 合并（cn 底层调用 tailwind-merge 处理 class 冲突）
-      return cn(base, uiClass, extraClass) ?? ''
+      return cnByCssMode(cssMode.value, classPrefix.value, base, uiClass, extraClass) ?? ''
     }
   }
 

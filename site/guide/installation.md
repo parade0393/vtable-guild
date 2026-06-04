@@ -31,8 +31,11 @@ import { createVTableGuild, VTable } from '@vtable-guild/vtable-guild'
 ::: code-group
 
 ```css [使用 Tailwind CSS 4]
+@layer antd-reset, theme, base, components, utilities;
+
+@import 'ant-design-vue/dist/reset.css' layer(antd-reset);
 @import 'tailwindcss';
-@import '@vtable-guild/vtable-guild/css';
+@import '@vtable-guild/vtable-guild/css/tailwind4';
 ```
 
 ```css [不使用 Tailwind CSS]
@@ -42,7 +45,7 @@ import { createVTableGuild, VTable } from '@vtable-guild/vtable-guild'
 
 :::
 
-`@vtable-guild/vtable-guild/css` 和预编译入口 `@vtable-guild/vtable-guild/css/style` 均已包含：
+`@vtable-guild/vtable-guild/css/style` 和 `@vtable-guild/vtable-guild/css/tailwind4` 均已包含：
 
 - 默认 `antdv` 预设样式
 - `element-plus` 预设样式
@@ -52,6 +55,8 @@ import { createVTableGuild, VTable } from '@vtable-guild/vtable-guild'
 切换预设时不需要额外再导入其他 CSS。
 
 `@vtable-guild/vtable-guild/css/style` 是完整预编译 CSS 入口。使用它时，宿主项目不需要安装 Tailwind CSS，不需要配置 `@tailwindcss/vite`，也不需要扫描本库源码。
+
+`@vtable-guild/vtable-guild/css/tailwind4` 是 Tailwind CSS 4 项目的源码入口。使用它时，需要在插件层启用 `cssMode: 'tailwind4'`，内部 utility 会保持无前缀，方便宿主项目用普通 Tailwind class 覆盖。
 
 `@vtable-guild/vtable-guild/css/tailwind3` 会作为旧项目兼容入口继续保留，新项目需要预编译 CSS 时请使用 `@vtable-guild/vtable-guild/css/style`。
 
@@ -82,7 +87,7 @@ import { createVTableGuild, VTable } from '@vtable-guild/vtable-guild'
 
 @import 'ant-design-vue/dist/reset.css' layer(antd-reset);
 @import 'tailwindcss';
-@import '@vtable-guild/vtable-guild/css';
+@import '@vtable-guild/vtable-guild/css/tailwind4';
 ```
 
 要点：
@@ -109,6 +114,7 @@ const app = createApp(App)
 app.use(
   createVTableGuild({
     themePreset: 'antdv',
+    // 如果使用 @vtable-guild/vtable-guild/css/tailwind4，请设置 cssMode: 'tailwind4'
   }),
 )
 
@@ -121,6 +127,10 @@ app.mount('#app')
 
 - `themePreset`
   切换 `antdv` 或 `element-plus`
+- `cssMode`
+  选择 `prebuilt` 或 `tailwind4` 样式模式
+- `classPrefix`
+  预编译模式下的内部 utility class 前缀，默认 `vtg`
 - `theme`
   全局主题覆盖
 - `locale`
@@ -136,6 +146,7 @@ app.mount('#app')
 app.use(
   createVTableGuild({
     themePreset: 'antdv',
+    cssMode: 'prebuilt',
     locale: 'zh-CN',
     theme: {
       table: {

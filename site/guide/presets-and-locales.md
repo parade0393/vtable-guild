@@ -22,7 +22,7 @@ app.use(
 )
 ```
 
-如果你改成 element-plus，直接在 JS 侧切换即可，无需追加 CSS（`@vtable-guild/vtable-guild/css` 已内含所有预设样式）：
+如果你改成 element-plus，直接在 JS 侧切换即可，无需追加 CSS（`@vtable-guild/vtable-guild/css/style` 和 `@vtable-guild/vtable-guild/css/tailwind4` 均已内含所有预设样式）：
 
 ```ts
 app.use(

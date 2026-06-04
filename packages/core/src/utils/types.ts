@@ -113,6 +113,14 @@ export type ThemeOverrideConfig<T extends ThemeConfig> = {
  */
 export type ThemePresetName = 'antdv' | 'element-plus'
 
+/**
+ * 样式入口模式。
+ *
+ * - 'prebuilt'：默认模式，库内部 class 输出 vtg- 前缀，配合预构建 CSS 使用。
+ * - 'tailwind4'：Tailwind CSS 4 项目使用，库内部 class 保持无前缀，由用户 Tailwind 构建生成。
+ */
+export type VTableGuildCssMode = 'prebuilt' | 'tailwind4'
+
 // ---------- 插件配置相关 ----------
 
 export interface VTableGuildTableHeaderLocale {
@@ -187,6 +195,10 @@ export type VTableGuildThemeOverrides = {
 export interface VTableGuildOptions {
   /** 全局主题预设，默认 'antdv' */
   themePreset?: ThemePresetName
+  /** CSS 入口模式，默认 'prebuilt' */
+  cssMode?: VTableGuildCssMode
+  /** 库内部 utility class 前缀，默认 'vtg'；仅 prebuilt 模式生效 */
+  classPrefix?: string
   /** 全局主题覆盖，key 为组件名（如 'table'） */
   theme?: VTableGuildThemeOverrides
   /** 当前激活语言标识，默认 'zh-CN' */
@@ -202,6 +214,8 @@ export interface VTableGuildOptions {
  */
 export interface VTableGuildContext {
   themePreset: ThemePresetName
+  cssMode: VTableGuildCssMode
+  classPrefix: string
   theme: VTableGuildThemeOverrides
   locale: LocaleName
   locales: LocaleRegistry
