@@ -1,5 +1,10 @@
 import type { ComputedRef, InjectionKey, Ref, Slots } from 'vue'
-import type { LocaleName, ThemePresetName, VTableGuildTableLocale } from '@vtable-guild/core'
+import type {
+  LocaleName,
+  ThemePresetName,
+  VTableGuildCssMode,
+  VTableGuildTableLocale,
+} from '@vtable-guild/core'
 import type {
   CellAdditionalProps,
   ColumnGroupType,
@@ -159,6 +164,15 @@ export interface TableContext {
 
   /** 当前主题预设 */
   themePreset?: ComputedRef<ThemePresetName>
+
+  /** 当前 CSS 入口模式 */
+  cssMode?: ComputedRef<VTableGuildCssMode>
+
+  /** 库内部 utility class 前缀 */
+  classPrefix?: ComputedRef<string>
+
+  /** 转换库内部硬编码 class。用户传入 class 不应调用此函数。 */
+  vtgClass?: (className: string) => string
 
   /** 当前激活语言标识 */
   localeName?: ComputedRef<LocaleName>

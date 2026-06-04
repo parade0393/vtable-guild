@@ -27,9 +27,11 @@ export default defineComponent({
       <span
         class={[
           tableContext.subThemeSlots?.value.filterIcon,
-          props.active
-            ? 'text-[color:var(--color-primary)]'
-            : 'text-[color:var(--color-filter-icon)]',
+          tableContext.vtgClass?.(
+            props.active
+              ? 'text-[color:var(--color-primary)]'
+              : 'text-[color:var(--color-filter-icon)]',
+          ),
         ]}
         onClick={handleClick}
         role="button"

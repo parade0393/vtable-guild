@@ -277,7 +277,7 @@ export default defineComponent({
         const hovering = isHovered.value && tableContext.hoverable?.value
         const cellSelClass = cn(
           props.tdClass,
-          hasRenderCell ? 'text-center' : 'text-center leading-[0]',
+          tableContext.vtgClass?.(hasRenderCell ? 'text-center' : 'text-center leading-[0]'),
           props.column.className,
           selectionCellProps?.class,
           selectionCellProps?.className,
@@ -326,7 +326,7 @@ export default defineComponent({
 
         const expandCellClass = cn(
           props.tdClass,
-          'text-center',
+          tableContext.vtgClass?.('text-center'),
           props.column.className,
           sortedClass,
           expandSelectedClass,

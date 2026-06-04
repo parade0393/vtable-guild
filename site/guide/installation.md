@@ -12,19 +12,11 @@
 pnpm add @vtable-guild/vtable-guild vue
 ```
 
-如果宿主项目还没有 Tailwind CSS，根据版本选择安装：
+Tailwind CSS 不是必需依赖。如果你的项目已经使用 Tailwind CSS 4，并希望让宿主项目继续处理 Tailwind 构建，再额外安装：
 
-::: code-group
-
-```bash [Tailwind CSS 4（推荐）]
+```bash
 pnpm add -D tailwindcss @tailwindcss/vite
 ```
-
-```bash [Tailwind CSS 3]
-pnpm add -D tailwindcss@^3 postcss autoprefixer
-```
-
-:::
 
 ## 运行时入口
 
@@ -38,27 +30,22 @@ import { createVTableGuild, VTable } from '@vtable-guild/vtable-guild'
 
 ::: code-group
 
-```css [Tailwind CSS 4]
+```css [使用 Tailwind CSS 4]
+@layer antd-reset, theme, base, components, utilities;
+
+@import 'ant-design-vue/dist/reset.css' layer(antd-reset);
 @import 'tailwindcss';
-@import '@vtable-guild/vtable-guild/css';
+@import '@vtable-guild/vtable-guild/css/tailwind4';
 ```
 
-```css [Tailwind CSS 3]
+```css [不使用 Tailwind CSS]
 @import 'ant-design-vue/dist/reset.css';
 @import '@vtable-guild/vtable-guild/css/style';
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 ```
 
 :::
 
-::: warning Tailwind CSS 3 注意
-`@import` 必须在 `@tailwind` 指令之前，否则 PostCSS 会报错。
-:::
-
-`@vtable-guild/vtable-guild/css` 和预编译入口 `@vtable-guild/vtable-guild/css/style` 均已包含：
+`@vtable-guild/vtable-guild/css/style` 和 `@vtable-guild/vtable-guild/css/tailwind4` 均已包含：
 
 - 默认 `antdv` 预设样式
 - `element-plus` 预设样式
@@ -67,46 +54,11 @@ import { createVTableGuild, VTable } from '@vtable-guild/vtable-guild'
 
 切换预设时不需要额外再导入其他 CSS。
 
-## Tailwind CSS 3 配置文件
+`@vtable-guild/vtable-guild/css/style` 是完整预编译 CSS 入口。使用它时，宿主项目不需要安装 Tailwind CSS，不需要配置 `@tailwindcss/vite`，也不需要扫描本库源码。
 
-使用 Tailwind CSS 3 时，组件库内部依赖的 utilities 已由 `@vtable-guild/vtable-guild/css/style` 预生成。你的 `tailwind.config.js` 只需要扫描业务项目自己的文件。
+`@vtable-guild/vtable-guild/css/tailwind4` 是 Tailwind CSS 4 项目的源码入口。使用它时，需要在插件层启用 `cssMode: 'tailwind4'`，内部 utility 会保持无前缀，方便宿主项目用普通 Tailwind class 覆盖。
 
-`@vtable-guild/vtable-guild/css/tailwind3` 会作为旧项目的兼容入口继续保留，新项目请使用 `@vtable-guild/vtable-guild/css/style`。
-
-### postcss.config.js
-
-```js
-export default {
-  plugins: {
-    tailwindcss: {},
-    autoprefixer: {},
-  },
-}
-```
-
-### tailwind.config.js
-
-```js
-/** @type {import('tailwindcss').Config} */
-export default {
-  content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
-  theme: { extend: {} },
-  plugins: [],
-}
-```
-
-### Vite 配置
-
-不需要 `@tailwindcss/vite` 插件，Tailwind 通过 PostCSS 自动处理：
-
-```ts
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-
-export default defineConfig({
-  plugins: [vue()],
-})
-```
+`@vtable-guild/vtable-guild/css/tailwind3` 会作为旧项目兼容入口继续保留，新项目需要预编译 CSS 时请使用 `@vtable-guild/vtable-guild/css/style`。
 
 ## 与 unlayered CSS reset 共存
 
@@ -114,8 +66,8 @@ export default defineConfig({
 本库基于 Tailwind v4，所有 utility 都生成在 `@layer utilities` 内。按 [CSS Cascade Layers 规范](https://developer.mozilla.org/en-US/docs/Web/CSS/@layer)，**unlayered（未进任何层）的普通 CSS 规则会胜过任何 layer 内的规则**，与特异性无关。
 :::
 
-::: tip Tailwind CSS 3 用户
-Tailwind CSS 3 不使用 CSS Cascade Layers，utility 类直接生成为普通 CSS 规则，不存在此问题。直接按上方的样式入口顺序引入即可。
+::: tip 预编译 CSS 用户
+如果使用 `@vtable-guild/vtable-guild/css/style`，无需配置 Tailwind CSS 的 cascade layer。直接按上方的样式入口顺序引入即可。
 :::
 
 如果项目里同时引入了未分层的全局 reset，例如：
@@ -126,7 +78,7 @@ Tailwind CSS 3 不使用 CSS Cascade Layers，utility 类直接生成为普通 C
 
 它们里面诸如 `button { color: inherit }`、`input { ... }` 之类的规则会**压住**本库 Button、Input 等组件依赖的 Tailwind utility。典型症状：筛选弹窗里「重置 / 确定」按钮的文字颜色看上去是 ant-design-vue 的全局 `rgba(0,0,0,0.88)`，而不是预期的主色 / 白色。
 
-### 正确接法（Tailwind CSS 4）
+### 正确接法
 
 用 `@import` 的 `layer()` 修饰符把 reset 显式收进一个比 `utilities` 更早的 layer，并在最前面**先声明 layer 顺序**：
 
@@ -135,7 +87,7 @@ Tailwind CSS 3 不使用 CSS Cascade Layers，utility 类直接生成为普通 C
 
 @import 'ant-design-vue/dist/reset.css' layer(antd-reset);
 @import 'tailwindcss';
-@import '@vtable-guild/vtable-guild/css';
+@import '@vtable-guild/vtable-guild/css/tailwind4';
 ```
 
 要点：
@@ -162,6 +114,7 @@ const app = createApp(App)
 app.use(
   createVTableGuild({
     themePreset: 'antdv',
+    // 如果使用 @vtable-guild/vtable-guild/css/tailwind4，请设置 cssMode: 'tailwind4'
   }),
 )
 
@@ -174,6 +127,10 @@ app.mount('#app')
 
 - `themePreset`
   切换 `antdv` 或 `element-plus`
+- `cssMode`
+  选择 `prebuilt` 或 `tailwind4` 样式模式
+- `classPrefix`
+  预编译模式下的内部 utility class 前缀，默认 `vtg`
 - `theme`
   全局主题覆盖
 - `locale`
@@ -189,6 +146,7 @@ app.mount('#app')
 app.use(
   createVTableGuild({
     themePreset: 'antdv',
+    cssMode: 'prebuilt',
     locale: 'zh-CN',
     theme: {
       table: {

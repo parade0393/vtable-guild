@@ -45,7 +45,11 @@ export default defineComponent({
         <div class={props.loadingClass}>
           {indicatorNode}
           {props.tip && (
-            <div class="mt-2 text-[color:var(--color-on-surface)] text-sm">{props.tip}</div>
+            <div
+              class={tableContext.vtgClass?.('mt-2 text-[color:var(--color-on-surface)] text-sm')}
+            >
+              {props.tip}
+            </div>
           )}
         </div>
       )

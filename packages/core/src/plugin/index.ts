@@ -2,6 +2,7 @@
 
 import { reactive, type InjectionKey, type Plugin } from 'vue'
 import type { VTableGuildOptions, VTableGuildContext } from '../index'
+import { normalizeVtgClassPrefix } from '../utils/classPrefix'
 
 /**
  * 全局配置的 injection key。
@@ -45,6 +46,8 @@ export function createVTableGuild(options: VTableGuildOptions = {}): Plugin {
     install(app) {
       const context = reactive({
         themePreset: options.themePreset ?? 'antdv',
+        cssMode: options.cssMode ?? 'prebuilt',
+        classPrefix: normalizeVtgClassPrefix(options.classPrefix),
         theme: options.theme ?? {},
         locale: options.locale ?? 'zh-CN',
         locales: options.locales ?? {},

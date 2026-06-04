@@ -13,6 +13,12 @@ const scopedContext = reactive({
   get themePreset() {
     return props.preset
   },
+  get cssMode() {
+    return parentContext?.cssMode ?? 'prebuilt'
+  },
+  get classPrefix() {
+    return parentContext?.classPrefix ?? 'vtg'
+  },
   get theme() {
     return parentContext?.theme ?? {}
   },

@@ -112,10 +112,61 @@ describe('useTheme', () => {
     })
 
     expect(wrapper.get('div').classes()).toEqual(
-      expect.arrayContaining(['px-4', 'bg-zinc-100', 'text-red-500', 'shadow-lg']),
+      expect.arrayContaining(['px-4', 'bg-zinc-100', 'vtg-text-red-500', 'shadow-lg']),
     )
     expect(wrapper.get('span').classes()).toEqual(
-      expect.arrayContaining(['text-sm', 'tracking-wide', 'uppercase', 'underline']),
+      expect.arrayContaining(['vtg-text-sm', 'tracking-wide', 'uppercase', 'vtg-underline']),
     )
+  })
+
+  it('keeps internal classes unprefixed in tailwind4 mode', () => {
+    const wrapper = mount(BadgeProbe, {
+      props: {
+        tone: 'danger',
+        ui: {
+          root: 'px-8',
+        },
+      },
+      global: {
+        plugins: [createVTableGuild({ cssMode: 'tailwind4' })],
+      },
+    })
+
+    expect(wrapper.get('div').classes()).toEqual(expect.arrayContaining(['px-8', 'text-red-500']))
+    expect(wrapper.get('div').classes()).not.toContain('vtg-px-8')
+  })
+
+  it('requires prefixed overrides to replace internal utilities in prebuilt mode', () => {
+    const wrapper = mount(BadgeProbe, {
+      props: {
+        ui: {
+          root: 'px-8 vtg-px-6',
+        },
+      },
+      global: {
+        plugins: [createVTableGuild()],
+      },
+    })
+
+    expect(wrapper.get('div').classes()).toEqual(expect.arrayContaining(['vtg-px-6', 'px-8']))
+    expect(wrapper.get('div').classes()).not.toContain('vtg-px-2')
+  })
+
+  it('supports a custom class prefix in prebuilt mode', () => {
+    const wrapper = mount(BadgeProbe, {
+      props: {
+        ui: {
+          root: 'px-8 app-px-6',
+        },
+      },
+      global: {
+        plugins: [createVTableGuild({ classPrefix: 'app' })],
+      },
+    })
+
+    expect(wrapper.get('div').classes()).toEqual(
+      expect.arrayContaining(['app-px-6', 'px-8', 'app-text-blue-500']),
+    )
+    expect(wrapper.get('div').classes()).not.toContain('app-px-2')
   })
 })

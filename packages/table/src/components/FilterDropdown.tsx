@@ -384,7 +384,9 @@ export default defineComponent({
             onClick={() => toggleItem(item.value, item)}
           >
             <SwitcherIcon />
-            <span class="mt-1 mr-2 shrink-0">{renderFilterIndicator(selected, indeterminate)}</span>
+            <span class={tableContext.vtgClass?.('mt-1 mr-2 shrink-0')}>
+              {renderFilterIndicator(selected, indeterminate)}
+            </span>
             <div
               class={[
                 contentWrapperClass,
@@ -395,7 +397,7 @@ export default defineComponent({
             >
               <span
                 class={[
-                  'text-[color:var(--color-on-surface)]',
+                  tableContext.vtgClass?.('text-[color:var(--color-on-surface)]'),
                   matchedByTreeSearch &&
                     tableContext.subThemeSlots?.value.filterDropdownTreeItemMatched,
                 ]}
@@ -412,7 +414,10 @@ export default defineComponent({
           key={String(item.value)}
           role={useListRadioSemantics ? 'radio' : undefined}
           aria-checked={useListRadioSemantics ? selected : undefined}
-          class={[itemClass, !props.multiple && isHighlightMode.value && 'gap-0']}
+          class={[
+            itemClass,
+            !props.multiple && isHighlightMode.value && tableContext.vtgClass?.('gap-0'),
+          ]}
         >
           <div
             class={[
@@ -426,7 +431,9 @@ export default defineComponent({
             onClick={() => toggleItem(item.value, item)}
           >
             {renderFilterIndicator(selected, indeterminate)}
-            <span class="text-[color:var(--color-on-surface)]">{item.text}</span>
+            <span class={tableContext.vtgClass?.('text-[color:var(--color-on-surface)]')}>
+              {item.text}
+            </span>
           </div>
         </li>
       )
@@ -543,7 +550,7 @@ export default defineComponent({
                         class={tableContext.subThemeSlots?.value.filterDropdownTreeCheckAll}
                         onClick={toggleSelectAll}
                       >
-                        <span class="mt-1 mr-2 shrink-0">
+                        <span class={tableContext.vtgClass?.('mt-1 mr-2 shrink-0')}>
                           <Checkbox
                             checked={selectAllState.value === 'all'}
                             indeterminate={selectAllState.value === 'partial'}
@@ -557,7 +564,9 @@ export default defineComponent({
                               : tableContext.subThemeSlots?.value.filterDropdownItemHover,
                           ]}
                         >
-                          <span class="text-[color:var(--color-on-surface)]">
+                          <span
+                            class={tableContext.vtgClass?.('text-[color:var(--color-on-surface)]')}
+                          >
                             {filterDropdownLocale.value?.selectAllText ?? '全选'}
                           </span>
                         </div>

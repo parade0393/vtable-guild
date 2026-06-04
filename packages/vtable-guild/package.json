@@ -42,6 +42,11 @@
       "style": "./css/tailwind3-utilities.css",
       "default": "./css/tailwind3-utilities.css"
     },
+    "./css/tailwind4": {
+      "types": "./css/tailwind4.d.ts",
+      "style": "./css/tailwind4.css",
+      "default": "./css/tailwind4.css"
+    },
     "./css/presets/antdv": {
       "types": "./css/presets/antdv.d.ts",
       "style": "./css/presets/antdv.css",

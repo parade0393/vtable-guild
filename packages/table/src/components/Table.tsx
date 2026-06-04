@@ -15,6 +15,7 @@ import {
   cn,
   mergeDeep,
   mergeThemeConfigs,
+  prefixVtgClassNames,
   type ThemeConfig,
   Scrollbar,
   useTheme,
@@ -324,6 +325,8 @@ export default defineComponent({
     const globalContext = inject<VTableGuildContext | null>(VTABLE_GUILD_INJECTION_KEY, null)
 
     const effectiveThemePreset = computed(() => globalContext?.themePreset ?? 'antdv')
+    const effectiveCssMode = computed(() => globalContext?.cssMode ?? 'prebuilt')
+    const effectiveClassPrefix = computed(() => globalContext?.classPrefix ?? 'vtg')
 
     const descendantTheme = computed(() => {
       const inheritedTheme = globalContext?.theme ?? {}
@@ -361,6 +364,12 @@ export default defineComponent({
     provide(VTABLE_GUILD_INJECTION_KEY, {
       get themePreset() {
         return effectiveThemePreset.value
+      },
+      get cssMode() {
+        return effectiveCssMode.value
+      },
+      get classPrefix() {
+        return effectiveClassPrefix.value
       },
       get theme() {
         return descendantTheme.value
@@ -897,6 +906,10 @@ export default defineComponent({
       subThemeSlots,
       presetConfig,
       themePreset: effectiveThemePreset,
+      cssMode: effectiveCssMode,
+      classPrefix: effectiveClassPrefix,
+      vtgClass: (className) =>
+        prefixVtgClassNames(className, effectiveCssMode.value, effectiveClassPrefix.value),
       localeName: effectiveLocaleName,
       locale: tableLocale,
       rowSelection: () => props.rowSelection as RowSelection<Record<string, unknown>> | undefined,
@@ -1010,7 +1023,13 @@ export default defineComponent({
               class={themeSlots.headerWrapper()}
               style={stickyHeaderStyle.value}
             >
-              <div class="block w-full min-w-full">
+              <div
+                class={prefixVtgClassNames(
+                  'block w-full min-w-full',
+                  effectiveCssMode.value,
+                  effectiveClassPrefix.value,
+                )}
+              >
                 <table class={tableClass.value} style={tableStyle}>
                   <ColGroup columns={displayColumns.value} />
                   <TableHeader
@@ -1092,7 +1111,13 @@ export default defineComponent({
                 overflow: 'hidden',
               }}
             >
-              <div class="block w-full min-w-full">
+              <div
+                class={prefixVtgClassNames(
+                  'block w-full min-w-full',
+                  effectiveCssMode.value,
+                  effectiveClassPrefix.value,
+                )}
+              >
                 <table class={tableClass.value} style={tableStyle}>
                   <ColGroup columns={displayColumns.value} />
                   <tfoot class={themeSlots.summary()}>{summaryContent}</tfoot>
@@ -1104,7 +1129,17 @@ export default defineComponent({
         return (
           <div class={themeSlots.root()}>
             {titleContent && <div class={themeSlots.title()}>{titleContent}</div>}
-            <div class={cn(themeSlots.wrapper(), resolvedSticky.value && 'overflow-clip')}>
+            <div
+              class={cn(
+                themeSlots.wrapper(),
+                resolvedSticky.value &&
+                  prefixVtgClassNames(
+                    'overflow-clip',
+                    effectiveCssMode.value,
+                    effectiveClassPrefix.value,
+                  ),
+              )}
+            >
               {headerTable}
               {virtualBody}
               {normalBody}

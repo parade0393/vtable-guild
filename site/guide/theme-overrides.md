@@ -150,6 +150,30 @@ createVTableGuild({
 />
 ```
 
+## utility 前缀与覆盖规则
+
+默认预编译模式下，库内部 utility class 会输出 `vtg-` 前缀。用户传入的 `ui`、`class`、`rowClassName` 等 class 不会被自动加前缀。
+
+如果要覆盖库内部 utility，也应传同前缀：
+
+```vue
+<VTable :columns="columns" :data-source="dataSource" :ui="{ th: 'vtg-px-2' }" />
+```
+
+直接传 `px-2` 可能会和内部 `vtg-px-*` 同时存在，不保证覆盖内部样式。
+
+如果项目使用 Tailwind CSS 4 并启用了 `cssMode: 'tailwind4'`，内部 class 保持无前缀，此时可以继续用普通 Tailwind class 覆盖：
+
+```ts
+app.use(createVTableGuild({ cssMode: 'tailwind4' }))
+```
+
+```vue
+<VTable :columns="columns" :data-source="dataSource" :ui="{ th: 'px-2' }" />
+```
+
+更多接入细节见 [包导入与样式](/guide/package-consumption)。
+
 ## 怎么选
 
 - 想切换整套视觉基线，用 `themePreset`

@@ -111,7 +111,7 @@ export default defineComponent({
                 onMouseenter={() => emit('mouseenter')}
                 onMouseleave={() => emit('mouseleave')}
               >
-                <ul class="m-0 list-none p-0">
+                <ul class={tableContext.vtgClass?.('m-0 list-none p-0')}>
                   {props.items.map((item) => (
                     <li
                       key={item.key}

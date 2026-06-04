@@ -56,7 +56,7 @@ function findTableHeaderCell(wrapper: VueWrapper, title: string) {
 }
 
 function hasHeaderEllipsisClass(wrapper: VueWrapper, title: string) {
-  return findTableHeaderCell(wrapper, title).find('.whitespace-nowrap').exists()
+  return findTableHeaderCell(wrapper, title).find('.vtg-whitespace-nowrap').exists()
 }
 
 function findBodyButton(text: string) {
@@ -73,7 +73,7 @@ function findBodyButton(text: string) {
 
 function findResizeHandle(wrapper: VueWrapper, title: string) {
   const cell = findTableHeaderCell(wrapper, title)
-  const handle = cell.find('.cursor-col-resize')
+  const handle = cell.find('.vtg-cursor-col-resize')
 
   if (!handle.exists()) {
     throw new Error(`Resize handle not found: ${title}`)
@@ -85,7 +85,10 @@ function findResizeHandle(wrapper: VueWrapper, title: string) {
 function findScrollWrap(wrapper: VueWrapper) {
   const wrap = wrapper
     .findAll('div')
-    .find((item) => item.classes().includes('scrollbar-none') && item.classes().includes('h-full'))
+    .find(
+      (item) =>
+        item.classes().includes('vtg-scrollbar-none') && item.classes().includes('vtg-h-full'),
+    )
 
   if (!wrap) {
     throw new Error('Scroll wrap not found')
@@ -265,10 +268,10 @@ describe('VTable', () => {
     const ageHeader = findTableHeaderCell(wrapper, 'Age')
     const ageCells = getBodyRows(wrapper).map((row) => row.findAll('td')[1])
     const sortedBodyCells = ageCells.every((cell) =>
-      cell.classes().includes('bg-[color:var(--vtg-table-body-sort-bg)]'),
+      cell.classes().includes('vtg-bg-[color:var(--vtg-table-body-sort-bg)]'),
     )
 
-    expect(ageHeader.classes()).toContain('bg-[color:var(--vtg-table-header-sort-bg)]')
+    expect(ageHeader.classes()).toContain('vtg-bg-[color:var(--vtg-table-header-sort-bg)]')
     expect(sortedBodyCells).toBe(true)
 
     wrapper.unmount()
@@ -353,7 +356,7 @@ describe('VTable', () => {
 
     const trigger = wrapper.get('[aria-label="筛选"]')
     expect(trigger.classes()).toEqual(
-      expect.arrayContaining(['cursor-pointer', 'hover:bg-black/6']),
+      expect.arrayContaining(['vtg-cursor-pointer', 'hover:vtg-bg-black/6']),
     )
 
     wrapper.unmount()
@@ -461,7 +464,7 @@ describe('VTable', () => {
     expect(optionTexts).toEqual(
       expect.arrayContaining(['Active group', 'Active', 'Paused group', 'Paused']),
     )
-    expect(activeLabel?.classList.contains('font-medium')).toBe(true)
+    expect(activeLabel?.classList.contains('vtg-font-medium')).toBe(true)
 
     wrapper.unmount()
   })
@@ -887,22 +890,22 @@ describe('VTable', () => {
     await scrollWrap.trigger('scroll')
     await nextTick()
 
-    expect(findTableHeaderCell(wrapper, 'Name').classes()).not.toContain('after:absolute')
-    expect(findTableHeaderCell(wrapper, 'Status').classes()).toContain('after:absolute')
+    expect(findTableHeaderCell(wrapper, 'Name').classes()).not.toContain('after:vtg-absolute')
+    expect(findTableHeaderCell(wrapper, 'Status').classes()).toContain('after:vtg-absolute')
 
     wrapElement.scrollLeft = 120
     await scrollWrap.trigger('scroll')
     await nextTick()
 
-    expect(findTableHeaderCell(wrapper, 'Name').classes()).toContain('after:absolute')
-    expect(findTableHeaderCell(wrapper, 'Status').classes()).toContain('after:absolute')
+    expect(findTableHeaderCell(wrapper, 'Name').classes()).toContain('after:vtg-absolute')
+    expect(findTableHeaderCell(wrapper, 'Status').classes()).toContain('after:vtg-absolute')
 
     wrapElement.scrollLeft = 400
     await scrollWrap.trigger('scroll')
     await nextTick()
 
-    expect(findTableHeaderCell(wrapper, 'Name').classes()).toContain('after:absolute')
-    expect(findTableHeaderCell(wrapper, 'Status').classes()).not.toContain('after:absolute')
+    expect(findTableHeaderCell(wrapper, 'Name').classes()).toContain('after:vtg-absolute')
+    expect(findTableHeaderCell(wrapper, 'Status').classes()).not.toContain('after:vtg-absolute')
 
     wrapper.unmount()
   })

@@ -9,22 +9,33 @@
 - Node `^20.19.0` 或 `>=22.12.0`
 - pnpm `>=10.28.0`
 - Vue `^3.5.0`
-- Vite `^7`（Tailwind CSS 4）/ Vite `^5`（Tailwind CSS 3）
+- Vite `^5` 或更高版本
 
-## Tailwind CSS 4（推荐）
+## 安装
 
-### 安装
-
-除了组件包本身，你还需要在宿主项目里安装 Tailwind CSS 4 和 `@tailwindcss/vite`：
+组件本身不要求宿主项目安装 Tailwind CSS。先安装组件包：
 
 ```bash
 pnpm add @vtable-guild/vtable-guild
-pnpm add -D tailwindcss @tailwindcss/vite
 ```
 
-### 配置 Vite
+## 配置样式入口
 
-在 `vite.config.ts` 里接入 `@tailwindcss/vite`：
+如果项目不使用 Tailwind CSS，直接引入完整预编译样式入口。
+
+例如 `src/main.css`：
+
+```css
+@import '@vtable-guild/vtable-guild/css/style';
+```
+
+这个入口已经预生成组件库内部需要的 utilities，使用它时不需要安装 Tailwind CSS、配置 `@tailwindcss/vite` 或扫描本库源码。
+
+如果你的项目已经使用 Tailwind CSS 4，也可以改用 Tailwind 入口：
+
+```bash
+pnpm add -D tailwindcss @tailwindcss/vite
+```
 
 ```ts
 import { defineConfig } from 'vite'
@@ -36,92 +47,27 @@ export default defineConfig({
 })
 ```
 
-### 配置样式入口
-
-在你的全局样式文件里引入 Tailwind CSS 和 vtable-guild 的主题 CSS。
-
-例如 `src/main.css`：
-
 ```css
 @import 'tailwindcss';
-@import '@vtable-guild/vtable-guild/css';
+@import '@vtable-guild/vtable-guild/css/tailwind4';
 ```
 
-`@vtable-guild/vtable-guild/css` 已包含：
-
-- Tailwind `@theme` token 注册
-- 默认的 `antdv` 预设
-- `element-plus` 预设
-- 组件运行所需的基础样式
-
-如果只是切换预设，不需要额外追加 CSS。
-
-## Tailwind CSS 3
-
-如果你的项目仍在使用 Tailwind CSS 3，也可以正常接入。核心区别是使用预编译样式入口，它已经预生成组件库内部需要的 utilities。
-
-### 安装
-
-```bash
-pnpm add @vtable-guild/vtable-guild
-pnpm add -D tailwindcss@^3 postcss autoprefixer
-```
-
-### 配置 PostCSS
-
-创建 `postcss.config.js`：
-
-```js
-export default {
-  plugins: {
-    tailwindcss: {},
-    autoprefixer: {},
-  },
-}
-```
-
-### 配置 Tailwind
-
-创建 `tailwind.config.js`，只需要扫描业务项目自己的文件：
-
-```js
-/** @type {import('tailwindcss').Config} */
-export default {
-  content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
-  theme: { extend: {} },
-  plugins: [],
-}
-```
-
-### 配置样式入口
-
-```css
-@import 'ant-design-vue/dist/reset.css';
-@import '@vtable-guild/vtable-guild/css/style';
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-```
-
-`@vtable-guild/vtable-guild/css/tailwind3` 会作为旧项目的兼容入口继续保留，新项目请使用 `@vtable-guild/vtable-guild/css/style`。
-
-::: warning 注意顺序
-`@import` 必须在 `@tailwind` 指令之前，否则 PostCSS 会报错。
-:::
-
-### Vite 配置
-
-不需要 `@tailwindcss/vite` 插件，Tailwind 通过 PostCSS 自动处理：
+使用 Tailwind 4 入口时，初始化插件也要启用 Tailwind 4 模式：
 
 ```ts
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-
-export default defineConfig({
-  plugins: [vue()],
-})
+app.use(createVTableGuild({ cssMode: 'tailwind4' }))
 ```
+
+`@vtable-guild/vtable-guild/css/style` 和 `@vtable-guild/vtable-guild/css/tailwind4` 均已包含：
+
+- 默认的 `antdv` 预设
+- `element-plus` 预设
+- 主题 token
+- 组件运行所需的基础样式
+
+如果只是切换预设，不需要额外追加 CSS。`@vtable-guild/vtable-guild/css/tailwind3` 会作为旧项目兼容入口继续保留，新项目需要预编译 CSS 时请使用 `@vtable-guild/vtable-guild/css/style`。
+
+预编译模式下，库内部 utility class 会输出 `vtg-` 前缀。Tailwind 4 模式下，内部 class 保持无前缀。详细规则见 [包导入与样式](/guide/package-consumption)。
 
 ## 初始化插件
 

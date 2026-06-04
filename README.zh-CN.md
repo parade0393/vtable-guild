@@ -39,14 +39,42 @@
 
 ```bash
 pnpm add @vtable-guild/vtable-guild
-pnpm add -D tailwindcss @tailwindcss/vite
 ```
 
 ## Setup
 
-### 1. 配置 Vite 插件
+### 1. 配置样式
 
-在 `vite.config.ts` 中注册 `@tailwindcss/vite`：
+默认接入使用完整预编译样式，不需要 Tailwind CSS，库内部 utility class 会输出 `vtg-` 前缀：
+
+```css
+@import 'ant-design-vue/dist/reset.css';
+@import '@vtable-guild/vtable-guild/css/style';
+```
+
+然后在 `main.ts` 中导入该 CSS 文件：
+
+```ts
+import './main.css'
+```
+
+```ts
+app.use(createVTableGuild())
+```
+
+在预编译模式下，用户传入的 class 不会被自动加前缀。如果用户想覆盖库内部 utility，也应传同前缀：
+
+```vue
+<VTable :ui="{ th: 'vtg-px-2' }" />
+```
+
+直接传 `px-2` 可能会和内部 `vtg-px-*` 同时存在，不保证覆盖内部样式。如果配置了自定义前缀，也要用同一个前缀覆盖，并构建匹配的 CSS，例如 `createVTableGuild({ classPrefix: 'app' })` 搭配 `VTG_CLASS_PREFIX=app` 生成的 CSS。
+
+如果项目已经使用 Tailwind CSS 4，并且希望使用无前缀 utility，先安装 Tailwind 并在 `vite.config.ts` 中注册 `@tailwindcss/vite`：
+
+```bash
+pnpm add -D tailwindcss @tailwindcss/vite
+```
 
 ```ts
 import { defineConfig } from 'vite'
@@ -58,33 +86,22 @@ export default defineConfig({
 })
 ```
 
-### 2. 引入样式
-
-在项目的 CSS 入口文件（如 `main.css`）中添加：
+然后在项目的 CSS 入口文件（如 `main.css`）中添加：
 
 ```css
 @import 'tailwindcss';
-@import '@vtable-guild/vtable-guild/css';
+@import '@vtable-guild/vtable-guild/css/tailwind4';
 ```
 
-Tailwind CSS 3 项目，或希望直接使用预编译样式且不扫描本库的项目，使用 `css/style` 入口。组件库内部依赖的 utilities 已预生成，不需要在 `tailwind.config.js` 里扫描本库或复制语义色 token：
-
-```css
-@import 'ant-design-vue/dist/reset.css';
-@import '@vtable-guild/vtable-guild/css/style';
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-```
-
-`@vtable-guild/vtable-guild/css/tailwind3` 会作为旧项目的兼容别名继续保留。
-
-然后在 `main.ts` 中导入该 CSS 文件：
+并在 `main.ts` 中启用 Tailwind 4 模式：
 
 ```ts
 import './main.css'
+
+app.use(createVTableGuild({ cssMode: 'tailwind4' }))
 ```
+
+Tailwind 4 模式下，库内部 class 保持无前缀，所以用户覆盖内部 utility 时也可以继续传普通 Tailwind class，例如 `px-2`。`@vtable-guild/vtable-guild/css/tailwind3` 会作为旧项目兼容别名继续保留。新项目需要预编译 CSS 时请使用 `@vtable-guild/vtable-guild/css/style`。
 
 > [!IMPORTANT] 与 unlayered CSS reset 共存（ant-design-vue / normalize.css 等）
 >
@@ -105,7 +122,7 @@ import './main.css'
 >
 > @import 'ant-design-vue/dist/reset.css' layer(antd-reset);
 > @import 'tailwindcss';
-> @import '@vtable-guild/vtable-guild/css';
+> @import '@vtable-guild/vtable-guild/css/tailwind4';
 > ```
 >
 > 同时把 `main.ts` 里 `import 'ant-design-vue/dist/reset.css'` 这种 JS 侧的副作用 import 去掉，统一交给 CSS 侧的 `@import ... layer(...)` 管理（JS import 会绕过 layer 修饰符）。
@@ -118,7 +135,7 @@ import './main.css'
 import { createApp } from 'vue'
 import App from './App.vue'
 import { createVTableGuild, VTable } from '@vtable-guild/vtable-guild'
-import '@vtable-guild/vtable-guild/css'
+import '@vtable-guild/vtable-guild/css/style'
 
 const app = createApp(App)
 
