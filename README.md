@@ -39,14 +39,17 @@ Built-in presets: `antdv` (default), `element-plus`.
 
 ```bash
 pnpm add @vtable-guild/vtable-guild
-pnpm add -D tailwindcss @tailwindcss/vite
 ```
 
 ## Setup
 
-### 1. Configure Vite Plugin
+### 1. Configure Styles
 
-Register `@tailwindcss/vite` in your `vite.config.ts`:
+If your project already uses Tailwind CSS 4, install Tailwind and register `@tailwindcss/vite` in your `vite.config.ts`:
+
+```bash
+pnpm add -D tailwindcss @tailwindcss/vite
+```
 
 ```ts
 import { defineConfig } from 'vite'
@@ -58,27 +61,21 @@ export default defineConfig({
 })
 ```
 
-### 2. Import Styles
-
-Add the following to your CSS entry file (e.g. `main.css`):
+Then add the Tailwind CSS entry to your CSS entry file (e.g. `main.css`):
 
 ```css
 @import 'tailwindcss';
 @import '@vtable-guild/vtable-guild/css';
 ```
 
-For Tailwind CSS 3 projects, or projects that want a prebuilt stylesheet without scanning this package, use the `css/style` entry. The utilities this library depends on are pre-generated, so you don't need to scan this package or copy semantic color tokens in `tailwind.config.js`:
+If your project does not use Tailwind CSS, import the complete prebuilt stylesheet instead. You do not need to install Tailwind CSS, configure `@tailwindcss/vite`, scan this package, or copy semantic color tokens:
 
 ```css
 @import 'ant-design-vue/dist/reset.css';
 @import '@vtable-guild/vtable-guild/css/style';
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 ```
 
-`@vtable-guild/vtable-guild/css/tailwind3` is kept as a legacy compatibility alias for existing projects.
+`@vtable-guild/vtable-guild/css/tailwind3` is kept as a legacy compatibility alias. New projects should use `@vtable-guild/vtable-guild/css/style` when they need prebuilt CSS.
 
 Then import the CSS file in `main.ts`:
 
