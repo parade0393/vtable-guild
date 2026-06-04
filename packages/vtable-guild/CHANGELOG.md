@@ -1,5 +1,11 @@
 # @vtable-guild/vtable-guild
 
+## 2.2.0
+
+### Minor Changes
+
+- [#15](https://github.com/parade0393/vtable-guild/pull/15) [`9670141`](https://github.com/parade0393/vtable-guild/commit/96701417b34bebd255e83006e82fc2ba8f6fa748) Thanks [@parade0393](https://github.com/parade0393)! - Prefix internal prebuilt utility classes with `vtg-` by default, add configurable `classPrefix`, and add a Tailwind CSS 4 mode that keeps internal utilities unprefixed.
+
 ## 2.1.4
 
 ### Patch Changes
