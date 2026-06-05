@@ -1,5 +1,11 @@
 # @vtable-guild/vtable-guild
 
+## 2.2.1
+
+### Patch Changes
+
+- [`4e3f1d2`](https://github.com/parade0393/vtable-guild/commit/4e3f1d2900e23434a7a0f667075b85e187d9c393) Thanks [@parade0393](https://github.com/parade0393)! - Fix Tailwind 3 preset package output and consumption support.
+
 ## 2.2.0
 
 ### Minor Changes
