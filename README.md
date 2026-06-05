@@ -6,6 +6,8 @@
 
 # vtable-guild
 
+[![npm version](https://img.shields.io/npm/v/@vtable-guild/vtable-guild?logo=npm)](https://www.npmjs.com/package/@vtable-guild/vtable-guild)
+
 `vtable-guild` is a highly customizable Vue 3 table component library designed to seamlessly replace the hard-to-extend parts of `ant-design-vue` or `element-plus` Table components while preserving your existing design system.
 
 **Why not use their native Tables directly?**
