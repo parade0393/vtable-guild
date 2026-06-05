@@ -21,7 +21,11 @@ pnpm add @vtable-guild/vtable-guild
 
 ## 配置样式入口
 
-如果项目不使用 Tailwind CSS，直接引入完整预编译样式入口。
+vtable-guild 支持 `prebuilt`、`tailwind3` 和 `tailwind4` 三种样式模式。
+
+### prebuilt
+
+项目不使用 Tailwind CSS 时，直接引入完整预编译样式入口。
 
 例如 `src/main.css`：
 
@@ -31,7 +35,38 @@ pnpm add @vtable-guild/vtable-guild
 
 这个入口已经预生成组件库内部需要的 utilities，使用它时不需要安装 Tailwind CSS、配置 `@tailwindcss/vite` 或扫描本库源码。
 
-如果你的项目已经使用 Tailwind CSS 4，也可以改用 Tailwind 入口：
+### tailwind3
+
+项目使用 Tailwind CSS 3 时，使用 Tailwind 3 入口，并在 Tailwind 配置中加入组件库 preset：
+
+```js
+import vtableGuildTailwind3Preset from '@vtable-guild/vtable-guild/tailwind3-preset'
+
+export default {
+  content: [
+    './index.html',
+    './src/**/*.{vue,ts,tsx,js,jsx}',
+    './node_modules/@vtable-guild/**/*.{js,mjs}',
+  ],
+  presets: [vtableGuildTailwind3Preset],
+}
+```
+
+```css
+@import '@vtable-guild/vtable-guild/css/tailwind3';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+```ts
+app.use(createVTableGuild({ cssMode: 'tailwind3' }))
+```
+
+### tailwind4
+
+项目使用 Tailwind CSS 4 时，使用 Tailwind 4 入口：
 
 ```bash
 pnpm add -D tailwindcss @tailwindcss/vite
@@ -52,22 +87,20 @@ export default defineConfig({
 @import '@vtable-guild/vtable-guild/css/tailwind4';
 ```
 
-使用 Tailwind 4 入口时，初始化插件也要启用 Tailwind 4 模式：
-
 ```ts
 app.use(createVTableGuild({ cssMode: 'tailwind4' }))
 ```
 
-`@vtable-guild/vtable-guild/css/style` 和 `@vtable-guild/vtable-guild/css/tailwind4` 均已包含：
+`@vtable-guild/vtable-guild/css/style`、`@vtable-guild/vtable-guild/css/tailwind3` 和 `@vtable-guild/vtable-guild/css/tailwind4` 均已包含：
 
 - 默认的 `antdv` 预设
 - `element-plus` 预设
 - 主题 token
 - 组件运行所需的基础样式
 
-如果只是切换预设，不需要额外追加 CSS。`@vtable-guild/vtable-guild/css/tailwind3` 会作为旧项目兼容入口继续保留，新项目需要预编译 CSS 时请使用 `@vtable-guild/vtable-guild/css/style`。
+切换预设不需要额外追加 CSS。
 
-预编译模式下，库内部 utility class 会输出 `vtg-` 前缀。Tailwind 4 模式下，内部 class 保持无前缀。详细规则见 [包导入与样式](/guide/package-consumption)。
+预编译模式下，库内部 utility class 会输出 `vtg-` 前缀。Tailwind 3/4 模式下，内部 class 保持无前缀。详细规则见 [包导入与样式](/guide/package-consumption)。
 
 ## 初始化插件
 

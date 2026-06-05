@@ -10,9 +10,9 @@
 import { createVTableGuild, VTable } from '@vtable-guild/vtable-guild'
 ```
 
-## 默认预编译模式
+## prebuilt 模式
 
-如果宿主项目不希望由 Tailwind 生成本库样式，使用完整预编译 CSS：
+宿主项目不使用 Tailwind CSS 时，使用完整预编译 CSS：
 
 ```css
 @import 'ant-design-vue/dist/reset.css';
@@ -23,7 +23,7 @@ import { createVTableGuild, VTable } from '@vtable-guild/vtable-guild'
 app.use(createVTableGuild())
 ```
 
-这是默认模式，也就是 `cssMode: 'prebuilt'`。库内部 utility class 会输出 `vtg-` 前缀，例如 `vtg-flex`、`vtg-px-1`，避免污染使用者项目或 Vuetify、Element Plus 等 UI 库的 class 空间。
+这是默认模式，也就是 `cssMode: 'prebuilt'`。库内部 utility class 会输出 `vtg-` 前缀，例如 `vtg-flex`、`vtg-px-1`，避免污染使用者项目或其他 UI 库的 class 空间。
 
 用户传入的 class 不会被自动加前缀，包括：
 
@@ -64,9 +64,44 @@ VTG_CLASS_PREFIX=app pnpm --filter @vtable-guild/vtable-guild copy-css
 
 如果前缀运行时和 CSS 产物不一致，样式不会命中。
 
-## Tailwind CSS 4 模式
+## tailwind3 模式
 
-如果宿主项目已经使用 Tailwind CSS 4，并希望继续用无前缀 utility 覆盖组件内部样式，使用 Tailwind 4 入口：
+宿主项目使用 Tailwind CSS 3 构建 utility 时，使用 Tailwind 3 入口：
+
+```js
+import vtableGuildTailwind3Preset from '@vtable-guild/vtable-guild/tailwind3-preset'
+
+export default {
+  content: [
+    './index.html',
+    './src/**/*.{vue,ts,tsx,js,jsx}',
+    './node_modules/@vtable-guild/**/*.{js,mjs}',
+  ],
+  presets: [vtableGuildTailwind3Preset],
+}
+```
+
+```css
+@import '@vtable-guild/vtable-guild/css/tailwind3';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+```ts
+app.use(createVTableGuild({ cssMode: 'tailwind3' }))
+```
+
+Tailwind 3 模式下，库内部 class 保持无前缀，所以用户可以传普通 Tailwind class 覆盖内部 utility，例如：
+
+```vue
+<VTable :ui="{ th: 'px-2' }" />
+```
+
+## tailwind4 模式
+
+宿主项目使用 Tailwind CSS 4 构建 utility 时，使用 Tailwind 4 入口：
 
 ```css
 @layer antd-reset, theme, base, components, utilities;
@@ -80,14 +115,12 @@ VTG_CLASS_PREFIX=app pnpm --filter @vtable-guild/vtable-guild copy-css
 app.use(createVTableGuild({ cssMode: 'tailwind4' }))
 ```
 
-Tailwind 4 模式下，库内部 class 保持无前缀，所以用户可以继续传普通 Tailwind class 覆盖内部 utility，例如：
+Tailwind 4 模式下，库内部 class 保持无前缀，所以用户可以传普通 Tailwind class 覆盖内部 utility，例如：
 
 ```vue
 <VTable :ui="{ th: 'px-2' }" />
 ```
 
-## 旧入口
+## CSS 入口
 
-`@vtable-guild/vtable-guild/css/tailwind3` 会作为旧项目兼容入口继续保留。新项目需要预编译 CSS 时优先使用 `@vtable-guild/vtable-guild/css/style`。
-
-`@vtable-guild/vtable-guild/css` 仍可作为基础样式入口使用，但新接入项目应按上面的两种模式显式选择 `css/style` 或 `css/tailwind4`。
+当前支持的 CSS 入口是 `css/style`、`css/tailwind3` 和 `css/tailwind4`，分别对应 `prebuilt`、`tailwind3` 和 `tailwind4`。

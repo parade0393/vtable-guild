@@ -25,9 +25,12 @@ export default defineConfig({
   },
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
-      formats: ['es'],
-      fileName: () => 'index.mjs',
+      entry: {
+        index: resolve(__dirname, 'src/index.ts'),
+        'tailwind3-preset': resolve(__dirname, 'src/tailwind3-preset.ts'),
+      },
+      formats: ['es', 'cjs'],
+      fileName: (format, entryName) => `${entryName}.${format === 'cjs' ? 'cjs' : 'mjs'}`,
     },
     rollupOptions: {
       external: ['vue'],

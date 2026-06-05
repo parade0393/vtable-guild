@@ -47,8 +47,12 @@ pnpm add @vtable-guild/vtable-guild
 
 ### 1. Configure Styles
 
-Default setup uses the complete prebuilt stylesheet. It does not require Tailwind CSS and all
-internal utility classes are emitted with the `vtg-` prefix:
+vtable-guild supports three CSS modes: `prebuilt`, `tailwind3`, and `tailwind4`.
+
+#### prebuilt
+
+Use the complete prebuilt stylesheet when the host app does not use Tailwind CSS. Internal utility
+classes are emitted with the `vtg-` prefix:
 
 ```css
 @import 'ant-design-vue/dist/reset.css';
@@ -77,7 +81,44 @@ not guaranteed to override it. If you set a custom prefix, use the same prefix i
 matching CSS, for example `createVTableGuild({ classPrefix: 'app' })` with CSS generated using
 `VTG_CLASS_PREFIX=app`.
 
-If your project already uses Tailwind CSS 4 and you want unprefixed utilities, install Tailwind and register `@tailwindcss/vite` in your `vite.config.ts`:
+#### tailwind3
+
+Use Tailwind CSS 3 mode when the host app builds utilities with Tailwind 3. Add the package preset
+and scan the library files:
+
+```js
+import vtableGuildTailwind3Preset from '@vtable-guild/vtable-guild/tailwind3-preset'
+
+export default {
+  content: [
+    './index.html',
+    './src/**/*.{vue,ts,tsx,js,jsx}',
+    './node_modules/@vtable-guild/**/*.{js,mjs}',
+  ],
+  presets: [vtableGuildTailwind3Preset],
+}
+```
+
+Import the Tailwind 3 CSS entry and enable Tailwind 3 mode:
+
+```css
+@import '@vtable-guild/vtable-guild/css/tailwind3';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+```ts
+app.use(createVTableGuild({ cssMode: 'tailwind3' }))
+```
+
+In Tailwind 3 mode, internal classes remain unprefixed, so user overrides can use normal Tailwind
+classes such as `px-2`.
+
+#### tailwind4
+
+Use Tailwind CSS 4 mode when the host app builds utilities with Tailwind 4. Install Tailwind and register `@tailwindcss/vite` in your `vite.config.ts`:
 
 ```bash
 pnpm add -D tailwindcss @tailwindcss/vite
@@ -109,9 +150,7 @@ app.use(createVTableGuild({ cssMode: 'tailwind4' }))
 ```
 
 In Tailwind 4 mode, internal classes remain unprefixed, so user overrides can also use normal
-Tailwind classes such as `px-2`. `@vtable-guild/vtable-guild/css/tailwind3` is kept as a legacy
-compatibility alias. New projects should use `@vtable-guild/vtable-guild/css/style` when they need
-prebuilt CSS.
+Tailwind classes such as `px-2`.
 
 > [!IMPORTANT] Coexisting with unlayered CSS resets (ant-design-vue / normalize.css etc.)
 >

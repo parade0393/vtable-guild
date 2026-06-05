@@ -45,7 +45,11 @@ pnpm add @vtable-guild/vtable-guild
 
 ### 1. 配置样式
 
-默认接入使用完整预编译样式，不需要 Tailwind CSS，库内部 utility class 会输出 `vtg-` 前缀：
+vtable-guild 支持三种样式模式：`prebuilt`、`tailwind3` 和 `tailwind4`。
+
+#### prebuilt
+
+宿主项目不使用 Tailwind CSS 时，使用完整预编译样式。库内部 utility class 会输出 `vtg-` 前缀：
 
 ```css
 @import 'ant-design-vue/dist/reset.css';
@@ -70,7 +74,42 @@ app.use(createVTableGuild())
 
 直接传 `px-2` 可能会和内部 `vtg-px-*` 同时存在，不保证覆盖内部样式。如果配置了自定义前缀，也要用同一个前缀覆盖，并构建匹配的 CSS，例如 `createVTableGuild({ classPrefix: 'app' })` 搭配 `VTG_CLASS_PREFIX=app` 生成的 CSS。
 
-如果项目已经使用 Tailwind CSS 4，并且希望使用无前缀 utility，先安装 Tailwind 并在 `vite.config.ts` 中注册 `@tailwindcss/vite`：
+#### tailwind3
+
+宿主项目使用 Tailwind CSS 3 构建 utility 时，使用 Tailwind 3 模式。先在 Tailwind 配置中加入本包 preset，并扫描组件库文件：
+
+```js
+import vtableGuildTailwind3Preset from '@vtable-guild/vtable-guild/tailwind3-preset'
+
+export default {
+  content: [
+    './index.html',
+    './src/**/*.{vue,ts,tsx,js,jsx}',
+    './node_modules/@vtable-guild/**/*.{js,mjs}',
+  ],
+  presets: [vtableGuildTailwind3Preset],
+}
+```
+
+然后导入 Tailwind 3 样式入口，并启用 Tailwind 3 模式：
+
+```css
+@import '@vtable-guild/vtable-guild/css/tailwind3';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+```ts
+app.use(createVTableGuild({ cssMode: 'tailwind3' }))
+```
+
+Tailwind 3 模式下，库内部 class 保持无前缀，所以用户覆盖内部 utility 时可以传普通 Tailwind class，例如 `px-2`。
+
+#### tailwind4
+
+宿主项目使用 Tailwind CSS 4 构建 utility 时，使用 Tailwind 4 模式。先安装 Tailwind 并在 `vite.config.ts` 中注册 `@tailwindcss/vite`：
 
 ```bash
 pnpm add -D tailwindcss @tailwindcss/vite
@@ -101,7 +140,7 @@ import './main.css'
 app.use(createVTableGuild({ cssMode: 'tailwind4' }))
 ```
 
-Tailwind 4 模式下，库内部 class 保持无前缀，所以用户覆盖内部 utility 时也可以继续传普通 Tailwind class，例如 `px-2`。`@vtable-guild/vtable-guild/css/tailwind3` 会作为旧项目兼容别名继续保留。新项目需要预编译 CSS 时请使用 `@vtable-guild/vtable-guild/css/style`。
+Tailwind 4 模式下，库内部 class 保持无前缀，所以用户覆盖内部 utility 时也可以继续传普通 Tailwind class，例如 `px-2`。
 
 > [!IMPORTANT] 与 unlayered CSS reset 共存（ant-design-vue / normalize.css 等）
 >

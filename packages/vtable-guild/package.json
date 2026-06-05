@@ -12,6 +12,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs"
     },
+    "./tailwind3-preset": {
+      "types": "./dist/tailwind3-preset.d.ts",
+      "import": "./dist/tailwind3-preset.mjs",
+      "require": "./dist/tailwind3-preset.cjs"
+    },
     "./css": {
       "types": "./css/index.d.ts",
       "style": "./css/index.css",

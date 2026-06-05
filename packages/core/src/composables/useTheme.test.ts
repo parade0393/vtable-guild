@@ -136,6 +136,23 @@ describe('useTheme', () => {
     expect(wrapper.get('div').classes()).not.toContain('vtg-px-8')
   })
 
+  it('keeps internal classes unprefixed in tailwind3 mode', () => {
+    const wrapper = mount(BadgeProbe, {
+      props: {
+        tone: 'danger',
+        ui: {
+          root: 'px-8',
+        },
+      },
+      global: {
+        plugins: [createVTableGuild({ cssMode: 'tailwind3' })],
+      },
+    })
+
+    expect(wrapper.get('div').classes()).toEqual(expect.arrayContaining(['px-8', 'text-red-500']))
+    expect(wrapper.get('div').classes()).not.toContain('vtg-px-8')
+  })
+
   it('requires prefixed overrides to replace internal utilities in prebuilt mode', () => {
     const wrapper = mount(BadgeProbe, {
       props: {

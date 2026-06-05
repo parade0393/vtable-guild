@@ -291,14 +291,22 @@ async function writePrebuiltStyleCss(targetDir) {
     .filter(Boolean)
     .join('\n\n')
 
-  const tailwind3Css = prebuiltCss.replace(
-    '@vtable-guild/vtable-guild/css/style - Prebuilt complete CSS entry.',
-    '@vtable-guild/vtable-guild/css/tailwind3 - Legacy compatibility entry. Prefer @vtable-guild/vtable-guild/css/style.',
-  )
-
   writeFileSync(resolve(targetDir, 'style.css'), prebuiltCss)
-  writeFileSync(resolve(targetDir, 'tailwind3.css'), tailwind3Css)
   writeFileSync(resolve(targetDir, 'tailwind3-utilities.css'), utilitiesCss)
+}
+
+function writeTailwind3Css(targetDir) {
+  const tailwind3Css = [
+    '/* @vtable-guild/vtable-guild/css/tailwind3 - Tailwind CSS 3 source entry. */',
+    readFileSync(resolve(targetDir, 'presets/antdv.css'), 'utf8').trim(),
+    readFileSync(resolve(targetDir, 'presets/element-plus.css'), 'utf8').trim(),
+    readFileSync(resolve(targetDir, 'transitions.css'), 'utf8').trim(),
+    readRuntimeCss(targetDir, { mode: 'tailwind4' }),
+  ]
+    .filter(Boolean)
+    .join('\n\n')
+
+  writeFileSync(resolve(targetDir, 'tailwind3.css'), tailwind3Css)
 }
 
 function writeTailwind4Css(targetDir) {
@@ -378,6 +386,7 @@ rewriteTokensSource(resolve(packageTargetDir, 'tokens.css'), [
 await Promise.all([writePrebuiltStyleCss(distTargetDir), writePrebuiltStyleCss(packageTargetDir)])
 
 for (const targetDir of [distTargetDir, packageTargetDir]) {
+  writeTailwind3Css(targetDir)
   writeTailwind4Css(targetDir)
   writeCssTypeDeclarations(targetDir)
 }

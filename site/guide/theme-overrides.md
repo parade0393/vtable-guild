@@ -162,9 +162,11 @@ createVTableGuild({
 
 直接传 `px-2` 可能会和内部 `vtg-px-*` 同时存在，不保证覆盖内部样式。
 
-如果项目使用 Tailwind CSS 4 并启用了 `cssMode: 'tailwind4'`，内部 class 保持无前缀，此时可以继续用普通 Tailwind class 覆盖：
+`tailwind3` 和 `tailwind4` 模式下，内部 class 保持无前缀，此时可以继续用普通 Tailwind class 覆盖：
 
 ```ts
+app.use(createVTableGuild({ cssMode: 'tailwind3' }))
+// 或
 app.use(createVTableGuild({ cssMode: 'tailwind4' }))
 ```
 

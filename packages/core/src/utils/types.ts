@@ -117,9 +117,10 @@ export type ThemePresetName = 'antdv' | 'element-plus'
  * 样式入口模式。
  *
  * - 'prebuilt'：默认模式，库内部 class 输出 vtg- 前缀，配合预构建 CSS 使用。
+ * - 'tailwind3'：Tailwind CSS 3 项目使用，库内部 class 保持无前缀，由用户 Tailwind 构建生成。
  * - 'tailwind4'：Tailwind CSS 4 项目使用，库内部 class 保持无前缀，由用户 Tailwind 构建生成。
  */
-export type VTableGuildCssMode = 'prebuilt' | 'tailwind4'
+export type VTableGuildCssMode = 'prebuilt' | 'tailwind3' | 'tailwind4'
 
 // ---------- 插件配置相关 ----------
 

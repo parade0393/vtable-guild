@@ -10,7 +10,11 @@ pnpm add @vtable-guild/vtable-guild
 
 ## Quick Start
 
-Default prebuilt CSS mode:
+vtable-guild supports three CSS modes.
+
+### prebuilt
+
+Use the prebuilt CSS entry when the host app does not use Tailwind CSS:
 
 ```ts
 import { createVTableGuild } from '@vtable-guild/vtable-guild'
@@ -24,17 +28,20 @@ This works without installing Tailwind CSS or configuring `@tailwindcss/vite`. I
 classes are emitted with the `vtg-` prefix. If you need to override an internal utility in `ui` or
 `theme`, use the same prefix, for example `vtg-px-2`.
 
-If your project uses Tailwind CSS 4 and you want unprefixed utilities, use the Tailwind 4 CSS entry
-and runtime mode:
+### tailwind3
+
+Use the Tailwind 3 CSS entry, add `@vtable-guild/vtable-guild/tailwind3-preset` to `presets`, scan
+`node_modules/@vtable-guild`, and enable `cssMode: 'tailwind3'`.
+
+### tailwind4
+
+Use the Tailwind 4 CSS entry and runtime mode:
 
 ```ts
 import '@vtable-guild/vtable-guild/css/tailwind4'
 
 app.use(createVTableGuild({ cssMode: 'tailwind4' }))
 ```
-
-`@vtable-guild/vtable-guild/css/tailwind3` is kept as a legacy compatibility alias for existing
-prebuilt CSS projects.
 
 ```vue
 <template>
