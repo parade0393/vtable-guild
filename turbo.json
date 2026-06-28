@@ -28,6 +28,9 @@
     "test": {
       "outputs": ["coverage/**"]
     },
+    "bench": {
+      "cache": false
+    },
     "lint": {},
     "type-check": {
       "dependsOn": ["^type-check"]

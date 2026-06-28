@@ -22,6 +22,7 @@ const vtg = createVTableGuild({
     },
     button: {},
   },
+  cssMode: 'tailwind4',
 })
 app.use(Antd)
 app.use(vtg)
