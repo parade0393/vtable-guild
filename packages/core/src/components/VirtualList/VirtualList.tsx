@@ -14,7 +14,17 @@ import type { ScrollBarDirectionType, ScrollBarRef } from './VirtualScrollBar'
 import { getSpinSize } from './utils/scrollbarUtil'
 import type { ExtraRenderInfo, Key } from './interface'
 import type { InnerProps } from './Filler'
-import { computed, createVNode, defineComponent, ref, shallowRef, toRaw, unref, watch } from 'vue'
+import {
+  computed,
+  createVNode,
+  defineComponent,
+  onBeforeUnmount,
+  ref,
+  shallowRef,
+  toRaw,
+  unref,
+  watch,
+} from 'vue'
 import type { CSSProperties, PropType, VNode } from 'vue'
 
 const EMPTY_DATA: any[] = []
@@ -71,6 +81,56 @@ function pureAttrs(attrs: Record<string, unknown>): Record<string, unknown> {
     }
   }
   return result
+}
+
+function findFirstPrefixIndex(prefixHeights: number[], target: number): number {
+  let left = 0
+  let right = prefixHeights.length - 1
+  let answer = prefixHeights.length
+
+  while (left <= right) {
+    const mid = Math.floor((left + right) / 2)
+    if (prefixHeights[mid] >= target) {
+      answer = mid
+      right = mid - 1
+    } else {
+      left = mid + 1
+    }
+  }
+
+  return answer
+}
+
+export function getMeasuredVisibleRange(options: {
+  dataLength: number
+  offsetTop: number
+  height: number
+  itemHeight: number
+  getItemHeight: (index: number) => number | undefined
+}): { scrollHeight: number; start: number; end: number; offset: number } {
+  const { dataLength, offsetTop, height, itemHeight, getItemHeight } = options
+  const prefixHeights: number[] = new Array(dataLength)
+  let scrollHeight = 0
+
+  for (let i = 0; i < dataLength; i += 1) {
+    scrollHeight += getItemHeight(i) ?? itemHeight
+    prefixHeights[i] = scrollHeight
+  }
+
+  let start = findFirstPrefixIndex(prefixHeights, offsetTop)
+  if (start >= dataLength) start = 0
+
+  const endBoundary = offsetTop + height
+  let end = findFirstPrefixIndex(prefixHeights, endBoundary + 1)
+  if (end >= dataLength) end = dataLength - 1
+  end = Math.min(end + 1, dataLength - 1)
+
+  return {
+    scrollHeight,
+    start,
+    end,
+    offset: start === 0 ? 0 : prefixHeights[start - 1],
+  }
 }
 
 export default defineComponent({
@@ -222,44 +282,21 @@ export default defineComponent({
           return
         }
 
-        let itemTop = 0
-        let startIndex: number | undefined
-        let startOffset: number | undefined
-        let endIndex: number | undefined
         const data = toRaw(mergedData.value)
-        const _offsetTop = offsetTop.value
+        const range = getMeasuredVisibleRange({
+          dataLength: dataLen,
+          offsetTop: offsetTop.value,
+          height: height!,
+          itemHeight: itemH!,
+          getItemHeight(index) {
+            return heights.get(getKey(data[index]))
+          },
+        })
 
-        for (let i = 0; i < dataLen; i += 1) {
-          const item = data[i]
-          const key = getKey(item)
-          const cacheHeight = heights.get(key)
-          const currentItemBottom = itemTop + (cacheHeight === undefined ? itemH! : cacheHeight)
-
-          if (currentItemBottom >= _offsetTop && startIndex === undefined) {
-            startIndex = i
-            startOffset = itemTop
-          }
-
-          if (currentItemBottom > _offsetTop + height! && endIndex === undefined) {
-            endIndex = i
-          }
-
-          itemTop = currentItemBottom
-        }
-
-        if (startIndex === undefined) {
-          startIndex = 0
-          startOffset = 0
-          endIndex = Math.ceil(height! / itemH!)
-        }
-
-        if (endIndex === undefined) endIndex = data.length - 1
-        endIndex = Math.min(endIndex + 1, data.length - 1)
-
-        scrollHeight.value = itemTop
-        start.value = startIndex
-        end.value = endIndex
-        fillerOffset.value = startOffset
+        scrollHeight.value = range.scrollHeight
+        start.value = range.start
+        end.value = range.end
+        fillerOffset.value = range.offset
       },
       { immediate: true },
     )
@@ -320,6 +357,12 @@ export default defineComponent({
         holderResizeObserver.observe(el)
       }
     }
+
+    onBeforeUnmount(() => {
+      holderResizeObserver?.disconnect()
+      holderResizeObserver = null
+      observedHolder = null
+    })
 
     const isRTL = computed(() => props.direction === 'rtl')
 
