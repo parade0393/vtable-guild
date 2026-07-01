@@ -1,3 +1,4 @@
+import { ref } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
 import { useFilter } from './useFilter'
 import type { ColumnType } from '../types'
@@ -109,6 +110,42 @@ describe('useFilter', () => {
     expect(getAllFilters()).toEqual({ status: ['paused'] })
   })
 
+  it('keeps callback snapshots immutable after later filter changes', () => {
+    const snapshots: unknown[] = []
+    const columns: ColumnType<DemoRow>[] = [
+      {
+        key: 'status',
+        dataIndex: 'status',
+        onFilter: (value, record) => record.status === value,
+      },
+      {
+        key: 'role',
+        dataIndex: 'role',
+        onFilter: (value, record) => record.role === value,
+      },
+    ]
+
+    const normalizedColumns = columns as unknown as ColumnType<Record<string, unknown>>[]
+    const statusColumn = columns[0] as unknown as ColumnType<Record<string, unknown>>
+    const roleColumn = columns[1] as unknown as ColumnType<Record<string, unknown>>
+
+    const { confirmFilter, filterData } = useFilter({
+      columns: () => normalizedColumns,
+      onFilterChange(filters) {
+        snapshots.push(filters)
+      },
+    })
+
+    const selectedStatus: Array<'active' | 'paused'> = ['active']
+    confirmFilter(statusColumn, selectedStatus)
+    selectedStatus.push('paused')
+    confirmFilter(roleColumn, ['admin'])
+
+    expect(snapshots[0]).toEqual({ status: ['active'], role: null })
+    expect(snapshots[1]).toEqual({ status: ['active'], role: ['admin'] })
+    expect(filterData(dataSource).map((row) => row.key)).toEqual(['1'])
+  })
+
   it('uses override values in callback snapshots for controlled filters', () => {
     const onFilterChange = vi.fn()
     const columns: ColumnType<DemoRow>[] = [
@@ -132,5 +169,31 @@ describe('useFilter', () => {
 
     expect(onFilterChange).toHaveBeenCalledWith({ status: ['active'] })
     expect(getAllFilters()).toEqual({ status: ['paused'] })
+  })
+
+  it('uses current controlled values when filtering data', () => {
+    const filteredValue = ref<Array<'active' | 'paused'> | null>(['paused'])
+    const columns: ColumnType<DemoRow>[] = [
+      {
+        key: 'status',
+        dataIndex: 'status',
+        get filteredValue() {
+          return filteredValue.value
+        },
+        onFilter: (value, record) => record.status === value,
+      },
+    ]
+
+    const normalizedColumns = columns as unknown as ColumnType<Record<string, unknown>>[]
+    const { filterData, getAllFilters } = useFilter({
+      columns: () => normalizedColumns,
+    })
+
+    expect(filterData(dataSource).map((row) => row.key)).toEqual(['2'])
+
+    filteredValue.value = ['active']
+
+    expect(getAllFilters()).toEqual({ status: ['active'] })
+    expect(filterData(dataSource).map((row) => row.key)).toEqual(['1', '3'])
   })
 })

@@ -1,6 +1,6 @@
 // packages/table/src/composables/useFilter.ts
 
-import { reactive } from 'vue'
+import { computed, reactive } from 'vue'
 import type { ColumnType } from '../types'
 import { getColumnKey } from './useSorter'
 
@@ -61,6 +61,24 @@ export function useFilter(options: UseFilterOptions) {
   ): (string | number | boolean)[] {
     return [...values]
   }
+
+  const activeFilters = computed(() => {
+    const filters: Array<{
+      column: ColumnType<Record<string, unknown>>
+      values: (string | number | boolean)[]
+    }> = []
+
+    for (const col of columns()) {
+      if (!col.onFilter) continue
+
+      const values = getFilteredValue(col)
+      if (values.length > 0) {
+        filters.push({ column: col, values })
+      }
+    }
+
+    return filters
+  })
 
   /**
    * 获取所有列的筛选状态（用于 change 事件参数）。
@@ -138,24 +156,12 @@ export function useFilter(options: UseFilterOptions) {
    * 同列多值为 OR 关系（匹配任一值即可）。
    */
   function filterData<TRecord extends Record<string, unknown>>(data: TRecord[]): TRecord[] {
-    const cols = columns()
-    // 收集所有有 active 筛选的列
-    const activeFilters: Array<{
-      column: ColumnType<Record<string, unknown>>
-      values: (string | number | boolean)[]
-    }> = []
+    const filters = activeFilters.value
 
-    for (const col of cols) {
-      const values = getFilteredValue(col)
-      if (values.length > 0 && col.onFilter) {
-        activeFilters.push({ column: col, values })
-      }
-    }
-
-    if (activeFilters.length === 0) return data
+    if (filters.length === 0) return data
 
     return data.filter((record) =>
-      activeFilters.every(({ column, values }) =>
+      filters.every(({ column, values }) =>
         values.some((val) => column.onFilter!(val, record as Record<string, unknown>)),
       ),
     )

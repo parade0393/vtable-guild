@@ -1,3 +1,4 @@
+import { nextTick, shallowRef } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
 import { useSorter } from './useSorter'
 import type { ColumnType } from '../types'
@@ -81,6 +82,48 @@ describe('useSorter', () => {
       expect.objectContaining({ columnKey: 'name', order: 'ascend', field: 'name' }),
     ])
     expect(sortData(dataSource).map((row) => row.key)).toEqual(['2', '3', '1'])
+  })
+
+  it('falls back to default directions when sortDirections is empty', () => {
+    const onSorterChange = vi.fn()
+    const columns: ColumnType<DemoRow>[] = [
+      { key: 'age', dataIndex: 'age', sorter: true, sortDirections: [] },
+    ]
+
+    const { getSortOrder, toggleSortOrder } = useSorter({
+      columns: () => columns,
+      tableSortDirections: () => [],
+      onSorterChange,
+    })
+
+    toggleSortOrder(columns[0])
+    expect(getSortOrder(columns[0])).toBe('ascend')
+    expect(onSorterChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ columnKey: 'age', order: 'ascend' }),
+    )
+
+    toggleSortOrder(columns[0])
+    expect(getSortOrder(columns[0])).toBe('descend')
+  })
+
+  it('keeps uncontrolled default sorter state synced when columns change', async () => {
+    const columns = shallowRef<ColumnType<DemoRow>[]>([
+      { key: 'age', dataIndex: 'age', sorter: true, defaultSortOrder: 'ascend' },
+    ])
+
+    const { getSortOrder, sorterStates } = useSorter({
+      columns: () => columns.value,
+    })
+
+    expect(getSortOrder(columns.value[0])).toBe('ascend')
+
+    columns.value = [
+      { key: 'score', dataIndex: 'score', sorter: true, defaultSortOrder: 'descend' },
+    ]
+    await nextTick()
+
+    expect(getSortOrder(columns.value[0])).toBe('descend')
+    expect(sorterStates.value.map((state) => state.columnKey)).toEqual(['score'])
   })
 
   it('emits next sorter result for controlled columns without mutating local state', () => {

@@ -20,8 +20,7 @@
     "build": "vite build",
     "dev": "vite build --watch",
     "type-check": "vue-tsc --build",
-    "test": "vitest run --config ../../vitest.config.ts --project core",
-    "prepublishOnly": "node -e \"if(!require('fs').existsSync('dist'))throw new Error('dist not found, run pnpm build first')\""
+    "test": "vitest run --config ../../vitest.config.ts --project core"
   },
   "dependencies": {
     "tailwind-merge": "^3.4.0",
@@ -50,8 +49,5 @@
     "theme"
   ],
   "sideEffects": false,
-  "publishConfig": {
-    "access": "public"
-  },
   "license": "MIT"
 }

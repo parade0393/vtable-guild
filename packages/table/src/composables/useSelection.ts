@@ -67,6 +67,19 @@ function flattenSelectionNodes<TRecord extends Record<string, unknown>>(options:
   return nodes
 }
 
+function flattenStrictSelectionNodes<TRecord extends Record<string, unknown>>(options: {
+  data: TRecord[]
+  getRowKey: (record: TRecord, index: number) => Key
+}): SelectionNode<TRecord>[] {
+  return options.data.map((record, index) => ({
+    key: options.getRowKey(record, index),
+    record,
+    index,
+    level: 0,
+    childrenKeys: [],
+  }))
+}
+
 export function useSelection<TRecord extends Record<string, unknown>>(
   options: UseSelectionOptions<TRecord>,
 ) {
@@ -91,12 +104,19 @@ export function useSelection<TRecord extends Record<string, unknown>>(
     return rowSelection()?.selectedRowKeys !== undefined
   }
 
+  const isTreeSelectionEnabled = computed(() => rowSelection()?.checkStrictly === false)
+
   const allNodes = computed(() =>
-    flattenSelectionNodes({
-      data: data(),
-      childrenColumnName: childrenColumnName?.() ?? 'children',
-      getRowKey,
-    }),
+    isTreeSelectionEnabled.value
+      ? flattenSelectionNodes({
+          data: data(),
+          childrenColumnName: childrenColumnName?.() ?? 'children',
+          getRowKey,
+        })
+      : flattenStrictSelectionNodes({
+          data: data(),
+          getRowKey,
+        }),
   )
 
   const nodeMap = computed(() => {
