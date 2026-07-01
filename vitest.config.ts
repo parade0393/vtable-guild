@@ -34,7 +34,15 @@ export default defineConfig({
         'packages/theme/src/**/*.{ts,tsx,vue}',
         'packages/table/src/**/*.{ts,tsx,vue}',
       ],
-      exclude: ['**/*.d.ts', '**/*.test.*', '**/*.spec.*', '**/__tests__/**', '**/dist/**'],
+      exclude: [
+        '**/*.d.ts',
+        '**/*.test.*',
+        '**/*.spec.*',
+        '**/*.bench.*',
+        '**/__tests__/**',
+        '**/bench-fixtures.ts',
+        '**/dist/**',
+      ],
     },
     projects: [
       {
@@ -68,6 +76,9 @@ export default defineConfig({
           name: 'table',
           root: resolve(rootDir, 'packages/table'),
           include: ['src/**/*.test.ts'],
+          benchmark: {
+            include: ['src/**/*.bench.ts'],
+          },
         },
       },
       {

@@ -61,8 +61,13 @@ export default defineComponent({
     }
 
     function itemKey(item: Record<string, unknown>): Key {
-      const idx = props.dataSource.indexOf(item)
-      return getRowKey(item, idx >= 0 ? idx : 0)
+      // 避免在 VirtualList 的 O(n) range 计算里对每个 item 做 indexOf（否则整体 O(n²)）。
+      // rowKey 提供时直接取记录上的 key；仅无 rowKey 的兜底分支才回退到 indexOf。
+      if (typeof props.rowKey === 'function') return props.rowKey(item)
+      if (typeof props.rowKey === 'string' && props.rowKey in item) {
+        return item[props.rowKey] as Key
+      }
+      return props.dataSource.indexOf(item)
     }
 
     // Update scroll state (for fixed column shadows) when VirtualList scrolls
@@ -116,15 +121,16 @@ export default defineComponent({
           {{
             default: ({
               item,
-              index: _absoluteIndex,
+              index: absoluteIndex,
             }: {
               item: Record<string, unknown>
               index: number
               style: CSSProperties
               offsetX: number
             }) => {
-              const rowIndex = props.dataSource.indexOf(item)
-              const rIndex = rowIndex >= 0 ? rowIndex : _absoluteIndex
+              // VirtualList 的 index 即 props.dataSource 的绝对下标，直接使用，
+              // 避免每可见行做一次 O(总行) 的 indexOf 扫描。
+              const rIndex = absoluteIndex
               const key = getRowKey(item, rIndex)
               const exp = tableContext.expandable?.()
               const isExpanded = tableContext.isExpanded?.(key) ?? false

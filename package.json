@@ -12,6 +12,7 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "test": "turbo run test",
+    "bench": "turbo run bench",
     "test:coverage": "vitest run --config ./vitest.config.ts --project core --project theme --project table --coverage",
     "lint": "turbo run lint",
     "type-check": "turbo run type-check",
