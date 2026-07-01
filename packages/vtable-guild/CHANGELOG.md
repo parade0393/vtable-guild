@@ -1,5 +1,11 @@
 # @vtable-guild/vtable-guild
 
+## 2.2.2
+
+### Patch Changes
+
+- [`47056f4`](https://github.com/parade0393/vtable-guild/commit/47056f48144b2ee8d6404966b64602cbd1100b00) Thanks [@parade0393](https://github.com/parade0393)! - Improve virtual scrolling performance, table state synchronization, and playground coverage for large-data scenarios.
+
 ## 2.2.1
 
 ### Patch Changes
