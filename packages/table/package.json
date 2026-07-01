@@ -20,8 +20,7 @@
     "build": "vite build",
     "dev": "vite build --watch",
     "type-check": "vue-tsc --build",
-    "test": "vitest run --config ../../vitest.config.ts --project table",
-    "prepublishOnly": "node -e \"if(!require('fs').existsSync('dist'))throw new Error('dist not found, run pnpm build first')\""
+    "test": "vitest run --config ../../vitest.config.ts --project table"
   },
   "peerDependencies": {
     "@vtable-guild/core": "workspace:*",
@@ -49,8 +48,5 @@
     "element-plus"
   ],
   "sideEffects": false,
-  "publishConfig": {
-    "access": "public"
-  },
   "license": "MIT"
 }

@@ -13,6 +13,7 @@ const app = createApp(App)
 
 // ---- 全局主题配置（Layer 2） ----
 const vtg = createVTableGuild({
+  cssMode: 'tailwind4',
   themePreset: 'antdv',
   theme: {
     table: {
