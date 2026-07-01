@@ -64,5 +64,5 @@ if (publishResult.status !== 0) {
 }
 
 if (!dryRun) {
-  console.log(`New tag: ${packageSpec}`)
+  console.error(`✓ Published: ${packageSpec}`)
 }
