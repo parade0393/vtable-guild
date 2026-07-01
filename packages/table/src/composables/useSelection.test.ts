@@ -74,6 +74,30 @@ describe('useSelection', () => {
     expect(api.isDisabled(strictData[2])).toBe(true)
   })
 
+  it('does not cascade tree children in strict checkbox mode', () => {
+    const onChange = vi.fn()
+    const selection: RowSelection<TreeRow> = {
+      checkStrictly: true,
+      onChange,
+    }
+
+    const api = useSelection<TreeRow>({
+      rowSelection: () => selection,
+      getRowKey: (record) => record.key,
+      data: () => treeData,
+      visibleData: () => treeData,
+    })
+
+    api.toggleRow(treeData[0], 0)
+
+    expect(Array.from(api.selectedKeySet.value)).toEqual(['parent'])
+    expect(onChange).toHaveBeenCalledWith(['parent'], [treeData[0]])
+    expect(api.getSelectionState(treeData[0], 0)).toMatchObject({
+      checked: true,
+      indeterminate: false,
+    })
+  })
+
   it('normalizes parent-child selection when checkStrictly is false', () => {
     const selection: RowSelection<TreeRow> = {
       checkStrictly: false,
@@ -104,6 +128,9 @@ describe('useSelection', () => {
       indeterminate: false,
       disabled: false,
     })
+
+    api.toggleRow(treeData[0], 0)
+    expect(Array.from(api.selectedKeySet.value)).toEqual([])
   })
 
   it('emits next keys in controlled radio mode without mutating local state', () => {

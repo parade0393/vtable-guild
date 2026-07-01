@@ -1,4 +1,4 @@
-import { computed, reactive, type ComputedRef } from 'vue'
+import { computed, reactive, watch, type ComputedRef } from 'vue'
 import type {
   ColumnSorterObject,
   ColumnType,
@@ -75,7 +75,8 @@ function getSortDirections<TRecord extends Record<string, unknown>>(
   column: ColumnType<TRecord>,
   tableSortDirections?: SortOrder[],
 ): SortOrder[] {
-  return column.sortDirections ?? tableSortDirections ?? ['ascend', 'descend']
+  const directions = column.sortDirections ?? tableSortDirections
+  return directions && directions.length > 0 ? directions : ['ascend', 'descend']
 }
 
 function getNextSortOrder(current: SortOrder, directions: SortOrder[]): SortOrder {
@@ -138,7 +139,10 @@ export function useSorter<TRecord extends Record<string, unknown>>(
     })
   }
 
-  syncDefaultSorterState()
+  watch([() => columns(), () => tableSortDirections?.()], () => syncDefaultSorterState(), {
+    immediate: true,
+    deep: true,
+  })
 
   function isControlled(column: ColumnType<TRecord>): boolean {
     return column.sortOrder !== undefined
@@ -160,8 +164,6 @@ export function useSorter<TRecord extends Record<string, unknown>>(
     order: SortOrder
     column: ColumnType<TRecord>
   }): SorterState<TRecord>[] {
-    syncDefaultSorterState()
-
     const states: SorterState<TRecord>[] = []
 
     columns().forEach((column) => {
@@ -211,7 +213,6 @@ export function useSorter<TRecord extends Record<string, unknown>>(
   }
 
   function getSortOrder(column: ColumnType<TRecord>): SortOrder {
-    syncDefaultSorterState()
     return readSortOrder(column)
   }
 
@@ -230,8 +231,6 @@ export function useSorter<TRecord extends Record<string, unknown>>(
 
   function toggleSortOrder(column: ColumnType<TRecord>): void {
     if (!column.sorter) return
-
-    syncDefaultSorterState()
 
     const key = getColumnKey(column)
     if (key === undefined) return
