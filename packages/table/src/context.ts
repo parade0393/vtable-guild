@@ -17,92 +17,98 @@ import type {
 } from './types'
 import type { Expandable } from './types/table'
 import type { TablePresetConfig } from './preset-config'
-import type { FixedOffset } from './composables/useScroll'
+import type { FixedOffset, ScrollEdgeState } from './composables/useScroll'
 import type { FlattenRow } from './composables/useTreeData'
 import type { SelectionState } from './composables/useSelection'
 import type { SummaryFixed } from './components/VTableSummary'
 
-/** 子组件主题 slot class 映射 */
+/**
+ * 子组件主题 slot class 映射。
+ *
+ * 每个字段是懒求值的 class 函数（与 useTheme 返回的 slots 同构）：
+ * 对象本身在 setup 阶段创建一次、引用稳定，消费方在自己的 computed/render
+ * 中调用具体字段才建立细粒度依赖，避免任一 variant 变化让全表失效。
+ */
 export interface SubThemeSlots {
-  thSortable: string
-  thSorted: string
-  tdSorted: string
-  sortButton: string
-  sortIconDown: string
-  sortAreaOuter: string
-  sortAreaWrapper: string
-  sortAreaTitle: string
-  filterIconWrapper: string
-  filterIcon: string
-  filterDropdown: string
-  filterDropdownList: string
-  filterDropdownItem: string
-  filterDropdownItemSelected: string
+  thSortable: () => string
+  thSorted: () => string
+  tdSorted: () => string
+  sortButton: () => string
+  sortIconDown: () => string
+  sortAreaOuter: () => string
+  sortAreaWrapper: () => string
+  sortAreaTitle: () => string
+  filterIconWrapper: () => string
+  filterIcon: () => string
+  filterDropdown: () => string
+  filterDropdownList: () => string
+  filterDropdownItem: () => string
+  filterDropdownItemSelected: () => string
   /** 仅 element-plus 等单选高亮场景需要 — 单选选中态独立样式（如 primary 底 + 白字）。未定义时回退到 filterDropdownItemSelected */
-  filterDropdownItemSelectedSingle?: string
-  filterDropdownItemHover: string
-  filterDropdownActions: string
+  filterDropdownItemSelectedSingle?: () => string
+  filterDropdownItemHover: () => string
+  filterDropdownActions: () => string
   /** 底部 Reset 按钮的 class 注入位 — 用于 preset 把 Button 视觉降级为纯文本风格 */
-  filterDropdownResetButton?: string
+  filterDropdownResetButton?: () => string
   /** 底部 Confirm 按钮的 class 注入位 */
-  filterDropdownConfirmButton?: string
-  filterDropdownSearch: string
-  filterDropdownSearchField: string
-  filterDropdownSearchIcon: string
-  filterDropdownSearchInput: string
-  filterDropdownSwitcher: string
-  filterDropdownSwitcherExpanded: string
-  filterDropdownSwitcherCollapsed: string
-  filterDropdownSwitcherNoop: string
-  filterDropdownContentWrapper: string
-  filterDropdownTreeWrapper: string
-  filterDropdownTreeList: string
-  filterDropdownTreeItem: string
-  filterDropdownTreeContentWrapper: string
-  filterDropdownTreeItemSelected: string
-  filterDropdownTreeItemMatched: string
-  filterDropdownTreeCheckAll: string
-  filterDropdownListEmpty: string
-  emptyWrapper: string
-  emptyIcon: string
-  emptyText: string
-  loadingSpinner: string
-  tdSelected: string
-  selectionDropdown: string
-  selectionDropdownItem: string
-  selectionExtra: string
-  summaryRow: string
-  summaryCell: string
-  headerWrapper: string
-  bodyWrapper: string
-  fixedCell: string
-  fixedDividerLeft: string
-  fixedDividerRight: string
-  fixedShadowLeft: string
-  fixedShadowRight: string
-  fixedShadowLeftHidden: string
-  fixedShadowRightHidden: string
-  expandIcon: string
-  expandIconExpanded: string
-  expandIconCollapsed: string
-  expandIconSpaced: string
-  expandIconDisabled: string
-  expandIconSymbol: string
-  expandIconSymbolExpanded: string
-  expandIconSymbolCollapsed: string
-  treeExpandIcon: string
-  treeExpandIconExpanded: string
-  treeExpandIconCollapsed: string
-  treeExpandIconSpaced: string
-  treeExpandIconDisabled: string
-  treeExpandIconSymbol: string
-  treeExpandIconSymbolExpanded: string
-  treeExpandIconSymbolCollapsed: string
-  expandedRow: string
-  expandedRowCell: string
-  resizeHandle: string
-  tdRowHover: string
-  tdRowSelectedHover: string
+  filterDropdownConfirmButton?: () => string
+  filterDropdownSearch: () => string
+  filterDropdownSearchField: () => string
+  filterDropdownSearchIcon: () => string
+  filterDropdownSearchInput: () => string
+  filterDropdownSwitcher: () => string
+  filterDropdownSwitcherExpanded: () => string
+  filterDropdownSwitcherCollapsed: () => string
+  filterDropdownSwitcherNoop: () => string
+  filterDropdownContentWrapper: () => string
+  filterDropdownTreeWrapper: () => string
+  filterDropdownTreeList: () => string
+  filterDropdownTreeItem: () => string
+  filterDropdownTreeContentWrapper: () => string
+  filterDropdownTreeItemSelected: () => string
+  filterDropdownTreeItemMatched: () => string
+  filterDropdownTreeCheckAll: () => string
+  filterDropdownListEmpty: () => string
+  emptyWrapper: () => string
+  emptyIcon: () => string
+  emptyText: () => string
+  loadingSpinner: () => string
+  tdSelected: () => string
+  selectionDropdown: () => string
+  selectionDropdownItem: () => string
+  selectionExtra: () => string
+  summaryRow: () => string
+  summaryCell: () => string
+  headerWrapper: () => string
+  bodyWrapper: () => string
+  fixedCell: () => string
+  fixedDividerLeft: () => string
+  fixedDividerRight: () => string
+  fixedShadowLeft: () => string
+  fixedShadowRight: () => string
+  fixedShadowLeftHidden: () => string
+  fixedShadowRightHidden: () => string
+  expandIcon: () => string
+  expandIconExpanded: () => string
+  expandIconCollapsed: () => string
+  expandIconSpaced: () => string
+  expandIconDisabled: () => string
+  expandIconSymbol: () => string
+  expandIconSymbolExpanded: () => string
+  expandIconSymbolCollapsed: () => string
+  treeExpandIcon: () => string
+  treeExpandIconExpanded: () => string
+  treeExpandIconCollapsed: () => string
+  treeExpandIconSpaced: () => string
+  treeExpandIconDisabled: () => string
+  treeExpandIconSymbol: () => string
+  treeExpandIconSymbolExpanded: () => string
+  treeExpandIconSymbolCollapsed: () => string
+  expandedRow: () => string
+  expandedRowCell: () => string
+  resizeHandle: () => string
+  tdRowHover: () => string
+  tdRowSelectedHover: () => string
 }
 
 /**
@@ -156,8 +162,8 @@ export interface TableContext {
   /** 表级别 headerEllipsis 配置 */
   headerEllipsis?: ComputedRef<boolean>
 
-  /** 子组件主题 slot class 映射 */
-  subThemeSlots?: ComputedRef<SubThemeSlots>
+  /** 子组件主题 slot class 映射（稳定引用，字段为懒求值函数） */
+  subThemeSlots?: SubThemeSlots
 
   /** 当前主题预设行为配置 */
   presetConfig?: ComputedRef<TablePresetConfig>
@@ -207,8 +213,8 @@ export interface TableContext {
   // ---- 固定列/表头 ----
   /** 固定列偏移量映射 */
   fixedOffsets?: ComputedRef<Map<Key, FixedOffset>>
-  /** 滚动状态（是否在起始/末端） */
-  scrollState?: ComputedRef<{ atStart: boolean; atEnd: boolean }>
+  /** 滚动状态（是否在起始/末端，两个独立布尔 computed，只在跨越边界时触发下游） */
+  scrollState?: ScrollEdgeState
   /** 是否开启 bordered 模式 */
   bordered?: ComputedRef<boolean>
   /** 表格布局模式 */
@@ -275,6 +281,8 @@ export interface TableContext {
   isTreeData?: ComputedRef<boolean>
   /** 扁平化后的树形行数据 */
   treeFlattenData?: ComputedRef<FlattenRow[]>
+  /** 按 record 身份 O(1) 取可见行元信息（替代逐行 .find()） */
+  getFlattenRow?: (record: Record<string, unknown>) => FlattenRow | undefined
   /** 切换树节点展开状态 */
   toggleTreeExpand?: (record: Record<string, unknown>, index: number) => void
   /** 判断树节点是否展开 */

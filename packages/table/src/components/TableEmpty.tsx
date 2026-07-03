@@ -12,7 +12,7 @@ export default defineComponent({
     const tableContext = inject(TABLE_CONTEXT_KEY, {} as TableContext)
 
     return () => {
-      const subThemeSlots = tableContext.subThemeSlots?.value
+      const subThemeSlots = tableContext.subThemeSlots
       const presetConfig = tableContext.presetConfig?.value
 
       return (
@@ -22,13 +22,13 @@ export default defineComponent({
             {tableContext.empty ? (
               tableContext.empty()
             ) : (
-              <div class={subThemeSlots?.emptyWrapper}>
+              <div class={subThemeSlots?.emptyWrapper()}>
                 {presetConfig?.emptyIcon && (
-                  <div class={subThemeSlots?.emptyIcon}>
+                  <div class={subThemeSlots?.emptyIcon()}>
                     {h(resolveDynamicComponent(presetConfig.emptyIcon) as Component)}
                   </div>
                 )}
-                <p class={subThemeSlots?.emptyText}>
+                <p class={subThemeSlots?.emptyText()}>
                   {tableContext.locale?.value.empty.text ?? '暂无数据'}
                 </p>
               </div>

@@ -26,7 +26,7 @@ export default defineComponent({
     return () => (
       <span
         class={[
-          tableContext.subThemeSlots?.value.filterIcon,
+          tableContext.subThemeSlots?.filterIcon(),
           tableContext.vtgClass?.(
             props.active
               ? 'text-[color:var(--color-primary)]'

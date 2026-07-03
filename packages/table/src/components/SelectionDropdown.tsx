@@ -106,7 +106,7 @@ export default defineComponent({
             {props.visible && (
               <div
                 ref={dropdownRef}
-                class={tableContext.subThemeSlots?.value.selectionDropdown}
+                class={tableContext.subThemeSlots?.selectionDropdown()}
                 style={style}
                 onMouseenter={() => emit('mouseenter')}
                 onMouseleave={() => emit('mouseleave')}
@@ -115,7 +115,7 @@ export default defineComponent({
                   {props.items.map((item) => (
                     <li
                       key={item.key}
-                      class={tableContext.subThemeSlots?.value.selectionDropdownItem}
+                      class={tableContext.subThemeSlots?.selectionDropdownItem()}
                       onClick={() => handleItemClick(item)}
                     >
                       {item.text}

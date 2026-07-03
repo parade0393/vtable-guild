@@ -7,8 +7,8 @@ export default defineComponent({
     const tableContext = inject(TABLE_CONTEXT_KEY, {} as TableContext)
 
     return () => {
-      const sub = tableContext.subThemeSlots?.value
-      return <tr class={sub?.summaryRow ?? ''}>{slots.default?.()}</tr>
+      const sub = tableContext.subThemeSlots
+      return <tr class={sub?.summaryRow() ?? ''}>{slots.default?.()}</tr>
     }
   },
 })

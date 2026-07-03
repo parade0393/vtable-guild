@@ -9,6 +9,7 @@ export {
   cnByCssMode,
 } from './utils/classPrefix'
 export { optionalProp, requiredProp, optionalBoolProp, optionalStringProp } from './utils/props'
+export { devWarn } from './utils/devWarn'
 import type {
   DeepPartial,
   LocaleName,

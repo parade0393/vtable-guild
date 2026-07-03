@@ -18,10 +18,15 @@ export interface FixedOffset {
   isFirstRight?: boolean
 }
 
+export interface ScrollEdgeState {
+  atStart: ComputedRef<boolean>
+  atEnd: ComputedRef<boolean>
+}
+
 export interface UseScrollReturn {
   headerWrapRef: Ref<HTMLElement | null>
   bodyWrapRef: Ref<HTMLElement | null>
-  scrollState: ComputedRef<{ atStart: boolean; atEnd: boolean }>
+  scrollState: ScrollEdgeState
   handleBodyScroll: (e: { scrollTop: number; scrollLeft: number }) => void
   fixedOffsets: ComputedRef<Map<Key, FixedOffset>>
   updateScrollState: () => void
@@ -37,10 +42,12 @@ export function useScroll(options: {
   const scrollLeft = ref(0)
   const maxScrollLeft = ref(0)
 
-  const scrollState = computed(() => ({
-    atStart: scrollLeft.value <= 0,
-    atEnd: scrollLeft.value >= maxScrollLeft.value - 1,
-  }))
+  // 拆成两个布尔 computed：布尔值只在跨越边界时变化，
+  // 避免横向滚动每帧都因新对象身份触发全部固定列单元格重算
+  const scrollState: ScrollEdgeState = {
+    atStart: computed(() => scrollLeft.value <= 0),
+    atEnd: computed(() => scrollLeft.value >= maxScrollLeft.value - 1),
+  }
 
   function syncHorizontalScroll(nextScrollLeft: number, nextMaxScrollLeft?: number) {
     scrollLeft.value = nextScrollLeft
