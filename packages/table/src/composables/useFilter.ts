@@ -1,8 +1,9 @@
 // packages/table/src/composables/useFilter.ts
 
-import { computed, reactive } from 'vue'
+import { computed } from 'vue'
 import type { ColumnType } from '../types'
-import { getColumnKey } from './useSorter'
+import { getColumnKey } from './useColumns'
+import { useControlledColumnState } from './useControlledColumnState'
 
 /** 筛选状态记录：columnKey → 选中的筛选值数组 */
 export type FiltersRecord = Record<string, (string | number | boolean)[] | null>
@@ -24,8 +25,14 @@ export interface UseFilterOptions {
 export function useFilter(options: UseFilterOptions) {
   const { columns, onFilterChange } = options
 
-  // 非受控模式的内部状态
-  const innerFilterState = reactive<Record<string, (string | number | boolean)[]>>({})
+  // 受控（column.filteredValue）/非受控（内部 record）状态原语
+  const {
+    innerState: innerFilterState,
+    readValue,
+    writeValue,
+  } = useControlledColumnState<(string | number | boolean)[]>({
+    controlledValue: (column) => column.filteredValue,
+  })
 
   // 初始化：读取 defaultFilteredValue
   for (const col of columns()) {
@@ -36,24 +43,12 @@ export function useFilter(options: UseFilterOptions) {
   }
 
   /**
-   * 判断某列是否处于受控模式。
-   */
-  function isControlled(column: ColumnType<Record<string, unknown>>): boolean {
-    return column.filteredValue !== undefined
-  }
-
-  /**
    * 获取某列的当前筛选值。
    */
   function getFilteredValue(
     column: ColumnType<Record<string, unknown>>,
   ): (string | number | boolean)[] {
-    if (isControlled(column)) {
-      return column.filteredValue ?? []
-    }
-    const key = getColumnKey(column)
-    if (key === undefined) return []
-    return innerFilterState[String(key)] ?? []
+    return readValue(column, []) as (string | number | boolean)[]
   }
 
   function normalizeFilterValues(
@@ -118,14 +113,8 @@ export function useFilter(options: UseFilterOptions) {
     const key = getColumnKey(column)
     if (key === undefined) return
 
-    // 非受控模式：更新内部状态
-    if (!isControlled(column)) {
-      if (values.length === 0) {
-        delete innerFilterState[String(key)]
-      } else {
-        innerFilterState[String(key)] = [...values]
-      }
-    }
+    // 非受控模式：更新内部状态（空数组 → 删除条目）
+    writeValue(column, values.length === 0 ? undefined : [...values])
 
     // 触发回调
     onFilterChange?.(buildFiltersSnapshot(column, values))

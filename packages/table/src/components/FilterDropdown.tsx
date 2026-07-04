@@ -16,6 +16,7 @@ import { Checkbox, Radio, Button, Input, Scrollbar } from '@vtable-guild/core'
 import { SearchIcon, CaretDownIcon } from '@vtable-guild/icons'
 import type { ColumnFilterItem } from '../types'
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
+import { getPopupPositionStyle } from '../utils/popupPosition'
 
 /** Recursively collect all values (parent + leaf), matching antdv flattenKeys */
 function flattenValues(items: ColumnFilterItem[]): (string | number | boolean)[] {
@@ -482,32 +483,7 @@ export default defineComponent({
         ? tableContext.subThemeSlots?.filterDropdownTreeContentWrapper()
         : tableContext.subThemeSlots?.filterDropdownContentWrapper()
 
-      const style: Record<string, string> = { zIndex: '1050' }
-      if (
-        typeof popupContainer === 'string' ||
-        (typeof document !== 'undefined' && popupContainer === document.body)
-      ) {
-        const viewportWidth = window.innerWidth
-        const overflowRight = anchorRect.left + dropdownMinWidth > viewportWidth
-        style.position = 'fixed'
-        style.top = `${anchorRect.bottom + 4}px`
-        if (overflowRight) {
-          style.right = `${viewportWidth - anchorRect.right}px`
-        } else {
-          style.left = `${anchorRect.left}px`
-        }
-      } else {
-        const containerRect = popupContainer.getBoundingClientRect()
-        const overflowRight =
-          anchorRect.left - containerRect.left + dropdownMinWidth > popupContainer.clientWidth
-        style.position = 'absolute'
-        style.top = `${anchorRect.bottom - containerRect.top + popupContainer.scrollTop + 4}px`
-        if (overflowRight) {
-          style.right = `${containerRect.right - anchorRect.right + popupContainer.scrollLeft}px`
-        } else {
-          style.left = `${anchorRect.left - containerRect.left + popupContainer.scrollLeft}px`
-        }
-      }
+      const style = getPopupPositionStyle(anchorRect, popupContainer, dropdownMinWidth)
 
       return (
         <Teleport to={popupContainer}>

@@ -1047,6 +1047,33 @@ describe('VTable', () => {
     wrapper.unmount()
   })
 
+  it('applies sticky positioning to fixed columns without edge shadows at rest', () => {
+    const columns: ColumnsType<DemoRow> = [
+      { title: 'Name', key: 'name', dataIndex: 'name', fixed: 'left', width: 120 },
+      { title: 'Age', key: 'age', dataIndex: 'age', width: 400 },
+      { title: 'Status', key: 'status', dataIndex: 'status', fixed: 'right', width: 100 },
+    ]
+    const wrapper = mountTable(columns, { scroll: { x: 900 } })
+
+    const firstRowCells = getBodyRows(wrapper)[0].findAll('td')
+    const nameCell = firstRowCells[0]
+    const statusCell = firstRowCells[2]
+
+    // 左固定列：sticky + left 偏移
+    expect(nameCell.attributes('style')).toContain('position: sticky')
+    expect(nameCell.attributes('style')).toContain('left: 0px')
+    // 右固定列：sticky + right 偏移
+    expect(statusCell.attributes('style')).toContain('position: sticky')
+    expect(statusCell.attributes('style')).toContain('right: 0px')
+    // 未滚动（同时处于起点与终点）时两侧阴影都不出现
+    expect(nameCell.classes().join(' ')).not.toContain('shadow')
+    expect(statusCell.classes().join(' ')).not.toContain('shadow')
+    // 非固定列不带 sticky
+    expect(firstRowCells[1].attributes('style') ?? '').not.toContain('sticky')
+
+    wrapper.unmount()
+  })
+
   describe('column placement sentinels', () => {
     it('places EXPAND_COLUMN at sentinel position when expandable is enabled', () => {
       const columns: ColumnsType<DemoRow> = [

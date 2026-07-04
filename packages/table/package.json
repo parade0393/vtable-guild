@@ -20,7 +20,8 @@
     "build": "vite build",
     "dev": "vite build --watch",
     "type-check": "vue-tsc --build",
-    "test": "vitest run --config ../../vitest.config.ts --project table"
+    "test": "vitest run --config ../../vitest.config.ts --project table",
+    "bench": "vitest bench --run --config ../../vitest.config.ts --project table"
   },
   "peerDependencies": {
     "@vtable-guild/core": "workspace:*",

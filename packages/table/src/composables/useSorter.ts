@@ -1,4 +1,4 @@
-import { computed, reactive, watch, type ComputedRef } from 'vue'
+import { computed, watch, type ComputedRef } from 'vue'
 import type {
   ColumnSorterObject,
   ColumnType,
@@ -7,7 +7,8 @@ import type {
   SorterFn,
   SorterResultLike,
 } from '../types'
-import { getByDataIndex } from './useColumns'
+import { getByDataIndex, getColumnKey } from './useColumns'
+import { useControlledColumnState } from './useControlledColumnState'
 
 export interface SorterState<TRecord extends Record<string, unknown> = Record<string, unknown>> {
   columnKey: Key | undefined
@@ -46,20 +47,6 @@ function normalizeSorterResult<TRecord extends Record<string, unknown>>(
     order: state.order,
     field: state.column?.dataIndex,
   }
-}
-
-/**
- * 获取列的唯一标识。
- * 优先使用 key，其次 dataIndex 转字符串。
- */
-function getColumnKey<TRecord extends Record<string, unknown>>(
-  column: ColumnType<TRecord>,
-): Key | undefined {
-  if (column.key !== undefined) return column.key
-  if (column.dataIndex !== undefined) {
-    return Array.isArray(column.dataIndex) ? column.dataIndex.join('.') : String(column.dataIndex)
-  }
-  return undefined
 }
 
 /**
@@ -106,7 +93,16 @@ export function useSorter<TRecord extends Record<string, unknown>>(
 ) {
   const { columns, tableSortDirections, onSorterChange } = options
 
-  const innerSortOrders = reactive<Record<string, SortOrder>>({})
+  // 受控（column.sortOrder）/非受控（内部 record）状态原语；
+  // 初始化与批量清理逻辑保留在本文件，直接操作 innerSortOrders
+  const {
+    innerState: innerSortOrders,
+    isControlled,
+    readValue,
+    writeValue,
+  } = useControlledColumnState<SortOrder, TRecord>({
+    controlledValue: (column) => column.sortOrder,
+  })
   const initializedDefaults = new Set<string>()
 
   function syncDefaultSorterState() {
@@ -144,19 +140,10 @@ export function useSorter<TRecord extends Record<string, unknown>>(
     deep: true,
   })
 
-  function isControlled(column: ColumnType<TRecord>): boolean {
-    return column.sortOrder !== undefined
-  }
-
   function readSortOrder(column: ColumnType<TRecord>): SortOrder {
-    const key = getColumnKey(column)
-    if (key === undefined) return null
-
-    if (isControlled(column)) {
-      return column.sortOrder ?? null
-    }
-
-    return innerSortOrders[String(key)] ?? null
+    // 无 key 的列（既无 key 也无 dataIndex）不参与排序状态，受控与否都返回 null
+    if (getColumnKey(column) === undefined) return null
+    return readValue(column, null)
   }
 
   function collectSorterStates(override?: {
@@ -247,11 +234,7 @@ export function useSorter<TRecord extends Record<string, unknown>>(
         clearUncontrolledSorters((item) => getMultiplePriority(item) === false)
       }
 
-      if (nextOrder) {
-        innerSortOrders[String(key)] = nextOrder
-      } else {
-        delete innerSortOrders[String(key)]
-      }
+      writeValue(column, nextOrder ?? undefined)
     }
 
     const nextStates = collectSorterStates({

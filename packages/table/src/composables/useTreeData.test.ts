@@ -97,4 +97,27 @@ describe('useTreeData', () => {
     expect(tree.isTreeExpanded('parent-1')).toBe(true)
     expect(Array.from(tree.expandedKeys.value)).toEqual([])
   })
+
+  it('exposes rowMetaMap for O(1) record lookup that tracks expansion', () => {
+    const tree = useTreeData({
+      data: () => treeData,
+      getRowKey: (record) => record.key,
+      defaultExpandedRowKeys: () => ['parent-1'],
+    })
+
+    // 展开 parent-1：其子行在 map 中可查，parent-2 的子行不可见
+    const child1 = treeData[0].children![0]
+    expect(tree.rowMetaMap.value.get(child1)).toMatchObject({ level: 1, parentKey: 'parent-1' })
+    expect(tree.rowMetaMap.value.get(treeData[1].children![0])).toBeUndefined()
+    expect(tree.rowMetaMap.value.get(treeData[0])).toMatchObject({
+      level: 0,
+      expanded: true,
+      hasChildren: true,
+    })
+
+    // 折叠后子行从 map 中消失
+    tree.toggleTreeExpand(treeData[0], 0)
+    expect(tree.rowMetaMap.value.get(child1)).toBeUndefined()
+    expect(tree.rowMetaMap.value.get(treeData[0])).toMatchObject({ expanded: false })
+  })
 })

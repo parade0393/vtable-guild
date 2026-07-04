@@ -19,6 +19,7 @@ import type { HeaderCellMeta } from '../composables/useColumns'
 import { getColumnKey } from '../composables/useSorter'
 import { useFixedColumnStyle } from '../composables/useFixedColumnStyle'
 import { getCellSpan, getEllipsisConfig, omitCellProps } from '../utils/cell'
+import { getPopupPositionStyle, resolvePopupContainer } from '../utils/popupPosition'
 import { ensureValidVNode } from '../utils/vnode'
 import SortButton from './SortButton'
 import FilterIcon from './FilterIcon'
@@ -31,61 +32,6 @@ function getAriaSortValue(order: SortOrder): 'ascending' | 'descending' | undefi
   if (order === 'ascend') return 'ascending'
   if (order === 'descend') return 'descending'
   return undefined
-}
-
-function resolvePopupContainer(
-  tableContext: TableContext,
-  triggerNode: HTMLElement | null,
-): HTMLElement | string {
-  if (!triggerNode || typeof document === 'undefined') {
-    return 'body'
-  }
-
-  return tableContext.getPopupContainer?.(triggerNode) ?? document.body
-}
-
-function getPopupPositionStyle(
-  anchorRect: { top: number; left: number; right: number; bottom: number },
-  container: HTMLElement | string,
-  minimumWidth: number,
-): Record<string, string> {
-  const viewportWidth = typeof window === 'undefined' ? 0 : window.innerWidth
-
-  if (
-    typeof container === 'string' ||
-    (typeof document !== 'undefined' && container === document.body)
-  ) {
-    const overflowRight = anchorRect.left + minimumWidth > viewportWidth
-    const style: Record<string, string> = {
-      position: 'fixed',
-      top: `${anchorRect.bottom + 4}px`,
-      zIndex: '1050',
-    }
-
-    if (overflowRight) {
-      style.right = `${viewportWidth - anchorRect.right}px`
-    } else {
-      style.left = `${anchorRect.left}px`
-    }
-
-    return style
-  }
-
-  const containerRect = container.getBoundingClientRect()
-  const overflowRight = anchorRect.left - containerRect.left + minimumWidth > container.clientWidth
-  const style: Record<string, string> = {
-    position: 'absolute',
-    top: `${anchorRect.bottom - containerRect.top + container.scrollTop + 4}px`,
-    zIndex: '1050',
-  }
-
-  if (overflowRight) {
-    style.right = `${containerRect.right - anchorRect.right + container.scrollLeft}px`
-  } else {
-    style.left = `${anchorRect.left - containerRect.left + container.scrollLeft}px`
-  }
-
-  return style
 }
 
 export default defineComponent({
