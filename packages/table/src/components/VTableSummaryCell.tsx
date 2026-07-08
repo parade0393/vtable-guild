@@ -4,6 +4,7 @@ import { TABLE_ALIGN_CLASSES } from '@vtable-guild/theme'
 import type { AlignType } from '../types'
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 import { getColumnKey } from '../composables/useSorter'
+import { useFixedColumnStyle } from '../composables/useFixedColumnStyle'
 
 export default defineComponent({
   name: 'VTableSummaryCell',
@@ -25,32 +26,12 @@ export default defineComponent({
       return tableContext.fixedOffsets?.value?.get(key) ?? null
     })
 
-    const fixedStyle = computed(() => {
-      const info = fixedInfo.value
-      if (!info) return undefined
-      const style: Record<string, string> = { position: 'sticky', zIndex: '2' }
-      if (info.left !== undefined) style.left = `${info.left}px`
-      if (info.right !== undefined) style.right = `${info.right}px`
-      return style
-    })
-
-    const fixedClass = computed(() => {
-      const info = fixedInfo.value
-      if (!info) return ''
-      const sub = tableContext.subThemeSlots?.value
-      if (!sub) return ''
-      const classes: string[] = []
-      const atStart = tableContext.scrollState?.value?.atStart ?? true
-      const atEnd = tableContext.scrollState?.value?.atEnd ?? true
-      if (info.isLastLeft && !atStart) classes.push(sub.fixedShadowLeft)
-      if (info.isFirstRight && !atEnd) classes.push(sub.fixedShadowRight)
-      return classes.join(' ')
-    })
+    const { fixedStyle, fixedClass } = useFixedColumnStyle({ fixedInfo: () => fixedInfo.value })
 
     const cellClass = computed(() => {
-      const sub = tableContext.subThemeSlots?.value
+      const sub = tableContext.subThemeSlots
       const alignClass = props.align ? TABLE_ALIGN_CLASSES[props.align] : ''
-      return cn(sub?.summaryCell ?? '', alignClass, fixedClass.value)
+      return cn(sub?.summaryCell() ?? '', alignClass, fixedClass.value)
     })
 
     const cellStyle = computed(() => {

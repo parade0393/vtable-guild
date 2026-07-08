@@ -3,6 +3,7 @@
   "files": [],
   "references": [
     { "path": "./packages/core" },
+    { "path": "./packages/icons" },
     { "path": "./packages/theme" },
     { "path": "./packages/table" },
     { "path": "./packages/vtable-guild" },

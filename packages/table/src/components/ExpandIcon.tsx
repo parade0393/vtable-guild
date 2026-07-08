@@ -24,30 +24,30 @@ export default defineComponent({
     }
 
     return () => {
-      const subThemeSlots = tableContext.subThemeSlots?.value
+      const subThemeSlots = tableContext.subThemeSlots
       const isTree = props.variant === 'tree'
-      const buttonBaseClass = isTree ? subThemeSlots?.treeExpandIcon : subThemeSlots?.expandIcon
+      const buttonBaseClass = isTree ? subThemeSlots?.treeExpandIcon() : subThemeSlots?.expandIcon()
       const buttonExpandedClass = isTree
-        ? subThemeSlots?.treeExpandIconExpanded
-        : subThemeSlots?.expandIconExpanded
+        ? subThemeSlots?.treeExpandIconExpanded()
+        : subThemeSlots?.expandIconExpanded()
       const buttonCollapsedClass = isTree
-        ? subThemeSlots?.treeExpandIconCollapsed
-        : subThemeSlots?.expandIconCollapsed
+        ? subThemeSlots?.treeExpandIconCollapsed()
+        : subThemeSlots?.expandIconCollapsed()
       const buttonSpacedClass = isTree
-        ? subThemeSlots?.treeExpandIconSpaced
-        : subThemeSlots?.expandIconSpaced
+        ? subThemeSlots?.treeExpandIconSpaced()
+        : subThemeSlots?.expandIconSpaced()
       const buttonDisabledClass = isTree
-        ? subThemeSlots?.treeExpandIconDisabled
-        : subThemeSlots?.expandIconDisabled
+        ? subThemeSlots?.treeExpandIconDisabled()
+        : subThemeSlots?.expandIconDisabled()
       const symbolBaseClass = isTree
-        ? subThemeSlots?.treeExpandIconSymbol
-        : subThemeSlots?.expandIconSymbol
+        ? subThemeSlots?.treeExpandIconSymbol()
+        : subThemeSlots?.expandIconSymbol()
       const symbolExpandedClass = isTree
-        ? subThemeSlots?.treeExpandIconSymbolExpanded
-        : subThemeSlots?.expandIconSymbolExpanded
+        ? subThemeSlots?.treeExpandIconSymbolExpanded()
+        : subThemeSlots?.expandIconSymbolExpanded()
       const symbolCollapsedClass = isTree
-        ? subThemeSlots?.treeExpandIconSymbolCollapsed
-        : subThemeSlots?.expandIconSymbolCollapsed
+        ? subThemeSlots?.treeExpandIconSymbolCollapsed()
+        : subThemeSlots?.expandIconSymbolCollapsed()
 
       const fallbackButtonBaseClass = isTree
         ? tableContext.vtgClass?.(

@@ -11,6 +11,7 @@ import {
 } from 'vue'
 import { inject } from 'vue'
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
+import { getPopupPositionStyle } from '../utils/popupPosition'
 import type { Key } from '../types'
 
 export interface SelectionDropdownItemDef {
@@ -73,32 +74,7 @@ export default defineComponent({
       const dropdownMinWidth = 120
       const popupContainer = props.popupContainer
 
-      const style: Record<string, string> = { zIndex: '1050' }
-      if (
-        typeof popupContainer === 'string' ||
-        (typeof document !== 'undefined' && popupContainer === document.body)
-      ) {
-        const viewportWidth = window.innerWidth
-        const overflowRight = anchorRect.left + dropdownMinWidth > viewportWidth
-        style.position = 'fixed'
-        style.top = `${anchorRect.bottom + 4}px`
-        if (overflowRight) {
-          style.right = `${viewportWidth - anchorRect.right}px`
-        } else {
-          style.left = `${anchorRect.left}px`
-        }
-      } else {
-        const containerRect = popupContainer.getBoundingClientRect()
-        const overflowRight =
-          anchorRect.left - containerRect.left + dropdownMinWidth > popupContainer.clientWidth
-        style.position = 'absolute'
-        style.top = `${anchorRect.bottom - containerRect.top + popupContainer.scrollTop + 4}px`
-        if (overflowRight) {
-          style.right = `${containerRect.right - anchorRect.right + popupContainer.scrollLeft}px`
-        } else {
-          style.left = `${anchorRect.left - containerRect.left + popupContainer.scrollLeft}px`
-        }
-      }
+      const style = getPopupPositionStyle(anchorRect, popupContainer, dropdownMinWidth)
 
       return (
         <Teleport to={popupContainer}>
@@ -106,7 +82,7 @@ export default defineComponent({
             {props.visible && (
               <div
                 ref={dropdownRef}
-                class={tableContext.subThemeSlots?.value.selectionDropdown}
+                class={tableContext.subThemeSlots?.selectionDropdown()}
                 style={style}
                 onMouseenter={() => emit('mouseenter')}
                 onMouseleave={() => emit('mouseleave')}
@@ -115,7 +91,7 @@ export default defineComponent({
                   {props.items.map((item) => (
                     <li
                       key={item.key}
-                      class={tableContext.subThemeSlots?.value.selectionDropdownItem}
+                      class={tableContext.subThemeSlots?.selectionDropdownItem()}
                       onClick={() => handleItemClick(item)}
                     >
                       {item.text}

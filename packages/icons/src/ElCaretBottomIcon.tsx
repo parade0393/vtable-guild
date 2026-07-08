@@ -1,20 +1,7 @@
-import { defineComponent } from 'vue'
+import { createSvgIcon } from './createSvgIcon'
 
-export default defineComponent({
+export default createSvgIcon({
   name: 'ElCaretBottomIcon',
-  inheritAttrs: true,
-  setup(_, { attrs }) {
-    return () => (
-      <svg
-        viewBox="0 0 1024 1024"
-        width="1em"
-        height="1em"
-        fill="currentColor"
-        aria-hidden="true"
-        {...attrs}
-      >
-        <path d="M512 704L192 320h640z" />
-      </svg>
-    )
-  },
+  viewBox: '0 0 1024 1024',
+  path: 'M512 704L192 320h640z',
 })

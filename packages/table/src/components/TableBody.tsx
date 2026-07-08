@@ -148,13 +148,13 @@ export default defineComponent({
                   class={cn(
                     props.rowClass,
                     rowClassName,
-                    tableContext.subThemeSlots?.value.expandedRow,
+                    tableContext.subThemeSlots?.expandedRow(),
                     expandedRowClassName,
                   )}
                 >
                   <td
                     colspan={props.columns.length}
-                    class={cn(props.tdClass, tableContext.subThemeSlots?.value.expandedRowCell)}
+                    class={cn(props.tdClass, tableContext.subThemeSlots?.expandedRowCell())}
                   >
                     {exp.expandedRowRender(record, rowIndex, 0, true)}
                   </td>

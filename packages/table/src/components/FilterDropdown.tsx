@@ -16,6 +16,7 @@ import { Checkbox, Radio, Button, Input, Scrollbar } from '@vtable-guild/core'
 import { SearchIcon, CaretDownIcon } from '@vtable-guild/icons'
 import type { ColumnFilterItem } from '../types'
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
+import { getPopupPositionStyle } from '../utils/popupPosition'
 
 /** Recursively collect all values (parent + leaf), matching antdv flattenKeys */
 function flattenValues(items: ColumnFilterItem[]): (string | number | boolean)[] {
@@ -335,8 +336,8 @@ export default defineComponent({
           return (
             <span
               class={[
-                tableContext.subThemeSlots?.value.filterDropdownSwitcher,
-                tableContext.subThemeSlots?.value.filterDropdownSwitcherNoop,
+                tableContext.subThemeSlots?.filterDropdownSwitcher(),
+                tableContext.subThemeSlots?.filterDropdownSwitcherNoop(),
               ]}
               aria-hidden="true"
             />
@@ -346,10 +347,10 @@ export default defineComponent({
         return (
           <span
             class={[
-              tableContext.subThemeSlots?.value.filterDropdownSwitcher,
+              tableContext.subThemeSlots?.filterDropdownSwitcher(),
               expanded
-                ? tableContext.subThemeSlots?.value.filterDropdownSwitcherExpanded
-                : tableContext.subThemeSlots?.value.filterDropdownSwitcherCollapsed,
+                ? tableContext.subThemeSlots?.filterDropdownSwitcherExpanded()
+                : tableContext.subThemeSlots?.filterDropdownSwitcherCollapsed(),
             ]}
             onClick={(e: MouseEvent) => {
               e.stopPropagation()
@@ -364,11 +365,11 @@ export default defineComponent({
 
       const isTree = props.filterMode === 'tree'
       const itemClass = isTree
-        ? tableContext.subThemeSlots?.value.filterDropdownTreeItem
-        : tableContext.subThemeSlots?.value.filterDropdownItem
+        ? tableContext.subThemeSlots?.filterDropdownTreeItem()
+        : tableContext.subThemeSlots?.filterDropdownItem()
       const contentWrapperClass = isTree
-        ? tableContext.subThemeSlots?.value.filterDropdownTreeContentWrapper
-        : tableContext.subThemeSlots?.value.filterDropdownContentWrapper
+        ? tableContext.subThemeSlots?.filterDropdownTreeContentWrapper()
+        : tableContext.subThemeSlots?.filterDropdownContentWrapper()
       const itemPadding = isTree
         ? {
             paddingLeft: `calc(var(--vtg-table-filter-tree-indent-size, 24px) * ${level})`,
@@ -391,15 +392,15 @@ export default defineComponent({
               class={[
                 contentWrapperClass,
                 selected
-                  ? tableContext.subThemeSlots?.value.filterDropdownTreeItemSelected
-                  : tableContext.subThemeSlots?.value.filterDropdownItemHover,
+                  ? tableContext.subThemeSlots?.filterDropdownTreeItemSelected()
+                  : tableContext.subThemeSlots?.filterDropdownItemHover(),
               ]}
             >
               <span
                 class={[
                   tableContext.vtgClass?.('text-[color:var(--color-on-surface)]'),
                   matchedByTreeSearch &&
-                    tableContext.subThemeSlots?.value.filterDropdownTreeItemMatched,
+                    tableContext.subThemeSlots?.filterDropdownTreeItemMatched(),
                 ]}
               >
                 {item.text}
@@ -424,9 +425,9 @@ export default defineComponent({
               contentWrapperClass,
               selected
                 ? (!props.multiple &&
-                    tableContext.subThemeSlots?.value.filterDropdownItemSelectedSingle) ||
-                  tableContext.subThemeSlots?.value.filterDropdownItemSelected
-                : tableContext.subThemeSlots?.value.filterDropdownItemHover,
+                    tableContext.subThemeSlots?.filterDropdownItemSelectedSingle?.()) ||
+                  tableContext.subThemeSlots?.filterDropdownItemSelected()
+                : tableContext.subThemeSlots?.filterDropdownItemHover(),
             ]}
             onClick={() => toggleItem(item.value, item)}
           >
@@ -476,38 +477,13 @@ export default defineComponent({
       const popupContainer = props.popupContainer
       const isTree = props.filterMode === 'tree'
       const listClass = isTree
-        ? tableContext.subThemeSlots?.value.filterDropdownTreeList
-        : tableContext.subThemeSlots?.value.filterDropdownList
+        ? tableContext.subThemeSlots?.filterDropdownTreeList()
+        : tableContext.subThemeSlots?.filterDropdownList()
       const contentWrapperClass = isTree
-        ? tableContext.subThemeSlots?.value.filterDropdownTreeContentWrapper
-        : tableContext.subThemeSlots?.value.filterDropdownContentWrapper
+        ? tableContext.subThemeSlots?.filterDropdownTreeContentWrapper()
+        : tableContext.subThemeSlots?.filterDropdownContentWrapper()
 
-      const style: Record<string, string> = { zIndex: '1050' }
-      if (
-        typeof popupContainer === 'string' ||
-        (typeof document !== 'undefined' && popupContainer === document.body)
-      ) {
-        const viewportWidth = window.innerWidth
-        const overflowRight = anchorRect.left + dropdownMinWidth > viewportWidth
-        style.position = 'fixed'
-        style.top = `${anchorRect.bottom + 4}px`
-        if (overflowRight) {
-          style.right = `${viewportWidth - anchorRect.right}px`
-        } else {
-          style.left = `${anchorRect.left}px`
-        }
-      } else {
-        const containerRect = popupContainer.getBoundingClientRect()
-        const overflowRight =
-          anchorRect.left - containerRect.left + dropdownMinWidth > popupContainer.clientWidth
-        style.position = 'absolute'
-        style.top = `${anchorRect.bottom - containerRect.top + popupContainer.scrollTop + 4}px`
-        if (overflowRight) {
-          style.right = `${containerRect.right - anchorRect.right + popupContainer.scrollLeft}px`
-        } else {
-          style.left = `${anchorRect.left - containerRect.left + popupContainer.scrollLeft}px`
-        }
-      }
+      const style = getPopupPositionStyle(anchorRect, popupContainer, dropdownMinWidth)
 
       return (
         <Teleport to={popupContainer}>
@@ -515,14 +491,14 @@ export default defineComponent({
             {props.visible && (
               <div
                 ref={dropdownRef}
-                class={tableContext.subThemeSlots?.value.filterDropdown}
+                class={tableContext.subThemeSlots?.filterDropdown()}
                 style={style}
               >
                 {props.filterSearch && (
-                  <div class={tableContext.subThemeSlots?.value.filterDropdownSearch}>
-                    <div class={tableContext.subThemeSlots?.value.filterDropdownSearchField}>
+                  <div class={tableContext.subThemeSlots?.filterDropdownSearch()}>
+                    <div class={tableContext.subThemeSlots?.filterDropdownSearchField()}>
                       <span
-                        class={tableContext.subThemeSlots?.value.filterDropdownSearchIcon}
+                        class={tableContext.subThemeSlots?.filterDropdownSearchIcon()}
                         aria-hidden="true"
                       >
                         <SearchIcon />
@@ -533,7 +509,7 @@ export default defineComponent({
                         placeholder={
                           filterDropdownLocale.value?.searchPlaceholder ?? '在筛选项中搜索'
                         }
-                        inputClass={tableContext.subThemeSlots?.value.filterDropdownSearchInput}
+                        inputClass={tableContext.subThemeSlots?.filterDropdownSearchInput()}
                         onUpdate:value={(val: string) => {
                           searchText.value = val
                         }}
@@ -543,11 +519,11 @@ export default defineComponent({
                 )}
 
                 {isTree ? (
-                  <div class={tableContext.subThemeSlots?.value.filterDropdownTreeWrapper}>
+                  <div class={tableContext.subThemeSlots?.filterDropdownTreeWrapper()}>
                     {isTreeMultiple.value && (
                       <div
                         key="__vtg_select_all__"
-                        class={tableContext.subThemeSlots?.value.filterDropdownTreeCheckAll}
+                        class={tableContext.subThemeSlots?.filterDropdownTreeCheckAll()}
                         onClick={toggleSelectAll}
                       >
                         <span class={tableContext.vtgClass?.('mt-1 mr-2 shrink-0')}>
@@ -560,8 +536,8 @@ export default defineComponent({
                           class={[
                             contentWrapperClass,
                             selectAllState.value === 'all'
-                              ? tableContext.subThemeSlots?.value.filterDropdownTreeItemSelected
-                              : tableContext.subThemeSlots?.value.filterDropdownItemHover,
+                              ? tableContext.subThemeSlots?.filterDropdownTreeItemSelected()
+                              : tableContext.subThemeSlots?.filterDropdownItemHover(),
                           ]}
                         >
                           <span
@@ -576,7 +552,7 @@ export default defineComponent({
                       <ul class={listClass}>
                         {renderFilterItems(filteredFilters.value)}
                         {showSearchEmptyState.value && (
-                          <li class={tableContext.subThemeSlots?.value.filterDropdownListEmpty}>
+                          <li class={tableContext.subThemeSlots?.filterDropdownListEmpty()}>
                             {filterDropdownLocale.value?.emptyText ?? 'Not Found'}
                           </li>
                         )}
@@ -591,7 +567,7 @@ export default defineComponent({
                     >
                       {renderFilterItems(filteredFilters.value)}
                       {showSearchEmptyState.value && (
-                        <li class={tableContext.subThemeSlots?.value.filterDropdownListEmpty}>
+                        <li class={tableContext.subThemeSlots?.filterDropdownListEmpty()}>
                           {filterDropdownLocale.value?.emptyText ?? 'Not Found'}
                         </li>
                       )}
@@ -599,11 +575,11 @@ export default defineComponent({
                   </Scrollbar>
                 )}
 
-                <div class={tableContext.subThemeSlots?.value.filterDropdownActions}>
+                <div class={tableContext.subThemeSlots?.filterDropdownActions()}>
                   <Button
                     type="link"
                     size="sm"
-                    class={tableContext.subThemeSlots?.value.filterDropdownResetButton}
+                    class={tableContext.subThemeSlots?.filterDropdownResetButton?.()}
                     disabled={localSelectedKeys.value.length === 0}
                     onClick={handleReset}
                   >
@@ -612,7 +588,7 @@ export default defineComponent({
                   <Button
                     type="primary"
                     size="sm"
-                    class={tableContext.subThemeSlots?.value.filterDropdownConfirmButton}
+                    class={tableContext.subThemeSlots?.filterDropdownConfirmButton?.()}
                     onClick={handleConfirm}
                   >
                     {filterDropdownLocale.value?.confirmText ?? '确 定'}

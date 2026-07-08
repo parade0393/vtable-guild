@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { useScroll } from './useScroll'
+import { useScroll, type UseScrollReturn } from './useScroll'
 import type { ColumnType } from '../types'
+
+/** scrollState 现在是两个独立布尔 computed，聚合读取便于断言 */
+function edge(scroll: UseScrollReturn) {
+  return { atStart: scroll.scrollState.atStart.value, atEnd: scroll.scrollState.atEnd.value }
+}
 
 function createScrollElement({ scrollLeft = 0, scrollWidth = 0, clientWidth = 0 } = {}) {
   const element = document.createElement('div')
@@ -57,10 +62,10 @@ describe('useScroll', () => {
     scroll.syncHorizontalScroll(64, 160)
 
     expect(header.scrollLeft).toBe(64)
-    expect(scroll.scrollState.value).toEqual({ atStart: false, atEnd: false })
+    expect(edge(scroll)).toEqual({ atStart: false, atEnd: false })
 
     scroll.syncHorizontalScroll(160, 160)
-    expect(scroll.scrollState.value).toEqual({ atStart: false, atEnd: true })
+    expect(edge(scroll)).toEqual({ atStart: false, atEnd: true })
   })
 
   it('updates max scroll distance from body scroll metrics', () => {
@@ -75,14 +80,14 @@ describe('useScroll', () => {
     scroll.handleBodyScroll({ scrollTop: 0, scrollLeft: 96 })
 
     expect(header.scrollLeft).toBe(96)
-    expect(scroll.scrollState.value).toEqual({ atStart: false, atEnd: false })
+    expect(edge(scroll)).toEqual({ atStart: false, atEnd: false })
 
     scroll.updateScrollState()
     expect(header.scrollLeft).toBe(12)
-    expect(scroll.scrollState.value).toEqual({ atStart: false, atEnd: false })
+    expect(edge(scroll)).toEqual({ atStart: false, atEnd: false })
 
     body.scrollLeft = 240
     scroll.updateScrollState()
-    expect(scroll.scrollState.value).toEqual({ atStart: false, atEnd: true })
+    expect(edge(scroll)).toEqual({ atStart: false, atEnd: true })
   })
 })

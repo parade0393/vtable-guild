@@ -13,6 +13,7 @@ import {
 } from 'vue'
 import {
   cn,
+  devWarn,
   mergeDeep,
   mergeThemeConfigs,
   prefixVtgClassNames,
@@ -49,7 +50,7 @@ import { useVirtual } from '../composables/useVirtual'
 import { useTreeData } from '../composables/useTreeData'
 import { useHoverState } from '../composables/useHoverState'
 
-import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
+import { TABLE_CONTEXT_KEY, type TableContext, type SubThemeSlots } from '../context'
 import { EXPAND_COLUMN, SELECTION_COLUMN } from '../constants'
 import { resolveTablePresetConfig } from '../preset-config'
 import TableHeader from './TableHeader'
@@ -483,12 +484,18 @@ export default defineComponent({
       if (typeof props.rowKey === 'string' && props.rowKey in record) {
         return record[props.rowKey] as Key
       }
+      devWarn(
+        'vtable-rowkey-fallback-index',
+        '[VTable] rowKey 未配置或无法在记录上取到，已回退到行索引作为 key。' +
+          '在行选择、展开行、树形数据场景下这会导致状态错乱，请配置 rowKey。',
+      )
       return index
     }
 
     // ---- 树形数据 ----
     const {
       flattenData: treeFlattenData,
+      rowMetaMap: treeRowMetaMap,
       isTreeData,
       toggleTreeExpand,
       isTreeExpanded,
@@ -698,17 +705,13 @@ export default defineComponent({
     )
     const thClass = computed(() => cn(themeSlots.th(), groupedHeaderThemeClasses.value.th) ?? '')
     const tdClass = computed(() => cn(themeSlots.td(), groupedHeaderThemeClasses.value.td) ?? '')
-    const warnedVirtualSpan = ref(false)
 
     watch(
       [virtualEnabled, hasPotentialBodySpan],
       ([enabled, hasSpan]) => {
-        if (!enabled || !hasSpan || warnedVirtualSpan.value || import.meta.env.PROD) {
-          return
-        }
-
-        warnedVirtualSpan.value = true
-        console.warn(
+        if (!enabled || !hasSpan) return
+        devWarn(
+          'vtable-virtual-body-span',
           '[VTable] Body cell merging via customCell/customRender is not supported when virtual=true.',
         )
       },
@@ -746,9 +749,7 @@ export default defineComponent({
     })
 
     function getRowIndent(record: Record<string, unknown>): number {
-      return isTreeData.value
-        ? (treeFlattenData.value.find((row) => row.record === record)?.level ?? 0)
-        : 0
+      return isTreeData.value ? (treeRowMetaMap.value.get(record)?.level ?? 0) : 0
     }
 
     function getResolvedRowClassName(record: Record<string, unknown>, index: number): string {
@@ -803,84 +804,88 @@ export default defineComponent({
     } as const
 
     // ---- provide context ----
-    const subThemeSlots = computed(() => ({
-      thSortable: themeSlots.thSortable(),
-      thSorted: themeSlots.thSorted(),
-      tdSorted: themeSlots.tdSorted(),
-      sortButton: themeSlots.sortButton(),
-      sortIconDown: themeSlots.sortIconDown(),
-      sortAreaOuter: themeSlots.sortAreaOuter(),
-      sortAreaWrapper: themeSlots.sortAreaWrapper(),
-      sortAreaTitle: themeSlots.sortAreaTitle(),
-      filterIconWrapper: themeSlots.filterIconWrapper(),
-      filterIcon: themeSlots.filterIcon(),
-      filterDropdown: themeSlots.filterDropdown(),
-      filterDropdownList: themeSlots.filterDropdownList(),
-      filterDropdownItem: themeSlots.filterDropdownItem(),
-      filterDropdownItemSelected: themeSlots.filterDropdownItemSelected(),
-      filterDropdownItemSelectedSingle: themeSlots.filterDropdownItemSelectedSingle?.(),
-      filterDropdownItemHover: themeSlots.filterDropdownItemHover(),
-      filterDropdownActions: themeSlots.filterDropdownActions(),
-      filterDropdownResetButton: themeSlots.filterDropdownResetButton?.(),
-      filterDropdownConfirmButton: themeSlots.filterDropdownConfirmButton?.(),
-      filterDropdownSearch: themeSlots.filterDropdownSearch(),
-      filterDropdownSearchField: themeSlots.filterDropdownSearchField(),
-      filterDropdownSearchIcon: themeSlots.filterDropdownSearchIcon(),
-      filterDropdownSearchInput: themeSlots.filterDropdownSearchInput(),
-      filterDropdownListEmpty: themeSlots.filterDropdownListEmpty(),
-      filterDropdownSwitcher: themeSlots.filterDropdownSwitcher(),
-      filterDropdownSwitcherExpanded: themeSlots.filterDropdownSwitcherExpanded(),
-      filterDropdownSwitcherCollapsed: themeSlots.filterDropdownSwitcherCollapsed(),
-      filterDropdownSwitcherNoop: themeSlots.filterDropdownSwitcherNoop(),
-      filterDropdownContentWrapper: themeSlots.filterDropdownContentWrapper(),
-      filterDropdownTreeWrapper: themeSlots.filterDropdownTreeWrapper(),
-      filterDropdownTreeList: themeSlots.filterDropdownTreeList(),
-      filterDropdownTreeItem: themeSlots.filterDropdownTreeItem(),
-      filterDropdownTreeContentWrapper: themeSlots.filterDropdownTreeContentWrapper(),
-      filterDropdownTreeItemSelected: themeSlots.filterDropdownTreeItemSelected(),
-      filterDropdownTreeItemMatched: themeSlots.filterDropdownTreeItemMatched(),
-      filterDropdownTreeCheckAll: themeSlots.filterDropdownTreeCheckAll(),
-      emptyWrapper: themeSlots.emptyWrapper(),
-      emptyIcon: themeSlots.emptyIcon(),
-      emptyText: themeSlots.emptyText(),
-      loadingSpinner: themeSlots.loadingSpinner(),
-      tdSelected: themeSlots.tdSelected(),
-      selectionDropdown: themeSlots.selectionDropdown(),
-      selectionDropdownItem: themeSlots.selectionDropdownItem(),
-      selectionExtra: themeSlots.selectionExtra(),
-      summaryRow: themeSlots.summaryRow(),
-      summaryCell: themeSlots.summaryCell(),
-      headerWrapper: themeSlots.headerWrapper(),
-      bodyWrapper: themeSlots.bodyWrapper(),
-      fixedCell: themeSlots.fixedCell(),
-      fixedDividerLeft: themeSlots.fixedDividerLeft(),
-      fixedDividerRight: themeSlots.fixedDividerRight(),
-      fixedShadowLeft: themeSlots.fixedShadowLeft(),
-      fixedShadowRight: themeSlots.fixedShadowRight(),
-      fixedShadowLeftHidden: themeSlots.fixedShadowLeftHidden(),
-      fixedShadowRightHidden: themeSlots.fixedShadowRightHidden(),
-      expandIcon: themeSlots.expandIcon(),
-      expandIconExpanded: themeSlots.expandIconExpanded(),
-      expandIconCollapsed: themeSlots.expandIconCollapsed(),
-      expandIconSpaced: themeSlots.expandIconSpaced(),
-      expandIconDisabled: themeSlots.expandIconDisabled(),
-      expandIconSymbol: themeSlots.expandIconSymbol(),
-      expandIconSymbolExpanded: themeSlots.expandIconSymbolExpanded(),
-      expandIconSymbolCollapsed: themeSlots.expandIconSymbolCollapsed(),
-      treeExpandIcon: themeSlots.treeExpandIcon(),
-      treeExpandIconExpanded: themeSlots.treeExpandIconExpanded(),
-      treeExpandIconCollapsed: themeSlots.treeExpandIconCollapsed(),
-      treeExpandIconSpaced: themeSlots.treeExpandIconSpaced(),
-      treeExpandIconDisabled: themeSlots.treeExpandIconDisabled(),
-      treeExpandIconSymbol: themeSlots.treeExpandIconSymbol(),
-      treeExpandIconSymbolExpanded: themeSlots.treeExpandIconSymbolExpanded(),
-      treeExpandIconSymbolCollapsed: themeSlots.treeExpandIconSymbolCollapsed(),
-      expandedRow: themeSlots.expandedRow(),
-      expandedRowCell: themeSlots.expandedRowCell(),
-      resizeHandle: themeSlots.resizeHandle(),
-      tdRowHover: themeSlots.tdRowHover(),
-      tdRowSelectedHover: themeSlots.tdRowSelectedHover(),
-    }))
+    // 稳定引用 + 懒求值：对象在 setup 阶段构建一次、identity 不变，
+    // 每个字段直接透传 themeSlots 的懒 slot 函数（themeSlots 本身已由 useTheme
+    // 保证稳定引用 + 内部懒读取 computed）。消费方调用具体字段才建立细粒度依赖，
+    // 避免任一 variant 变化让整表所有单元格样式 computed 失效。
+    const subThemeSlots: SubThemeSlots = {
+      thSortable: themeSlots.thSortable,
+      thSorted: themeSlots.thSorted,
+      tdSorted: themeSlots.tdSorted,
+      sortButton: themeSlots.sortButton,
+      sortIconDown: themeSlots.sortIconDown,
+      sortAreaOuter: themeSlots.sortAreaOuter,
+      sortAreaWrapper: themeSlots.sortAreaWrapper,
+      sortAreaTitle: themeSlots.sortAreaTitle,
+      filterIconWrapper: themeSlots.filterIconWrapper,
+      filterIcon: themeSlots.filterIcon,
+      filterDropdown: themeSlots.filterDropdown,
+      filterDropdownList: themeSlots.filterDropdownList,
+      filterDropdownItem: themeSlots.filterDropdownItem,
+      filterDropdownItemSelected: themeSlots.filterDropdownItemSelected,
+      filterDropdownItemSelectedSingle: themeSlots.filterDropdownItemSelectedSingle,
+      filterDropdownItemHover: themeSlots.filterDropdownItemHover,
+      filterDropdownActions: themeSlots.filterDropdownActions,
+      filterDropdownResetButton: themeSlots.filterDropdownResetButton,
+      filterDropdownConfirmButton: themeSlots.filterDropdownConfirmButton,
+      filterDropdownSearch: themeSlots.filterDropdownSearch,
+      filterDropdownSearchField: themeSlots.filterDropdownSearchField,
+      filterDropdownSearchIcon: themeSlots.filterDropdownSearchIcon,
+      filterDropdownSearchInput: themeSlots.filterDropdownSearchInput,
+      filterDropdownListEmpty: themeSlots.filterDropdownListEmpty,
+      filterDropdownSwitcher: themeSlots.filterDropdownSwitcher,
+      filterDropdownSwitcherExpanded: themeSlots.filterDropdownSwitcherExpanded,
+      filterDropdownSwitcherCollapsed: themeSlots.filterDropdownSwitcherCollapsed,
+      filterDropdownSwitcherNoop: themeSlots.filterDropdownSwitcherNoop,
+      filterDropdownContentWrapper: themeSlots.filterDropdownContentWrapper,
+      filterDropdownTreeWrapper: themeSlots.filterDropdownTreeWrapper,
+      filterDropdownTreeList: themeSlots.filterDropdownTreeList,
+      filterDropdownTreeItem: themeSlots.filterDropdownTreeItem,
+      filterDropdownTreeContentWrapper: themeSlots.filterDropdownTreeContentWrapper,
+      filterDropdownTreeItemSelected: themeSlots.filterDropdownTreeItemSelected,
+      filterDropdownTreeItemMatched: themeSlots.filterDropdownTreeItemMatched,
+      filterDropdownTreeCheckAll: themeSlots.filterDropdownTreeCheckAll,
+      emptyWrapper: themeSlots.emptyWrapper,
+      emptyIcon: themeSlots.emptyIcon,
+      emptyText: themeSlots.emptyText,
+      loadingSpinner: themeSlots.loadingSpinner,
+      tdSelected: themeSlots.tdSelected,
+      selectionDropdown: themeSlots.selectionDropdown,
+      selectionDropdownItem: themeSlots.selectionDropdownItem,
+      selectionExtra: themeSlots.selectionExtra,
+      summaryRow: themeSlots.summaryRow,
+      summaryCell: themeSlots.summaryCell,
+      headerWrapper: themeSlots.headerWrapper,
+      bodyWrapper: themeSlots.bodyWrapper,
+      fixedCell: themeSlots.fixedCell,
+      fixedDividerLeft: themeSlots.fixedDividerLeft,
+      fixedDividerRight: themeSlots.fixedDividerRight,
+      fixedShadowLeft: themeSlots.fixedShadowLeft,
+      fixedShadowRight: themeSlots.fixedShadowRight,
+      fixedShadowLeftHidden: themeSlots.fixedShadowLeftHidden,
+      fixedShadowRightHidden: themeSlots.fixedShadowRightHidden,
+      expandIcon: themeSlots.expandIcon,
+      expandIconExpanded: themeSlots.expandIconExpanded,
+      expandIconCollapsed: themeSlots.expandIconCollapsed,
+      expandIconSpaced: themeSlots.expandIconSpaced,
+      expandIconDisabled: themeSlots.expandIconDisabled,
+      expandIconSymbol: themeSlots.expandIconSymbol,
+      expandIconSymbolExpanded: themeSlots.expandIconSymbolExpanded,
+      expandIconSymbolCollapsed: themeSlots.expandIconSymbolCollapsed,
+      treeExpandIcon: themeSlots.treeExpandIcon,
+      treeExpandIconExpanded: themeSlots.treeExpandIconExpanded,
+      treeExpandIconCollapsed: themeSlots.treeExpandIconCollapsed,
+      treeExpandIconSpaced: themeSlots.treeExpandIconSpaced,
+      treeExpandIconDisabled: themeSlots.treeExpandIconDisabled,
+      treeExpandIconSymbol: themeSlots.treeExpandIconSymbol,
+      treeExpandIconSymbolExpanded: themeSlots.treeExpandIconSymbolExpanded,
+      treeExpandIconSymbolCollapsed: themeSlots.treeExpandIconSymbolCollapsed,
+      expandedRow: themeSlots.expandedRow,
+      expandedRowCell: themeSlots.expandedRowCell,
+      resizeHandle: themeSlots.resizeHandle,
+      tdRowHover: themeSlots.tdRowHover,
+      tdRowSelectedHover: themeSlots.tdRowSelectedHover,
+    }
 
     const presetConfig = computed(() => resolveTablePresetConfig(effectiveThemePreset.value))
 
@@ -948,6 +953,7 @@ export default defineComponent({
       },
       isTreeData,
       treeFlattenData,
+      getFlattenRow: (record) => treeRowMetaMap.value.get(record),
       toggleTreeExpand,
       isTreeExpanded,
       treeIndentSize,

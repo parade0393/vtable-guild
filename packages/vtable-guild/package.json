@@ -67,7 +67,7 @@
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "vite build && pnpm copy-css && node ./scripts/append-augmentation.mjs",
+    "build": "vite build && vite build --config vite.preset-cjs.config.ts && pnpm copy-css && node ./scripts/append-augmentation.mjs",
     "copy-css": "node ./scripts/copy-theme-css.mjs",
     "dev": "vite build --watch",
     "type-check": "vue-tsc --project ./tsconfig.build.json --noEmit",
@@ -77,6 +77,9 @@
   },
   "peerDependencies": {
     "vue": "^3.5.0"
+  },
+  "dependencies": {
+    "tailwind-variants": "^3.2.2"
   },
   "devDependencies": {
     "@vtable-guild/core": "workspace:*",

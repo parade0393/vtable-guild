@@ -1,5 +1,5 @@
 import { computed } from 'vue'
-import type { ColumnGroupType, ColumnType, ColumnsType, DataIndex } from '../types'
+import type { ColumnGroupType, ColumnType, ColumnsType, DataIndex, Key } from '../types'
 
 export type ColumnNode<TRecord extends Record<string, unknown>> =
   | ColumnType<TRecord>
@@ -27,6 +27,20 @@ export function isColumnGroup<TRecord extends Record<string, unknown>>(
     'children' in column &&
     Array.isArray((column as { children?: unknown }).children)
   )
+}
+
+/**
+ * 获取列的唯一标识。
+ * 优先使用 key，其次 dataIndex 转字符串。
+ */
+export function getColumnKey<TRecord extends Record<string, unknown>>(
+  column: ColumnType<TRecord>,
+): Key | undefined {
+  if (column.key !== undefined) return column.key
+  if (column.dataIndex !== undefined) {
+    return Array.isArray(column.dataIndex) ? column.dataIndex.join('.') : String(column.dataIndex)
+  }
+  return undefined
 }
 
 /**

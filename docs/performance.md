@@ -57,6 +57,17 @@ pnpm --filter @vtable-guild/table bench      # 只跑 table 包
 
 观察：四项均约 10–12× 从 1k 到 10k（近似线性，排序略超线性符合 n log n）。`sortData` 是数据管道里最重的一环（10k 约 8 ms）；`getSelectionState` 的逐行子树遍历在 10k 下约 2 ms，是下一阶段记忆化的候选。
 
+#### round-2 复测（2026-07-04，后代集合记忆化落地后）
+
+| 基准                      | 1k                   | 10k                | vs 基线            |
+| ------------------------- | -------------------- | ------------------ | ------------------ |
+| `getSelectionState` 全行  | 10,943 hz · 0.091 ms | 801 hz · 1.25 ms   | **1.85× / 1.69×**  |
+| `flattenData` 树展平      | 16,930 hz            | 1,935 hz · 0.52 ms | 噪声内（−7%/+8%）  |
+| `filterData` 单列         | 97,535 hz            | 9,980 hz           | 噪声内（+4%/+14%） |
+| `sortData` 单列（未改动） | 1,282 hz             | 111 hz · 9.02 ms   | 噪声内（−10%）     |
+
+说明：bench 铁律 3 要求每次迭代前失效缓存，因此 `getSelectionState` 的数字**包含 descendantsMap 的整表重建**——即便如此仍有 1.7×+；真实交互中树拓扑不变时后代查表为 O(1)，逐次选择切换的收益远大于此。`sortData` 本轮未改动，波动为跨日机器噪声（符合本节开头的相对基线声明）。
+
 ### L3 基线（Chrome DevTools trace，10k 行 · 虚拟开 · CPU 1x · 无网络节流）
 
 | 场景                                 | INP     | 拆解 input / processing / presentation | CLS  | 备注                                                                                                |
@@ -72,13 +83,30 @@ pnpm --filter @vtable-guild/table bench      # 只跑 table 包
 
 度量方式：`/perf` 页用 `evaluate_script` 测「切换单行选中」的**同步 render+patch** 耗时（mutate → microtask flush，排除 paint/rAF 干扰），dev 构建，取多次中位数。单行选中是「只有一行状态变、其余行应被跳过」的理想用例。
 
-### 已落地
+### 已落地（round-2，2026-07-03）
 
-**P0-3 · 消除虚拟路径的 indexOf 扫描**（`VirtualTableBody.tsx`）
+**响应式粒度**（`useScroll.ts` / `Table.tsx` / `context.ts`）
+
+- `scrollState` 从单对象 computed 拆为独立 `atStart`/`atEnd` 布尔 computed。原实现每帧横向滚动都产出新对象（Object.is 判定恒为"变"），导致全表固定列单元格的 `fixedClass` 逐帧重算；布尔值只在真正跨越边界时触发下游。
+- `subThemeSlots` 从 78 字段 eager computed 改为稳定引用对象 + 懒 slot 函数（复用 `useTheme` 的既有模式）。variant（size/bordered 等）变化不再使全表单元格样式 computed 级联失效，只有实际读取对应 slot 的组件重算。
+
+**算法热点**（`useSelection.ts` / `useTreeData.ts`）
+
+- 树扁平化 `walk` 传递父节点引用直接追加 `childrenKeys`，消除每个父节点 O(n) 的 `findIndex` 回查（树重建从 O(n²) 降为 O(n)）。
+- 新增 `selectableDescendantsMap`（自底向上单遍构建），`getSelectionState` 的逐行子树 DFS 改为查表——整表半选计算从 O(n²) 降为拓扑变化时 O(n)、读取 O(1)。
+- 新增 `rowMetaMap`（record → FlattenRow），`TableCell.treeRow` / `VirtualTableBody` / `getRowIndent` 三处每行 O(n) 的 `treeFlattenData.find()` 全部改为 O(1) 查表。树形+虚拟场景下原来是每次滚动 range 更新 20 可见行 × O(n) 比较。
+
+**P0-3 · 消除虚拟路径的 indexOf 扫描**（`VirtualTableBody.tsx`，上一轮）
 
 - 渲染槽用 VirtualList 提供的绝对下标替代 `dataSource.indexOf(item)`（每可见行 O(总行) → O(1)）。
 - `itemKey` 在提供 `rowKey` 时直接取记录 key，不再 `indexOf`——VirtualList 的 range 计算会对每个 item 调 `getKey`，原实现是 **O(n²)**。
 - 正确性/扩展性修复，零风险（type-check + 61 测试通过，虚拟渲染视觉无回归）。单次 sort/scroll 的 INP 在噪声内（172 vs 176 ms），收益主要体现在**持续滚动**（range 计算每帧跑、且高度已测量时才走该循环）。
+
+### 已评估，明确不做（round-2）
+
+- **useHeights ResizeObserver 节流**：现有 `promiseIdRef` 微任务护栏已把同帧多次 resize 回调合并为一次 `doCollect`；改 rAF 会给滚动关键路径的行高测量增加一帧延迟，得不偿失。
+- **sortData 脏检查**：它在 computed 链内，Vue 已提供记忆化；依赖变化时重排是语义要求。
+- **useSorter 列 watch 的 `deep: true`**：浅 watch 会丢"原地修改列数组"场景的 `defaultSortOrder` 初始化，语义风险大于收益。
 
 ### 已调研，暂不落地（P0-1）
 
@@ -117,10 +145,9 @@ pnpm --filter @vtable-guild/table bench      # 只跑 table 包
 
 **P0**
 
-- 虚拟列表每可见行渲染整张 `<table>` + `<colgroup>` — `VirtualTableBody.tsx`。
-- 行 / 单元格无 `v-memo`，局部状态变更（选择 / hover）触发全表 cell 的 computed 重算。
+- 虚拟列表每可见行渲染整张 `<table>` + `<colgroup>` — `VirtualTableBody.tsx`。round-2 已做立即项（`scrollWidth` 提为 computed、树行查找 O(1) 化）；结构性改造（vendored VirtualList 的 Filler 支持自定义容器标签，行渲染 `<tr>` 共享单表）需配合视觉回归验证，作为独立 spike 推进，失败则回退并在此记录结论。
+- 行 / 单元格无 `v-memo`，局部状态变更（选择 / hover）触发全表 cell 的 computed 重算（见上方 P0-1 调研）。
 
 **P1**
 
 - 合并单元格 O(n×m) 预计算无条件执行，即使未配置 rowSpan/colSpan — `TableBody.tsx`。
-- 非严格选择态逐行走子树（见上方 L1 `getSelectionState` 数字）可记忆化 — `useSelection.ts`。

@@ -10,7 +10,9 @@ export { useSelection } from './useSelection'
 export type { SelectionState } from './useSelection'
 
 export { useScroll } from './useScroll'
-export type { ScrollConfig, FixedOffset } from './useScroll'
+export type { ScrollConfig, FixedOffset, ScrollEdgeState } from './useScroll'
+
+export { useFixedColumnStyle } from './useFixedColumnStyle'
 
 export { useExpand } from './useExpand'
 

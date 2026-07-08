@@ -39,6 +39,8 @@ export interface UseTreeDataOptions<TRecord = Record<string, unknown>> {
 export interface UseTreeDataReturn<TRecord = Record<string, unknown>> {
   /** Flattened visible rows */
   flattenData: ComputedRef<FlattenRow<TRecord>[]>
+  /** record → 其可见行元信息的映射，供按 record 身份 O(1) 查行（替代逐行 .find()） */
+  rowMetaMap: ComputedRef<Map<TRecord, FlattenRow<TRecord>>>
   /** Whether tree mode is active (data has children) */
   isTreeData: ComputedRef<boolean>
   /** Toggle a row's expanded state */
@@ -189,8 +191,19 @@ export function useTreeData<TRecord extends Record<string, unknown> = Record<str
     return rows
   })
 
+  // record 身份 → 可见行元信息。随 flattenData 一起重算（同为 O(可见行数)），
+  // 供 VirtualTableBody / TableCell 用 O(1) 查行取代原先每行 O(n) 的 .find()。
+  const rowMetaMap = computed<Map<TRecord, FlattenRow<TRecord>>>(() => {
+    const map = new Map<TRecord, FlattenRow<TRecord>>()
+    for (const row of flattenData.value) {
+      map.set(row.record, row)
+    }
+    return map
+  })
+
   return {
     flattenData,
+    rowMetaMap,
     isTreeData,
     toggleTreeExpand,
     isTreeExpanded,

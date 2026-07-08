@@ -43,6 +43,16 @@ function getForwardedBindings() {
   return result
 }
 
+/**
+ * 泛型桥接（唯一的类型断言点）：
+ * 内部 TSX 实现（Table.tsx）以 Record<string, unknown> 单态运行，
+ * SFC 层持有调用方的真实 TRecord。运行时对象本就是调用方传入的数据，
+ * 这里仅做类型还原，无运行时成本。
+ */
+function withRecordType<T>(value: unknown): T {
+  return value as T
+}
+
 function handleChange(
   filters: TableFiltersInfo,
   sorter: SorterResult<Record<string, unknown>>,
@@ -51,38 +61,38 @@ function handleChange(
   emit(
     'change',
     filters,
-    sorter as unknown as VTableSorterResult<TRecord>,
-    extra as unknown as TableChangeExtra<TRecord>,
+    withRecordType<VTableSorterResult<TRecord>>(sorter),
+    withRecordType<TableChangeExtra<TRecord>>(extra),
   )
 }
 
 function handleResizeColumn(column: ColumnType<Record<string, unknown>>, width: number) {
-  emit('resizeColumn', column as unknown as ColumnType<TRecord>, width)
+  emit('resizeColumn', withRecordType<ColumnType<TRecord>>(column), width)
 }
 
 function asBodyCellSlotProps(slotProps: TableBodyCellSlotProps<Record<string, unknown>>) {
-  return slotProps as unknown as TableBodyCellSlotProps<TRecord>
+  return withRecordType<TableBodyCellSlotProps<TRecord>>(slotProps)
 }
 
 function asHeaderCellSlotProps(slotProps: TableHeaderCellSlotProps<Record<string, unknown>>) {
-  return slotProps as unknown as TableHeaderCellSlotProps<TRecord>
+  return withRecordType<TableHeaderCellSlotProps<TRecord>>(slotProps)
 }
 
 function asCustomFilterDropdownSlotProps(
   slotProps: CustomFilterDropdownSlotProps<Record<string, unknown>>,
 ) {
-  return slotProps as unknown as CustomFilterDropdownSlotProps<TRecord>
+  return withRecordType<CustomFilterDropdownSlotProps<TRecord>>(slotProps)
 }
 
 function asCustomFilterIconSlotProps(slotProps: {
   column: ColumnType<Record<string, unknown>>
   filtered: boolean
 }) {
-  return slotProps as unknown as { column: ColumnType<TRecord>; filtered: boolean }
+  return withRecordType<{ column: ColumnType<TRecord>; filtered: boolean }>(slotProps)
 }
 
 function asDataSlotProps(slotProps: TableDataSlotProps<Record<string, unknown>>) {
-  return slotProps as unknown as TableDataSlotProps<TRecord>
+  return withRecordType<TableDataSlotProps<TRecord>>(slotProps)
 }
 </script>
 

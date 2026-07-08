@@ -5,6 +5,7 @@ import type { CellAdditionalProps, ColumnType } from '../types'
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 import { getByDataIndex, isInHoverRange } from '../composables'
 import { getColumnKey } from '../composables/useSorter'
+import { useFixedColumnStyle } from '../composables/useFixedColumnStyle'
 import {
   getEllipsisConfig,
   isRenderedCell,
@@ -54,31 +55,7 @@ export default defineComponent({
       return tableContext.fixedOffsets?.value?.get(key) ?? null
     })
 
-    const fixedStyle = computed(() => {
-      const info = fixedInfo.value
-      if (!info) return undefined
-      const style: Record<string, string> = { position: 'sticky', zIndex: '2' }
-      if (info.left !== undefined) style.left = `${info.left}px`
-      if (info.right !== undefined) style.right = `${info.right}px`
-      return style
-    })
-
-    const fixedClass = computed(() => {
-      const info = fixedInfo.value
-      if (!info) return ''
-      const sub = tableContext.subThemeSlots?.value
-      if (!sub) return ''
-      const classes: string[] = []
-      const atStart = tableContext.scrollState?.value?.atStart ?? true
-      const atEnd = tableContext.scrollState?.value?.atEnd ?? true
-      if (info.isLastLeft && !atStart) {
-        classes.push(sub.fixedShadowLeft)
-      }
-      if (info.isFirstRight && !atEnd) {
-        classes.push(sub.fixedShadowRight)
-      }
-      return classes.join(' ')
-    })
+    const { fixedStyle, fixedClass } = useFixedColumnStyle({ fixedInfo: () => fixedInfo.value })
 
     const selectionState = computed(
       () =>
@@ -131,16 +108,16 @@ export default defineComponent({
 
     const cellClass = computed(() => {
       const alignClass = props.column.align ? TABLE_ALIGN_CLASSES[props.column.align] : ''
-      const subThemeSlots = tableContext.subThemeSlots?.value
+      const subThemeSlots = tableContext.subThemeSlots
       const hovering = isHovered.value && tableContext.hoverable?.value
       const sortedClass =
-        tableContext.isColumnSorted?.(props.column) && subThemeSlots ? subThemeSlots.tdSorted : ''
+        tableContext.isColumnSorted?.(props.column) && subThemeSlots ? subThemeSlots.tdSorted() : ''
       const selectedClasses =
         isRowSelected.value && subThemeSlots
-          ? cn(subThemeSlots.tdSelected, hovering ? subThemeSlots.tdRowSelectedHover : '')
+          ? cn(subThemeSlots.tdSelected(), hovering ? subThemeSlots.tdRowSelectedHover() : '')
           : ''
       const hoverClass =
-        hovering && subThemeSlots && !isRowSelected.value ? subThemeSlots.tdRowHover : ''
+        hovering && subThemeSlots && !isRowSelected.value ? subThemeSlots.tdRowHover() : ''
 
       return cn(
         props.tdClass,
@@ -179,9 +156,7 @@ export default defineComponent({
 
     const treeRow = computed(() => {
       if (!tableContext.isTreeData?.value) return null
-      const flatData = tableContext.treeFlattenData?.value
-      if (!flatData) return null
-      return flatData.find((row) => row.record === props.record) ?? null
+      return tableContext.getFlattenRow?.(props.record) ?? null
     })
 
     const isTreeIndentColumn = computed(() => {
@@ -281,13 +256,13 @@ export default defineComponent({
           props.column.className,
           selectionCellProps?.class,
           selectionCellProps?.className,
-          isRowSelected.value && tableContext.subThemeSlots?.value
+          isRowSelected.value && tableContext.subThemeSlots
             ? cn(
-                tableContext.subThemeSlots.value.tdSelected,
-                hovering ? tableContext.subThemeSlots.value.tdRowSelectedHover : '',
+                tableContext.subThemeSlots.tdSelected(),
+                hovering ? tableContext.subThemeSlots.tdRowSelectedHover() : '',
               )
-            : hovering && tableContext.subThemeSlots?.value
-              ? tableContext.subThemeSlots.value.tdRowHover
+            : hovering && tableContext.subThemeSlots
+              ? tableContext.subThemeSlots.tdRowHover()
               : '',
           fixedClass.value,
         )
@@ -313,16 +288,18 @@ export default defineComponent({
         const expanded = key !== undefined && (tableContext.isExpanded?.(key) ?? false)
         const canExpand = tableContext.isRowExpandable?.(props.record) ?? false
 
-        const subThemeSlots = tableContext.subThemeSlots?.value
+        const subThemeSlots = tableContext.subThemeSlots
         const hovering = isHovered.value && tableContext.hoverable?.value
         const sortedClass =
-          tableContext.isColumnSorted?.(props.column) && subThemeSlots ? subThemeSlots.tdSorted : ''
+          tableContext.isColumnSorted?.(props.column) && subThemeSlots
+            ? subThemeSlots.tdSorted()
+            : ''
         const expandSelectedClass =
           isRowSelected.value && subThemeSlots
-            ? cn(subThemeSlots.tdSelected, hovering ? subThemeSlots.tdRowSelectedHover : '')
+            ? cn(subThemeSlots.tdSelected(), hovering ? subThemeSlots.tdRowSelectedHover() : '')
             : ''
         const expandHoverClass =
-          hovering && subThemeSlots && !isRowSelected.value ? subThemeSlots.tdRowHover : ''
+          hovering && subThemeSlots && !isRowSelected.value ? subThemeSlots.tdRowHover() : ''
 
         const expandCellClass = cn(
           props.tdClass,

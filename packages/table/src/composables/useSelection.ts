@@ -34,30 +34,28 @@ function flattenSelectionNodes<TRecord extends Record<string, unknown>>(options:
   const nodes: SelectionNode<TRecord>[] = []
   let flatIndex = 0
 
-  function walk(records: TRecord[], level: number, parentKey?: Key) {
+  function walk(records: TRecord[], level: number, parent?: SelectionNode<TRecord>) {
     records.forEach((record) => {
       const index = flatIndex
       const key = getRowKey(record, index)
       const children = record[childrenColumnName] as TRecord[] | undefined
 
-      nodes.push({
+      const node: SelectionNode<TRecord> = {
         key,
         record,
         index,
         level,
-        parentKey,
+        parentKey: parent?.key,
         childrenKeys: [],
-      })
+      }
+      nodes.push(node)
+      // 直接把自身 key 追加到父节点，避免递归返回后 findIndex 回查父节点（原实现是 O(n²)）
+      parent?.childrenKeys.push(key)
 
       flatIndex += 1
 
       if (Array.isArray(children) && children.length > 0) {
-        const childStartIndex = nodes.length
-        walk(children, level + 1, key)
-        nodes[nodes.findIndex((node) => node.key === key)].childrenKeys = nodes
-          .slice(childStartIndex)
-          .filter((node) => node.parentKey === key)
-          .map((node) => node.key)
+        walk(children, level + 1, node)
       }
     })
   }
@@ -136,6 +134,32 @@ export function useSelection<TRecord extends Record<string, unknown>>(
   function getChildrenKeys(key: Key): Key[] {
     return nodeMap.value.get(key)?.childrenKeys ?? []
   }
+
+  /**
+   * 每个节点 → 其全部「可选中后代」key（跳过 disabled 子树，与原 collectDescendants 语义一致）。
+   *
+   * 一次性自底向上构建（allNodes 为前序，逆序遍历即可保证后代先于祖先处理），
+   * 取代原先 getSelectionState 里逐单元格逐行的子树 DFS —— 把整表 O(n²) 降为构建期 O(n)、
+   * 读取期 O(1)。依赖 allNodes（树拓扑）与 isDisabled（经 rowSelection），Vue 自动管理失效。
+   */
+  const selectableDescendantsMap = computed(() => {
+    const nm = nodeMap.value
+    const memo = new Map<Key, Key[]>()
+    const list = allNodes.value
+    for (let i = list.length - 1; i >= 0; i -= 1) {
+      const node = list[i]
+      const acc: Key[] = []
+      for (const childKey of node.childrenKeys) {
+        const child = nm.get(childKey)
+        if (!child || isDisabled(child.record)) continue
+        acc.push(childKey)
+        const childDesc = memo.get(childKey)
+        if (childDesc) acc.push(...childDesc)
+      }
+      memo.set(node.key, acc)
+    }
+    return memo
+  })
 
   function normalizeTreeSelection(inputKeys: Set<Key>): Set<Key> {
     if (rowSelection()?.checkStrictly !== false) {
@@ -229,18 +253,7 @@ export function useSelection<TRecord extends Record<string, unknown>>(
       }
     }
 
-    const descendants: Key[] = []
-
-    const collectDescendants = (currentKey: Key) => {
-      getChildrenKeys(currentKey).forEach((childKey) => {
-        const child = nodeMap.value.get(childKey)
-        if (!child || isDisabled(child.record)) return
-        descendants.push(childKey)
-        collectDescendants(childKey)
-      })
-    }
-
-    collectDescendants(key)
+    const descendants = selectableDescendantsMap.value.get(key) ?? []
 
     if (descendants.length === 0) {
       return {

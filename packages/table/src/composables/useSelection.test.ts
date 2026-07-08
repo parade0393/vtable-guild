@@ -155,4 +155,60 @@ describe('useSelection', () => {
     expect(Array.from(api.selectedKeySet.value)).toEqual(['2'])
     expect(api.getChangeableRowKeys()).toEqual(['1', '2'])
   })
+
+  it('propagates indeterminate state across deep trees and skips disabled descendants', () => {
+    const deepTree: TreeRow[] = [
+      {
+        key: 'root',
+        name: 'Root',
+        children: [
+          {
+            key: 'branch',
+            name: 'Branch',
+            children: [
+              { key: 'leaf-1', name: 'Leaf 1' },
+              { key: 'leaf-2', name: 'Leaf 2' },
+              { key: 'leaf-disabled', name: 'Leaf Disabled', disabled: true },
+            ],
+          },
+        ],
+      },
+    ]
+    const selection: RowSelection<TreeRow> = {
+      checkStrictly: false,
+      getCheckboxProps: (record) => ({ disabled: record.disabled }),
+    }
+
+    const api = useSelection<TreeRow>({
+      rowSelection: () => selection,
+      getRowKey: (record) => record.key,
+      data: () => deepTree,
+      visibleData: () => deepTree,
+    })
+
+    const branch = deepTree[0].children![0]
+    api.toggleRow(branch.children![0], 2)
+
+    // 只选一个叶子：branch 和 root 都应为半选（禁用叶子不参与统计）
+    expect(api.getSelectionState(branch, 1)).toMatchObject({ checked: false, indeterminate: true })
+    expect(api.getSelectionState(deepTree[0], 0)).toMatchObject({
+      checked: false,
+      indeterminate: true,
+    })
+
+    api.toggleRow(branch.children![1], 3)
+
+    // 两个可选叶子全选：branch/root 级联为选中，禁用叶子保持未选
+    expect(Array.from(api.selectedKeySet.value).sort()).toEqual([
+      'branch',
+      'leaf-1',
+      'leaf-2',
+      'root',
+    ])
+    expect(api.getSelectionState(deepTree[0], 0)).toMatchObject({
+      checked: true,
+      indeterminate: false,
+    })
+    expect(api.isSelected('leaf-disabled')).toBe(false)
+  })
 })

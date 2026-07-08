@@ -17,7 +17,9 @@ import { SELECTION_ALL, SELECTION_INVERT, SELECTION_NONE } from '../constants'
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 import type { HeaderCellMeta } from '../composables/useColumns'
 import { getColumnKey } from '../composables/useSorter'
+import { useFixedColumnStyle } from '../composables/useFixedColumnStyle'
 import { getCellSpan, getEllipsisConfig, omitCellProps } from '../utils/cell'
+import { getPopupPositionStyle, resolvePopupContainer } from '../utils/popupPosition'
 import { ensureValidVNode } from '../utils/vnode'
 import SortButton from './SortButton'
 import FilterIcon from './FilterIcon'
@@ -30,61 +32,6 @@ function getAriaSortValue(order: SortOrder): 'ascending' | 'descending' | undefi
   if (order === 'ascend') return 'ascending'
   if (order === 'descend') return 'descending'
   return undefined
-}
-
-function resolvePopupContainer(
-  tableContext: TableContext,
-  triggerNode: HTMLElement | null,
-): HTMLElement | string {
-  if (!triggerNode || typeof document === 'undefined') {
-    return 'body'
-  }
-
-  return tableContext.getPopupContainer?.(triggerNode) ?? document.body
-}
-
-function getPopupPositionStyle(
-  anchorRect: { top: number; left: number; right: number; bottom: number },
-  container: HTMLElement | string,
-  minimumWidth: number,
-): Record<string, string> {
-  const viewportWidth = typeof window === 'undefined' ? 0 : window.innerWidth
-
-  if (
-    typeof container === 'string' ||
-    (typeof document !== 'undefined' && container === document.body)
-  ) {
-    const overflowRight = anchorRect.left + minimumWidth > viewportWidth
-    const style: Record<string, string> = {
-      position: 'fixed',
-      top: `${anchorRect.bottom + 4}px`,
-      zIndex: '1050',
-    }
-
-    if (overflowRight) {
-      style.right = `${viewportWidth - anchorRect.right}px`
-    } else {
-      style.left = `${anchorRect.left}px`
-    }
-
-    return style
-  }
-
-  const containerRect = container.getBoundingClientRect()
-  const overflowRight = anchorRect.left - containerRect.left + minimumWidth > container.clientWidth
-  const style: Record<string, string> = {
-    position: 'absolute',
-    top: `${anchorRect.bottom - containerRect.top + container.scrollTop + 4}px`,
-    zIndex: '1050',
-  }
-
-  if (overflowRight) {
-    style.right = `${containerRect.right - anchorRect.right + container.scrollLeft}px`
-  } else {
-    style.left = `${anchorRect.left - containerRect.left + container.scrollLeft}px`
-  }
-
-  return style
 }
 
 export default defineComponent({
@@ -273,35 +220,7 @@ export default defineComponent({
       return null
     })
 
-    const fixedStyle = computed(() => {
-      const info = fixedInfo.value
-      if (!info) return undefined
-      const style: Record<string, string> = { position: 'sticky', zIndex: '2' }
-      if (info.left !== undefined) style.left = `${info.left}px`
-      if (info.right !== undefined) style.right = `${info.right}px`
-      return style
-    })
-
-    const fixedClass = computed(() => {
-      const info = fixedInfo.value
-      if (!info) return ''
-      const sub = tableContext.subThemeSlots?.value
-      if (!sub) return ''
-
-      const classes: string[] = []
-      const atStart = tableContext.scrollState?.value?.atStart ?? true
-      const atEnd = tableContext.scrollState?.value?.atEnd ?? true
-
-      if (info.isLastLeft && !atStart) {
-        classes.push(sub.fixedShadowLeft)
-      }
-
-      if (info.isFirstRight && !atEnd) {
-        classes.push(sub.fixedShadowRight)
-      }
-
-      return classes.join(' ')
-    })
+    const { fixedStyle, fixedClass } = useFixedColumnStyle({ fixedInfo: () => fixedInfo.value })
 
     const groupedHeaderClass = computed(() => {
       const isAntdv = tableContext.themePreset?.value === 'antdv'
@@ -366,8 +285,8 @@ export default defineComponent({
 
     const cellClass = computed(() => {
       const alignClass = props.cell.column.align ? TABLE_ALIGN_CLASSES[props.cell.column.align] : ''
-      const sortableClass = isSortable.value ? tableContext.subThemeSlots?.value.thSortable : ''
-      const sortedClass = sortOrder.value ? tableContext.subThemeSlots?.value.thSorted : ''
+      const sortableClass = isSortable.value ? tableContext.subThemeSlots?.thSortable() : ''
+      const sortedClass = sortOrder.value ? tableContext.subThemeSlots?.thSorted() : ''
       const isExpandHeader = leafColumn.value?.key === '__vtg_expand__'
       return cn(
         props.thClass,
@@ -605,7 +524,7 @@ export default defineComponent({
                   <span
                     ref={selectionAnchorRef}
                     class={cn(
-                      tableContext.subThemeSlots?.value.selectionExtra,
+                      tableContext.subThemeSlots?.selectionExtra(),
                       tableContext.vtgClass?.('absolute left-full top-1/2 -translate-y-1/2'),
                     )}
                     onMouseenter={openSelectionDropdown}
@@ -645,8 +564,8 @@ export default defineComponent({
             : (tableLocale?.header.cancelSort ?? '取消排序')
 
       const column = leafColumn.value
-      const sortAreaWrapperClass = tableContext.subThemeSlots?.value.sortAreaWrapper
-      const sortAreaTitleClass = tableContext.subThemeSlots?.value.sortAreaTitle
+      const sortAreaWrapperClass = tableContext.subThemeSlots?.sortAreaWrapper()
+      const sortAreaTitleClass = tableContext.subThemeSlots?.sortAreaTitle()
 
       const sorterContent = (
         <span class={sortAreaWrapperClass}>
@@ -665,7 +584,7 @@ export default defineComponent({
         </span>
       )
 
-      const sortAreaOuterClass = tableContext.subThemeSlots?.value.sortAreaOuter
+      const sortAreaOuterClass = tableContext.subThemeSlots?.sortAreaOuter()
       const sortArea = showTooltip.value ? (
         <span class={sortAreaOuterClass}>
           <Tooltip block title={tooltipTitle} placement="top" open={sorterTooltipOpen.value}>
@@ -683,8 +602,8 @@ export default defineComponent({
             return (
               <span
                 class={cn(
-                  tableContext.subThemeSlots?.value.filterIconWrapper,
-                  tableContext.subThemeSlots?.value.filterIcon,
+                  tableContext.subThemeSlots?.filterIconWrapper(),
+                  tableContext.subThemeSlots?.filterIcon(),
                 )}
                 ref={filterAnchorRef}
                 onMouseenter={handleFilterIconMouseEnter}
@@ -706,8 +625,8 @@ export default defineComponent({
             return (
               <span
                 class={cn(
-                  tableContext.subThemeSlots?.value.filterIconWrapper,
-                  tableContext.subThemeSlots?.value.filterIcon,
+                  tableContext.subThemeSlots?.filterIconWrapper(),
+                  tableContext.subThemeSlots?.filterIcon(),
                 )}
                 ref={filterAnchorRef}
                 onMouseenter={handleFilterIconMouseEnter}
@@ -728,7 +647,7 @@ export default defineComponent({
           return (
             <span
               ref={filterAnchorRef}
-              class={tableContext.subThemeSlots?.value.filterIconWrapper}
+              class={tableContext.subThemeSlots?.filterIconWrapper()}
               onMouseenter={handleFilterIconMouseEnter}
               onMouseleave={handleFilterIconMouseLeave}
               onMousedown={(e: MouseEvent) => e.stopPropagation()}
@@ -787,7 +706,7 @@ export default defineComponent({
                 {filterDropdownVisible.value && (
                   <div
                     ref={customDropdownRef}
-                    class={tableContext.subThemeSlots?.value.filterDropdown}
+                    class={tableContext.subThemeSlots?.filterDropdown()}
                     style={getPopupPositionStyle(getAnchorRect(), popupContainer, 150)}
                   >
                     {customContent}

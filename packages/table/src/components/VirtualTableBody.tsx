@@ -1,4 +1,4 @@
-import { defineComponent, inject, ref, watch } from 'vue'
+import { computed, defineComponent, inject, ref, watch } from 'vue'
 import type { CSSProperties, PropType } from 'vue'
 import { cn, VirtualList } from '@vtable-guild/core'
 import type { ListRef, VirtualScrollInfo } from '@vtable-guild/core'
@@ -70,6 +70,16 @@ export default defineComponent({
       return props.dataSource.indexOf(item)
     }
 
+    // 列总宽只随 columns 变化，提为 computed，避免每次渲染在 render 函数里 O(列数) 重算
+    const scrollWidth = computed(() => {
+      let total = 0
+      for (const col of props.columns) {
+        const w = typeof col.width === 'number' ? col.width : parseInt(String(col.width || '0'), 10)
+        total += w || 0
+      }
+      return total
+    })
+
     // Update scroll state (for fixed column shadows) when VirtualList scrolls
     watch(
       () => virtualListRef.value,
@@ -98,13 +108,6 @@ export default defineComponent({
         )
       }
 
-      // Calculate total scroll width from columns
-      let scrollWidth = 0
-      for (const col of props.columns) {
-        const w = typeof col.width === 'number' ? col.width : parseInt(String(col.width || '0'), 10)
-        scrollWidth += w || 0
-      }
-
       return (
         <VirtualList
           ref={virtualListRef}
@@ -112,7 +115,7 @@ export default defineComponent({
           height={props.height}
           itemHeight={props.itemHeight}
           itemKey={itemKey}
-          scrollWidth={scrollWidth || undefined}
+          scrollWidth={scrollWidth.value || undefined}
           fullHeight={false}
           onVirtualScroll={emitVirtualScroll}
           showScrollBar={props.showScrollBar}
@@ -138,9 +141,7 @@ export default defineComponent({
               const canExpand = tableContext.isRowExpandable?.(item) ?? false
               const rowClassName = tableContext.getRowClassName?.(item, rIndex)
               const rowProps = tableContext.getRowProps?.(item, rIndex)
-              const treeRow = tableContext.treeFlattenData?.value?.find(
-                (row) => row.record === item,
-              )
+              const treeRow = tableContext.getFlattenRow?.(item)
               const rowIndent = treeRow?.level ?? 0
               const expandedRowClassName =
                 typeof exp?.expandedRowClassName === 'function'
@@ -188,16 +189,13 @@ export default defineComponent({
                         class={cn(
                           props.rowClass,
                           rowClassName,
-                          tableContext.subThemeSlots?.value.expandedRow,
+                          tableContext.subThemeSlots?.expandedRow(),
                           expandedRowClassName,
                         )}
                       >
                         <td
                           colspan={props.columns.length}
-                          class={cn(
-                            props.tdClass,
-                            tableContext.subThemeSlots?.value.expandedRowCell,
-                          )}
+                          class={cn(props.tdClass, tableContext.subThemeSlots?.expandedRowCell())}
                         >
                           {exp.expandedRowRender(item, rIndex, 0, true)}
                         </td>

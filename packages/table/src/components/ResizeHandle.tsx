@@ -27,7 +27,7 @@ export default defineComponent({
               'after:transition-colors',
             ].join(' '),
           ),
-          tableContext.subThemeSlots?.value.resizeHandle,
+          tableContext.subThemeSlots?.resizeHandle(),
         ].join(' ')}
         onPointerdown={handlePointerDown}
       />

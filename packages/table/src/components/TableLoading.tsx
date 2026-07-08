@@ -22,7 +22,7 @@ export default defineComponent({
     const tableContext = inject(TABLE_CONTEXT_KEY, {} as TableContext)
 
     return () => {
-      const subThemeSlots = tableContext.subThemeSlots?.value
+      const subThemeSlots = tableContext.subThemeSlots
       const presetConfig = tableContext.presetConfig?.value
 
       // slot.default 优先级最高
@@ -34,9 +34,9 @@ export default defineComponent({
       // indicator 优先于预设 spinner
       const indicatorNode =
         props.indicator !== undefined && props.indicator !== null ? (
-          <div class={subThemeSlots?.loadingSpinner}>{props.indicator as VNodeChild}</div>
+          <div class={subThemeSlots?.loadingSpinner()}>{props.indicator as VNodeChild}</div>
         ) : presetConfig?.loadingIcon ? (
-          <div class={subThemeSlots?.loadingSpinner}>
+          <div class={subThemeSlots?.loadingSpinner()}>
             {h(resolveDynamicComponent(presetConfig.loadingIcon) as Component)}
           </div>
         ) : null
