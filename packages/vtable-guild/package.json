@@ -68,6 +68,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "vite build && vite build --config vite.preset-cjs.config.ts && pnpm copy-css && node ./scripts/append-augmentation.mjs",
+    "build:analyze": "vite build --mode analyze && vite build --config vite.preset-cjs.config.ts && pnpm copy-css && node ./scripts/append-augmentation.mjs",
     "copy-css": "node ./scripts/copy-theme-css.mjs",
     "dev": "vite build --watch",
     "type-check": "vue-tsc --project ./tsconfig.build.json --noEmit",

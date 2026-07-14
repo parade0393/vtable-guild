@@ -49,3 +49,6 @@ site/.vitepress/dist
 
 # Generated CSS copy from @vtable-guild/theme
 packages/vtable-guild/css/
+
+# Rollup visualizer output for the published aggregate package
+packages/vtable-guild/stats/

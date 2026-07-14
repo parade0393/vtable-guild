@@ -67,6 +67,7 @@
     "npm-run-all2": "^8.0.4",
     "postcss-html": "^1.8.0",
     "prettier": "3.7.4",
+    "rollup-plugin-visualizer": "^6.0.11",
     "stylelint": "^16.26.1",
     "stylelint-config-recommended-vue": "^1.6.1",
     "stylelint-config-standard": "^39.0.1",

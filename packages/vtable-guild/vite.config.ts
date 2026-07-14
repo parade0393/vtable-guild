@@ -3,6 +3,7 @@ import { resolve } from 'node:path'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import dts from 'vite-plugin-dts'
+import { visualizer } from 'rollup-plugin-visualizer'
 
 // 聚合包为唯一发布物（4 个子包 private 不发布），因此通过 alias 指向兄弟包源码
 // 把整个工作区内联进本包。preserveModules 让产物按源码模块结构保留
@@ -10,7 +11,7 @@ import dts from 'vite-plugin-dts'
 // 使消费方打包器能做模块级 tree-shaking，而不是面对一个 300KB 的单文件。
 // tailwind3-preset 的 CJS 版本由 vite.preset-cjs.config.ts 单独构建
 //（主入口 re-export 的子包全是 ESM-only，CJS 主入口不可用也从未在 exports 暴露）。
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     vue(),
     vueJsx(),
@@ -20,6 +21,24 @@ export default defineConfig({
       rollupTypes: false,
       insertTypesEntry: true,
     }),
+    ...(mode === 'analyze'
+      ? [
+          visualizer({
+            filename: resolve(__dirname, 'stats/bundle.html'),
+            template: 'treemap',
+            gzipSize: true,
+            brotliSize: true,
+            open: true,
+          }),
+          visualizer({
+            filename: resolve(__dirname, 'stats/bundle.json'),
+            template: 'raw-data',
+            gzipSize: true,
+            brotliSize: true,
+            open: false,
+          }),
+        ]
+      : []),
   ],
   resolve: {
     alias: {
@@ -49,4 +68,4 @@ export default defineConfig({
       },
     },
   },
-})
+}))
