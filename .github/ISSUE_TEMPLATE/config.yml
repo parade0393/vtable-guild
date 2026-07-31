@@ -1,14 +1,11 @@
-blank_issues_enabled: false
+blank_issues_enabled: true
 contact_links:
   - name: 📖 文档站
     url: https://parade0393.github.io/vtable-guild/
-    about: API、指南和 24 个页面的可交互 demo，大部分用法问题这里能解决
+    about: API、指南和可交互 demo，大部分用法问题这里能解决
   - name: 🎮 在线 Playground
     url: https://parade0393.github.io/vtable-guild/play/
     about: 不装任何东西直接试，复现问题也用它生成分享链接
-  - name: 💬 使用疑问与讨论
-    url: https://github.com/parade0393/vtable-guild/discussions
-    about: 不确定是不是 bug、想聊设计取舍、想问「该不该用」，都走这里
   - name: 🔒 安全问题
     url: https://github.com/parade0393/vtable-guild/security/advisories/new
     about: 请勿公开提交安全漏洞，走私密报告通道
