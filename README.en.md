@@ -195,7 +195,14 @@ Output uses `preserveModules` and is tree-shakeable, so real-world cost is typic
 - [Feature comparison](https://parade0393.github.io/vtable-guild/comparison/) · [Design rationale](https://parade0393.github.io/vtable-guild/guide/architecture)
 - [Three-layer theming](https://parade0393.github.io/vtable-guild/guide/theme-overrides) · [CSS variables](https://parade0393.github.io/vtable-guild/guide/theme-tokens) · [ui slot reference](https://parade0393.github.io/vtable-guild/guide/ui-slots-reference)
 - [API reference](https://parade0393.github.io/vtable-guild/guide/api-reference) · [Type reference](https://parade0393.github.io/vtable-guild/guide/type-reference)
-- [Changelog](./packages/vtable-guild/CHANGELOG.md)
+- [Changelog](./packages/vtable-guild/CHANGELOG.md) · [Roadmap](./docs/roadmap.md)
+
+## Contributing
+
+- [Contributing guide](./CONTRIBUTING.md) — local setup, commit conventions, when a changeset is needed
+- [Security policy](./SECURITY.md) — report vulnerabilities privately, not via public issues
+- When filing a bug, include a [Playground](https://parade0393.github.io/vtable-guild/play/) reproduction link — it saves everyone time
+- The [roadmap](./docs/roadmap.md) lists what's planned and what's deliberately out of scope (pagination is)
 
 ## Acknowledgements
 

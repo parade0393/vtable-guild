@@ -4,9 +4,9 @@
 
 ## 更顺手的 API
 
-### 尺寸命名更统一
+### 尺寸命名与 ant-design-vue 一致
 
-表格尺寸使用 `sm`、`md`、`lg` 三个值，更方便和主题系统里的尺寸约定保持一致。
+表格尺寸沿用 `small`、`middle`、`large`，和 ant-design-vue 完全相同——从 antdv 迁过来时这一项不用改。默认值是 `large`。
 
 ### TypeScript 使用链路更完整
 

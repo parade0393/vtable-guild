@@ -1,0 +1,60 @@
+name: 功能建议
+description: 提一个新能力或改进
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        提之前请先看一眼 [路线图](https://github.com/parade0393/vtable-guild/blob/master/docs/roadmap.md)，
+        里面写了「规划中」和「明确不做」的部分——比如分页是刻意不做的。
+
+        本项目定位是 ant-design-vue / element-plus 的表格替换件，不打算长成完整 UI 库。
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 你实际遇到的问题
+      description: |
+        先描述场景，不要直接给 API 设计。真实场景比方案更有价值——
+        很多时候现有能力已经能解，或者有更合适的解法。
+      placeholder: |
+        我们后台有一张 5000 行的对账表，用户需要把某几行标记出来再导出，
+        现在只能自己在外面维护一份 selectedRowKeys 再和数据对齐，很容易错位。
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-workaround
+    attributes:
+      label: 现在是怎么绕过去的
+      description: 如果已经有临时方案，说说它哪里不够用
+    validations:
+      required: false
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 你设想的样子
+      description: 有具体想法的话写这里，API 草案、参考实现都行
+      placeholder: |
+        ```ts
+        <VTable :row-selection="{ preserveSelectedRowKeys: true }" />
+        ```
+    validations:
+      required: false
+
+  - type: textarea
+    id: prior-art
+    attributes:
+      label: 其他库怎么做的
+      description: ant-design-vue、element-plus、vxe-table 等有没有对应能力，链接或截图
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: 参与意愿
+      options:
+        - label: 我愿意提 PR 实现这个
+          required: false

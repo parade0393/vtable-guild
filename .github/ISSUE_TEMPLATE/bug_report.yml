@@ -1,0 +1,99 @@
+name: Bug 报告
+description: 报告一个可复现的问题
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈。提交前请先确认用的是最新版本，并翻过 [文档站](https://parade0393.github.io/vtable-guild/)。
+
+        中英文都可以。
+
+  - type: input
+    id: version
+    attributes:
+      label: 版本
+      description: '`@vtable-guild/vtable-guild` 的版本号'
+      placeholder: '2.4.0'
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: 问题描述
+      description: 实际发生了什么，你期望发生什么
+      placeholder: |
+        实际：开启 virtual 后表头和内容列没对齐
+        期望：表头跟随内容列宽度
+    validations:
+      required: true
+
+  - type: input
+    id: reproduction
+    attributes:
+      label: 复现链接
+      description: |
+        最省事的方式：在 [Playground](https://parade0393.github.io/vtable-guild/play/) 里复现后点「分享链接」。
+        也可以给一个最小复现仓库。**没有复现的问题通常无法处理。**
+      placeholder: 'https://parade0393.github.io/vtable-guild/play/#...'
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      placeholder: |
+        1. 打开上面的链接
+        2. 点击「评分」列表头排序
+        3. 滚动到第 50 行
+        4. 表头错位
+    validations:
+      required: false
+
+  - type: dropdown
+    id: preset
+    attributes:
+      label: 主题预设
+      options:
+        - antdv（默认）
+        - element-plus
+        - 两个都有问题
+        - 与预设无关
+    validations:
+      required: true
+
+  - type: dropdown
+    id: css-mode
+    attributes:
+      label: 样式模式
+      description: '`createVTableGuild({ cssMode })` 的取值'
+      options:
+        - prebuilt（默认）
+        - tailwind3
+        - tailwind4
+        - 不确定
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 环境
+      description: 浏览器、操作系统、Vue 版本、构建工具
+      placeholder: |
+        浏览器：Chrome 138
+        系统：Windows 11
+        Vue：3.5.26
+        构建：Vite 7
+    validations:
+      required: false
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: 补充信息
+      description: 控制台报错、截图、你已经排查过的方向
+    validations:
+      required: false

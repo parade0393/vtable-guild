@@ -1,7 +1,7 @@
 {
   "name": "@vtable-guild/vtable-guild",
   "version": "2.4.0",
-  "description": "A highly customizable Vue 3 Table component library powered by tailwind-variants",
+  "description": "Vue 3 table component with built-in virtual scrolling and switchable ant-design-vue / element-plus theme presets, powered by tailwind-variants",
   "type": "module",
   "files": [
     "dist",
@@ -108,8 +108,15 @@
     "vue",
     "vue3",
     "table",
+    "vue-table",
+    "datatable",
+    "data-grid",
+    "virtual-scroll",
     "component",
+    "component-library",
+    "typescript",
     "tailwind",
+    "tailwind-variants",
     "ant-design-vue",
     "element-plus",
     "customizable"

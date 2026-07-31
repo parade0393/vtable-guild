@@ -6,7 +6,7 @@ import type { PropType } from 'vue'
  * @example
  * ```ts
  * export const tableProps = {
- *   size: optionalProp<'sm' | 'md' | 'lg'>('md'),
+ *   size: optionalProp<'small' | 'middle' | 'large'>('large'),
  *   bordered: optionalBoolProp(false),
  * }
  * ```

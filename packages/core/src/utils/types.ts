@@ -7,8 +7,8 @@
  * ```ts
  * export const tableTheme = {
  *   slots: { root: '...', table: '...' },
- *   variants: { size: { sm: {...}, md: {...} } },
- *   defaultVariants: { size: 'md' },
+ *   variants: { size: { small: {...}, large: {...} } },
+ *   defaultVariants: { size: 'large' },
  * } as const satisfies ThemeConfig
  * ```
  */

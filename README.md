@@ -193,7 +193,14 @@ v2.4.0 本地构建实测（`gzip -9`）：
 - [功能对比总览](https://parade0393.github.io/vtable-guild/comparison/) · [为什么这样设计](https://parade0393.github.io/vtable-guild/guide/architecture)
 - [三层主题覆盖](https://parade0393.github.io/vtable-guild/guide/theme-overrides) · [CSS 变量参考](https://parade0393.github.io/vtable-guild/guide/theme-tokens) · [ui Slot 参考](https://parade0393.github.io/vtable-guild/guide/ui-slots-reference)
 - [API Reference](https://parade0393.github.io/vtable-guild/guide/api-reference) · [类型参考](https://parade0393.github.io/vtable-guild/guide/type-reference)
-- [更新日志](./packages/vtable-guild/CHANGELOG.md)
+- [更新日志](./packages/vtable-guild/CHANGELOG.md) · [路线图](./docs/roadmap.md)
+
+## 参与贡献
+
+- [贡献指南](./CONTRIBUTING.md) —— 本地怎么跑起来、提交规范、什么时候需要加 changeset
+- [安全策略](./SECURITY.md) —— 安全问题请走私密报告通道，不要开公开 issue
+- 提 Bug 时请附一个 [Playground](https://parade0393.github.io/vtable-guild/play/) 复现链接，这是最省双方时间的方式
+- 想知道什么在做、什么不做，看[路线图](./docs/roadmap.md)——分页是刻意不做的
 
 ## 致谢
 

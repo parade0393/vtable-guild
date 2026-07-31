@@ -33,7 +33,7 @@ export function syncDocumentPresetAttr(themePreset: VTableGuildContext['themePre
  *   theme: {
  *     table: {
  *       slots: { th: 'bg-blue-50 font-bold' },
- *       defaultVariants: { size: 'sm' },
+ *       defaultVariants: { size: 'small' },
  *     },
  *   },
  * })
