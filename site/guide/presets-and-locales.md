@@ -5,6 +5,18 @@
 - 整体外观要贴近哪套 UI 体系。
 - 表格内部文案要用哪种语言，以及如何局部覆盖。
 
+## 在线示例
+
+同一套列定义与数据，切换预设与语言看效果。这是本库最独特的一点：换皮肤不用换表格、不用换 API。
+
+<Demo src="presets-and-locales/preset-switch">
+
+<<< @/demos/presets-and-locales/preset-switch.vue
+
+</Demo>
+
+> 应用里一般直接 `createVTableGuild({ themePreset })` 配一次即可。上面的示例为了在同一页对比两套皮肤，才就地 provide 了一个作用域 context。
+
 ## 主题预设
 
 当前内置两套主题预设：

@@ -1,6 +1,12 @@
 node_modules/**
-dist/**
+**/dist/**
 coverage/**
+
+# 由 packages/theme/css 生成的产物（见 scripts/copy-theme-css.mjs），不是手写源码
+packages/vtable-guild/css/**
+
+# rollup-plugin-visualizer 的分析报告（pnpm build:analyze 产出）
+packages/vtable-guild/stats/**
 
 .husky
 .vscode

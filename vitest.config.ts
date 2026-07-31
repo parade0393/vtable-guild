@@ -108,6 +108,15 @@ export default defineConfig({
           passWithNoTests: true,
         },
       },
+      {
+        extends: true,
+        test: {
+          name: 'play',
+          root: resolve(rootDir, 'play'),
+          include: ['src/**/*.test.ts'],
+          passWithNoTests: true,
+        },
+      },
     ],
   },
 })

@@ -2,6 +2,16 @@
 
 当你的数据天然带有父子层级时，应该使用树形表格，而不是展开行。树形表格会基于 `childrenColumnName`、缩进宽度和展开状态来管理多级节点的展示方式。
 
+## 在线示例
+
+三层组织树，受控展开（`expandedRowKeys` + `onExpandedRowsChange`），勾选父节点会联动子节点。
+
+<Demo src="tree-table/basic">
+
+<<< @/demos/tree-table/basic.vue
+
+</Demo>
+
 ## 基础示例
 
 ```vue

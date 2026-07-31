@@ -2,6 +2,16 @@
 
 展开行适合在不跳转详情页的前提下，直接在当前表格里展示补充信息。它和树形表格不是同一类能力：树形表格处理的是数据天然分层，展开行处理的是“当前行需要额外展开一块内容”。
 
+## 在线示例
+
+`defaultExpandedRowKeys` 预展开第一行；第三行被 `rowExpandable` 判定为不可展开，不显示展开图标。
+
+<Demo src="expandable-rows/basic">
+
+<<< @/demos/expandable-rows/basic.vue
+
+</Demo>
+
 ## 基础示例
 
 ```vue

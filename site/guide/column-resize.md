@@ -2,6 +2,16 @@
 
 列宽拖拽适合字段很多、内容长短差异大、用户希望现场微调布局的业务表格。它延续了接近 ant-design-vue 的字段心智，但作为内建能力提供。
 
+## 在线示例
+
+把鼠标移到表头分隔线上左右拖动。「分类」列限制在 100–280px 之间，`resizeColumn` 事件把新宽度回写到列配置。
+
+<Demo src="column-resize/basic">
+
+<<< @/demos/column-resize/basic.vue
+
+</Demo>
+
 ## 基础示例
 
 在列上设置 `resizable: true`，并为可拖拽列提供 `width`。需要限制范围时，再补上 `minWidth` 和 `maxWidth`。

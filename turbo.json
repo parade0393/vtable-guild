@@ -15,7 +15,7 @@
         "../theme/css/**",
         "../table/src/**",
         "../*/package.json",
-        "vite.config.ts",
+        "vite*.config.ts",
         "scripts/**"
       ],
       "outputs": ["dist/**", "css/**"]
@@ -34,6 +34,15 @@
     "lint": {},
     "type-check": {
       "dependsOn": ["^type-check"]
+    },
+    "@vtable-guild/site#type-check": {
+      // 各个包之间靠 TS project references 互相检查，^type-check 就够了。
+      // 但文档站是通过 workspace 依赖消费**构建产物**的
+      //（exports["."].types → dist/index.d.ts），
+      // 上游的 type-check 是 vue-tsc --noEmit，不产出 d.ts。
+      // 所以这里必须依赖 ^build，否则 CI 冷启动时（lint → type-check → build）
+      // demos 会全线报 TS2307 Cannot find module。
+      "dependsOn": ["^build"]
     }
   }
 }

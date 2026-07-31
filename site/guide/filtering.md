@@ -4,6 +4,16 @@
 
 对使用者来说，最重要的是先区分两种模式：一类是组件内部维护状态，另一类是页面外部完全受控。
 
+## 在线示例
+
+多选筛选、单选筛选（`filterMultiple: false`）、带搜索框的筛选（`filterSearch`）和默认筛选值同时出现在一张表里。
+
+<Demo src="filtering/basic">
+
+<<< @/demos/filtering/basic.vue
+
+</Demo>
+
 ## 基础示例
 
 ```vue

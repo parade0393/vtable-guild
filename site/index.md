@@ -28,6 +28,16 @@ features:
     details: 列类型、主题 key、slot key 和事件参数都有明确类型边界，适合在业务代码里长期维护。
 ---
 
+## 先动手，再读文档
+
+<Demo src="home/overview">
+
+<<< @/demos/home/overview.vue
+
+</Demo>
+
+想看更大的场景，去 [10 万行虚拟滚动](/guide/virtualization)；想改代码即时看效果，去 [Playground](/play/)。
+
 ## 适合谁
 
 vtable-guild 面向已经在项目中使用 ant-design-vue 或 element-plus 的团队。
