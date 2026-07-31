@@ -80,7 +80,7 @@ export default defineConfig({
         },
       ],
     },
-    socialLinks: [{ icon: 'github', link: 'https://github.com/vtable-guild/vtable-guild' }],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/parade0393/vtable-guild' }],
     search: {
       provider: 'local',
     },
