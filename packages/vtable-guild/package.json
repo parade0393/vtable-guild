@@ -1,6 +1,6 @@
 {
   "name": "@vtable-guild/vtable-guild",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "description": "Vue 3 table component with built-in virtual scrolling and switchable ant-design-vue / element-plus theme presets, powered by tailwind-variants",
   "type": "module",
   "files": [
