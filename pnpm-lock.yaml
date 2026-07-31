@@ -181,6 +181,15 @@ importers:
         specifier: npm:tailwindcss@^3.4.19
         version: tailwindcss@3.4.19(yaml@2.8.2)
 
+  play:
+    dependencies:
+      '@vue/repl':
+        specifier: ^4.6.1
+        version: 4.7.2
+      vue:
+        specifier: ^3.5.0
+        version: 3.5.26(typescript@5.9.3)
+
   playground:
     dependencies:
       '@ant-design/icons-vue':
@@ -215,7 +224,21 @@ importers:
         specifier: ^8.0.5
         version: 8.0.5(vite@7.3.0(@types/node@24.10.4)(jiti@2.6.1)(lightningcss@1.30.2)(yaml@2.8.2))(vue@3.5.26(typescript@5.9.3))
 
-  site: {}
+  site:
+    dependencies:
+      '@vtable-guild/vtable-guild':
+        specifier: workspace:*
+        version: link:../packages/vtable-guild
+      vue:
+        specifier: ^3.5.0
+        version: 3.5.26(typescript@5.9.3)
+    devDependencies:
+      postcss:
+        specifier: ^8.5.6
+        version: 8.5.6
+      postcss-prefix-selector:
+        specifier: ^2.1.1
+        version: 2.1.1(postcss@8.5.6)
 
 packages:
 
@@ -1720,6 +1743,9 @@ packages:
 
   '@vue/reactivity@3.5.26':
     resolution: {integrity: sha512-9EnYB1/DIiUYYnzlnUBgwU32NNvLp/nhxLXeWRhHUEeWNTn1ECxX8aGO7RTXeX6PPcxe3LLuNBFoJbV4QZ+CFQ==}
+
+  '@vue/repl@4.7.2':
+    resolution: {integrity: sha512-6x0hisEd5XRYxhLit3fvPCfeUfXEjB3a8Z2Pl3scVa3kZjck4+ERQF4XCahC7PTabWb3He04u+j8q3MK4WZHrQ==}
 
   '@vue/runtime-core@3.5.26':
     resolution: {integrity: sha512-xJWM9KH1kd201w5DvMDOwDHYhrdPTrAatn56oB/LRG4plEQeZRQLw0Bpwih9KYoqmzaxF0OKSn6swzYi84e1/Q==}
@@ -3604,6 +3630,11 @@ packages:
     engines: {node: '>=12.0'}
     peerDependencies:
       postcss: ^8.2.14
+
+  postcss-prefix-selector@2.1.1:
+    resolution: {integrity: sha512-ZBgf427Et6+XnrnJ9VXtJEKCjJwTvn2wn/qMg+wvvlRhIeFIAxdbrlZZ0CSsWYMJfcyPLBh8ogj5O1kb/Mcx3g==}
+    peerDependencies:
+      postcss: ^8.0.0
 
   postcss-resolve-nested-selector@0.1.6:
     resolution: {integrity: sha512-0sglIs9Wmkzbr8lQwEyIzlDOOC9bGmfVKcJTaxv3vMmd3uo4o4DerC3En0bnmgceeql9BfC8hRkp7cg0fjdVqw==}
@@ -6207,6 +6238,8 @@ snapshots:
     dependencies:
       '@vue/shared': 3.5.26
 
+  '@vue/repl@4.7.2': {}
+
   '@vue/runtime-core@3.5.26':
     dependencies:
       '@vue/reactivity': 3.5.26
@@ -8047,6 +8080,10 @@ snapshots:
     dependencies:
       postcss: 8.5.6
       postcss-selector-parser: 6.1.2
+
+  postcss-prefix-selector@2.1.1(postcss@8.5.6):
+    dependencies:
+      postcss: 8.5.6
 
   postcss-resolve-nested-selector@0.1.6: {}
 

@@ -1,0 +1,16 @@
+{
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "include": [".vitepress/**/*.ts", ".vitepress/**/*.vue", "demos/**/*.vue"],
+  "exclude": [".vitepress/cache/**", ".vitepress/dist/**"],
+  "compilerOptions": {
+    "composite": true,
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
+    "types": ["vite/client"],
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    // @vue/tsconfig 默认开启 noUncheckedIndexedAccess，但 tsconfig.base.json（各个包用的）没开。
+    // demos/ 里的代码是给用户直接复制走的，不应该比库自身的源码更严格——
+    // 否则示例里会为了过类型检查塞满 `!` 断言。
+    "noUncheckedIndexedAccess": false
+  }
+}

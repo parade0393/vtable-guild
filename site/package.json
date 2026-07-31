@@ -7,6 +7,15 @@
     "dev": "vitepress dev .",
     "build": "vitepress build .",
     "preview": "vitepress preview .",
+    "type-check": "vue-tsc --project ./tsconfig.json --noEmit",
     "test": "vitest run --config ../vitest.config.ts --project site --passWithNoTests"
+  },
+  "dependencies": {
+    "@vtable-guild/vtable-guild": "workspace:*",
+    "vue": "^3.5.0"
+  },
+  "devDependencies": {
+    "postcss": "^8.5.6",
+    "postcss-prefix-selector": "^2.1.1"
   }
 }

@@ -4,6 +4,16 @@
 
 当默认列渲染已经不够，但你又不想放弃排序、筛选、对齐和主题系统时，customRow、customHeaderRow、headerCell、bodyCell 和 summary 这些入口会更合适。
 
+## 在线示例
+
+`headerCell` 改表头文案、`bodyCell` 把状态换成徽标、`customRow` 给整行挂点击事件。
+
+<Demo src="api-wiring-and-slots/basic">
+
+<<< @/demos/api-wiring-and-slots/basic.vue
+
+</Demo>
+
 ## 常见入口
 
 ```vue

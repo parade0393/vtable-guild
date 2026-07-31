@@ -2,6 +2,16 @@
 
 这一组能力主要服务于报表类页面。简单数据表一般不需要它，但一旦表格开始承载指标分组、结构化汇总或复杂横向布局，它就会变得很重要。
 
+## 在线示例
+
+三层嵌套表头，配合 `customCell` 返回的 `rowSpan` 纵向合并「区域」列。
+
+<Demo src="grouped-and-merged-cells/basic">
+
+<<< @/demos/grouped-and-merged-cells/basic.vue
+
+</Demo>
+
 ## 多级表头
 
 多级表头通过 children 形成层级结构。

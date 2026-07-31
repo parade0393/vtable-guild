@@ -15,7 +15,7 @@
         "../theme/css/**",
         "../table/src/**",
         "../*/package.json",
-        "vite.config.ts",
+        "vite*.config.ts",
         "scripts/**"
       ],
       "outputs": ["dist/**", "css/**"]

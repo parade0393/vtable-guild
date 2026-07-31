@@ -12,6 +12,10 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs"
     },
+    "./full": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.full.mjs"
+    },
     "./tailwind3-preset": {
       "types": "./dist/tailwind3-preset.d.ts",
       "import": "./dist/tailwind3-preset.mjs",
@@ -67,8 +71,8 @@
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "vite build && vite build --config vite.preset-cjs.config.ts && pnpm copy-css && node ./scripts/append-augmentation.mjs",
-    "build:analyze": "vite build --mode analyze && vite build --config vite.preset-cjs.config.ts && pnpm copy-css && node ./scripts/append-augmentation.mjs",
+    "build": "vite build && vite build --config vite.preset-cjs.config.ts && vite build --config vite.browser.config.ts && pnpm copy-css && node ./scripts/append-augmentation.mjs",
+    "build:analyze": "vite build --mode analyze && vite build --config vite.preset-cjs.config.ts && vite build --config vite.browser.config.ts && pnpm copy-css && node ./scripts/append-augmentation.mjs",
     "copy-css": "node ./scripts/copy-theme-css.mjs",
     "dev": "vite build --watch",
     "type-check": "vue-tsc --project ./tsconfig.build.json --noEmit",

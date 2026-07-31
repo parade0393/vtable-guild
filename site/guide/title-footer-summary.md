@@ -9,11 +9,21 @@
 - `summary`
   和当前数据直接相关的汇总行
 
+## 在线示例
+
+<Demo src="title-footer-summary/basic">
+
+<<< @/demos/title-footer-summary/basic.vue
+
+</Demo>
+
 ## 基础示例
+
+摘要行组件从 `VTableSummary` 导入，`Row` / `Cell` 挂在它上面。`Cell` 的 `index` 对应列下标。
 
 ```vue
 <script setup lang="ts">
-import { VTable } from '@vtable-guild/vtable-guild'
+import { VTable, VTableSummary } from '@vtable-guild/vtable-guild'
 
 const totalScore = dataSource.reduce((sum, row) => sum + row.score, 0)
 </script>
@@ -27,12 +37,12 @@ const totalScore = dataSource.reduce((sum, row) => sum + row.score, 0)
     :footer="() => '数据更新时间：今天 09:30'"
   >
     <template #summary>
-      <VTable.Summary>
-        <VTable.Summary.Row>
-          <VTable.Summary.Cell :index="0">合计</VTable.Summary.Cell>
-          <VTable.Summary.Cell :index="1" align="right">{{ totalScore }}</VTable.Summary.Cell>
-        </VTable.Summary.Row>
-      </VTable.Summary>
+      <VTableSummary>
+        <VTableSummary.Row>
+          <VTableSummary.Cell :index="0">合计</VTableSummary.Cell>
+          <VTableSummary.Cell :index="1" align="right">{{ totalScore }}</VTableSummary.Cell>
+        </VTableSummary.Row>
+      </VTableSummary>
     </template>
   </VTable>
 </template>

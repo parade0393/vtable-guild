@@ -5,6 +5,16 @@
 - 表格提供 `scroll.x`，形成横向滚动区
 - 需要固定的列声明 `fixed: 'left'` 或 `fixed: 'right'`；`fixed: true` 是 `fixed: 'left'` 的简写（与 ant-design-vue 对齐）
 
+## 在线示例
+
+九列宽表，左侧两列与右侧「状态」列固定。横向拖动滚动条看固定效果与阴影。
+
+<Demo src="fixed-columns/basic">
+
+<<< @/demos/fixed-columns/basic.vue
+
+</Demo>
+
 ## 基础示例
 
 ```vue

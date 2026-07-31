@@ -4,6 +4,16 @@
 
 如果你来自 ant-design-vue，这套写法会比较熟悉。区别在于 vtable-guild 更强调直接可用的列排序能力，并把排序结果统一收敛到 change 事件里。
 
+## 在线示例
+
+单列、多列、自定义比较函数在同一张表里。点击表头切换排序，按住 Shift 叠加多列。
+
+<Demo src="sorting/basic">
+
+<<< @/demos/sorting/basic.vue
+
+</Demo>
+
 ## 你可以怎么开启排序
 
 - sorter: true，使用默认比较规则。数字按数值排序，其他值按字符串比较。

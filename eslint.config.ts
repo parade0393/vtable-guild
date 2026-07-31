@@ -14,7 +14,13 @@ export default defineConfigWithVueTs(
     files: ['**/*.{vue,ts,mts,tsx}'],
   },
 
-  globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**']),
+  globalIgnores([
+    '**/dist/**',
+    '**/dist-ssr/**',
+    '**/coverage/**',
+    // Vite 依赖预打包的临时产物，不是源码
+    '**/.vitepress/cache/**',
+  ]),
 
   ...pluginVue.configs['flat/essential'],
   vueTsConfigs.recommended,
@@ -30,6 +36,17 @@ export default defineConfigWithVueTs(
           caughtErrorsIgnorePattern: '^_',
         },
       ],
+    },
+  },
+
+  {
+    // 文档站示例：文件名就是 <Demo src="sorting/basic"> 里的路径，
+    // 它们通过 glob + <component :is> 渲染，从不作为全局组件名注册，
+    // 为了迁就 lint 规则把路径写成 sorting/sorting-basic 只会让文档更难读。
+    name: 'site/demos',
+    files: ['site/demos/**/*.vue', 'site/.vitepress/theme/**/*.{vue,ts}'],
+    rules: {
+      'vue/multi-word-component-names': 'off',
     },
   },
 

@@ -4,6 +4,16 @@ rowSelection 用来开启行选择列，并统一管理单选、多选、全选�
 
 如果你的页面有“批量操作”“勾选后侧边编辑”“按选中项导出”这类需求，这一组能力会是高频入口。
 
+## 在线示例
+
+受控多选 + `getCheckboxProps` 禁用单行 + 表头「选择项」下拉（含一个自定义项）。
+
+<Demo src="selection/basic">
+
+<<< @/demos/selection/basic.vue
+
+</Demo>
+
 ## 基础多选
 
 ```vue
