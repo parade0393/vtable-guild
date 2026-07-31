@@ -15,7 +15,7 @@
 | 边框模式             | 支持                                     | 支持                               | 支持，直接使用 `bordered`                          |
 | 主题预设切换         | 不支持                                   | 不支持                             | 支持 `antdv` / `element-plus`                      |
 | slot 级样式覆盖      | 主要依赖 CSS 覆盖                        | 主要依赖 class、style 和 slot 组合 | 通过 `ui` 和全局 `theme` 精确覆盖                  |
-| 尺寸命名             | `small / middle / large`                 | `large / default / small`          | `sm / md / lg`                                     |
+| 尺寸命名             | `small / middle / large`                 | `large / default / small`          | `small / middle / large`，与 antdv 一致            |
 | 内置 locale 预设     | 依赖组件库全局配置                       | 依赖组件库全局配置                 | 内置 locale 并支持局部覆盖                         |
 
 ## 结论

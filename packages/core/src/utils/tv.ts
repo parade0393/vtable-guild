@@ -15,8 +15,8 @@ import { createTV, cn as cnBase, type TV } from 'tailwind-variants'
  *   },
  *   variants: {
  *     size: {
- *       sm: { cell: 'px-2 py-1.5 text-xs' },
- *       md: { cell: 'px-4 py-3 text-sm' },
+ *       small: { cell: 'px-2 py-1.5 text-xs' },
+ *       large: { cell: 'px-4 py-3 text-sm' },
  *     },
  *   },
  * })

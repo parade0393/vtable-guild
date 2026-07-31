@@ -27,7 +27,7 @@ import { cnByCssMode, prefixThemeConfig } from '../utils/classPrefix'
  * import { tableTheme } from '@vtable-guild/theme'
  *
  * const props = defineProps<{
- *   size?: 'sm' | 'md' | 'lg'
+ *   size?: 'small' | 'middle' | 'large'
  *   bordered?: boolean
  *   ui?: Partial<Record<string, string>>
  *   class?: string
@@ -126,15 +126,15 @@ export function mergeThemeConfigs(base: ThemeConfig, override?: Partial<ThemeCon
     slots: mergeSlots(base.slots ?? {}, override.slots),
 
     // ---- variants: 深合并 ----
-    // 示例：base.variants.size.sm = { th: 'px-2' },
-    //       override.variants.size.sm = { th: 'px-3' }
+    // 示例：base.variants.size.small = { th: 'px-2' },
+    //       override.variants.size.small = { th: 'px-3' }
     //     → { th: cn('px-2', 'px-3') } → { th: 'px-3' }
     variants: mergeVariants(base.variants, override.variants),
 
     // ---- defaultVariants: 浅合并 ----
-    // 示例：base = { size: 'md', bordered: false },
-    //       override = { size: 'sm' }
-    //     → { size: 'sm', bordered: false }
+    // 示例：base = { size: 'large', bordered: false },
+    //       override = { size: 'small' }
+    //     → { size: 'small', bordered: false }
     defaultVariants: {
       ...base.defaultVariants,
       ...override.defaultVariants,

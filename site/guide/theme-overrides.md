@@ -38,7 +38,7 @@ createVTableGuild({
 - `variants`
   改条件样式，比如 `hoverable.true.td`、`bordered.true.root`
 - `defaultVariants`
-  改默认开关，比如把全局 `size` 默认值改成 `sm`
+  改默认开关，比如把全局 `size` 默认值从 `large` 改成 `small`
 
 如果你已经在看 [ui Slot 参考](/guide/ui-slots-reference)，那一页列出的 slot key，基本都可以直接映射到 `theme.table.slots`。
 

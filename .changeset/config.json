@@ -18,6 +18,7 @@
     "@vtable-guild/table",
     "@vtable-guild/theme",
     "@vtable-guild/playground",
-    "@vtable-guild/site"
+    "@vtable-guild/site",
+    "@vtable-guild/play"
   ]
 }
