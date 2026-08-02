@@ -301,6 +301,7 @@ const preserveSelection = computed<RowSelection<DemoRow>>(() => ({
               :data-source="dataSource"
               :row-selection="vtableCheckboxSelection as any"
               row-key="key"
+              striped
             />
           </article>
         </div>

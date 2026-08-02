@@ -290,6 +290,9 @@ export const antdvTableTheme = {
     striped: {
       true: {
         td: 'group-even/row:bg-[rgba(0,0,0,0.02)]',
+        tdSelected: 'group-even/row:bg-[color:var(--vtg-table-row-selected-bg)]',
+        tdRowHover: 'group-even/row:bg-[color:var(--vtg-table-row-hover-bg)]',
+        tdRowSelectedHover: 'group-even/row:bg-[color:var(--vtg-table-row-selected-hover-bg)]',
       },
     },
     hoverable: {
