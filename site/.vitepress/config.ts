@@ -6,9 +6,9 @@ export default defineConfig({
   title: 'vtable-guild',
   description: '面向 ant-design-vue 和 element-plus 用户的高性能表格替换方案。',
   cleanUrls: true,
-  // /play/ 是独立构建的 Playground 应用，部署时才拷进 .vitepress/dist/play，
+  // /play/ 与 /perf/ 是独立构建的应用，部署时才拷进 .vitepress/dist，
   // 不在 VitePress 的页面图里，死链检查要跳过。
-  ignoreDeadLinks: [/^\/play\//],
+  ignoreDeadLinks: [/^\/play\//, /^\/perf\//],
   vite: {
     ssr: {
       // 强制让 Vite 打包工作区包，而不是交给 Node 外部化——
@@ -23,6 +23,7 @@ export default defineConfig({
       { text: '对比', link: '/comparison/' },
       { text: 'API', link: '/guide/api-reference' },
       { text: 'Playground', link: '/play/', target: '_blank' },
+      { text: '性能对照', link: '/perf/', target: '_blank' },
     ],
     sidebar: {
       '/guide/': [
