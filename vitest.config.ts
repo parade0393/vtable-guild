@@ -117,6 +117,15 @@ export default defineConfig({
           passWithNoTests: true,
         },
       },
+      {
+        extends: true,
+        test: {
+          name: 'perf',
+          root: resolve(rootDir, 'perf'),
+          include: ['src/**/*.test.ts'],
+          passWithNoTests: true,
+        },
+      },
     ],
   },
 })

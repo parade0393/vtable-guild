@@ -7,6 +7,7 @@ on:
     paths:
       - 'site/**'
       - 'play/**'
+      - 'perf/**'
       - 'packages/**'
       - 'package.json'
       - 'pnpm-lock.yaml'
@@ -45,16 +46,18 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # turbo 会按依赖图依次构建：packages → site（文档站现在真的 import 工作区包）→ play
+      # turbo 会按依赖图依次构建：packages → site（文档站现在真的 import 工作区包）→ play/perf
       - name: Build packages, site and playground
         run: pnpm build
 
-      # Playground 是独立的 Vite 应用，挂在文档站 base 下的 /play/，
-      # 和文档站共用同一个 Pages artifact
-      - name: Assemble playground into site output
+      # Playground 与性能对照页都是独立的 Vite 应用，分别挂在文档站 base 下的
+      # /play/ 与 /perf/，和文档站共用同一个 Pages artifact
+      - name: Assemble playground and perf into site output
         run: |
           rm -rf site/.vitepress/dist/play
           cp -r play/dist site/.vitepress/dist/play
+          rm -rf site/.vitepress/dist/perf
+          cp -r perf/dist site/.vitepress/dist/perf
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

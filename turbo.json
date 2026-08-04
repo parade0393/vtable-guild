@@ -43,6 +43,11 @@
       // 所以这里必须依赖 ^build，否则 CI 冷启动时（lint → type-check → build）
       // demos 会全线报 TS2307 Cannot find module。
       "dependsOn": ["^build"]
+    },
+    "@vtable-guild/perf#type-check": {
+      // 同 site：性能对照页也是通过 workspace 依赖消费构建产物的，
+      // 冷启动时必须先有 dist/index.d.ts。
+      "dependsOn": ["^build"]
     }
   }
 }

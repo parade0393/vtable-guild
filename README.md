@@ -17,6 +17,7 @@
 <p align="center">
   <b><a href="https://parade0393.github.io/vtable-guild/">📖 文档</a></b> &nbsp;·&nbsp;
   <b><a href="https://parade0393.github.io/vtable-guild/play/">🎮 在线体验</a></b> &nbsp;·&nbsp;
+  <b><a href="https://parade0393.github.io/vtable-guild/perf/">⚡ 性能对照</a></b> &nbsp;·&nbsp;
   <b><a href="https://parade0393.github.io/vtable-guild/guide/getting-started">🚀 快速开始</a></b> &nbsp;·&nbsp;
   <a href="https://parade0393.github.io/vtable-guild/comparison/">功能对比</a> &nbsp;·&nbsp;
   <a href="./README.en.md">English</a>
@@ -186,6 +187,26 @@ v2.4.0 本地构建实测（`gzip -9`）：
 | `dist/index.full.mjs`（浏览器单文件） | 297.7 KB | 63.7 KB     |
 
 产物用 `preserveModules` 输出，可 tree-shake，实际打进去的一般少于 53 KB。运行时依赖只有一个 `tailwind-variants`，peer 只有 `vue ^3.5.0`。
+
+## 性能
+
+别信这段话，[**自己跑一遍**](https://parade0393.github.io/vtable-guild/perf/)——对照页会在你的机器上，把 vtable-guild、ant-design-vue Table 与 el-table-v2 放在同一批数据、同一套列配置下测一遍，并一键导出结果。
+
+本机实测（2026-08-03 · Chrome 151 · Windows 11 · 8 核 · production 构建 · 中位数，`同步 render+patch / longtask` ms）：
+
+| 10 万行            | 首次渲染         | 排序切换   | DOM 节点数 | 内存增量   |
+| ------------------ | ---------------- | ---------- | ---------- | ---------- |
+| **vtable-guild**   | 131 / 130        | 133 / 133  | 251        | 6.6 MB     |
+| el-table-v2        | **5.0 / 0**      | **48 / 0** | **185**    | **0.8 MB** |
+| ant-design-vue 4.x | 无虚拟滚动，未跑 | —          | —          | —          |
+
+三条结论，包括对我们不利的：
+
+- **对 antdv**：差距是数量级的。1k 行 antdv 首次渲染就要 1126 ms、7,058 个 DOM 节点；**1 万行单轮 112,657 ms（约 113 秒）**，实际不可用。前提说清楚——对照的是**不分页直出**场景，antdv 的常规解法是分页或改用 el-table-v2。
+- **对 el-table-v2**：**它更快**，而且挂载耗时几乎与数据量无关（1k→10 万都是约 5 ms），我们是 12→131 ms，说明挂载期有 O(n) 预处理要优化。它的排序数字还已经包含了应用侧 `slice().sort()`（它不内置排序），不是口径便宜。
+- **代价换的是什么**：el-table-v2 是纯 div 定高虚拟化——不支持不定行高、多级表头、单元格合并、内置排序与筛选面板，也没有语义化 `<table>`。这些正是 vtable-guild 多出来的开销买到的东西。
+
+虚拟滚动本身是生效的：1k → 10 万行，DOM 节点数恒定 251、可视行数恒定 12 行。完整方法论、公平性契约与全部三档数据见[性能文档](./docs/performance.md)。
 
 ## 文档
 

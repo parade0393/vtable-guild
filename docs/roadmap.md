@@ -1,7 +1,7 @@
 # vtable-guild 路线图
 
 > 这份文档记录「项目现在处在哪」，不是待办清单。
-> 当前发布版本：`@vtable-guild/vtable-guild@2.4.0`（MIT，npm 公开）。
+> 当前发布版本：`@vtable-guild/vtable-guild@2.4.1`（MIT，npm 公开）。
 >
 > 早期那份逐阶段的建设计划已经全部走完，细化步骤保留在 [phase-1-guide.md](./phase-1-guide.md)、
 > [phase-2-guide.md](./phase-2-guide.md)、[phase-3-guide.md](./phase-3-guide.md)、
@@ -55,9 +55,6 @@
 
 分发侧的补课，不涉及组件代码：
 
-- README 首屏重建（动图、文档入口、badge、对比表）
-- 项目健康度文件：CONTRIBUTING、SECURITY、issue / PR 模板
-- GitHub topics 与 npm keywords 的被动发现覆盖
 - 文档正确性复核（尺寸命名等文档与代码不一致项）
 
 ---

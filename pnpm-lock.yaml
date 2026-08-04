@@ -181,6 +181,21 @@ importers:
         specifier: npm:tailwindcss@^3.4.19
         version: tailwindcss@3.4.19(yaml@2.8.2)
 
+  perf:
+    dependencies:
+      '@vtable-guild/vtable-guild':
+        specifier: workspace:*
+        version: link:../packages/vtable-guild
+      ant-design-vue:
+        specifier: ^4.2.6
+        version: 4.2.6(vue@3.5.26(typescript@5.9.3))
+      element-plus:
+        specifier: ^2.9.0
+        version: 2.13.3(vue@3.5.26(typescript@5.9.3))
+      vue:
+        specifier: ^3.5.0
+        version: 3.5.26(typescript@5.9.3)
+
   play:
     dependencies:
       '@vue/repl':

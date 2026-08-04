@@ -17,6 +17,7 @@
 <p align="center">
   <b><a href="https://parade0393.github.io/vtable-guild/">📖 Docs</a></b> &nbsp;·&nbsp;
   <b><a href="https://parade0393.github.io/vtable-guild/play/">🎮 Playground</a></b> &nbsp;·&nbsp;
+  <b><a href="https://parade0393.github.io/vtable-guild/perf/">⚡ Benchmarks</a></b> &nbsp;·&nbsp;
   <b><a href="https://parade0393.github.io/vtable-guild/guide/getting-started">🚀 Getting started</a></b> &nbsp;·&nbsp;
   <a href="https://parade0393.github.io/vtable-guild/comparison/">Comparison</a> &nbsp;·&nbsp;
   <a href="./README.md">中文</a>
@@ -188,6 +189,26 @@ Measured locally on v2.4.0 (`gzip -9`):
 | `dist/index.full.mjs` (browser single file) | 297.7 KB | 63.7 KB     |
 
 Output uses `preserveModules` and is tree-shakeable, so real-world cost is typically below 53 KB. One runtime dependency (`tailwind-variants`); one peer (`vue ^3.5.0`).
+
+## Performance
+
+Don't take our word for it — [**run it yourself**](https://parade0393.github.io/vtable-guild/perf/). The comparison page measures vtable-guild, ant-design-vue Table and el-table-v2 on your machine, with the same data and the same column config, and exports the results in one click.
+
+Measured locally (2026-08-03 · Chrome 151 · Windows 11 · 8 cores · production build · medians, `sync render+patch / longtask` ms):
+
+| 100k rows          | First render      | Sort toggle | DOM nodes | Memory delta |
+| ------------------ | ----------------- | ----------- | --------- | ------------ |
+| **vtable-guild**   | 131 / 130         | 133 / 133   | 251       | 6.6 MB       |
+| el-table-v2        | **5.0 / 0**       | **48 / 0**  | **185**   | **0.8 MB**   |
+| ant-design-vue 4.x | no virtual scroll | —           | —         | —            |
+
+Three takeaways, including the ones that don't flatter us:
+
+- **vs antdv**: the gap is an order of magnitude. At 1k rows antdv already needs 1126 ms to first render and 7,058 DOM nodes; at **10k rows a single mount took 112,657 ms (~113 s)** — not usable. To be fair about the premise: this compares _unpaginated_ rendering. antdv's normal answer at this scale is pagination, or switching to el-table-v2.
+- **vs el-table-v2**: **it is faster than us**, and its mount cost is nearly independent of row count (~5 ms from 1k to 100k) while ours goes 12 → 131 ms — evidence of O(n) work at mount that we should optimize. Its sort number already includes the app-side `slice().sort()` it forces you to write, so this isn't a measurement artifact.
+- **What the overhead buys**: el-table-v2 is pure-div, fixed-height virtualization — no variable row heights, no grouped headers, no cell merging, no built-in sorting or filter panels, and no semantic `<table>`. That's what vtable-guild's extra cost pays for.
+
+Virtual scrolling does work as advertised: from 1k to 100k rows the DOM stays at 251 nodes and 12 rendered rows. Full methodology, the fairness contract and all three data sizes are in the [performance doc](./docs/performance.md).
 
 ## Documentation
 
