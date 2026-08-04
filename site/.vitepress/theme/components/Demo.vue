@@ -14,8 +14,8 @@ const props = withDefaults(
 
 // 组件懒加载：每个文档页只会拉自己用到的 demo chunk。
 const demoModules = import.meta.glob('../../../demos/**/*.vue')
-// 源码 eager：需要同步拿到字符串来拼「在 Playground 中编辑」的 href。
-// 13 个 demo 合计几十 KB 文本，gzip 后可以忽略。
+// 源码 eager：复制代码需要同步拿到字符串。
+// demo 合计几十 KB 文本，gzip 后可以忽略。
 const demoSources = import.meta.glob('../../../demos/**/*.vue', {
   query: '?raw',
   import: 'default',
@@ -49,18 +49,10 @@ if (import.meta.env.DEV) {
 // 本地把两个站分开跑时用 VITE_PLAYGROUND_URL 覆盖，仓库里不写死任何主机名。
 const playgroundBase = import.meta.env.VITE_PLAYGROUND_URL || withBase('/play/')
 
-/** UTF-8 安全的 base64url，与 play/src/utils/share.ts 的 decodeDemoSource 对应 */
-function encodeDemoSource(text: string): string {
-  const bytes = new TextEncoder().encode(text)
-  let binary = ''
-  for (const byte of bytes) binary += String.fromCharCode(byte)
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
-}
-
 const playgroundUrl = computed(() => {
-  if (!source.value) return playgroundBase
+  if (missing.value) return playgroundBase
   const separator = playgroundBase.includes('?') ? '&' : '?'
-  return `${playgroundBase}${separator}demo=${encodeDemoSource(source.value)}`
+  return `${playgroundBase}${separator}demo=${encodeURIComponent(props.src)}`
 })
 
 const expanded = ref(false)

@@ -20,6 +20,10 @@
       ],
       "outputs": ["dist/**", "css/**"]
     },
+    "@vtable-guild/play#build": {
+      "inputs": ["$TURBO_DEFAULT$", "../site/demos/**"],
+      "outputs": ["dist/**"]
+    },
     "dev": {
       "dependsOn": ["^build"],
       "cache": false,
