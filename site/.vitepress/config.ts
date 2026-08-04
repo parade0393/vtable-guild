@@ -51,6 +51,7 @@ export default defineConfig({
             { text: '多级表头与合并', link: '/guide/grouped-and-merged-cells' },
             { text: '标题与摘要行', link: '/guide/title-footer-summary' },
             { text: '自定义行与插槽', link: '/guide/api-wiring-and-slots' },
+            { text: '编辑', link: '/guide/editing' },
           ],
         },
         {
