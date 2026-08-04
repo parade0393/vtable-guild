@@ -61,7 +61,7 @@ app.use(createVTableGuild({ themePreset: 'element-plus' }))
 写在前面，省得你走到一半才发现：
 
 - **要分页**：没有内置 `pagination`，需要自己接（`change` 事件只带 `filters / sorter / extra`）
-- **要单元格编辑、Excel 导出、列拖拽换序、右键菜单**：都没有，这些是 [vxe-table](https://vxetable.cn/) 的主场，它的功能面比这里宽得多
+- **要完整编辑引擎、Excel 导出、列拖拽换序、右键菜单**：单元格和整行编辑可通过 [`bodyCell`](https://parade0393.github.io/vtable-guild/guide/editing) 组合，但不内置编辑状态、校验和 Excel 式键盘导航；这些完整企业表格能力仍是 [vxe-table](https://vxetable.cn/) 的主场
 - **有键盘可达性 / 无障碍合规要求**：目前排序头和筛选触发器还不能键盘操作，正在补
 - **只需要一张基础表格**：原生 `a-table` / `el-table` 就够了，不必多引一个依赖
 
@@ -126,7 +126,7 @@ const dataSource: UserRow[] = [
 
 ## 功能
 
-排序（受控 / 非受控双轨、多列）· 筛选（多选 / 单选 / 树形 / 搜索 / 自定义面板）· 行选择（checkbox / radio / 批量菜单 / `checkStrictly`）· 展开行 · 树形数据 · 固定列与固定表头 · 多级表头 · 单元格合并 · 列宽拖拽 · title / footer / summary · sticky · 虚拟滚动 · 内置 locale（zh-CN / en-US）· `EXPAND_COLUMN` 与 `SELECTION_COLUMN` 占位常量。
+排序（受控 / 非受控双轨、多列）· 筛选（多选 / 单选 / 树形 / 搜索 / 自定义面板）· 行选择（checkbox / radio / 批量菜单 / `checkStrictly`）· 展开行 · 树形数据 · 固定列与固定表头 · 多级表头 · 单元格合并 · 列宽拖拽 · 通过 `bodyCell` 组合单元格与整行编辑 · title / footer / summary · sticky · 虚拟滚动 · 内置 locale（zh-CN / en-US）· `EXPAND_COLUMN` 与 `SELECTION_COLUMN` 占位常量。
 
 每一项在文档站都有**可以直接点的 demo**：[功能索引](https://parade0393.github.io/vtable-guild/guide/)。
 
@@ -213,6 +213,7 @@ v2.4.0 本地构建实测（`gzip -9`）：
 - [快速开始](https://parade0393.github.io/vtable-guild/guide/getting-started) · [从 ant-design-vue 迁移](https://parade0393.github.io/vtable-guild/guide/migration-from-antd)
 - [功能对比总览](https://parade0393.github.io/vtable-guild/comparison/) · [为什么这样设计](https://parade0393.github.io/vtable-guild/guide/architecture)
 - [三层主题覆盖](https://parade0393.github.io/vtable-guild/guide/theme-overrides) · [CSS 变量参考](https://parade0393.github.io/vtable-guild/guide/theme-tokens) · [ui Slot 参考](https://parade0393.github.io/vtable-guild/guide/ui-slots-reference)
+- [编辑](https://parade0393.github.io/vtable-guild/guide/editing) · [自定义行与插槽](https://parade0393.github.io/vtable-guild/guide/api-wiring-and-slots)
 - [API Reference](https://parade0393.github.io/vtable-guild/guide/api-reference) · [类型参考](https://parade0393.github.io/vtable-guild/guide/type-reference)
 - [更新日志](./packages/vtable-guild/CHANGELOG.md) · [路线图](./docs/roadmap.md)
 

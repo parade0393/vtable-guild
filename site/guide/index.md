@@ -25,7 +25,7 @@
 - 大表格体验：
   [固定列](/guide/fixed-columns)、[虚拟滚动](/guide/virtualization)、[列宽拖拽](/guide/column-resize)
 - 结构扩展：
-  [多级表头与合并](/guide/grouped-and-merged-cells)、[标题与摘要行](/guide/title-footer-summary)、[自定义行与插槽](/guide/api-wiring-and-slots)
+  [多级表头与合并](/guide/grouped-and-merged-cells)、[标题与摘要行](/guide/title-footer-summary)、[自定义行与插槽](/guide/api-wiring-and-slots)、[编辑](/guide/editing)
 
 ### 如果你要统一视觉体系
 

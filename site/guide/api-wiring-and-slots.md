@@ -62,9 +62,11 @@
 
 - 结构级扩展尽量通过组件提供的入口完成，不要在 mounted 后再手动查 DOM 改写。
 - bodyCell 更适合做状态标签、图标、补充文案等内容级增强。
+- 单元格或整行编辑也通过 bodyCell 组合；草稿、校验和提交由业务管理，完整示例见[编辑](/guide/editing)。
 - 如果同一类样式会反复出现，优先沉淀到主题和 ui，而不是在每张表里重复写 slot 模板。
 
 ## 相关页面
 
 - [三层主题覆盖](/guide/theme-overrides)
 - [标题、页脚与摘要行](/guide/title-footer-summary)
+- [编辑](/guide/editing)
