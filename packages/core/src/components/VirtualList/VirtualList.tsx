@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Filler from './Filler'
 import useChildren from './hooks/useChildren'
-import useDiffItem from './hooks/useDiffItem'
 import useFrameWheel from './hooks/useFrameWheel'
 import { useGetSize } from './hooks/useGetSize'
 import useHeights from './hooks/useHeights'
@@ -12,6 +11,7 @@ import type { ScrollConfig } from './hooks/useScrollTo'
 import VirtualScrollBar from './VirtualScrollBar'
 import type { ScrollBarDirectionType, ScrollBarRef } from './VirtualScrollBar'
 import { getSpinSize } from './utils/scrollbarUtil'
+import { PrefixHeights } from './utils/PrefixHeights'
 import type { ExtraRenderInfo, Key } from './interface'
 import type { InnerProps } from './Filler'
 import {
@@ -65,6 +65,11 @@ export interface ListProps {
     verticalScrollBarThumb?: CSSProperties
   }
   showScrollBar?: boolean | 'optional' | 'hover'
+  /**
+   * 定高快路径：调用方保证每一项的实际高度等于 `itemHeight`。
+   * 开启后跳过全部 DOM 测量，可视区计算恒为 O(1)（见 useHeights 的 disabled 说明）。
+   */
+  disableHeightMeasure?: boolean
   onScroll?: (e: Event) => void
   onVirtualScroll?: (info: ScrollInfo) => void
   onVisibleChange?: (visibleList: any[], fullList: any[]) => void
@@ -83,24 +88,38 @@ function pureAttrs(attrs: Record<string, unknown>): Record<string, unknown> {
   return result
 }
 
-function findFirstPrefixIndex(prefixHeights: number[], target: number): number {
-  let left = 0
-  let right = prefixHeights.length - 1
-  let answer = prefixHeights.length
+/**
+ * 用已同步好的位置表求可视区。纯函数，不做任何重建——重建由调用方通过
+ * `PrefixHeights.sync()` 控制，这样滚动路径上只剩两次二分。
+ */
+function readVisibleRange(
+  prefix: PrefixHeights,
+  dataLength: number,
+  offsetTop: number,
+  height: number,
+): { scrollHeight: number; start: number; end: number; offset: number } {
+  let start = prefix.findIndex(offsetTop)
+  if (start >= dataLength) start = 0
 
-  while (left <= right) {
-    const mid = Math.floor((left + right) / 2)
-    if (prefixHeights[mid] >= target) {
-      answer = mid
-      right = mid - 1
-    } else {
-      left = mid + 1
-    }
+  let end = prefix.findIndex(offsetTop + height + 1)
+  if (end >= dataLength) end = dataLength - 1
+  end = Math.min(end + 1, dataLength - 1)
+
+  return {
+    scrollHeight: prefix.totalHeight,
+    start,
+    end,
+    offset: prefix.offsetOf(start),
   }
-
-  return answer
 }
 
+/**
+ * 一次性求可视区（自带位置表构建）。
+ *
+ * 组件内部**不走这个函数**——它每次调用都会重建整表，正是要避免的开销；
+ * 组件持有一个长期存活的 `PrefixHeights` 做增量维护。
+ * 这里保留导出是为了让「给定各行高度 → 可视区」这条纯逻辑可以被单测直接钉住。
+ */
 export function getMeasuredVisibleRange(options: {
   dataLength: number
   offsetTop: number
@@ -109,28 +128,9 @@ export function getMeasuredVisibleRange(options: {
   getItemHeight: (index: number) => number | undefined
 }): { scrollHeight: number; start: number; end: number; offset: number } {
   const { dataLength, offsetTop, height, itemHeight, getItemHeight } = options
-  const prefixHeights: number[] = new Array(dataLength)
-  let scrollHeight = 0
-
-  for (let i = 0; i < dataLength; i += 1) {
-    scrollHeight += getItemHeight(i) ?? itemHeight
-    prefixHeights[i] = scrollHeight
-  }
-
-  let start = findFirstPrefixIndex(prefixHeights, offsetTop)
-  if (start >= dataLength) start = 0
-
-  const endBoundary = offsetTop + height
-  let end = findFirstPrefixIndex(prefixHeights, endBoundary + 1)
-  if (end >= dataLength) end = dataLength - 1
-  end = Math.min(end + 1, dataLength - 1)
-
-  return {
-    scrollHeight,
-    start,
-    end,
-    offset: start === 0 ? 0 : prefixHeights[start - 1],
-  }
+  const prefix = new PrefixHeights()
+  prefix.sync(dataLength, getItemHeight, itemHeight)
+  return readVisibleRange(prefix, dataLength, offsetTop, height)
 }
 
 export default defineComponent({
@@ -154,6 +154,7 @@ export default defineComponent({
       default: 'optional',
     },
     virtual: { type: Boolean, default: true },
+    disableHeightMeasure: { type: Boolean, default: false },
     onScroll: Function as PropType<(e: Event) => void>,
     onVirtualScroll: Function as PropType<(info: ScrollInfo) => void>,
     onVisibleChange: Function as PropType<(visibleList: any[], fullList: any[]) => void>,
@@ -182,6 +183,7 @@ export default defineComponent({
       getKey,
       undefined,
       undefined,
+      () => props.disableHeightMeasure,
     )
 
     const mergedData = shallowRef<any[]>(props?.data || EMPTY_DATA)
@@ -235,10 +237,27 @@ export default defineComponent({
       offsetTop.value = alignedTop
     }
 
+    /**
+     * 长期存活的行位置表。只在数据或实测高度变化时增量重建，
+     * 滚动本身只做二分——见 PrefixHeights 的说明。
+     */
+    const prefixHeights = new PrefixHeights()
+
     // Calculate visible range
     watch(
       [inVirtual, useVirtual, offsetTop, mergedData, heightUpdatedMark, () => props.height],
-      () => {
+      ([, , , nextData, nextMark], prev) => {
+        // 先判断这次是被什么触发的，据此决定位置表要不要失效。
+        // 只有 offsetTop 变（即纯滚动）时，位置表完全复用。
+        if (!prev) {
+          prefixHeights.markAllDirty()
+        } else {
+          const [, , , prevData, prevMark] = prev
+          if (nextData !== prevData) prefixHeights.markAllDirty()
+          // 高度实测变化只可能发生在已渲染的行上，因此 [0, start) 的前缀仍然有效。
+          else if (nextMark !== prevMark) prefixHeights.markDirtyFrom(start.value)
+        }
+
         if (!useVirtual.value) {
           scrollHeight.value = 0
           start.value = 0
@@ -283,15 +302,8 @@ export default defineComponent({
         }
 
         const data = toRaw(mergedData.value)
-        const range = getMeasuredVisibleRange({
-          dataLength: dataLen,
-          offsetTop: offsetTop.value,
-          height: height!,
-          itemHeight: itemH!,
-          getItemHeight(index) {
-            return heights.get(getKey(data[index]))
-          },
-        })
+        prefixHeights.sync(dataLen, (index) => heights.get(getKey(data[index])), itemH!)
+        const range = readVisibleRange(prefixHeights, dataLen, offsetTop.value, height!)
 
         scrollHeight.value = range.scrollHeight
         start.value = range.start
@@ -464,8 +476,6 @@ export default defineComponent({
       scrollMoving.value = false
     }
 
-    useDiffItem(mergedData, getKey)
-
     // ScrollBar spin sizes
     watch(
       [() => props.height, scrollHeight, inVirtual, () => size.value.height],
@@ -525,6 +535,7 @@ export default defineComponent({
         offsetTop.value = alignedTop
       },
       delayHideScrollBar,
+      () => props.disableHeightMeasure,
     )
 
     expose({

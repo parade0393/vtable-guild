@@ -83,8 +83,11 @@ const needsAntdvGuard = computed(
 
 const loaders: Record<SubjectId, () => Promise<{ default: unknown }>> = {
   'vtable-guild': () => import('./subjects/VtgSubject.vue'),
+  'vtable-guild-fixed': () => import('./subjects/VtgFixedSubject.vue'),
   antdv: () => import('./subjects/AntdvSubject.vue'),
+  'antdv-next': () => import('./subjects/AntdvNextSubject.vue'),
   'el-table-v2': () => import('./subjects/ElTableV2Subject.vue'),
+  'vxe-table': () => import('./subjects/VxeTableSubject.vue'),
 }
 
 /**

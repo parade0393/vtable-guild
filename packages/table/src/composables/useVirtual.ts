@@ -5,6 +5,8 @@ export interface UseVirtualOptions {
   virtual: () => boolean | undefined
   scrollY: () => number | string | undefined
   size: () => 'small' | 'middle' | 'large' | undefined
+  /** 用户显式声明的固定行高（px）。传了就进定高快路径。 */
+  rowHeight?: () => number | undefined
 }
 
 export interface UseVirtualReturn {
@@ -14,6 +16,14 @@ export interface UseVirtualReturn {
   itemHeight: ComputedRef<number>
   /** Numeric scroll height for VirtualList */
   listHeight: ComputedRef<number>
+  /**
+   * 是否走定高快路径。
+   *
+   * 只在用户**显式**传了合法 `rowHeight` 时为 true——刻意不做自动探测：
+   * 从 size 预设猜行高在 `ellipsis: false` + 长文本换行时会静默算错，
+   * 而错误表现为行错位/空隙，用户很难归因。宁可让用户主动声明。
+   */
+  fixedHeight: ComputedRef<boolean>
 }
 
 /** Row height estimates per table size */
@@ -28,7 +38,13 @@ export function useVirtual(options: UseVirtualOptions): UseVirtualReturn {
     return !!options.virtual() && !!options.scrollY()
   })
 
+  const fixedHeight = computed(() => {
+    const h = options.rowHeight?.()
+    return typeof h === 'number' && Number.isFinite(h) && h > 0
+  })
+
   const itemHeight = computed(() => {
+    if (fixedHeight.value) return options.rowHeight!() as number
     const s = options.size() ?? 'middle'
     return SIZE_ITEM_HEIGHT[s] ?? 47
   })
@@ -40,5 +56,5 @@ export function useVirtual(options: UseVirtualOptions): UseVirtualReturn {
     return 400
   })
 
-  return { enabled, itemHeight, listHeight }
+  return { enabled, itemHeight, listHeight, fixedHeight }
 }

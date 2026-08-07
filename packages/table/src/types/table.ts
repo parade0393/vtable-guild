@@ -257,6 +257,15 @@ export interface TableProps<TRecord extends object = Record<string, any>> {
   /** 是否开启虚拟滚动（需同时设置 scroll.y） */
   virtual?: boolean
 
+  /**
+   * 固定行高（px），仅在 `virtual` 下生效。
+   *
+   * 声明后跳过全部行高测量，可视区计算恒为 O(1)，挂载与滚动不再随总行数增长。
+   * 前提是每行实际高度确实等于该值；若存在换行文本、`ellipsis: false` 的长内容
+   * 或自定义高度渲染，请不要传此项，交给默认的实测路径（支持不定行高）。
+   */
+  rowHeight?: number
+
   /** 树形数据子节点字段名，默认 'children' */
   childrenColumnName?: string
 

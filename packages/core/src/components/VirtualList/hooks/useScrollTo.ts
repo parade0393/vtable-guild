@@ -15,6 +15,8 @@ export default function useScrollTo(
   collectHeight: () => void,
   syncScrollTop: (top: number) => void,
   triggerFlash: () => void,
+  /** 定高快路径：高度不测量，总高与任意行的位置都可以直接算出来，无需逐行累加。 */
+  fixedHeight?: () => boolean,
 ): [scrollTo: (arg?: number | ScrollConfig | null) => void, getTotalHeight: () => number] {
   const syncState = shallowRef<{
     times: number
@@ -25,7 +27,10 @@ export default function useScrollTo(
     lastTop?: number | null
   } | null>(null)
 
+  const isFixed = () => fixedHeight?.() === true
+
   const getTotalHeight = () => {
+    if (isFixed()) return data.value.length * (itemHeight.value ?? 0)
     let totalHeight = 0
     for (let i = 0; i < data.value.length; i += 1) {
       const key = getKey(data.value[i])
@@ -55,30 +60,37 @@ export default function useScrollTo(
         if (height) {
           const mergedAlign = targetAlign || originAlign
 
-          let stackTop = 0
           let itemTop = 0
           let itemBottom = 0
           const maxLen = Math.min(data.value.length - 1, index)
 
-          for (let i = 0; i <= maxLen; i += 1) {
-            const key = getKey(data.value[i])
-            itemTop = stackTop
-            const cacheHeight = heights.get(key)
-            itemBottom =
-              itemTop + (cacheHeight === undefined ? (itemHeight.value ?? 0) : cacheHeight)
-            stackTop = itemBottom
-          }
-
-          let leftHeight = mergedAlign === 'top' ? offset : height - offset
-          for (let i = maxLen; i >= 0; i -= 1) {
-            const key = getKey(data.value[i])
-            const cacheHeight = heights.get(key)
-            if (cacheHeight === undefined) {
-              needCollectHeight = true
-              break
+          if (isFixed()) {
+            // 定高：目标行的位置是闭式解，不需要逐行累加，也不需要回补测量。
+            const h = itemHeight.value ?? 0
+            itemTop = maxLen * h
+            itemBottom = itemTop + h
+          } else {
+            let stackTop = 0
+            for (let i = 0; i <= maxLen; i += 1) {
+              const key = getKey(data.value[i])
+              itemTop = stackTop
+              const cacheHeight = heights.get(key)
+              itemBottom =
+                itemTop + (cacheHeight === undefined ? (itemHeight.value ?? 0) : cacheHeight)
+              stackTop = itemBottom
             }
-            leftHeight -= cacheHeight
-            if (leftHeight <= 0) break
+
+            let leftHeight = mergedAlign === 'top' ? offset : height - offset
+            for (let i = maxLen; i >= 0; i -= 1) {
+              const key = getKey(data.value[i])
+              const cacheHeight = heights.get(key)
+              if (cacheHeight === undefined) {
+                needCollectHeight = true
+                break
+              }
+              leftHeight -= cacheHeight
+              if (leftHeight <= 0) break
+            }
           }
 
           switch (mergedAlign) {

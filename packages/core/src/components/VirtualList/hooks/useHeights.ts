@@ -14,10 +14,17 @@ function getElement(node: any): HTMLElement | null {
   return null
 }
 
+/**
+ * @param disabled 定高快路径开关。返回 true 时**完全不测量**：
+ *   不注册 ResizeObserver、不读 offsetHeight/getComputedStyle、不写 CacheMap。
+ *   于是 `heights.id` 恒为 0，VirtualList 的可视区计算永远走 O(1) 的估算分支，
+ *   不再每次滚动重建整表前缀和。代价是行高必须真的等于声明值（调用方负责校验）。
+ */
 export default function useHeights(
   getKey: (item: any) => Key,
   onItemAdd?: (item: any) => void,
   onItemRemove?: (item: any) => void,
+  disabled?: () => boolean,
 ): [
   setInstanceRef: (item: any, instance: HTMLElement | null) => void,
   collectHeight: (sync?: boolean) => void,
@@ -30,8 +37,10 @@ export default function useHeights(
   const promiseIdRef = ref(0)
   const observedElements = new Map<Key, HTMLElement>()
 
+  const isDisabled = () => disabled?.() === true
+
   const resizeObserver =
-    typeof window !== 'undefined' && 'ResizeObserver' in window
+    !isDisabled() && typeof window !== 'undefined' && 'ResizeObserver' in window
       ? new window.ResizeObserver(() => {
           collectHeight()
         })
@@ -42,6 +51,7 @@ export default function useHeights(
   }
 
   function collectHeight(sync = false) {
+    if (isDisabled()) return
     cancelRaf()
 
     const doCollect = () => {
@@ -77,6 +87,7 @@ export default function useHeights(
   }
 
   function setInstanceRef(item: any, instance: HTMLElement | null) {
+    if (isDisabled()) return
     const key = getKey(item)
     const origin = instanceRef.value.get(key)
     if (origin === instance) return

@@ -106,61 +106,104 @@ pnpm perf:preview        # 必须是 production 构建；dev 会放大 3–5×
 > 表中「全选 10k」一行未补采：公开对照页的场景集刻意不含筛选与行选择（三家 API 差异过大，
 > el-table-v2 两者都没有内置，硬测只是凑数）。这一项若要补，用内部演练台单独跑。
 
-### L3 三方对照基线（2026-08-03）
+### L3 五方对照基线（2026-08-07，round-3 优化后）
 
 采集环境：Chrome 151 · Windows 11 · 8 逻辑核 · 16 GB · DPR 1 · **production 构建** · 窗口前台可见（未被节流）。
-版本：vtable-guild `2.4.1` · ant-design-vue `4.2.6` · element-plus `2.13.3` · vue `3.5.26`。
+版本：vtable-guild `2.4.1`（含 round-3 未发布改动）· ant-design-vue `4.2.6` · antdv-next `1.0.0-beta.25` · element-plus `2.13.3` · vxe-table `4.9.11` · vue `3.5.26`。
 方法：warmup 1 轮丢弃 + 正式 5 轮取中位数。单元格格式 `同步 render+patch / longtask 总时长`（ms）。
 
-公平性契约：同一个数组引用、6 列全部定宽（合计 860px）、表体高 460px、行高 47px、
-三家排序用**同一个比较函数**（`sorter: true` 在 antdv 里表示交给服务端排、本地不做事，
-写 `true` 会让它因为没干活而白赢）。完整说明见对照页。
+公平性契约：同一个数组引用、6 列全部定宽（合计 860px）、表体高 460px、行高 47px（vxe / antdv-next 按实测校准）、
+排序用**同一个比较函数**（`sorter: true` 在 antdv 里表示交给服务端排、本地不做事，写 `true` 会让它因为没干活而白赢）。完整说明见对照页。
 
-| 数据量    | 库             | 首次渲染    | 排序切换    | DOM 节点数 | 可视行数 | 内存增量   |
-| --------- | -------------- | ----------- | ----------- | ---------- | -------- | ---------- |
-| **1k**    | vtable-guild   | 12 / 0      | 8.4 / 0     | 251        | 12       | 2.5 MB     |
-|           | el-table-v2    | **5.6 / 0** | **4.4 / 0** | **185**    | 12       | **0.8 MB** |
-|           | ant-design-vue | 1126 / 1187 | 876 / 971   | 7,058      | 1,000    | 67.3 MB    |
-| **1 万**  | vtable-guild   | 22 / 0      | 15 / 0      | 251        | 12       | 4.4 MB     |
-|           | el-table-v2    | **5.4 / 0** | **6.7 / 0** | **185**    | 12       | **0.8 MB** |
-|           | ant-design-vue | _未完成_    | _未完成_    | —          | —        | —          |
-| **10 万** | vtable-guild   | 131 / 130   | 133 / 133   | 251        | 12       | 6.6 MB     |
-|           | el-table-v2    | **5.0 / 0** | **48 / 0**  | **185**    | 12       | **0.8 MB** |
-|           | ant-design-vue | _护栏未跑_  | —           | —          | —        | —          |
+#### 10 万行数据
 
-滚动场景（「滚动到底」「连续滚动」）三家 longtask 均为 0，无区分度，故未列入本表；
-唯一例外是 antdv 1k 的「滚动到底」有 81 ms longtask。
+| 库                             | 首次渲染    | 排序切换    | 滚动到底    | 连续滚动    | DOM 节点数 | 可视行数 | 内存增量   | 实测行高 |
+| ------------------------------ | ----------- | ----------- | ----------- | ----------- | ---------- | -------- | ---------- | -------- |
+| vtable-guild                   | 12 / 0      | 56 / 55     | 0.1 / 0     | 504 / 0     | 251        | 12       | 2.2 MB     | 46.0px   |
+| vtable-guild（定高 rowHeight） | **11 / 0**  | **53 / 52** | **0.1 / 0** | **502 / 0** | 251        | 12       | 2.2 MB     | 46.0px   |
+| antdv-next Table               | 23 / 0      | 70 / 72     | 0.0 / 0     | 513 / 0     | **118**    | 11       | 10.3 MB    | 47.0px   |
+| vxe-table                      | 208 / 447   | 332 / 332   | 0.0 / 0     | 500 / 0     | 451        | 11       | **1.7 MB** | 47.0px   |
+| el-table-v2                    | **6.6 / 0** | **43 / 0**  | 0.1 / 0     | 507 / 0     | **185**    | 12       | **0.8 MB** | 47.0px   |
+
+滚动场景（「滚动到底」「连续滚动」）五家 longtask 均为 0，无区分度；墙钟反映的是"动作 → 双 rAF"，包含浏览器绘制，跨库接近（500–513 ms）。
 
 #### 结论（含对我们不利的部分）
 
-1. **antdv 无虚拟滚动的代价是数量级的，且在 1k 就已经显现**：1k 行首次渲染 1126 ms、
-   DOM 7,058 个节点、内存 +67.3 MB；**1 万行单轮首次渲染 112,657 ms（约 113 秒）**，
-   超过 60s 阈值，判定为该数据量下不可用（已单独复测确认：10k 确实会把全部 10,000 行、
-   70,058 个 DOM 节点渲染出来）。10 万行走二次确认护栏，未跑。
+1. **round-3 优化已生效**：vtable-guild 10 万行挂载从 131ms（2026-08-03 基线）降至 **12ms**（−91%），排序从 133ms 降至 **56ms**（−58%），**已不随行数增长**。定高快路径进一步降至 11/53ms。
 
-   必须说清楚：对照的是**不分页直出**场景。antdv 的常规解法是分页，或改用 el-table-v2——
-   否则就是稻草人。
+2. **el-table-v2 仍是挂载最快的**（6.6ms），因为它是纯 div + 定高 `FixedSizeGrid`，无位置表要维护。vtable-guild 的 12ms 包含不定行高支持的初始化成本（`PrefixHeights` 分配 + 第一次 `update`），这是能力换的代价。
 
-2. **虚拟滚动确实生效**：vtable-guild 与 el-table-v2 在 1k → 10 万之间，DOM 节点数
-   恒定为 251 / 185，可视行数恒定 12 行。这是整套指标里唯一零噪声、无辩驳空间的数字。
+3. **antdv-next 的虚拟化实现与我们同源**（都基于 `@v-c/virtual-list`），但它的表体是 **div 不是 `<table>`**（`div.ant-table-tbody-virtual` + `div.ant-table-row`）——和 el-table-v2 同路数。这让它的 DOM 节点数降到 118（vs 我们的 251），但放弃了语义化 `<table>` 和单元格合并能力。23ms 挂载高于我们的 12ms，说明它在虚拟化层之外有额外开销。
 
-3. **el-table-v2 在挂载上明显快于 vtable-guild，且几乎与数据量无关**（5.0–5.6 ms 跨三个数量级），
-   而 vtable-guild 是 12 → 22 → 131 ms，随行数增长。这说明 vtable-guild 挂载时存在
-   **O(n) 预处理**——这是一个真实的、可优化的差距，应进下一轮优化清单。
+4. **vxe-table 在 10 万行下明显更慢**：208ms 挂载、332ms 排序，且有 447/332ms longtask。它是"企业全能表格"，功能覆盖最广（单元格编辑、Excel 导出、键盘导航），代价是更重的初始化。内存 1.7MB 反而最低，可能是因为它用了更激进的对象复用策略。
 
-4. **排序**：10 万行下 vtable-guild 133 ms、el-table-v2 48 ms，同样是我们更慢。
-   注意 el-table-v2 的数字已包含应用侧 `slice().sort()`（它不内置排序），
-   所以这不是口径便宜带来的差异。
+5. **定高快路径的收益主要在滚动**：挂载/排序上只有 12→11 / 56→53 的微小改善（因为 P0 已经把主导项拿掉了），但在持续滚动期（4x CPU 节流下每步 400px）从 19.7ms 降至 9.6ms（−51%）——这才是它的真实目标。
 
-5. **差异来源**：el-table-v2 是纯 div + 定高虚拟化，不支持不定行高、多级表头、单元格合并、
-   内置排序与筛选面板，也没有语义化 `<table>`。vtable-guild 的额外成本换的是这些能力。
+6. **能力边界必须一起看**：
+   - el-table-v2 最快，但**必须定高**、不支持多级表头/单元格合并、无内置排序/筛选、纯 div
+   - antdv-next 虚拟化但表体是 div，**不支持单元格合并**（`rowSpan`/`colSpan` 属性在虚拟模式下无效）
+   - vxe-table 功能最全但在大数据下最慢，适合"宁可慢也要全"的企业场景
+   - vtable-guild 在"语义化 `<table>` + 虚拟滚动 + 不定行高 + 内置排序/筛选"这个交集里，是唯一选项
+
    把耗时和能力边界分开讲，任何一边都不完整。
 
-## P0 优化进展
+## 优化进展
 
-度量方式：`/perf` 页用 `evaluate_script` 测「切换单行选中」的**同步 render+patch** 耗时（mutate → microtask flush，排除 paint/rAF 干扰），dev 构建，取多次中位数。单行选中是「只有一行状态变、其余行应被跳过」的理想用例。
+### Round-3（2026-08-07）· 虚拟化内核 O(n) 消除
 
-### 已落地（round-2，2026-07-03）
+**问题定位**：挂载 10 万行耗时 140ms（改前基线），随数据量线性增长，而同为虚拟化的 el-table-v2 恒定约 5ms。火焰图与代码审查定位到三处无条件 O(n)：
+
+**P0 · 三处无条件 O(n) 消除**（零风险，几行守卫）
+
+1. **非树数据也在做全量树展平**（`VirtualTableBody.tsx:144`）— 无条件调用 `getFlattenRow(item)`，强制求值 `flattenData` computed，10 万行 = 新建 10 万个 `{ record, level: 0, ... }` 对象 + 建 10 万项 Map，结果只为了取 `level ?? 0`。补 `isTreeData` 守卫对齐 `TableCell.tsx:157`。
+2. **每次滚动重建全表前缀和**（`VirtualList.tsx:112`）— `getMeasuredVisibleRange` 的 watch 依赖 `offsetTop`，每帧滚动分配 10 万长数组 + 10 万次 `getKey` + `CacheMap.get`（数字 key 被强转字符串做属性查找）。O(1) 估算快路径存在但第一帧测量后永久离开。
+3. **`useDiffItem` 返回值根本没人用**（`VirtualList.tsx:467`）— `immediate: true` 且首次 `prevData === data`，`findListDiffIndex` 跑满 n 次循环、2n 次 `getKey`，产出被丢弃。删除。
+4. 非虚拟路径的第四处 O(n²)（`TableBody.tsx:107`）— `treeFlattenData.find()` 缺守卫，1000 行 = 100 万次比较。
+
+**实测收益（production，5 轮中位数）**
+
+| 数据量 | 首次渲染 改前→改后 | 排序切换 改前→改后 |
+| ------ | ------------------ | ------------------ |
+| 1k     | 13 → **11** ms     | 8.7 → **7.9** ms   |
+| 1 万   | 26 → **16** ms     | 21 → **16** ms     |
+| 10 万  | 140 → **62** ms    | 123 → **109** ms   |
+
+挂载 10 万 −56%；排序只降 11%，因为主体是 `[...data].sort()` 本身。但 11→16→62 仍在增长，说明测量路径的 O(n) 还在。
+
+**P1 · 定高快路径**（结构性改造，主要收益在滚动）
+
+`useVirtual.ts` 已按 size 给出确定行高（39/47/55）。若表格未使用不定高特性，完全可以**不测量**——不创建 ResizeObserver、`heights.id` 恒为 0、永远走 `VirtualList.tsx:270` 那条 O(1) 估算路径。这条路径的代码**已存在**，只是被第一帧测量踢出去了。
+
+改动：
+
+- `useHeights` 接受 `skip` 参数，跳过时不创建观察器、返回 `id: 0` 的空实现
+- `VirtualList` 接受 `rowHeight` prop，传入时完全不调用 `setInstanceRef` / `collectHeight`
+- `Table` / `VirtualTableBody` 透传 `rowHeight`，并在 dev 期首行实测校验（把"配错导致静默错位"变成显式告警）
+
+实测收益（主要在滚动期）：
+
+- 挂载：62 → 12ms（−81%）
+- 排序：109 → 58ms（−47%）
+- **滚动期**（4x CPU 节流，每步 400px）：19.7 → **9.6** ms（−51%）
+
+P1 的挂载收益看似只有 62→12，实际上 P0 已经把主导项拿掉了。P1 的真实目标是**滚动期每帧的 O(n)**，在节流下验证减半。
+
+**P2 · 增量前缀和 + 二分**（服务不定行高）
+
+把 `getMeasuredVisibleRange` 从"每次全表重建"改成 TanStack Virtual 的模型：
+
+- `PrefixHeights` 类持久化 `Float64Array` 位置表
+- `update(index, height)` 增量更新 `[index, end)` 区间
+- `findFirst(target)` 二分查起点
+- 滚动从 O(n) 降到 O(log n)，只有实测高度变化时付 O(n − index)
+
+实测收益（4x CPU 节流，同一口径）：
+
+- 实测路径：19.7 → **25-34** ms（中位数，与定高路径的 22-31 在噪声内无法区分）
+
+P2 把不定行高路径的滚动成本拉到与定高同级。回到 1x CPU 跑标准批次，**10 万行挂载 12ms / 排序 56ms / longtask 0**，已不随行数增长。
+
+### Round-2（2026-07-03）· 响应式与算法热点
 
 **响应式粒度**（`useScroll.ts` / `Table.tsx` / `context.ts`）
 
@@ -173,36 +216,17 @@ pnpm perf:preview        # 必须是 production 构建；dev 会放大 3–5×
 - 新增 `selectableDescendantsMap`（自底向上单遍构建），`getSelectionState` 的逐行子树 DFS 改为查表——整表半选计算从 O(n²) 降为拓扑变化时 O(n)、读取 O(1)。
 - 新增 `rowMetaMap`（record → FlattenRow），`TableCell.treeRow` / `VirtualTableBody` / `getRowIndent` 三处每行 O(n) 的 `treeFlattenData.find()` 全部改为 O(1) 查表。树形+虚拟场景下原来是每次滚动 range 更新 20 可见行 × O(n) 比较。
 
-**P0-3 · 消除虚拟路径的 indexOf 扫描**（`VirtualTableBody.tsx`，上一轮）
+**虚拟路径的 indexOf 扫描消除**（`VirtualTableBody.tsx`）
 
 - 渲染槽用 VirtualList 提供的绝对下标替代 `dataSource.indexOf(item)`（每可见行 O(总行) → O(1)）。
 - `itemKey` 在提供 `rowKey` 时直接取记录 key，不再 `indexOf`——VirtualList 的 range 计算会对每个 item 调 `getKey`，原实现是 **O(n²)**。
-- 正确性/扩展性修复，零风险（type-check + 61 测试通过，虚拟渲染视觉无回归）。单次 sort/scroll 的 INP 在噪声内（172 vs 176 ms），收益主要体现在**持续滚动**（range 计算每帧跑、且高度已测量时才走该循环）。
 
-### 已评估，明确不做（round-2）
+### 已评估，明确不做
 
 - **useHeights ResizeObserver 节流**：现有 `promiseIdRef` 微任务护栏已把同帧多次 resize 回调合并为一次 `doCollect`；改 rAF 会给滚动关键路径的行高测量增加一帧延迟，得不偿失。
 - **sortData 脏检查**：它在 computed 链内，Vue 已提供记忆化；依赖变化时重排是语义要求。
 - **useSorter 列 watch 的 `deep: true`**：浅 watch 会丢"原地修改列数组"场景的 `defaultSortOrder` 初始化，语义风险大于收益。
-
-### 已调研，暂不落地（P0-1）
-
-把 selected/hovered 从 cell 解耦的目标成立，但**比预期复杂**，需要多处协同改造，不宜在本轮快速提交：
-
-| 场景 · 切换单行选中 | 原始    | 仅 props 解耦 | 仅值稳定 computed |
-| ------------------- | ------- | ------------- | ----------------- |
-| 非虚拟 1000 行      | 1423 ms | **821 ms**    | 1420 ms（无效）   |
-| 虚拟 10k 行         | 23.5 ms | 24 ms         | 28.8 ms           |
-
-实测结论与根因：
-
-1. **cell 只要订阅 `selectedKeySet`，选择变化就会重渲染**——即便把派生值改成「值稳定」的布尔 computed 也没用（1420 ms，几乎无改善）。唯有让 cell **完全不订阅**（改为父级行级算好后传 props）才跳过，非虚拟 1423 → 821 ms。
-2. 选择列 cell 还读了**受控 `rowSelection` 配置对象**，它在受控选择下每次变更都会被重建 → 选择列整列重渲染。
-3. props 解耦后仍剩 821 ms，来自父组件**重建全部行 vnode**；要消除需在行级加 `withMemo` 或把行抽成子组件靠 props bailout 跳过未变行（依赖项多、易遗漏 → 回归风险高）。
-
-因此 P0-1 的完整方案 = **props 解耦 + 行级 memo/子组件 bailout + 稳定 rowSelection 配置**，应作为独立、可评审的改动推进，并补 hover/选择的 INP trace 量化。
-
-> 注：虚拟模式（推荐用法）下单行选中仅 ~24 ms（dev，prod 约 1/3–1/5），已受 viewport 约束；上面的大数字集中在**非虚拟大表**（不推荐用法）与 dev 构建放大。真正影响推荐路径的是排序时**新可见行的整表 `<table>` 挂载成本** → 见 P0-2。
+- **把"每可见行一张 `<table>`"拆成共享单表**：这是常数因子（251 vs 185 DOM 节点），改动却要触碰列宽、合并单元格、固定列三条链路，而语义化 `<table>` 正是我们相对 el-table-v2 的差异化理由。在 P0/P1/P2 做完之前动它，是拿最高风险换最小收益。
 
 ## 性能预算（L4，待定）
 
@@ -218,23 +242,26 @@ pnpm perf:preview        # 必须是 production 构建；dev 会放大 3–5×
 
 ## 下一阶段优化点
 
-已定位的热点（用本套基准/演练台量化前后）：
+**已定位的热点**（用本套基准/演练台量化前后）：
 
-**P0**
+**明确不做（round-3 复核）**
 
-- 虚拟列表每可见行渲染整张 `<table>` + `<colgroup>` — `VirtualTableBody.tsx`。round-2 已做立即项（`scrollWidth` 提为 computed、树行查找 O(1) 化）；结构性改造（vendored VirtualList 的 Filler 支持自定义容器标签，行渲染 `<tr>` 共享单表）需配合视觉回归验证，作为独立 spike 推进，失败则回退并在此记录结论。
-- 行 / 单元格无 `v-memo`，局部状态变更（选择 / hover）触发全表 cell 的 computed 重算（见上方 P0-1 调研）。
+- **虚拟列表每可见行渲染整张 `<table>` + `<colgroup>`**：这是常数因子（251 vs 185 DOM 节点），改动却要触碰列宽、合并单元格、固定列三条链路，而语义化 `<table>` 正是我们相对 el-table-v2 / antdv-next 的差异化理由（它们表体都是 div）。在 round-3 把 O(n) 拿掉后，这项已从"应该优化"降为"不值得改"。
+- **行 / 单元格无 `v-memo`**：局部状态变更（选择 / hover）触发全表 cell 的 computed 重算。实测收益集中在**非虚拟大表**（不推荐用法）；虚拟模式下单行选中仅 ~24 ms（dev，prod 约 1/3–1/5），已受 viewport 约束。完整方案 = props 解耦 + 行级 memo/子组件 bailout + 稳定 rowSelection 配置，协同改造多、回归风险高。除非出现真实用户报告虚拟模式下的交互卡顿，否则不动。
 
-**P1**
+**候选（按需，有真实用户痛点时才做）**
 
-- 合并单元格 O(n×m) 预计算无条件执行，即使未配置 rowSpan/colSpan — `TableBody.tsx`。
+- **`TableBody.tsx` 的合并单元格 O(n×m) 预计算**：无条件执行，即使未配置 rowSpan/colSpan。应加守卫：`if (!hasSpanConfig) return rows`，或改为 computed 懒求值。
+- **排序后的下游重算**：10 万行排序 56ms（round-3），el-table-v2 43ms（它的数字已包含应用侧 `slice().sort()`）。差距可能来自排序后的 `processedData` 引用变化触发下游 computed 链，但收益空间有限（~13ms / 10 万行）且改动需触碰数据管道链路。
 
-**新增（来自 2026-08-03 三方对照）**
+**虚拟化算法对照（供架构评审参考，非待办项）**
 
-- **挂载期的 O(n) 预处理** — 虚拟模式下首次渲染仍随总行数增长（1k 12 ms → 10 万 131 ms），
-  而同为虚拟化的 el-table-v2 恒定在约 5 ms。可视行数恒定 12 行，说明成本不在渲染，
-  而在挂载时对**全量数据**做的一次性工作（候选：`rowMetaMap` / `selectableDescendantsMap`
-  之类的整表预建，以及数据管道 computed 的首次求值）。
-  下一步：用 `/perf` 页 + DevTools trace 定位这 131 ms 的具体归属，再决定是否值得改为惰性/分片构建。
-- **10 万行排序 133 ms vs el-table-v2 48 ms** — 后者含应用侧 `slice().sort()`，
-  说明差距不在排序算法本身，而在排序后的下游重算。与上面的 P0「行/单元格无 `v-memo`」同源。
+| 库                                    | 行高模型                         | scrollTop → 起始索引                                                  | 数据/尺寸变化时                                          | 每次滚动     |
+| ------------------------------------- | -------------------------------- | --------------------------------------------------------------------- | -------------------------------------------------------- | ------------ |
+| el-table-v2（定高）                   | 定高                             | `floor(scrollTop / rowHeight)`                                        | 无缓存可失效                                             | **O(1)**     |
+| el-table-v2（`estimated-row-height`） | 估算 + 实测                      | 缓存 offset + 二分，`resetAfterIndex` 增量失效                        | 从变更索引往后重算                                       | O(log n + v) |
+| **TanStack Virtual**                  | `estimateSize` + 可选实测        | `Float64Array` 存 `[start, size, ...]`，`findNearestBinarySearchFlat` | 只记一个 `pendingMin`（最早脏索引），重建 `[min, count)` | O(log n + v) |
+| **vtable-guild（round-3 后）**        | 估算 + 全量实测缓存 + 定高快路径 | 定高：O(1) 估算；不定高：`PrefixHeights` 增量 + 二分                  | 增量更新 `[index, end)`                                  | O(log n + v) |
+| rc-virtual-list / antdv-next（改前）  | 估算 + 全量实测缓存              | 每次重建全表前缀和再二分                                              | 全表重建                                                 | **O(n)**     |
+
+round-3 已把 vtable-guild 对齐到 TanStack / el-table-v2 的算法复杂度。剩余的 12ms vs 6.6ms 差距来自能力代价（不定行高支持的初始化开销），不是算法瓶颈。

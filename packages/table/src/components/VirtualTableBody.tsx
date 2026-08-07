@@ -1,6 +1,6 @@
 import { computed, defineComponent, inject, ref, watch } from 'vue'
 import type { CSSProperties, PropType } from 'vue'
-import { cn, VirtualList } from '@vtable-guild/core'
+import { cn, devWarn, VirtualList } from '@vtable-guild/core'
 import type { ListRef, VirtualScrollInfo } from '@vtable-guild/core'
 import TableRow from './TableRow'
 import TableCell from './TableCell'
@@ -31,6 +31,8 @@ export default defineComponent({
     },
     height: { type: Number, required: true },
     itemHeight: { type: Number, required: true },
+    /** 定高快路径开关，见 VTable 的 rowHeight prop */
+    fixedHeight: { type: Boolean, default: false },
     /** Sync header scroll when virtual body scrolls horizontally */
     onVirtualScroll: {
       type: Function as PropType<(info: VirtualTableScrollInfo) => void>,
@@ -80,6 +82,30 @@ export default defineComponent({
       return total
     })
 
+    /**
+     * 定高快路径的安全网：实测首行高度，与声明值不符就告警。
+     *
+     * 快路径下我们**不再测量**行高，声明错了不会报错，只会表现为行错位或空隙——
+     * 这种失败很难归因。所以在 dev 构建里主动测一次，把静默错误变成显式提示。
+     * 生产构建整段跳过，不产生强制回流。
+     */
+    function verifyFixedRowHeight(el: HTMLElement | undefined) {
+      if (import.meta.env?.PROD || !props.fixedHeight || !el) return
+      requestAnimationFrame(() => {
+        const row = el.querySelector('tbody tr') as HTMLElement | null
+        if (!row) return
+        const actual = row.offsetHeight
+        if (actual > 0 && Math.abs(actual - props.itemHeight) > 1) {
+          devWarn(
+            'vtable-row-height-mismatch',
+            `[VTable] rowHeight 声明为 ${props.itemHeight}px，但实测首行为 ${actual}px。` +
+              `定高快路径依赖两者一致，不一致会导致行错位或滚动位置偏移。` +
+              `请改正 rowHeight，或去掉该 prop 回到实测路径（支持不定行高）。`,
+          )
+        }
+      })
+    }
+
     // Update scroll state (for fixed column shadows) when VirtualList scrolls
     watch(
       () => virtualListRef.value,
@@ -88,6 +114,7 @@ export default defineComponent({
           // Trigger initial scroll state update
           const info = ref.getScrollInfo()
           emitVirtualScroll(info)
+          verifyFixedRowHeight(ref.nativeElement)
         }
       },
     )
@@ -116,6 +143,7 @@ export default defineComponent({
           itemHeight={props.itemHeight}
           itemKey={itemKey}
           scrollWidth={scrollWidth.value || undefined}
+          disableHeightMeasure={props.fixedHeight}
           fullHeight={false}
           onVirtualScroll={emitVirtualScroll}
           showScrollBar={props.showScrollBar}
@@ -141,7 +169,12 @@ export default defineComponent({
               const canExpand = tableContext.isRowExpandable?.(item) ?? false
               const rowClassName = tableContext.getRowClassName?.(item, rIndex)
               const rowProps = tableContext.getRowProps?.(item, rIndex)
-              const treeRow = tableContext.getFlattenRow?.(item)
+              // 必须先判 isTreeData：getFlattenRow 会读 rowMetaMap → 强制求值 flattenData，
+              // 而非树数据下 flattenData 是 data.map(...)，10 万行就是 10 万个对象 + 10 万项 Map。
+              // 挂载与每次排序（processedData 换引用）各付一次，是虚拟模式挂载随行数增长的主因。
+              const treeRow = tableContext.isTreeData?.value
+                ? tableContext.getFlattenRow?.(item)
+                : undefined
               const rowIndent = treeRow?.level ?? 0
               const expandedRowClassName =
                 typeof exp?.expandedRowClassName === 'function'

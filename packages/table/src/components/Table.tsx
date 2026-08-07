@@ -262,6 +262,15 @@ export default defineComponent({
       default: undefined,
     },
     virtual: { type: Boolean, default: false },
+    /**
+     * 固定行高（px），仅在 `virtual` 下生效。
+     *
+     * 声明后表格进入**定高快路径**：跳过全部行高测量，可视区计算恒为 O(1)，
+     * 挂载与滚动不再随总行数增长。前提是每行实际高度确实等于该值——
+     * 若行内有换行文本、`ellipsis: false` 的长内容或自定义高度渲染，请**不要**传，
+     * 交给默认的实测路径。dev 构建会实测首行并在不符时告警。
+     */
+    rowHeight: { type: Number, default: undefined },
     childrenColumnName: { type: String, default: undefined },
     indentSize: { type: Number, default: undefined },
     expandedRowKeys: {
@@ -676,10 +685,12 @@ export default defineComponent({
       enabled: virtualEnabled,
       itemHeight: virtualItemHeight,
       listHeight: virtualListHeight,
+      fixedHeight: virtualFixedHeight,
     } = useVirtual({
       virtual: () => props.virtual,
       scrollY: () => props.scroll?.y,
       size: () => props.size,
+      rowHeight: () => props.rowHeight,
     })
 
     const hasPotentialBodySpan = computed(() =>
@@ -1065,6 +1076,7 @@ export default defineComponent({
             rowKey={props.rowKey}
             height={virtualListHeight.value}
             itemHeight={virtualItemHeight.value}
+            fixedHeight={virtualFixedHeight.value}
             showScrollBar="hover"
             onVirtualScroll={(info) => {
               syncHorizontalScroll(info.x, info.maxX)

@@ -13,7 +13,11 @@
   "dependencies": {
     "@vtable-guild/vtable-guild": "workspace:*",
     "ant-design-vue": "^4.2.6",
+    "antdv-next": "^1.4.6",
     "element-plus": "^2.9.0",
-    "vue": "^3.5.0"
+    "vue": "^3.5.0",
+    "vxe-pc-ui": "^4.16.27",
+    "vxe-table": "^4.20.10",
+    "xe-utils": "^4.0.12"
   }
 }

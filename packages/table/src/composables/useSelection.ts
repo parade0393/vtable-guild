@@ -65,6 +65,13 @@ function flattenSelectionNodes<TRecord extends Record<string, unknown>>(options:
   return nodes
 }
 
+/**
+ * checkStrictly 模式下不存在父子联动，`childrenKeys` 恒为空且永不被写入
+ * （只有树模式的 walk 会 push）。共享同一个冻结空数组，
+ * 把每行两次分配降为一次——10 万行时这是 10 万个数组的差别。
+ */
+const EMPTY_CHILDREN_KEYS: readonly Key[] = Object.freeze([])
+
 function flattenStrictSelectionNodes<TRecord extends Record<string, unknown>>(options: {
   data: TRecord[]
   getRowKey: (record: TRecord, index: number) => Key
@@ -74,7 +81,7 @@ function flattenStrictSelectionNodes<TRecord extends Record<string, unknown>>(op
     record,
     index,
     level: 0,
-    childrenKeys: [],
+    childrenKeys: EMPTY_CHILDREN_KEYS as Key[],
   }))
 }
 
@@ -104,8 +111,18 @@ export function useSelection<TRecord extends Record<string, unknown>>(
 
   const isTreeSelectionEnabled = computed(() => rowSelection()?.checkStrictly === false)
 
-  const allNodes = computed(() =>
-    isTreeSelectionEnabled.value
+  /**
+   * 没配 `rowSelection` 时不建任何节点。
+   *
+   * 这不是微优化：下面那个 `immediate: true` 的 watch 直接以 allNodes 为源，
+   * watch 源会被立即求值，所以**未启用行选择的表格也会**在挂载时
+   * 为每一行建一个节点对象，并在每次数据变化（含排序）时重建。
+   * 10 万行下这是数十毫秒的纯浪费。rowSelection 是响应式读取，
+   * 后续动态启用会正常重算。
+   */
+  const allNodes = computed(() => {
+    if (!rowSelection()) return []
+    return isTreeSelectionEnabled.value
       ? flattenSelectionNodes({
           data: data(),
           childrenColumnName: childrenColumnName?.() ?? 'children',
@@ -114,8 +131,8 @@ export function useSelection<TRecord extends Record<string, unknown>>(
       : flattenStrictSelectionNodes({
           data: data(),
           getRowKey,
-        }),
-  )
+        })
+  })
 
   const nodeMap = computed(() => {
     const map = new Map<Key, SelectionNode<TRecord>>()
@@ -205,6 +222,9 @@ export function useSelection<TRecord extends Record<string, unknown>>(
     [allNodes, () => rowSelection()?.preserveSelectedRowKeys],
     () => {
       if (isControlled() || rowSelection()?.preserveSelectedRowKeys) return
+      // 没有已选中的 key 就无从裁剪——直接跳过整表 Set 构建。
+      // 覆盖两种常见情况：未启用行选择，以及启用了但用户还没选。
+      if (innerSelectedKeys.value.size === 0) return
 
       const currentKeys = new Set(allNodes.value.map((node) => node.key))
       const nextKeys = new Set(

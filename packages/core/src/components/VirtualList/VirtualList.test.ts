@@ -103,6 +103,42 @@ describe('VirtualList', () => {
     expect(visibleRows.length).toBeLessThan(20)
   })
 
+  it('skips all row measurement when disableHeightMeasure is set', async () => {
+    const data = Array.from({ length: 10000 }, (_, key) => ({ key }))
+
+    async function mountAndCountObservedElements(disableHeightMeasure: boolean) {
+      const observers = installResizeObserverMock()
+      const wrapper = mount(VirtualList, {
+        props: { data, height: 120, itemHeight: 20, itemKey: 'key', disableHeightMeasure },
+        slots: {
+          default: ({ index }: { index: number }) => h('div', { class: 'row' }, String(index)),
+        },
+        attachTo: document.body,
+      })
+      await flushVirtualList()
+
+      await (wrapper.vm as unknown as ListRef).scrollTo(4000)
+      await flushVirtualList()
+
+      const visibleRows = wrapper.findAll('.row').map((row) => Number(row.text()))
+      wrapper.unmount()
+      return { observerCount: observers.length, visibleRows }
+    }
+
+    const measured = await mountAndCountObservedElements(false)
+    const fixed = await mountAndCountObservedElements(true)
+
+    // 实测路径有三个 ResizeObserver：容器、Filler、以及 useHeights 的逐行测量器。
+    // 快路径下第三个**根本不被创建**——这是判据：没有测量就没有 heights 缓存，
+    // 可视区计算永远走 O(1) 估算分支，不再每次滚动重建整表前缀和。
+    expect(measured.observerCount).toBe(3)
+    expect(fixed.observerCount).toBe(2)
+
+    // 而且快路径必须给出与实测路径一致的可视区，不能为了快而算错。
+    expect(fixed.visibleRows[0]).toBe(200)
+    expect(fixed.visibleRows).toEqual(measured.visibleRows)
+  })
+
   it('disconnects holder resize observer on unmount', async () => {
     const observers = installResizeObserverMock()
     const data = Array.from({ length: 5 }, (_, key) => ({ key }))

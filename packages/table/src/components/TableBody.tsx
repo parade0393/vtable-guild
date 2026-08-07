@@ -104,9 +104,12 @@ export default defineComponent({
             const isExpanded = tableContext.isExpanded?.(key) ?? false
             const expandRowByClick = exp?.expandRowByClick ?? false
             const canExpand = tableContext.isRowExpandable?.(record) ?? false
-            const treeRow = tableContext.treeFlattenData?.value?.find(
-              (row) => row.record === record,
-            )
+            // 同 VirtualTableBody：先判 isTreeData 再查表。
+            // 原实现是每行一次 treeFlattenData.find()，非虚拟路径下整表 O(n²)，
+            // 且非树数据也会强制求值 flattenData。
+            const treeRow = tableContext.isTreeData?.value
+              ? tableContext.getFlattenRow?.(record)
+              : undefined
             const rowIndent = treeRow?.level ?? 0
             const rowClassName = tableContext.getRowClassName?.(record, rowIndex)
             const rowProps = tableContext.getRowProps?.(record, rowIndex)
