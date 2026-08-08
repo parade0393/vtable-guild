@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import { TableV2 } from 'element-plus'
 import 'element-plus/es/components/table-v2/style/css'
 
-import { PERF_COLUMNS, ROW_HEIGHT, TABLE_WIDTH, VIEWPORT_HEIGHT } from '../columns'
+import { buildColumns, hostWidth, ROW_HEIGHT, VIEWPORT_HEIGHT } from '../columns'
 import { sortRowsByScore, type PerfRow } from '../data'
 import { findScroller } from '../utils/dom'
 import type { SortOrderLike, SubjectProps } from './types'
@@ -14,15 +14,17 @@ const hostRef = ref<HTMLElement | null>(null)
 const sortOrder = ref<SortOrderLike>(null)
 
 const columns = computed(() =>
-  PERF_COLUMNS.map((c) => ({
+  buildColumns(props.columnCount).map((c) => ({
     key: c.key,
-    dataKey: c.key,
+    dataKey: c.dataKey,
     title: c.title,
     width: c.width,
     align: c.align ?? 'left',
     sortable: c.sortable,
   })),
 )
+
+const width = computed(() => hostWidth(props.columnCount))
 
 /**
  * el-table-v2 **不内置排序**，只 emit `column-sort`，数据要应用侧自己排。
@@ -60,12 +62,12 @@ const totalHeight = VIEWPORT_HEIGHT + ROW_HEIGHT
 </script>
 
 <template>
-  <div ref="hostRef" class="subject-host" :style="{ width: `${TABLE_WIDTH}px` }">
+  <div ref="hostRef" class="subject-host" :style="{ width: `${width}px` }">
     <!-- 必须显式定高：el-table-v2 只支持定高行，这也是行高对齐的落点 -->
     <TableV2
       :columns="columns as any"
       :data="rows"
-      :width="TABLE_WIDTH"
+      :width="width"
       :height="totalHeight"
       :row-height="ROW_HEIGHT"
       :header-height="ROW_HEIGHT"

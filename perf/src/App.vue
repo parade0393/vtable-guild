@@ -2,7 +2,9 @@
 import { computed, markRaw, nextTick, onBeforeUnmount, ref, shallowRef, useTemplateRef } from 'vue'
 
 import {
-  ANTDV_GUARD_ROWS,
+  ANTDV_GUARD_CELLS,
+  COLUMN_COUNTS,
+  EXTRA_COLUMN_WIDTH,
   PERF_COLUMNS,
   ROW_COUNTS,
   ROW_HEIGHT,
@@ -10,7 +12,9 @@ import {
   SUBJECT_LABELS,
   TABLE_WIDTH,
   VIEWPORT_HEIGHT,
+  VIEWPORT_WIDTH,
   formatRowCount,
+  tableWidth,
   type SubjectId,
 } from './columns'
 import { ensureRows, getRows } from './data'
@@ -36,7 +40,7 @@ import {
   type ScenarioStats,
 } from './results'
 import type { SubjectExposed } from './subjects/types'
-import { measureRowHeight } from './utils/dom'
+import { countRenderedColumns, measureRowHeight } from './utils/dom'
 import EnvPanel from './components/EnvPanel.vue'
 import ResultTable from './components/ResultTable.vue'
 
@@ -52,6 +56,7 @@ const env = collectEnv()
 
 const subject = ref<SubjectId>('vtable-guild')
 const rowCount = ref<number>(ROW_COUNTS[0])
+const columnCount = ref<number>(COLUMN_COUNTS[0])
 const subjectComponent = shallowRef<unknown>(null)
 const mounted = ref(false)
 const mountKey = ref(0)
@@ -77,8 +82,11 @@ onBeforeUnmount(() => {
 
 const rows = computed(() => getRows(rowCount.value))
 
+/** 当前档位会进 DOM 的单元格总数——antdv 4.x 护栏按它判定。 */
+const cellCount = computed(() => rowCount.value * columnCount.value)
+
 const needsAntdvGuard = computed(
-  () => subject.value === 'antdv' && rowCount.value > ANTDV_GUARD_ROWS,
+  () => subject.value === 'antdv' && cellCount.value > ANTDV_GUARD_CELLS,
 )
 
 const loaders: Record<SubjectId, () => Promise<{ default: unknown }>> = {
@@ -139,8 +147,8 @@ async function runBatch(): Promise<void> {
   if (needsAntdvGuard.value) {
     const ok = window.confirm(
       `ant-design-vue Table 4.x 没有虚拟滚动。\n\n` +
-        `${rowCount.value.toLocaleString()} 行 × ${PERF_COLUMNS.length} 列 ≈ ` +
-        `${(rowCount.value * PERF_COLUMNS.length).toLocaleString()} 个单元格会全部进 DOM，` +
+        `${rowCount.value.toLocaleString()} 行 × ${columnCount.value} 列 ≈ ` +
+        `${cellCount.value.toLocaleString()} 个单元格会全部进 DOM，` +
         `标签页可能长时间无响应甚至崩溃。\n\n这正是对照要呈现的事实。确认继续？`,
     )
     if (!ok) return
@@ -187,7 +195,7 @@ async function runBatch(): Promise<void> {
     for (let run = 0; run < totalRuns; run++) {
       const measured = run >= WARMUP_RUNS
       const label = measured ? `第 ${run - WARMUP_RUNS + 1}/${MEASURED_RUNS} 轮` : '预热轮'
-      progress.value = `${SUBJECT_LABELS[subject.value]} · ${formatRowCount(rowCount.value)}行 · ${label} · 首次渲染 …`
+      progress.value = `${SUBJECT_LABELS[subject.value]} · ${formatRowCount(rowCount.value)}行 × ${columnCount.value}列 · ${label} · 首次渲染 …`
 
       await unmountSubject()
 
@@ -270,6 +278,7 @@ async function runBatch(): Promise<void> {
     const rowSelector = exposed()?.rowSelector ?? 'tr'
     const rowHeight = measureRowHeight(hostRef.value, rowSelector)
     const renderedRows = hostRef.value?.querySelectorAll(rowSelector).length ?? 0
+    const renderedColumns = countRenderedColumns(hostRef.value, rowSelector)
 
     /**
      * 内存测的是**挂载增量**，不是会话堆总量。
@@ -302,11 +311,13 @@ async function runBatch(): Promise<void> {
     const entry: RunResult = {
       subject: subject.value,
       rowCount: rowCount.value,
+      columnCount: columnCount.value,
       status: aborted ? 'aborted' : 'ok',
       note,
       scenarios,
       domNodes,
       renderedRows,
+      renderedColumns,
       memoryBytes,
       memorySource: after.source,
       rowHeight,
@@ -315,7 +326,10 @@ async function runBatch(): Promise<void> {
     }
 
     const idx = results.value.findIndex(
-      (r) => r.subject === entry.subject && r.rowCount === entry.rowCount,
+      (r) =>
+        r.subject === entry.subject &&
+        r.rowCount === entry.rowCount &&
+        r.columnCount === entry.columnCount,
     )
     if (idx >= 0) results.value.splice(idx, 1, entry)
     else results.value.push(entry)
@@ -352,6 +366,7 @@ async function measureRealInteraction(scenario: ScenarioId): Promise<void> {
     interactions.value.push({
       subject: subject.value,
       rowCount: rowCount.value,
+      columnCount: columnCount.value,
       scenario,
       sample,
     })
@@ -366,7 +381,8 @@ async function mountCurrent(): Promise<void> {
   if (busy.value) return
   if (needsAntdvGuard.value) {
     const ok = window.confirm(
-      `ant-design-vue Table 4.x 没有虚拟滚动，${rowCount.value.toLocaleString()} 行会全部进 DOM，` +
+      `ant-design-vue Table 4.x 没有虚拟滚动，${rowCount.value.toLocaleString()} 行 × ` +
+        `${columnCount.value} 列 ≈ ${cellCount.value.toLocaleString()} 个单元格会全部进 DOM，` +
         `标签页可能长时间无响应。确认继续？`,
     )
     if (!ok) return
@@ -396,6 +412,13 @@ async function selectSubject(id: SubjectId): Promise<void> {
 async function selectRowCount(n: number): Promise<void> {
   if (busy.value) return
   rowCount.value = n
+  await unmountSubject()
+  progress.value = ''
+}
+
+async function selectColumnCount(n: number): Promise<void> {
+  if (busy.value) return
+  columnCount.value = n
   await unmountSubject()
   progress.value = ''
 }
@@ -467,10 +490,31 @@ function clearResults(): void {
         </button>
       </div>
 
+      <p class="perf-group-label">列数</p>
+      <div class="perf-toolbar">
+        <button
+          v-for="n in COLUMN_COUNTS"
+          :key="n"
+          type="button"
+          :disabled="busy"
+          :class="columnCount === n ? 'perf-btn perf-btn--solid' : 'perf-btn'"
+          @click="selectColumnCount(n)"
+        >
+          {{ n }}列
+        </button>
+      </div>
+
+      <p v-if="columnCount > PERF_COLUMNS.length" class="perf-note">
+        宽表档：列总宽 {{ tableWidth(columnCount).toLocaleString() }}px，可视区夹到
+        <strong>{{ VIEWPORT_WIDTH }}px</strong>，超出部分由表格自己横向滚动。 对照的是
+        antdv-next#427 那类「列多到卡死」的场景——结果表里的
+        <strong>可视列数</strong>一列就是判据：等于 {{ columnCount }} 说明该库
+        <strong>没有横向虚拟化</strong>。
+      </p>
+
       <p v-if="needsAntdvGuard" class="perf-note perf-note--warn">
         ⚠ ant-design-vue Table 4.x 没有虚拟滚动：{{ rowCount.toLocaleString() }} 行 ×
-        {{ PERF_COLUMNS.length }} 列 ≈
-        {{ (rowCount * PERF_COLUMNS.length).toLocaleString() }} 个单元格会全部进
+        {{ columnCount }} 列 ≈ {{ cellCount.toLocaleString() }} 个单元格会全部进
         DOM。点击运行时会二次确认。
       </p>
     </section>
@@ -600,6 +644,7 @@ function clearResults(): void {
           :key="mountKey"
           ref="subjectInstance"
           :rows="rows"
+          :column-count="columnCount"
         />
         <p v-else class="perf-placeholder">未挂载。点「批量跑分」或「仅挂载」。</p>
       </div>
@@ -616,9 +661,29 @@ function clearResults(): void {
           <code>Math.random()</code>——随机数会让排序命中「已有序」最优路径。
         </li>
         <li>
-          6 列<strong>全部定宽</strong>（{{
+          基准档 6 列<strong>全部定宽</strong>（{{
             PERF_COLUMNS.map((c) => `${c.title} ${c.width}`).join(' / ')
-          }}， 合计 {{ TABLE_WIDTH }}px）。el-table-v2 不支持 flex 宽度，为对齐另两家也全部定宽。
+          }}， 合计 {{ TABLE_WIDTH }}px）。el-table-v2 不支持 flex 宽度，为对齐各家也全部定宽。
+        </li>
+        <li>
+          <strong>列数维度</strong>：50/200 列档在 6 个基础列之后追加合成列（每列
+          {{ EXTRA_COLUMN_WIDTH }}px，与 antdv-next#427 的复现用例一致）。
+          合成列<strong>轮流复用</strong>那 6 个数据字段，不新建字段——单元格取值来自
+          <code>row.city</code> 还是 <code>row.col_37</code> 对渲染开销没有可测量的影响， 而真给 10
+          万行各配 200 个字段会产生约 1GB 常驻数据，GC 压力反过来会污染 内存与 longtask
+          读数。复用还保证了所有列数档吃到<strong>同一个数组引用</strong>， 唯一的自变量就是列数。
+        </li>
+        <li>
+          <strong>宿主宽度必须夹住</strong>：宿主若按列总宽撑开（200 列约
+          {{ tableWidth(200).toLocaleString() }}px），表格内部就不会横向滚动，各家只是把
+          全宽画出来——那测的不是横向虚拟化。所以宽表档把可视区夹到 {{ VIEWPORT_WIDTH }}px。6
+          列档总宽 {{ TABLE_WIDTH }}px 小于它，宿主宽度与加
+          列数维度之前<strong>完全一致</strong>，历史数字不受影响。
+        </li>
+        <li>
+          vxe-table 的 <code>scroll-x</code> 与 <code>scroll-y</code>
+          都<strong>显式打开</strong>。它是这几家里唯一内置横向虚拟滚动的，
+          不打开就等于藏掉它在宽表档的看家本领，对照会系统性地对它不利。
         </li>
         <li>
           可视区高度统一 <strong>{{ VIEWPORT_HEIGHT }}px</strong>，行高统一
@@ -688,6 +753,12 @@ function clearResults(): void {
 
       <h3>已知的不对等与取舍</h3>
       <ul>
+        <li>
+          <strong>宽表档不测固定列</strong>：antdv-next#427 的复现用例带 2 个左固定 + 1
+          个右固定列，这里刻意不加。固定列的 sticky 定位开销会和列数开销混在一起， 而且各家固定列
+          API 差异很大，加进来会同时引入混淆变量与不对等。 先把「列数 →
+          渲染开销」这条主轴测干净，固定列留作后续单独一档。
+        </li>
         <li>
           <strong>不测筛选与行选择</strong>：三家 API 差异过大（el-table-v2 两者都没有内置），
           硬测只是凑数。

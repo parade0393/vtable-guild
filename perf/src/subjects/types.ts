@@ -2,9 +2,11 @@ import type { PerfRow } from '../data'
 
 export type SortOrderLike = 'ascend' | 'descend' | null
 
-/** 三个被测组件共用的 props 契约。 */
+/** 各被测组件共用的 props 契约。 */
 export interface SubjectProps {
   rows: PerfRow[]
+  /** 列数档位。组件必须用 `buildColumns(columnCount)` 派生列配置。 */
+  columnCount: number
 }
 
 /** 三个被测组件共用的命令式 API（defineExpose）。 */

@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import { Table } from 'ant-design-vue'
 import type { TableColumnsType } from 'ant-design-vue'
 
-import { PERF_COLUMNS, TABLE_WIDTH, VIEWPORT_HEIGHT } from '../columns'
+import { buildColumns, hostWidth, tableWidth, VIEWPORT_HEIGHT } from '../columns'
 import { compareScore } from '../data'
 import { findScroller } from '../utils/dom'
 import type { SortOrderLike, SubjectProps } from './types'
@@ -17,9 +17,9 @@ const sortOrder = ref<SortOrderLike>(null)
 // 这里刻意**不引** `ant-design-vue/dist/reset.css`——它是 unlayered 的，
 // 会按 CSS Cascade Layers 规范压过所有 layer 内规则（README 有完整记录）。
 const columns = computed<TableColumnsType>(() =>
-  PERF_COLUMNS.map((c) => ({
+  buildColumns(props.columnCount).map((c) => ({
     title: c.title,
-    dataIndex: c.key,
+    dataIndex: c.dataKey,
     key: c.key,
     width: c.width,
     align: c.align,
@@ -30,6 +30,9 @@ const columns = computed<TableColumnsType>(() =>
       : {}),
   })),
 )
+
+const width = computed(() => hostWidth(props.columnCount))
+const scrollX = computed(() => tableWidth(props.columnCount))
 
 defineExpose({
   sort(order: SortOrderLike) {
@@ -45,13 +48,13 @@ defineExpose({
 </script>
 
 <template>
-  <div ref="hostRef" class="subject-host" :style="{ width: `${TABLE_WIDTH}px` }">
+  <div ref="hostRef" class="subject-host" :style="{ width: `${width}px` }">
     <!-- antdv 4.x 无虚拟滚动：所有行都会进 DOM，这正是对照要呈现的事实 -->
     <Table
       :columns="columns"
       :data-source="props.rows as unknown as Record<string, unknown>[]"
       :pagination="false"
-      :scroll="{ y: VIEWPORT_HEIGHT }"
+      :scroll="{ x: scrollX, y: VIEWPORT_HEIGHT }"
       size="middle"
       row-key="key"
       bordered

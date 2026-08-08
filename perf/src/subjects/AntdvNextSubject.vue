@@ -14,7 +14,7 @@ import { computed, ref } from 'vue'
 import { Table } from 'antdv-next'
 import type { TableProps } from 'antdv-next'
 
-import { PERF_COLUMNS, TABLE_WIDTH, VIEWPORT_HEIGHT } from '../columns'
+import { buildColumns, hostWidth, tableWidth, VIEWPORT_HEIGHT } from '../columns'
 import { compareScore, type PerfRow } from '../data'
 import { findScroller } from '../utils/dom'
 import type { SortOrderLike, SubjectProps } from './types'
@@ -26,9 +26,9 @@ const sortOrder = ref<SortOrderLike>(null)
 
 // 与 AntdvSubject 同理：cssinjs 运行时注入样式，刻意不引 unlayered 的 reset.css。
 const columns = computed<TableProps['columns']>(() =>
-  PERF_COLUMNS.map((c) => ({
+  buildColumns(props.columnCount).map((c) => ({
     title: c.title,
-    dataIndex: c.key,
+    dataIndex: c.dataKey,
     key: c.key,
     width: c.width,
     align: c.align,
@@ -39,6 +39,9 @@ const columns = computed<TableProps['columns']>(() =>
       : {}),
   })),
 )
+
+const width = computed(() => hostWidth(props.columnCount))
+const scrollX = computed(() => tableWidth(props.columnCount))
 
 defineExpose({
   sort(order: SortOrderLike) {
@@ -59,16 +62,17 @@ defineExpose({
 </script>
 
 <template>
-  <div ref="hostRef" class="subject-host" :style="{ width: `${TABLE_WIDTH}px` }">
+  <div ref="hostRef" class="subject-host" :style="{ width: `${width}px` }">
     <!--
-      虚拟滚动需要同时给 scroll.x 与 scroll.y：x 用于让它按定宽列布局，
-      与另外三家的 860px 总宽一致。
+      虚拟滚动需要同时给 scroll.x 与 scroll.y：x 是列总宽，宿主被夹到可视区宽度后，
+      超出部分由表格自己横向滚动。它只虚拟化行、不虚拟化列——这正是
+      antdv-next#427 的成因，宽表档要看的就是这一点。
     -->
     <Table
       :columns="columns"
       :data-source="props.rows as unknown as PerfRow[]"
       :pagination="false"
-      :scroll="{ x: TABLE_WIDTH, y: VIEWPORT_HEIGHT }"
+      :scroll="{ x: scrollX, y: VIEWPORT_HEIGHT }"
       :virtual="true"
       size="middle"
       row-key="key"

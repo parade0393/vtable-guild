@@ -34,3 +34,18 @@ export function measureRowHeight(host: Element | null, rowSelector: string): num
   const delta = Math.abs(second.getBoundingClientRect().top - first.getBoundingClientRect().top)
   return delta > 0 ? delta : first.getBoundingClientRect().height
 }
+
+/**
+ * 数首个可见行里实际渲染了多少个单元格，即「可视列数」。
+ *
+ * 宽表档的核心判据：等于列数 = 没有横向虚拟化，明显小于列数 = 列也被虚拟化了。
+ *
+ * 用「行元素的直接子节点数」而不是各家的单元格选择器——各家的类名完全不同
+ * （`td` / `.ant-table-cell` / `.el-table-v2__row-cell` / `.vxe-body--column`），
+ * 但单元格都是行元素的直接子节点，数子节点是唯一跨库都成立的口径。
+ */
+export function countRenderedColumns(host: Element | null, rowSelector: string): number {
+  if (!host) return 0
+  const first = host.querySelector<HTMLElement>(rowSelector)
+  return first ? first.childElementCount : 0
+}

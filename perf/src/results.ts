@@ -36,6 +36,8 @@ export interface ScenarioStats {
 export interface RunResult {
   subject: SubjectId
   rowCount: number
+  /** 列数档位。宽表档的数字与 6 列基准档不可直接比，必须连同它一起读。 */
+  columnCount: number
   status: 'ok' | 'aborted'
   /** status 非 ok 时说明原因；ok 时也可能带备注（例如护栏提示）。 */
   note?: string
@@ -43,6 +45,13 @@ export interface RunResult {
   domNodes: number
   /** 可视区实际渲染的行数——和实测行高一起，构成公平性契约的对外校验口。 */
   renderedRows: number
+  /**
+   * 首个可见行里实际渲染的单元格数，即「可视列数」。
+   *
+   * 宽表档的核心判据：它等于列数就说明该库没有横向虚拟化，
+   * 明显小于列数才说明列也被虚拟化了。和 DOM 节点数一样是零噪声的事实。
+   */
+  renderedColumns: number
   memoryBytes: number | null
   memorySource: MemorySource
   /** 实测行高，用于校验公平性契约是否真的成立。 */
@@ -55,6 +64,7 @@ export interface RunResult {
 export interface InteractionResult {
   subject: SubjectId
   rowCount: number
+  columnCount: number
   scenario: ScenarioId
   sample: InteractionSample
 }
@@ -113,38 +123,59 @@ export function toMarkdown(
     lines.push('')
   }
 
-  const byCount = new Map<number, RunResult[]>()
+  // 按「行数 × 列数」分组：宽表档与基准档的数字不能混在同一张表里读。
+  const byShape = new Map<string, { rowCount: number; columnCount: number; list: RunResult[] }>()
   for (const r of results) {
-    const list = byCount.get(r.rowCount) ?? []
-    list.push(r)
-    byCount.set(r.rowCount, list)
+    const key = `${r.rowCount}x${r.columnCount}`
+    const group = byShape.get(key) ?? {
+      rowCount: r.rowCount,
+      columnCount: r.columnCount,
+      list: [] as RunResult[],
+    }
+    group.list.push(r)
+    byShape.set(key, group)
   }
 
-  for (const [rowCount, list] of [...byCount.entries()].sort((a, b) => a[0] - b[0])) {
-    lines.push(`### ${formatRowCount(rowCount)}行（${rowCount.toLocaleString()}）`)
+  const groups = [...byShape.values()].sort(
+    (a, b) => a.columnCount - b.columnCount || a.rowCount - b.rowCount,
+  )
+
+  for (const { rowCount, columnCount, list } of groups) {
+    lines.push(
+      `### ${formatRowCount(rowCount)}行 × ${columnCount}列` +
+        `（${(rowCount * columnCount).toLocaleString()} 单元格）`,
+    )
     lines.push('')
     lines.push(
       '| 库 | ' +
         SCENARIOS.map((s) => s.label).join(' | ') +
-        ' | DOM 节点数 | 可视行数 | 内存增量 |',
+        ' | DOM 节点数 | 可视行数 | 可视列数 | 内存增量 |',
     )
-    lines.push('| --- | ' + SCENARIOS.map(() => '---').join(' | ') + ' | --- | --- | --- |')
+    lines.push('| --- | ' + SCENARIOS.map(() => '---').join(' | ') + ' | --- | --- | --- | --- |')
     for (const r of list) {
       if (r.status === 'aborted') {
         lines.push(
           `| ${SUBJECT_LABELS[r.subject]} | ` +
             SCENARIOS.map(() => '未完成').join(' | ') +
-            ` | — | — | — |`,
+            ` | — | — | — | — |`,
         )
         continue
       }
       lines.push(
         `| ${SUBJECT_LABELS[r.subject]} | ` +
           SCENARIOS.map((s) => statCell(r.scenarios[s.id], r.frameHealth.throttled)).join(' | ') +
-          ` | ${r.domNodes.toLocaleString()} | ${r.renderedRows.toLocaleString()} | ${formatBytes(r.memoryBytes)} |`,
+          ` | ${r.domNodes.toLocaleString()} | ${r.renderedRows.toLocaleString()}` +
+          ` | ${r.renderedColumns.toLocaleString()} | ${formatBytes(r.memoryBytes)} |`,
       )
     }
     lines.push('')
+    if (columnCount > 6) {
+      lines.push(
+        `> 「可视列数」是这一档的关键列：它等于列数（${columnCount}）就说明该库**没有横向虚拟化**，` +
+          '明显小于列数才说明列也被虚拟化了。',
+      )
+      lines.push('')
+    }
     const notes = list.filter((r) => r.note)
     for (const r of notes) {
       lines.push(`> ${SUBJECT_LABELS[r.subject]}：${r.note}`)
@@ -160,13 +191,13 @@ export function toMarkdown(
         '`interactionId`，程序化触发拿不到，所以这一节与上面的批量口径不同。',
     )
     lines.push('')
-    lines.push('| 库 | 行数 | 场景 | 总延迟 | input / processing / presentation |')
+    lines.push('| 库 | 规模 | 场景 | 总延迟 | input / processing / presentation |')
     lines.push('| --- | --- | --- | --- | --- |')
     for (const i of interactions) {
       const s = i.sample
       const label = SCENARIOS.find((x) => x.id === i.scenario)?.label ?? i.scenario
       lines.push(
-        `| ${SUBJECT_LABELS[i.subject]} | ${i.rowCount.toLocaleString()} | ${label} | ` +
+        `| ${SUBJECT_LABELS[i.subject]} | ${i.rowCount.toLocaleString()}×${i.columnCount} | ${label} | ` +
           `${fmt(s.durationMs)} ms | ${fmt(s.inputDelayMs)} / ${fmt(s.processingMs)} / ${fmt(s.presentationMs)} ms |`,
       )
     }

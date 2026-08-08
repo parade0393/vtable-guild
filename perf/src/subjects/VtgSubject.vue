@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import { VTable } from '@vtable-guild/vtable-guild'
 import type { ColumnsType, SortOrder } from '@vtable-guild/vtable-guild'
 
-import { PERF_COLUMNS, TABLE_WIDTH, VIEWPORT_HEIGHT } from '../columns'
+import { buildColumns, hostWidth, tableWidth, VIEWPORT_HEIGHT } from '../columns'
 import { compareScore, type PerfRow } from '../data'
 import { findScroller } from '../utils/dom'
 import type { SortOrderLike, SubjectProps } from './types'
@@ -14,9 +14,9 @@ const hostRef = ref<HTMLElement | null>(null)
 const sortOrder = ref<SortOrder>(null)
 
 const columns = computed<ColumnsType<PerfRow>>(() =>
-  PERF_COLUMNS.map((c) => ({
+  buildColumns(props.columnCount).map((c) => ({
     title: c.title,
-    dataIndex: c.key,
+    dataIndex: c.dataKey,
     key: c.key,
     width: c.width,
     align: c.align,
@@ -24,6 +24,9 @@ const columns = computed<ColumnsType<PerfRow>>(() =>
     ...(c.sortable ? { sorter: compareScore, sortOrder: sortOrder.value } : {}),
   })),
 )
+
+const width = computed(() => hostWidth(props.columnCount))
+const scrollX = computed(() => tableWidth(props.columnCount))
 
 defineExpose({
   sort(order: SortOrderLike) {
@@ -37,11 +40,11 @@ defineExpose({
 </script>
 
 <template>
-  <div ref="hostRef" class="subject-host" :style="{ width: `${TABLE_WIDTH}px` }">
+  <div ref="hostRef" class="subject-host" :style="{ width: `${width}px` }">
     <VTable
       :columns="columns"
       :data-source="props.rows"
-      :scroll="{ y: VIEWPORT_HEIGHT }"
+      :scroll="{ x: scrollX, y: VIEWPORT_HEIGHT }"
       :virtual="true"
       size="middle"
       row-key="key"

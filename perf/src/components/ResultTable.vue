@@ -13,14 +13,22 @@ const props = defineProps<{
   memoryNote: string | null
 }>()
 
+// 按「行数 × 列数」分组：宽表档与基准档的数字不能混在同一张表里读。
 const grouped = computed(() => {
-  const map = new Map<number, RunResult[]>()
+  const map = new Map<string, { rowCount: number; columnCount: number; list: RunResult[] }>()
   for (const r of props.results) {
-    const list = map.get(r.rowCount) ?? []
-    list.push(r)
-    map.set(r.rowCount, list)
+    const key = `${r.rowCount}x${r.columnCount}`
+    const group = map.get(key) ?? {
+      rowCount: r.rowCount,
+      columnCount: r.columnCount,
+      list: [] as RunResult[],
+    }
+    group.list.push(r)
+    map.set(key, group)
   }
-  return [...map.entries()].sort((a, b) => a[0] - b[0])
+  return [...map.entries()]
+    .map(([key, g]) => ({ key, ...g }))
+    .sort((a, b) => a.columnCount - b.columnCount || a.rowCount - b.rowCount)
 })
 
 function fmt(n: number): string {
@@ -48,6 +56,16 @@ const anyThrottled = computed(() => props.results.some((r) => r.frameHealth.thro
 /** 行高偏离契约值就要红，这是公平性契约唯一能被外部核对的抓手。 */
 function rowHeightOff(r: RunResult): boolean {
   return r.rowHeight !== null && Math.abs(r.rowHeight - ROW_HEIGHT) > 1
+}
+
+/**
+ * 该库在这一档是否真的虚拟化了列。
+ *
+ * 判据是「首个可见行渲染的单元格数 < 总列数」。留 2 列余量：
+ * 有的实现会多渲染一两列做缓冲，那仍然算虚拟化。
+ */
+function colVirtualized(r: RunResult): boolean {
+  return r.renderedColumns > 0 && r.renderedColumns < r.columnCount - 2
 }
 
 const copied = ref('')
@@ -84,8 +102,13 @@ const showRaw = ref(false)
         ⚠ 本批结果采集时窗口被节流，paint 相关的墙钟不可用；上表两个数均为不受影响的口径。
       </p>
 
-      <div v-for="[count, list] in grouped" :key="count" class="perf-result-block">
-        <h3>{{ formatRowCount(count) }}行（{{ count.toLocaleString() }}）</h3>
+      <div v-for="g in grouped" :key="g.key" class="perf-result-block">
+        <h3>
+          {{ formatRowCount(g.rowCount) }}行 × {{ g.columnCount }}列（{{
+            (g.rowCount * g.columnCount).toLocaleString()
+          }}
+          单元格）
+        </h3>
         <div class="perf-table-scroll">
           <table class="perf-matrix">
             <thead>
@@ -94,15 +117,17 @@ const showRaw = ref(false)
                 <th v-for="s in SCENARIOS" :key="s.id" :title="s.desc">{{ s.label }}</th>
                 <th>DOM 节点数</th>
                 <th>可视行数</th>
+                <th title="首个可见行里实际渲染的单元格数">可视列数</th>
                 <th>内存增量</th>
                 <th>实测行高</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="r in list" :key="r.subject">
+              <tr v-for="r in g.list" :key="r.subject">
                 <td>{{ SUBJECT_LABELS[r.subject] }}</td>
                 <template v-if="r.status === 'aborted'">
                   <td v-for="s in SCENARIOS" :key="s.id" class="no">未完成</td>
+                  <td>—</td>
                   <td>—</td>
                   <td>—</td>
                   <td>—</td>
@@ -119,6 +144,12 @@ const showRaw = ref(false)
                   <td>
                     <span class="perf-num">{{ r.renderedRows.toLocaleString() }}</span>
                   </td>
+                  <td :class="colVirtualized(r) ? 'ok' : ''">
+                    <span class="perf-num">{{ r.renderedColumns.toLocaleString() }}</span>
+                    <small v-if="g.columnCount > 6">
+                      {{ colVirtualized(r) ? '列已虚拟化' : `= 全部 ${g.columnCount} 列` }}
+                    </small>
+                  </td>
                   <td>{{ formatBytes(r.memoryBytes) }}</td>
                   <td :class="rowHeightOff(r) ? 'no' : 'ok'">
                     {{ r.rowHeight === null ? '—' : `${r.rowHeight.toFixed(1)}px` }}
@@ -128,14 +159,19 @@ const showRaw = ref(false)
             </tbody>
           </table>
         </div>
+        <p v-if="g.columnCount > 6" class="perf-note">
+          <strong>可视列数</strong>是这一档的关键判据：等于 {{ g.columnCount }}
+          说明该库<strong>没有横向虚拟化</strong>，可见单元格数随列数线性增长；
+          明显更小才说明列也被虚拟化了。
+        </p>
         <p
-          v-for="r in list.filter((x) => x.note)"
+          v-for="r in g.list.filter((x) => x.note)"
           :key="`n-${r.subject}`"
           class="perf-note perf-note--warn"
         >
           {{ SUBJECT_LABELS[r.subject] }}：{{ r.note }}
         </p>
-        <p v-if="list.some(rowHeightOff)" class="perf-note perf-note--warn">
+        <p v-if="g.list.some(rowHeightOff)" class="perf-note perf-note--warn">
           ⚠ 有实测行高偏离契约值 {{ ROW_HEIGHT }}px 超过 1px —— 可视行数因此不同，
           这一档的对照<strong>不成立</strong>，需要先修配置再重跑。
         </p>
@@ -151,7 +187,7 @@ const showRaw = ref(false)
             <thead>
               <tr>
                 <th>库</th>
-                <th>行数</th>
+                <th>规模</th>
                 <th>场景</th>
                 <th>总延迟</th>
                 <th>input / processing / presentation</th>
@@ -160,7 +196,7 @@ const showRaw = ref(false)
             <tbody>
               <tr v-for="(i, idx) in interactions" :key="idx">
                 <td>{{ SUBJECT_LABELS[i.subject] }}</td>
-                <td>{{ i.rowCount.toLocaleString() }}</td>
+                <td>{{ i.rowCount.toLocaleString() }} × {{ i.columnCount }}</td>
                 <td>{{ SCENARIOS.find((s) => s.id === i.scenario)?.label }}</td>
                 <td>
                   <span class="perf-num">{{ fmt(i.sample.durationMs) }} ms</span>
