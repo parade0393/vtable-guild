@@ -196,7 +196,23 @@ export default defineComponent({
                     tableLayout: 'fixed',
                   }}
                 >
-                  <ColGroup columns={props.columns} />
+                  {/*
+                    这里刻意**不渲染 `<ColGroup>`**。
+
+                    每个可见行都是一张独立的 `<table>`，若各自再带一份 colgroup，
+                    列宽信息会按「可见行数 × 列数」重复：200 列 × 12 行 = 2400 个
+                    纯布局用的 `<col>`，实测占我们 DOM 节点总数的近四成。
+
+                    去掉它是安全的：本表 `table-layout: fixed` 且只有一个数据行，
+                    按 CSS 2.1 §17.5.2.1，没有 col 时列宽由**首行单元格**决定，
+                    而 TableCell 已经把同一份宽度写在每个 `<td>` 上了
+                    （见 TableCell 的 cellStyle）。两者宽度来源一致，故渲染等价。
+
+                    注意：这让「虚拟模式不支持单元格合并」这条既有约束变得更硬——
+                    colSpan 导致某个 `<td>` 被省略时，首行不再覆盖全部列，列宽会整体
+                    错位，而不像以前那样由 colgroup 兜住。该组合本就有 devWarn 拦截
+                    （见 Table.tsx 的 vtable-virtual-body-span）。
+                  */}
                   <tbody class={props.tbodyClass}>
                     <TableRow
                       key={key}
