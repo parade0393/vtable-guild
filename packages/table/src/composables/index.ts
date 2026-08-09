@@ -20,3 +20,14 @@ export { useResize } from './useResize'
 
 export { useHoverState, isInHoverRange } from './useHoverState'
 export type { HoverState } from './useHoverState'
+
+export { useColumnMetrics } from './useColumnMetrics'
+export type { ColumnMetrics } from './useColumnMetrics'
+
+export {
+  useColumnWindow,
+  computeColumnWindow,
+  resolveFixedColumnRanges,
+  DEFAULT_COLUMN_OVERSCAN,
+} from './useColumnWindow'
+export type { ColumnWindow, FixedColumnRanges } from './useColumnWindow'

@@ -30,6 +30,14 @@ export default defineComponent({
     },
     tdClass: { type: String, required: true },
     bodyCellEllipsisClass: { type: String, required: true },
+    /**
+     * 实测列宽（px），仅横向虚拟化时传入。
+     *
+     * 必要而非优化：窗口化之后表体的这一行不再包含全部列，若某列没有声明宽度，
+     * 浏览器会按窗口后的结构重新分配余量，与始终渲染全部列的表头对不上。
+     * 把从表头量到的宽度显式写回来，表体布局才被钉死。
+     */
+    widthOverride: { type: Number, default: undefined },
   },
   setup(props) {
     const tableContext = inject(TABLE_CONTEXT_KEY, {} as TableContext)
@@ -138,7 +146,9 @@ export default defineComponent({
       const base: Record<string, string> = {}
       const resizedWidth =
         tableContext.columnWidths?.[String(getColumnKey(props.column) ?? props.colIndex)]
-      const width = resizedWidth ?? props.column.width
+      // widthOverride 是量表头得来的**结果**，已经把 columnWidths 与 column.width
+      // 都算进去了，所以它排在最前面。
+      const width = props.widthOverride ?? resizedWidth ?? props.column.width
 
       if (width) {
         base.width = typeof width === 'number' ? `${width}px` : width

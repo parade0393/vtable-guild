@@ -160,6 +160,7 @@ export function formatRowCount(n: number): string {
 export const SUBJECT_IDS = [
   'vtable-guild',
   'vtable-guild-fixed',
+  'vtable-guild-vcol',
   'antdv',
   'antdv-next',
   'el-table-v2',
@@ -170,6 +171,7 @@ export type SubjectId = (typeof SUBJECT_IDS)[number]
 export const SUBJECT_LABELS: Record<SubjectId, string> = {
   'vtable-guild': 'vtable-guild',
   'vtable-guild-fixed': 'vtable-guild（定高 rowHeight）',
+  'vtable-guild-vcol': 'vtable-guild（横向虚拟化 virtualColumn）',
   antdv: 'ant-design-vue Table',
   'antdv-next': 'antdv-next Table',
   'el-table-v2': 'el-table-v2',

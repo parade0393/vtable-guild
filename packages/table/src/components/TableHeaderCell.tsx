@@ -52,6 +52,18 @@ export default defineComponent({
       props.cell.isLeaf ? (props.cell.column as ColumnType<Record<string, unknown>>) : null,
     )
 
+    /**
+     * 叶子列下标，写成 DOM 属性供 `useColumnMetrics` 实测列宽时定位。
+     *
+     * 横向虚拟化把表头当作「浏览器已经算好的列宽参照」来读，因此必须能从
+     * 一个 `<th>` 精确回到它对应的叶子列。不能靠遍历顺序：分组表头里顶层叶子列
+     * 带 rowSpan 落在第 0 行而不是末行，`customHeaderCell` 返回 colSpan 0 时
+     * 整个 `<th>` 还会被跳过。列组不带这个属性。
+     */
+    const leafColAttr = computed(() =>
+      props.cell.leafIndex >= 0 ? String(props.cell.leafIndex) : undefined,
+    )
+
     const headerCellProps = computed(() =>
       props.cell.column.customHeaderCell?.(
         props.cell.column,
@@ -489,6 +501,7 @@ export default defineComponent({
               style={cellSelStyle}
               colspan={colSpan}
               rowspan={rowSpan}
+              data-vtg-leaf-col={leafColAttr.value}
               onClick={handleCellClick}
             >
               {columnTitle}
@@ -508,6 +521,7 @@ export default defineComponent({
             style={cellSelStyle}
             colspan={colSpan}
             rowspan={rowSpan}
+            data-vtg-leaf-col={leafColAttr.value}
             onClick={handleCellClick}
           >
             {!hideSelectAll ? (
@@ -744,6 +758,7 @@ export default defineComponent({
           style={cellStyle.value}
           colspan={colSpan}
           rowspan={rowSpan}
+          data-vtg-leaf-col={leafColAttr.value}
           onClick={handleCellClick}
           onMouseenter={handleHeaderMouseEnter}
           onMouseleave={handleHeaderMouseLeave}

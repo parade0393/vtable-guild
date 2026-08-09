@@ -27,7 +27,7 @@ interface CaseMetric {
   scrollMs: number | null
 }
 
-type CaseKey = 'basic' | 'fixed' | 'dynamic' | 'switch' | 'combined' | 'baseline'
+type CaseKey = 'basic' | 'fixed' | 'dynamic' | 'switch' | 'combined' | 'baseline' | 'wide'
 
 const ROW_COUNT_OPTIONS = [1000, 10000, 50000, 100000] as const
 const TABLE_HEIGHT_OPTIONS = [300, 400, 600] as const
@@ -112,11 +112,13 @@ const caseRefs: Record<CaseKey, Ref<HTMLElement | ComponentPublicInstance | null
   switch: ref(null),
   combined: ref(null),
   baseline: ref(null),
+  wide: ref(null),
 }
 
 const displayData = computed(() => allRows.value.slice(0, rowCount.value))
 const switchData = computed(() => allRows.value.slice(0, switchRowCount.value))
 const baselineData = computed(() => allRows.value.slice(0, 50))
+const wideData = computed(() => allRows.value.slice(0, 10000))
 
 const caseDataCounts = computed<Record<CaseKey, number>>(() => ({
   basic: displayData.value.length,
@@ -125,6 +127,7 @@ const caseDataCounts = computed<Record<CaseKey, number>>(() => ({
   switch: switchData.value.length,
   combined: displayData.value.length,
   baseline: baselineData.value.length,
+  wide: wideData.value.length,
 }))
 
 const metrics = ref<Record<CaseKey, CaseMetric>>({
@@ -134,6 +137,7 @@ const metrics = ref<Record<CaseKey, CaseMetric>>({
   switch: createMetric('Case 04'),
   combined: createMetric('Case 05'),
   baseline: createMetric('Case 06'),
+  wide: createMetric('Case 07'),
 })
 
 const basicColumns: ColumnsType<VirtualRow> = [
@@ -210,6 +214,49 @@ const rowSelection = computed<RowSelection<VirtualRow>>(() => ({
     selectedRowKeys.value = [...keys]
   },
 }))
+
+// ---- Case 07：宽表 + 横向虚拟化 ----
+
+/** 合成列数。加上 7 个真实列共 201 个叶子列，对齐 antdv-next#427 的 200 列量级。 */
+const WIDE_SYNTHETIC_COUNT = 194
+/** 合成列轮换取数的字段，都取短值，避免 100px 下换行把行高顶起来。 */
+const WIDE_SOURCES = ['age', 'score', 'city', 'level'] as const
+/**
+ * 表宽。百分比列按它解析，`auto` 列吃剩下的余量：
+ * 160 + 90 + 100 + 100 + 260 + 194×100 + 1% = 20,316，余 284 给 auto 列。
+ */
+const WIDE_TABLE_WIDTH = 20600
+
+const wideVirtualColumn = ref(true)
+const wideAlignment = ref('未采集')
+/** 叶子列总数：2 左固定 + 2 分组子列 + auto + 百分比 + 合成列 + 1 右固定。 */
+const WIDE_LEAF_COUNT = WIDE_SYNTHETIC_COUNT + 7
+
+const wideColumns = computed<ColumnsType<VirtualRow>>(() => [
+  { title: 'Name', dataIndex: 'name', key: 'w-name', width: 160, fixed: 'left' },
+  { title: 'Age', dataIndex: 'age', key: 'w-age', width: 90, align: 'right', fixed: 'left' },
+  {
+    // 分组表头：Score / Level 落在第 2 行，其余顶层叶子列带 rowSpan 落在第 1 行。
+    // 这正是「按 DOM 顺序数 th」会错、必须用 leafIndex 的场景。
+    title: 'Metrics',
+    key: 'w-metrics',
+    children: [
+      { title: 'Score', dataIndex: 'score', key: 'w-score', width: 100, align: 'right' },
+      { title: 'Level', dataIndex: 'level', key: 'w-level', width: 100 },
+    ],
+  },
+  // 不声明宽度：吃掉表格余量。只有量表头才知道它最终多宽。
+  { title: 'Region (auto)', dataIndex: 'region', key: 'w-region' },
+  // 百分比宽度：相对表宽解析，同样算不出来、只能量。
+  { title: 'Team (1%)', dataIndex: 'team', key: 'w-team', width: '1%' },
+  ...Array.from({ length: WIDE_SYNTHETIC_COUNT }, (_, i) => ({
+    title: `C${i + 1}`,
+    dataIndex: WIDE_SOURCES[i % WIDE_SOURCES.length],
+    key: `w-syn-${i}`,
+    width: 100,
+  })),
+  { title: 'Address', dataIndex: 'address', key: 'w-address', width: 260, fixed: 'right' },
+])
 
 function setCaseRef(caseKey: CaseKey) {
   return (el: Element | ComponentPublicInstance | null) => {
@@ -309,6 +356,132 @@ function formatMs(value: number | null) {
   return value === null ? '-' : `${value.toFixed(1)} ms`
 }
 
+// ---- 横向虚拟化自检 ----
+
+/** 第一行里真实渲染的单元格数（不含补齐总宽的占位）。等于列数就说明没窗口化。 */
+function countRenderedCells(caseKey: CaseKey) {
+  const el = getCaseElement(caseKey)
+  const row = el?.querySelector('tbody tr')
+  if (!row) return 0
+  return Array.from(row.children).filter((c) => c.getAttribute('aria-hidden') !== 'true').length
+}
+
+/**
+ * 逐列比对表头与表体的**绝对像素位置**。
+ *
+ * 这是整套方案唯一会静默出错的地方：测量或写回差 1px，画面就是错位，
+ * 而单测钉不住（它只保证宽度之和自洽，不保证与浏览器实际布局一致）。
+ * 所以把它做成页面上可反复按的自检，而不是靠肉眼看截图。
+ *
+ * 固定列跳过：sticky 让表头表体两侧都停在同一个视口位置，比的是同一件事，
+ * 而它们的内容坐标会与窗口列撞车，反而制造假阳性。
+ */
+function checkWideAlignment() {
+  const el = getCaseElement('wide')
+  if (!el) {
+    wideAlignment.value = '未找到表格'
+    return
+  }
+
+  const tables = Array.from(el.querySelectorAll('table'))
+  const headerTable = tables.find((t) => t.querySelector('thead'))
+  const bodyTable = tables.find((t) => t.querySelector('tbody td'))
+  if (!headerTable || !bodyTable) {
+    wideAlignment.value = '未找到表头或表体'
+    return
+  }
+
+  const headerOrigin = headerTable.getBoundingClientRect().left
+  const headerCols = Array.from(
+    headerTable.querySelectorAll<HTMLElement>('th[data-vtg-leaf-col]'),
+  ).map((th) => {
+    const rect = th.getBoundingClientRect()
+    return {
+      index: Number(th.dataset.vtgLeafCol),
+      left: rect.left - headerOrigin,
+      width: rect.width,
+    }
+  })
+  if (headerCols.length !== WIDE_LEAF_COUNT) {
+    wideAlignment.value = `✗ 表头只标出了 ${headerCols.length}/${WIDE_LEAF_COUNT} 个叶子列`
+    return
+  }
+
+  const bodyOrigin = bodyTable.getBoundingClientRect().left
+  const cells = Array.from(bodyTable.querySelectorAll<HTMLElement>('tbody tr:first-child > td'))
+
+  let maxDelta = 0
+  let compared = 0
+  let duplicate = false
+  const matchedIndices = new Set<number>()
+
+  for (const td of cells) {
+    if (td.getAttribute('aria-hidden') === 'true') continue
+    if (getComputedStyle(td).position === 'sticky') continue
+
+    const rect = td.getBoundingClientRect()
+    const left = rect.left - bodyOrigin
+
+    let best = headerCols[0]
+    let bestDelta = Number.POSITIVE_INFINITY
+    for (const col of headerCols) {
+      const delta = Math.abs(col.left - left)
+      if (delta < bestDelta) {
+        bestDelta = delta
+        best = col
+      }
+    }
+    if (!best) continue
+
+    if (matchedIndices.has(best.index)) duplicate = true
+    matchedIndices.add(best.index)
+    compared += 1
+    maxDelta = Math.max(maxDelta, bestDelta, Math.abs(best.width - rect.width))
+  }
+
+  const verdict = duplicate
+    ? '✗ 有列重复匹配'
+    : compared === 0
+      ? '✗ 没有可比对的列'
+      : maxDelta <= 0.5
+        ? '✓ 对齐'
+        : '✗ 错位'
+  wideAlignment.value = `${verdict} · 比对 ${compared} 列 · 最大偏差 ${maxDelta.toFixed(2)}px`
+}
+
+/**
+ * 用 wheel 事件驱动横向滚动。
+ *
+ * VirtualList 的横向偏移是内部状态（holder 上 `overflow-x: hidden`，位移靠
+ * Filler 的 marginLeft），改 scrollLeft 没用，必须走它的 wheel 通道。
+ */
+async function scrollWideBy(deltaX: number) {
+  const holder = findVirtualHolder('wide')
+  if (!holder) return
+  holder.dispatchEvent(new WheelEvent('wheel', { deltaX, bubbles: true, cancelable: true }))
+  await settle()
+  refreshWideMetrics()
+}
+
+function refreshWideMetrics() {
+  const current = metrics.value.wide
+  metrics.value = {
+    ...metrics.value,
+    wide: {
+      ...current,
+      dataCount: caseDataCounts.value.wide,
+      domRows: countRenderedRows('wide'),
+    },
+  }
+  checkWideAlignment()
+}
+
+async function toggleWideVirtualColumn() {
+  wideVirtualColumn.value = !wideVirtualColumn.value
+  await settle()
+  refreshWideMetrics()
+}
+
 onMounted(async () => {
   await measureCase('basic')
   await measureCase('fixed')
@@ -316,6 +489,8 @@ onMounted(async () => {
   await measureCase('switch')
   await measureCase('combined')
   await measureCase('baseline')
+  await measureCase('wide')
+  refreshWideMetrics()
 })
 </script>
 
@@ -585,6 +760,58 @@ onMounted(async () => {
         :scroll="{ y: 300 }"
         size="middle"
         row-key="key"
+      />
+    </section>
+    <section :ref="setCaseRef('wide')" class="play-case">
+      <header class="play-case__header">
+        <div>
+          <p class="play-case__index">Case 07</p>
+          <h2>宽表 + 横向虚拟化 (virtualColumn)</h2>
+        </div>
+        <p class="play-case__desc">
+          201 个叶子列、左固定 2 列 + 右固定 1 列、分组表头，并混入一个 auto 宽度列与一个 1%
+          百分比宽度列——这两种宽度只有量表头才知道结果。
+        </p>
+      </header>
+      <p class="play-inline-note">
+        「可视列数」等于 201 就是没窗口化；「对齐自检」逐列比对表头与表体的绝对像素位置，
+        请在多个横向滚动位置各按一次。
+      </p>
+      <div class="virtual-case-tools">
+        <button type="button" class="play-solid-button" @click="toggleWideVirtualColumn">
+          virtualColumn: {{ wideVirtualColumn ? '开' : '关' }}
+        </button>
+        <button type="button" class="play-ghost-button" @click="scrollWideBy(1200)">
+          右移 1200px
+        </button>
+        <button type="button" class="play-ghost-button" @click="scrollWideBy(6000)">
+          右移 6000px
+        </button>
+        <button type="button" class="play-ghost-button" @click="scrollWideBy(-99999)">
+          回到最左
+        </button>
+        <button type="button" class="play-ghost-button" @click="scrollWideBy(99999)">
+          直到最右
+        </button>
+        <button type="button" class="play-ghost-button" @click="refreshWideMetrics">
+          重新自检
+        </button>
+      </div>
+      <div class="virtual-metrics">
+        <span>数据量 {{ metrics.wide.dataCount.toLocaleString() }}</span>
+        <span>DOM 行 {{ metrics.wide.domRows }}</span>
+        <span>可视列数 {{ countRenderedCells('wide') }} / {{ WIDE_LEAF_COUNT }}</span>
+        <span>对齐自检 {{ wideAlignment }}</span>
+      </div>
+      <VTable
+        :data-source="wideData"
+        :columns="wideColumns"
+        :scroll="{ x: WIDE_TABLE_WIDTH, y: tableHeight }"
+        :virtual="true"
+        :virtual-column="wideVirtualColumn"
+        size="middle"
+        row-key="key"
+        bordered
       />
     </section>
   </main>

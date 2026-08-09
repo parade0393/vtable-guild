@@ -266,6 +266,24 @@ export interface TableProps<TRecord extends object = Record<string, any>> {
    */
   rowHeight?: number
 
+  /**
+   * 横向虚拟化：只渲染视口内的列，仅在 `virtual` 下生效，默认关闭。
+   *
+   * 开启后可见单元格数从「行 × 总列数」降到「行 × 可视列数」。列数很多
+   * （百列量级）时这是唯一能真正降低耗时的手段——`TableCell` 的组件实例数
+   * 就是宽表的瓶颈本身。列数不多时收益为零，还多一次表头测量，所以默认关闭。
+   *
+   * 以下情况会被忽略（dev 构建给出告警），表体回落到渲染全部列：
+   * - 未开启 `virtual`
+   * - 列上有 `customCell` / `customRender`（可能返回 colSpan / rowSpan，
+   *   单元格合并会破坏列宽不变量，虚拟模式本就不支持）
+   * - 固定列没有分别待在两端
+   * - `showHeader: false` 且存在非数字列宽（没有表头可量，也算不出来）
+   *
+   * 已知边界：列滚出窗口时，挂在该列表头上的筛选面板 / tooltip 会随之卸载。
+   */
+  virtualColumn?: boolean
+
   /** 树形数据子节点字段名，默认 'children' */
   childrenColumnName?: string
 

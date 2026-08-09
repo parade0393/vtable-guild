@@ -1,4 +1,4 @@
-import { computed, defineComponent, inject, ref, watch } from 'vue'
+import { computed, defineComponent, inject, onBeforeUnmount, ref, watch } from 'vue'
 import type { CSSProperties, PropType } from 'vue'
 import { cn, devWarn, VirtualList } from '@vtable-guild/core'
 import type { ListRef, VirtualScrollInfo } from '@vtable-guild/core'
@@ -7,11 +7,16 @@ import TableCell from './TableCell'
 import TableEmpty from './TableEmpty'
 import ColGroup from './ColGroup'
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
+import type { ColumnMetrics } from '../composables/useColumnMetrics'
+import { resolveFixedColumnRanges, useColumnWindow } from '../composables/useColumnWindow'
 import type { ColumnType, Key } from '../types'
 
 type VirtualTableScrollInfo = VirtualScrollInfo & {
   maxX: number
 }
+
+/** 一行里的一个 DOM 位置：真实单元格，或补齐总宽用的占位。 */
+type CellSlot = { index: number; spacer?: undefined } | { spacer: number; index?: undefined }
 
 export default defineComponent({
   name: 'VirtualTableBody',
@@ -33,6 +38,13 @@ export default defineComponent({
     itemHeight: { type: Number, required: true },
     /** 定高快路径开关，见 VTable 的 rowHeight prop */
     fixedHeight: { type: Boolean, default: false },
+    /**
+     * 横向虚拟化开关。由 VTable 判定完全部前提后才会为 true，
+     * 这里只管渲染，不再重复校验。
+     */
+    virtualColumn: { type: Boolean, default: false },
+    /** 从表头实测到的列宽。null 表示还没测到，此时渲染全部列。 */
+    columnMetrics: { type: Object as PropType<ColumnMetrics | null>, default: null },
     /** Sync header scroll when virtual body scrolls horizontally */
     onVirtualScroll: {
       type: Function as PropType<(info: VirtualTableScrollInfo) => void>,
@@ -47,7 +59,13 @@ export default defineComponent({
     const tableContext = inject(TABLE_CONTEXT_KEY, {} as TableContext)
     const virtualListRef = ref<ListRef>()
 
+    /** 当前横向滚动偏移。与 Filler 的 `marginLeft: -offsetX` 同源。 */
+    const offsetX = ref(0)
+    /** 可视区宽度。列窗口的另一个自变量。 */
+    const viewportWidth = ref(0)
+
     function emitVirtualScroll(info: VirtualScrollInfo) {
+      offsetX.value = info.x
       props.onVirtualScroll?.({
         ...info,
         maxX: virtualListRef.value?.getHorizontalRange() ?? 0,
@@ -73,13 +91,78 @@ export default defineComponent({
     }
 
     // 列总宽只随 columns 变化，提为 computed，避免每次渲染在 render 函数里 O(列数) 重算
-    const scrollWidth = computed(() => {
+    const declaredScrollWidth = computed(() => {
       let total = 0
       for (const col of props.columns) {
         const w = typeof col.width === 'number' ? col.width : parseInt(String(col.width || '0'), 10)
         total += w || 0
       }
       return total
+    })
+
+    /**
+     * 传给 VirtualList 的内容宽度。
+     *
+     * 横向虚拟化开启时优先用实测总宽：声明宽度的求和会把 `auto` / 百分比列算成 0，
+     * 横向滚动范围因此短一截，滚到底也露不出最后几列。实测值是浏览器算好的结果。
+     */
+    const scrollWidth = computed(() => {
+      const measured = props.virtualColumn ? props.columnMetrics?.total : undefined
+      if (measured && measured > 0) return measured
+      return declaredScrollWidth.value
+    })
+
+    const fixedRanges = computed(() => resolveFixedColumnRanges(props.columns))
+
+    /**
+     * 参与窗口计算的列宽。返回 null 即「这一帧不虚拟化列，渲染全部」。
+     *
+     * 首帧尚无测量结果、或可视区宽度还没量到时都会落到这里——宁可第一帧多渲染，
+     * 也不要按错误宽度定位，那会直接表现为表头表体错位。
+     */
+    const windowWidths = computed(() => {
+      if (!props.virtualColumn) return null
+      if (viewportWidth.value <= 0) return null
+      const metrics = props.columnMetrics
+      if (!metrics || metrics.widths.length !== props.columns.length) return null
+      return metrics.widths
+    })
+
+    const {
+      active: columnWindowActive,
+      start: windowStart,
+      end: windowEnd,
+      leftSpacer,
+      rightSpacer,
+    } = useColumnWindow({
+      widths: () => windowWidths.value,
+      leftFixedCount: () => fixedRanges.value.leftFixedCount,
+      rightFixedStart: () => fixedRanges.value.rightFixedStart,
+      offsetX: () => offsetX.value,
+      viewportWidth: () => viewportWidth.value,
+    })
+
+    /**
+     * 一行的 DOM 结构计划：
+     * `[...左固定] [占位] [...窗口列] [占位] [...右固定]`
+     *
+     * 所有可见行共用同一份计划，每帧只算一次。固定列恒渲染、不参与窗口——
+     * 它们是 `position: sticky`，必须留在 DOM 里。
+     */
+    const cellPlan = computed<CellSlot[]>(() => {
+      const count = props.columns.length
+      if (!columnWindowActive.value) {
+        return Array.from({ length: count }, (_, index) => ({ index }))
+      }
+
+      const { leftFixedCount, rightFixedStart } = fixedRanges.value
+      const plan: CellSlot[] = []
+      for (let i = 0; i < leftFixedCount; i += 1) plan.push({ index: i })
+      if (leftSpacer.value > 0) plan.push({ spacer: leftSpacer.value })
+      for (let i = windowStart.value; i <= windowEnd.value; i += 1) plan.push({ index: i })
+      if (rightSpacer.value > 0) plan.push({ spacer: rightSpacer.value })
+      for (let i = rightFixedStart; i < count; i += 1) plan.push({ index: i })
+      return plan
     })
 
     /**
@@ -106,6 +189,36 @@ export default defineComponent({
       })
     }
 
+    // ---- 可视区宽度 ----
+    // 不能靠 onVirtualScroll 带回来的 maxX 推算：它只在滚动位置真的变了才触发，
+    // 挂载后如果用户没横向滚过，宽度就永远停在 0，窗口会一直收不拢。
+    let viewportObserver: ResizeObserver | null = null
+    let observedViewport: HTMLElement | null = null
+
+    function observeViewport(el: HTMLElement | null | undefined) {
+      const target = el ?? null
+      if (target === observedViewport) return
+
+      if (viewportObserver && observedViewport) viewportObserver.unobserve(observedViewport)
+      observedViewport = target
+
+      if (target) {
+        viewportWidth.value = target.clientWidth
+        if (!viewportObserver && typeof ResizeObserver !== 'undefined') {
+          viewportObserver = new ResizeObserver(() => {
+            if (observedViewport) viewportWidth.value = observedViewport.clientWidth
+          })
+        }
+        viewportObserver?.observe(target)
+      }
+    }
+
+    onBeforeUnmount(() => {
+      viewportObserver?.disconnect()
+      viewportObserver = null
+      observedViewport = null
+    })
+
     // Update scroll state (for fixed column shadows) when VirtualList scrolls
     watch(
       () => virtualListRef.value,
@@ -115,6 +228,9 @@ export default defineComponent({
           const info = ref.getScrollInfo()
           emitVirtualScroll(info)
           verifyFixedRowHeight(ref.nativeElement)
+          observeViewport(ref.nativeElement)
+        } else {
+          observeViewport(null)
         }
       },
     )
@@ -188,6 +304,9 @@ export default defineComponent({
                   }
                 : undefined
 
+              const plan = cellPlan.value
+              const widths = columnWindowActive.value ? windowWidths.value : null
+
               return (
                 <table
                   class={props.tableClass}
@@ -208,6 +327,9 @@ export default defineComponent({
                     而 TableCell 已经把同一份宽度写在每个 `<td>` 上了
                     （见 TableCell 的 cellStyle）。两者宽度来源一致，故渲染等价。
 
+                    横向虚拟化进一步依赖这一点：窗口化之后这一行只剩十几个 `<td>`，
+                    列宽只能由它们自己声明，所以 widthOverride 必须逐个写回。
+
                     注意：这让「虚拟模式不支持单元格合并」这条既有约束变得更硬——
                     colSpan 导致某个 `<td>` 被省略时，首行不再覆盖全部列，列宽会整体
                     错位，而不像以前那样由 colgroup 兜住。该组合本就有 devWarn 拦截
@@ -220,17 +342,37 @@ export default defineComponent({
                       rowProps={rowProps}
                       onClick={handleRowClick}
                     >
-                      {props.columns.map((column, colIndex) => (
-                        <TableCell
-                          key={column.key ?? String(column.dataIndex ?? colIndex)}
-                          record={item}
-                          rowIndex={rIndex}
-                          column={column}
-                          colIndex={colIndex}
-                          tdClass={props.tdClass}
-                          bodyCellEllipsisClass={props.bodyCellEllipsisClass}
-                        />
-                      ))}
+                      {plan.map((slot, slotIndex) => {
+                        if (slot.spacer !== undefined) {
+                          /*
+                            占位单元格。它落在窗口之外、被固定列或视口边界挡住，
+                            永远不可见，所以刻意不套 tdClass——套上会在 bordered 模式下
+                            画出一条无中生有的竖线，也会让 `last:border-r-0` 落到它头上。
+                          */
+                          return (
+                            <td
+                              key={`__vtg_spacer_${slotIndex}`}
+                              style={{ width: `${slot.spacer}px`, padding: '0' }}
+                              aria-hidden="true"
+                            />
+                          )
+                        }
+
+                        const colIndex = slot.index
+                        const column = props.columns[colIndex]
+                        return (
+                          <TableCell
+                            key={column.key ?? String(column.dataIndex ?? colIndex)}
+                            record={item}
+                            rowIndex={rIndex}
+                            column={column}
+                            colIndex={colIndex}
+                            widthOverride={widths?.[colIndex]}
+                            tdClass={props.tdClass}
+                            bodyCellEllipsisClass={props.bodyCellEllipsisClass}
+                          />
+                        )
+                      })}
                     </TableRow>
                     {isExpanded && exp?.expandedRowRender && (
                       <tr
@@ -243,7 +385,9 @@ export default defineComponent({
                         )}
                       >
                         <td
-                          colspan={props.columns.length}
+                          // 跨的是**实际渲染出来的**单元格数，不是列总数：
+                          // 窗口化之后这一行只有十几个 td，按列总数跨会撑出多余的列。
+                          colspan={plan.length}
                           class={cn(props.tdClass, tableContext.subThemeSlots?.expandedRowCell())}
                         >
                           {exp.expandedRowRender(item, rIndex, 0, true)}

@@ -48,12 +48,13 @@ import {
 
 ### 滚动与定位
 
-| Prop                | 类型                                             | 默认值  | 说明                                                |
-| ------------------- | ------------------------------------------------ | ------- | --------------------------------------------------- |
-| `scroll`            | `{ x?: number \| string; y?: number \| string }` | -       | 横向和纵向滚动配置；提供 `y` 时形成固定表头滚动区。 |
-| `sticky`            | `boolean \| TableSticky`                         | `false` | 粘性表头、摘要行或横向滚动条配置。                  |
-| `virtual`           | `boolean`                                        | `false` | 启用虚拟滚动；需要同时设置 `scroll.y`。             |
-| `getPopupContainer` | `(triggerNode) => HTMLElement`                   | -       | 筛选和选择菜单的挂载容器。                          |
+| Prop                | 类型                                             | 默认值  | 说明                                                                                                                                     |
+| ------------------- | ------------------------------------------------ | ------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `scroll`            | `{ x?: number \| string; y?: number \| string }` | -       | 横向和纵向滚动配置；提供 `y` 时形成固定表头滚动区。                                                                                      |
+| `sticky`            | `boolean \| TableSticky`                         | `false` | 粘性表头、摘要行或横向滚动条配置。                                                                                                       |
+| `virtual`           | `boolean`                                        | `false` | 启用虚拟滚动；需要同时设置 `scroll.y`。                                                                                                  |
+| `virtualColumn`     | `boolean`                                        | `false` | 横向虚拟化，只渲染视口内的列；需要同时开启 `virtual`。列数很多时才有收益，见[虚拟滚动](/guide/virtualization#横向虚拟化-virtualcolumn)。 |
+| `getPopupContainer` | `(triggerNode) => HTMLElement`                   | -       | 筛选和选择菜单的挂载容器。                                                                                                               |
 
 ### 主题与语言
 

@@ -79,6 +79,11 @@ export { default as Input } from './components/Input'
 export { default as Scrollbar } from './components/Scrollbar'
 export { default as VTableGuildConfigProvider } from './components/VTableGuildConfigProvider'
 export { VirtualList } from './components/VirtualList'
+/**
+ * 前缀和 + 二分的位置表。纵向虚拟化用它存行高，横向虚拟化用它存列宽——
+ * 两条轴共用同一份实现，见 @vtable-guild/table 的 useColumnWindow。
+ */
+export { PrefixSums } from './components/VirtualList'
 export type {
   ListProps,
   ListRef,

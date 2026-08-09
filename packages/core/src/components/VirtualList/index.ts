@@ -1,4 +1,5 @@
 export { default as VirtualList } from './VirtualList'
+export { PrefixSums } from './utils/PrefixSums'
 export type { ListProps, ListRef, ScrollInfo, ScrollTo } from './VirtualList'
 export type { ScrollConfig } from './hooks/useScrollTo'
 export type { ExtraRenderInfo, GetKey, GetSize, Key, RenderFunc, SharedConfig } from './interface'

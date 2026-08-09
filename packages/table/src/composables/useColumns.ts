@@ -14,6 +14,14 @@ export interface HeaderCellMeta<TRecord extends Record<string, unknown>> {
   depth: number
   isLeaf: boolean
   leafColumns: ColumnType<TRecord>[]
+  /**
+   * 该单元格在 `leafColumns`（即 `flattenColumns` 的产物）里的下标；列组为 -1。
+   *
+   * 与 `colStart` 的区别：`colStart` 是**网格列号**，会被 `column.colSpan` 声明
+   * 拉开，也会因分组表头的 rowSpan 与叶子顺序脱节。横向虚拟化要按叶子列下标
+   * 把表头实测宽度写回表体，必须用一个与 `flattenColumns` 逐项对齐的下标。
+   */
+  leafIndex: number
 }
 
 export type HeaderRowMeta<TRecord extends Record<string, unknown>> = HeaderCellMeta<TRecord>[]
@@ -70,6 +78,9 @@ function buildHeaderRows<TRecord extends Record<string, unknown>>(
   columns: ColumnsType<TRecord>,
 ): HeaderRowMeta<TRecord>[] {
   const rows: HeaderRowMeta<TRecord>[] = []
+  // 叶子游标。只在遇到**非列组**时自增，因此与 flattenColumns 的产物逐项对齐
+  // （空 children 的列组在 fillRowCells 里算 isLeaf，但 flattenColumns 不会收它）。
+  let leafCursor = 0
 
   function fillRowCells(
     rowColumns: ColumnsType<TRecord>,
@@ -85,12 +96,17 @@ function buildHeaderRows<TRecord extends Record<string, unknown>>(
         Boolean(column) && typeof column !== 'symbol',
     )
     return realColumns.map((column) => {
-      const isLeaf = !isColumnGroup(column) || column.children.length === 0
+      const isGroup = isColumnGroup(column)
+      const children = isGroup ? column.children : null
+      const isLeaf = !children || children.length === 0
       let leafColumns: ColumnType<TRecord>[] = isLeaf ? [column as ColumnType<TRecord>] : []
       let colSpan = 1
 
-      if (!isLeaf) {
-        const childStats = fillRowCells(column.children, currentColStart, depth + 1)
+      const leafIndex = isGroup ? -1 : leafCursor
+      if (!isGroup) leafCursor += 1
+
+      if (children && children.length > 0) {
+        const childStats = fillRowCells(children, currentColStart, depth + 1)
         leafColumns = childStats.flatMap((item) => item.leafColumns)
         colSpan = childStats.reduce((total, item) => total + item.colSpan, 0)
       }
@@ -108,6 +124,7 @@ function buildHeaderRows<TRecord extends Record<string, unknown>>(
         depth,
         isLeaf,
         leafColumns,
+        leafIndex,
       })
 
       currentColStart += colSpan

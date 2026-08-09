@@ -44,6 +44,8 @@ import {
 import { useColumns, useSorter, useFilter, useSelection } from '../composables'
 import { getEllipsisConfig } from '../utils/cell'
 import { useScroll, type ScrollConfig } from '../composables/useScroll'
+import { useColumnMetrics } from '../composables/useColumnMetrics'
+import { resolveFixedColumnRanges } from '../composables/useColumnWindow'
 import { useExpand } from '../composables/useExpand'
 import { useResize } from '../composables/useResize'
 import { useVirtual } from '../composables/useVirtual'
@@ -271,6 +273,21 @@ export default defineComponent({
      * 交给默认的实测路径。dev 构建会实测首行并在不符时告警。
      */
     rowHeight: { type: Number, default: undefined },
+    /**
+     * 横向虚拟化：只渲染视口内的列，仅在 `virtual` 下生效，默认关闭。
+     *
+     * 开启后可见单元格数从「行 × 总列数」降到「行 × 可视列数」。列数很多
+     * （百列量级）时这是唯一能真正降低耗时的手段——`TableCell` 的组件实例数
+     * 就是宽表的瓶颈本身。列数不多时收益为零，还多一次表头测量，所以默认关闭。
+     *
+     * 以下情况会被忽略（dev 构建给出告警），表体回落到渲染全部列：
+     * - 未开启 `virtual`
+     * - 列上有 `customCell` / `customRender`（可能返回 colSpan / rowSpan，
+     *   单元格合并会破坏列宽不变量，虚拟模式本就不支持）
+     * - 固定列没有分别待在两端
+     * - `showHeader: false` 且存在非数字列宽（没有表头可量，也算不出来）
+     */
+    virtualColumn: { type: Boolean, default: false },
     childrenColumnName: { type: String, default: undefined },
     indentSize: { type: Number, default: undefined },
     expandedRowKeys: {
@@ -759,6 +776,66 @@ export default defineComponent({
       },
     })
 
+    // ---- 横向虚拟化 ----
+    const displayFixedRanges = computed(() => resolveFixedColumnRanges(displayColumns.value))
+
+    /**
+     * `virtualColumn` 被忽略的原因；null 表示前提都满足。
+     *
+     * 每一条都是「不满足就必然错位或算错」的硬前提，不是保守起见的白名单。
+     */
+    const virtualColumnBlockedReason = computed<string | null>(() => {
+      if (!props.virtualColumn) return null
+      if (!virtualEnabled.value) return '它只作用于虚拟表体，需要同时开启 virtual 与 scroll.y'
+      if (hasPotentialBodySpan.value) {
+        return (
+          '列上有 customCell / customRender，可能返回 colSpan / rowSpan；' +
+          '单元格合并会让某个 td 缺席，进而破坏列宽不变量（虚拟模式本就不支持合并）'
+        )
+      }
+      if (!displayFixedRanges.value.contiguous) {
+        return '固定列必须分列两端：左固定连成前缀、右固定连成后缀，中间夹着的固定列会被窗口跳过'
+      }
+      return null
+    })
+
+    const virtualColumnEnabled = computed(
+      () => props.virtualColumn && virtualColumnBlockedReason.value === null,
+    )
+
+    watch(
+      virtualColumnBlockedReason,
+      (reason) => {
+        if (!reason) return
+        devWarn(
+          'vtable-virtual-column-disabled',
+          `[VTable] virtualColumn 已忽略：${reason}。表体回落到渲染全部列。`,
+        )
+      },
+      { immediate: true },
+    )
+
+    const { metrics: columnMetrics } = useColumnMetrics({
+      enabled: () => virtualColumnEnabled.value,
+      headerEl: () => headerWrapRef.value,
+      columns: () => displayColumns.value,
+      columnWidths: resizeColumnWidths,
+      hasHeader: () => props.showHeader !== false,
+    })
+
+    watch(
+      [virtualColumnEnabled, columnMetrics],
+      ([enabled, metrics]) => {
+        if (!enabled || metrics || props.showHeader !== false) return
+        devWarn(
+          'vtable-virtual-column-no-header',
+          '[VTable] showHeader 为 false 时没有表头可供实测列宽，' +
+            'virtualColumn 要求所有列都声明数字 width；当前不满足，表体回落到渲染全部列。',
+        )
+      },
+      { immediate: true },
+    )
+
     function getRowIndent(record: Record<string, unknown>): number {
       return isTreeData.value ? (treeRowMetaMap.value.get(record)?.level ?? 0) : 0
     }
@@ -1077,6 +1154,8 @@ export default defineComponent({
             height={virtualListHeight.value}
             itemHeight={virtualItemHeight.value}
             fixedHeight={virtualFixedHeight.value}
+            virtualColumn={virtualColumnEnabled.value}
+            columnMetrics={columnMetrics.value}
             showScrollBar="hover"
             onVirtualScroll={(info) => {
               syncHorizontalScroll(info.x, info.maxX)

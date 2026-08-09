@@ -11,7 +11,7 @@ import type { ScrollConfig } from './hooks/useScrollTo'
 import VirtualScrollBar from './VirtualScrollBar'
 import type { ScrollBarDirectionType, ScrollBarRef } from './VirtualScrollBar'
 import { getSpinSize } from './utils/scrollbarUtil'
-import { PrefixHeights } from './utils/PrefixHeights'
+import { PrefixSums } from './utils/PrefixSums'
 import type { ExtraRenderInfo, Key } from './interface'
 import type { InnerProps } from './Filler'
 import {
@@ -90,10 +90,10 @@ function pureAttrs(attrs: Record<string, unknown>): Record<string, unknown> {
 
 /**
  * 用已同步好的位置表求可视区。纯函数，不做任何重建——重建由调用方通过
- * `PrefixHeights.sync()` 控制，这样滚动路径上只剩两次二分。
+ * `PrefixSums.sync()` 控制，这样滚动路径上只剩两次二分。
  */
 function readVisibleRange(
-  prefix: PrefixHeights,
+  prefix: PrefixSums,
   dataLength: number,
   offsetTop: number,
   height: number,
@@ -106,7 +106,7 @@ function readVisibleRange(
   end = Math.min(end + 1, dataLength - 1)
 
   return {
-    scrollHeight: prefix.totalHeight,
+    scrollHeight: prefix.total,
     start,
     end,
     offset: prefix.offsetOf(start),
@@ -117,7 +117,7 @@ function readVisibleRange(
  * 一次性求可视区（自带位置表构建）。
  *
  * 组件内部**不走这个函数**——它每次调用都会重建整表，正是要避免的开销；
- * 组件持有一个长期存活的 `PrefixHeights` 做增量维护。
+ * 组件持有一个长期存活的 `PrefixSums` 做增量维护。
  * 这里保留导出是为了让「给定各行高度 → 可视区」这条纯逻辑可以被单测直接钉住。
  */
 export function getMeasuredVisibleRange(options: {
@@ -128,7 +128,7 @@ export function getMeasuredVisibleRange(options: {
   getItemHeight: (index: number) => number | undefined
 }): { scrollHeight: number; start: number; end: number; offset: number } {
   const { dataLength, offsetTop, height, itemHeight, getItemHeight } = options
-  const prefix = new PrefixHeights()
+  const prefix = new PrefixSums()
   prefix.sync(dataLength, getItemHeight, itemHeight)
   return readVisibleRange(prefix, dataLength, offsetTop, height)
 }
@@ -239,9 +239,9 @@ export default defineComponent({
 
     /**
      * 长期存活的行位置表。只在数据或实测高度变化时增量重建，
-     * 滚动本身只做二分——见 PrefixHeights 的说明。
+     * 滚动本身只做二分——见 PrefixSums 的说明。
      */
-    const prefixHeights = new PrefixHeights()
+    const prefixHeights = new PrefixSums()
 
     // Calculate visible range
     watch(
