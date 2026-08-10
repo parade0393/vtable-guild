@@ -9,7 +9,7 @@
   <a href="https://www.npmjs.com/package/@vtable-guild/vtable-guild"><img alt="npm version" src="https://img.shields.io/npm/v/@vtable-guild/vtable-guild?logo=npm&color=cb3837"></a>
   <a href="https://www.npmjs.com/package/@vtable-guild/vtable-guild"><img alt="npm downloads" src="https://img.shields.io/npm/dm/@vtable-guild/vtable-guild?color=2b7489"></a>
   <a href="https://github.com/parade0393/vtable-guild/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/parade0393/vtable-guild/actions/workflows/ci.yml/badge.svg"></a>
-  <a href="#体积与依赖"><img alt="bundle size" src="https://img.shields.io/badge/gzip-53%20KB%20JS%20%2B%209.4%20KB%20CSS-44cc11"></a>
+  <a href="#体积与依赖"><img alt="bundle size" src="https://img.shields.io/badge/gzip-58%20KB%20JS%20%2B%209.3%20KB%20CSS-44cc11"></a>
   <a href="./LICENSE"><img alt="license" src="https://img.shields.io/npm/l/@vtable-guild/vtable-guild?color=blue"></a>
   <a href="https://deepwiki.com/parade0393/vtable-guild"><img alt="Ask DeepWiki" src="https://deepwiki.com/badge.svg"></a>
 </p>
@@ -38,6 +38,7 @@
 |                      | ant-design-vue 4.x       | element-plus 2.x                          | vtable-guild                                              |
 | -------------------- | ------------------------ | ----------------------------------------- | --------------------------------------------------------- |
 | **十万行怎么滚**     | `a-table` 不内置虚拟滚动 | 要换成 `el-table-v2`，另一套 API 和列定义 | `virtual` + `scroll.y`，还是同一套 `columns`              |
+| **几百列怎么滚**     | 没有横向虚拟化           | `el-table-v2` 也只虚拟化行，不虚拟化列    | `virtualColumn`，200 列只渲染视口内的十几列               |
 | **换一套视觉**       | —                        | —                                         | `themePreset: 'antdv' \| 'element-plus'`，改一行 JS       |
 | **改某个单元格样式** | 覆盖组件 CSS 类名        | class / style / slot 组合                 | `ui` prop 精确到 slot，默认主题 → 全局配置 → 实例三层合并 |
 
@@ -126,7 +127,7 @@ const dataSource: UserRow[] = [
 
 ## 功能
 
-排序（受控 / 非受控双轨、多列）· 筛选（多选 / 单选 / 树形 / 搜索 / 自定义面板）· 行选择（checkbox / radio / 批量菜单 / `checkStrictly`）· 展开行 · 树形数据 · 固定列与固定表头 · 多级表头 · 单元格合并 · 列宽拖拽 · 通过 `bodyCell` 组合单元格与整行编辑 · title / footer / summary · sticky · 虚拟滚动 · 内置 locale（zh-CN / en-US）· `EXPAND_COLUMN` 与 `SELECTION_COLUMN` 占位常量。
+排序（受控 / 非受控双轨、多列）· 筛选（多选 / 单选 / 树形 / 搜索 / 自定义面板）· 行选择（checkbox / radio / 批量菜单 / `checkStrictly`）· 展开行 · 树形数据 · 固定列与固定表头 · 多级表头 · 单元格合并 · 列宽拖拽 · 通过 `bodyCell` 组合单元格与整行编辑 · title / footer / summary · sticky · 虚拟滚动（纵向，外加可选的横向 `virtualColumn` 与定高快路径 `rowHeight`）· 内置 locale（zh-CN / en-US）· `EXPAND_COLUMN` 与 `SELECTION_COLUMN` 占位常量。
 
 每一项在文档站都有**可以直接点的 demo**：[功能索引](https://parade0393.github.io/vtable-guild/guide/)。
 
@@ -177,43 +178,82 @@ const columns = [
 
 ## 体积与依赖
 
-v2.4.0 本地构建实测（`gzip -9`）：
+当前 master 本地构建实测（`gzip -9`）：
 
 | 产物                                  | raw      | gzip        |
 | ------------------------------------- | -------- | ----------- |
-| ESM 全量（105 个模块）                | 239.0 KB | **53.0 KB** |
-| `css/style.css`（prebuilt 全量）      | 57.0 KB  | **9.4 KB**  |
+| ESM 全量（106 个模块）                | 251.6 KB | **57.9 KB** |
+| `css/style.css`（prebuilt 全量）      | 57.5 KB  | **9.3 KB**  |
 | `css/tailwind4.css`                   | 15.5 KB  | 3.8 KB      |
-| `dist/index.full.mjs`（浏览器单文件） | 297.7 KB | 63.7 KB     |
+| `dist/index.full.mjs`（浏览器单文件） | 309.5 KB | 68.0 KB     |
 
-产物用 `preserveModules` 输出，可 tree-shake，实际打进去的一般少于 53 KB。运行时依赖只有一个 `tailwind-variants`，peer 只有 `vue ^3.5.0`。
+产物用 `preserveModules` 输出，可 tree-shake，实际打进去的一般少于 57.9 KB。运行时依赖只有一个 `tailwind-variants`，peer 只有 `vue ^3.5.0`。
 
 ## 性能
 
-别信这段话，[**自己跑一遍**](https://parade0393.github.io/vtable-guild/perf/)——对照页会在你的机器上，把 vtable-guild、ant-design-vue Table 与 el-table-v2 放在同一批数据、同一套列配置下测一遍，并一键导出结果。
+别信这段话，[**自己跑一遍**](https://parade0393.github.io/vtable-guild/perf/)——对照页会在你的机器上，把 vtable-guild、ant-design-vue Table、antdv-next、el-table-v2 与 vxe-table 放在同一批数据、同一套列配置下测一遍（1k / 1 万 / 10 万行 × 6 / 50 / 200 列），并一键导出结果。
 
-本机实测（2026-08-03 · Chrome 151 · Windows 11 · 8 核 · production 构建 · 中位数，`同步 render+patch / longtask` ms）：
+下面两张表**全部采自同一次会话**（2026-08-10 · Chrome 151 · Windows 11 · 8 核 · DPR 1 · production 构建 · 预热 1 轮丢弃 + 正式 5 轮取中位数），单元格是 `同步 render+patch / longtask`，单位 ms。
 
-| 10 万行            | 首次渲染         | 排序切换   | DOM 节点数 | 内存增量   |
+### 行数这条轴
+
+| 10 万行 · 6 列     | 首次渲染         | 排序切换   | DOM 节点数 | 内存增量   |
 | ------------------ | ---------------- | ---------- | ---------- | ---------- |
-| **vtable-guild**   | 131 / 130        | 133 / 133  | 251        | 6.6 MB     |
-| el-table-v2        | **5.0 / 0**      | **48 / 0** | **185**    | **0.8 MB** |
+| **vtable-guild**   | 13 / 0           | 63 / 64    | 167        | 2.2 MB     |
+| el-table-v2        | **6.5 / 0**      | **41 / 0** | 185        | **0.8 MB** |
+| antdv-next Table   | 23 / 0           | 72 / 74    | **118**    | 10.3 MB    |
+| vxe-table          | 213 / 458        | 336 / 336  | 451        | 26.6 MB    |
 | ant-design-vue 4.x | 无虚拟滚动，未跑 | —          | —          | —          |
 
-三条结论，包括对我们不利的：
+「滚动到底」与「连续滚动」四家 longtask 全是 0，没有区分度，故不列。
 
-- **对 antdv**：差距是数量级的。1k 行 antdv 首次渲染就要 1126 ms、7,058 个 DOM 节点；**1 万行单轮 112,657 ms（约 113 秒）**，实际不可用。前提说清楚——对照的是**不分页直出**场景，antdv 的常规解法是分页或改用 el-table-v2。
-- **对 el-table-v2**：**它更快**，而且挂载耗时几乎与数据量无关（1k→10 万都是约 5 ms），我们是 12→131 ms，说明挂载期有 O(n) 预处理要优化。它的排序数字还已经包含了应用侧 `slice().sort()`（它不内置排序），不是口径便宜。
-- **代价换的是什么**：el-table-v2 是纯 div 定高虚拟化——不支持不定行高、多级表头、单元格合并、内置排序与筛选面板，也没有语义化 `<table>`。这些正是 vtable-guild 多出来的开销买到的东西。
+四条结论，包括对我们不利的：
 
-虚拟滚动本身是生效的：1k → 10 万行，DOM 节点数恒定 251、可视行数恒定 12 行。完整方法论、公平性契约与全部三档数据见[性能文档](./docs/performance.md)。
+- **对 antdv 4.x**：差距是数量级的。它不内置虚拟滚动，10 万行不分页直出意味着 60 万个单元格全进 DOM，对照页因此给它设了 6 万单元格的二次确认闸门。前提说清楚：对照的是**不分页直出**场景，antdv 的常规解法是分页或改用 el-table-v2。
+- **对 el-table-v2**：**它仍然是挂载最快的**（6.5 vs 13 ms），但差距已经从数量级收敛到能力成本——它是纯 div + 定高 `FixedSizeGrid`，没有位置表要维护；我们的 13 ms 里含不定行高支持的初始化。关键是**挂载耗时已不随行数增长**：同一次会话里 1k 行 11 ms、10 万行 13 ms，DOM 节点数两档都是 167。
+- **对 vxe-table**：10 万行下我们挂载快约 16×、排序快约 5×，且没有它那 458 ms 的 longtask。代价是它的功能面更宽（单元格编辑、Excel 导出、键盘导航），初始化更重是有来由的。
+- **能力边界要一起看**：el-table-v2 必须定高，不支持多级表头 / 单元格合并 / 内置排序筛选，也没有语义化 `<table>`；antdv-next 的表体是 div，虚拟模式下不支持单元格合并。vxe-table 能力最全（表体实测也是 `<tbody><tr><td>`），但它的 `scroll-y` 类型注释写明「启用纵向虚拟滚动之后将不能支持动态行高」——**大数据档它同样要定高**。四家里在 10 万行虚拟滚动下还能保留不定行高的，目前只有我们，代价就是那 13ms 挂载里的初始化开销。
+
+> 内存一列无法强制 GC，跨会话波动可达一个数量级，只能作数量级参考。这套指标里零噪声、无辩驳空间的是 DOM 节点数。
+
+### 列数这条轴
+
+起因是 [antdv-next#427](https://github.com/antdv-next/antdv-next/issues/427)：1 万行 × 200 列的宽表卡顿甚至崩溃，维护者确认没有横向虚拟滚动。行数那条轴现在几乎是免费的，列数却是另一回事——`virtualColumn` 就是为这一档做的：
+
+<p align="center">
+  <a href="https://parade0393.github.io/vtable-guild/guide/virtualization">
+    <img src="https://raw.githubusercontent.com/parade0393/vtable-guild/master/cover/hero-virtual-column.gif" width="900" alt="1 万行 × 200 列横向滚动：DOM 里始终只有十几列">
+  </a>
+  <br/>
+  <sub>1 万行 × 200 列 —— 横向扫过 200 列，「渲染列数」始终是十几 · <a href="https://parade0393.github.io/vtable-guild/guide/virtualization">点开自己滚一遍</a></sub>
+</p>
+
+| 1 万行 × 200 列   | virtualColumn 关 | virtualColumn 开 | vxe-table    |
+| ----------------- | ---------------- | ---------------- | ------------ |
+| 可视列数          | 200（全部渲染）  | **13**           | 11           |
+| 连续滚动 longtask | 4,391 ms         | **0**            | 0            |
+| 滚动到底          | 0.0 / 164        | **0.0 / 0**      | 0.0 / 0      |
+| DOM 节点数        | 3,659            | **1,415**        | 2,089        |
+| 排序切换          | 126 / 219        | 75 / 75          | **21 / 0**   |
+| 首次渲染          | 232 / 342        | 187 / 187        | **51 / 267** |
+
+**滚动这一项已经和 vxe-table 一样是零 longtask**——#427 描述的宽表滚动卡顿开启后不再复现，DOM 节点数也降到它之下。两处仍然落后，说清楚：
+
+- **排序** 75 / 75 对 21 / 0，仍慢约 3.5×
+- **首次渲染** 187 对 51，仍慢约 3.7×。这是设计取舍不是缺陷：首帧还没有测量结果时我们刻意回落到渲染全部列，量到表头列宽后再收窄，宁可第一帧贵也不要按估算宽度定位然后错位。换来的是列宽不必声明数字，`auto` 和百分比都支持
+
+（首次渲染那一行的 232 vs 187 不代表开启更快，两者波动区间重叠——关的那一档 5 轮里 min 174 / max 314。）
+
+`virtualColumn` 严格 opt-in、默认关闭：6 列基准档开与不开完全持平，列不多时它既没有收益也没有代价。用法与已知边界见[虚拟滚动文档](https://parade0393.github.io/vtable-guild/guide/virtualization)。
+
+虚拟滚动本身是生效的：同一次会话里 1k 行与 10 万行的 DOM 节点数都是 167、可视行数都是 12 行。完整方法论、公平性契约与全部档位数据见[性能文档](./docs/performance.md)。
 
 ## 文档
 
 - [快速开始](https://parade0393.github.io/vtable-guild/guide/getting-started) · [从 ant-design-vue 迁移](https://parade0393.github.io/vtable-guild/guide/migration-from-antd)
 - [功能对比总览](https://parade0393.github.io/vtable-guild/comparison/) · [为什么这样设计](https://parade0393.github.io/vtable-guild/guide/architecture)
 - [三层主题覆盖](https://parade0393.github.io/vtable-guild/guide/theme-overrides) · [CSS 变量参考](https://parade0393.github.io/vtable-guild/guide/theme-tokens) · [ui Slot 参考](https://parade0393.github.io/vtable-guild/guide/ui-slots-reference)
-- [编辑](https://parade0393.github.io/vtable-guild/guide/editing) · [自定义行与插槽](https://parade0393.github.io/vtable-guild/guide/api-wiring-and-slots)
+- [虚拟滚动](https://parade0393.github.io/vtable-guild/guide/virtualization) · [编辑](https://parade0393.github.io/vtable-guild/guide/editing) · [自定义行与插槽](https://parade0393.github.io/vtable-guild/guide/api-wiring-and-slots)
 - [API Reference](https://parade0393.github.io/vtable-guild/guide/api-reference) · [类型参考](https://parade0393.github.io/vtable-guild/guide/type-reference)
 - [更新日志](./packages/vtable-guild/CHANGELOG.md) · [路线图](./docs/roadmap.md)
 

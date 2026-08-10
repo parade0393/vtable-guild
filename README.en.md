@@ -9,7 +9,7 @@
   <a href="https://www.npmjs.com/package/@vtable-guild/vtable-guild"><img alt="npm version" src="https://img.shields.io/npm/v/@vtable-guild/vtable-guild?logo=npm&color=cb3837"></a>
   <a href="https://www.npmjs.com/package/@vtable-guild/vtable-guild"><img alt="npm downloads" src="https://img.shields.io/npm/dm/@vtable-guild/vtable-guild?color=2b7489"></a>
   <a href="https://github.com/parade0393/vtable-guild/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/parade0393/vtable-guild/actions/workflows/ci.yml/badge.svg"></a>
-  <a href="#size-and-dependencies"><img alt="bundle size" src="https://img.shields.io/badge/gzip-53%20KB%20JS%20%2B%209.4%20KB%20CSS-44cc11"></a>
+  <a href="#size-and-dependencies"><img alt="bundle size" src="https://img.shields.io/badge/gzip-58%20KB%20JS%20%2B%209.3%20KB%20CSS-44cc11"></a>
   <a href="./LICENSE"><img alt="license" src="https://img.shields.io/npm/l/@vtable-guild/vtable-guild?color=blue"></a>
   <a href="https://deepwiki.com/parade0393/vtable-guild"><img alt="Ask DeepWiki" src="https://deepwiki.com/badge.svg"></a>
 </p>
@@ -40,6 +40,7 @@ If you already use ant-design-vue or element-plus, these three have probably bit
 |                                 | ant-design-vue 4.x                          | element-plus 2.x                                          | vtable-guild                                                                        |
 | ------------------------------- | ------------------------------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------------- |
 | **Scrolling 100k rows**         | `a-table` has no built-in virtual scrolling | Requires `el-table-v2` — a different API and column model | `virtual` + `scroll.y`, same `columns`                                              |
+| **Scrolling 200 columns**       | No column virtualization                    | `el-table-v2` virtualizes rows only, never columns        | `virtualColumn` — only the columns in view are rendered                             |
 | **Switching the visual system** | —                                           | —                                                         | `themePreset: 'antdv' \| 'element-plus'`, one line of JS                            |
 | **Restyling one cell**          | Override component CSS classes              | class / style / slot combinations                         | `ui` prop targets a specific slot; default theme → global config → instance, merged |
 
@@ -63,7 +64,7 @@ app.use(createVTableGuild({ themePreset: 'element-plus' }))
 Up front, so you don't find out halfway:
 
 - **You need pagination** — there is no built-in `pagination`; wire your own (`change` only carries `filters / sorter / extra`)
-- **You need cell editing, Excel export, column reordering or a context menu** — none of these exist. That is [vxe-table](https://vxetable.cn/)'s territory and its feature surface is far wider
+- **You need a full editing engine, Excel export, column reordering or a context menu** — cell and row editing can be composed through [`bodyCell`](https://parade0393.github.io/vtable-guild/guide/editing), but there is no built-in edit state, validation or Excel-style keyboard navigation. Those full enterprise-table capabilities remain [vxe-table](https://vxetable.cn/)'s territory
 - **You have keyboard-accessibility / a11y compliance requirements** — sort headers and filter triggers are not yet keyboard operable; this is being worked on
 - **You just need a plain table** — native `a-table` / `el-table` is enough; don't add a dependency
 
@@ -128,7 +129,7 @@ To edit code and see it run without installing anything: **[🎮 open the Playgr
 
 ## Features
 
-Sorting (controlled / uncontrolled, multi-column) · filtering (multi / single / tree / search / custom dropdown) · row selection (checkbox / radio / batch menu / `checkStrictly`) · expandable rows · tree data · fixed columns and header · grouped headers · cell merging · column resizing · title / footer / summary · sticky · virtual scrolling · built-in locales (zh-CN / en-US) · `EXPAND_COLUMN` and `SELECTION_COLUMN` placeholders.
+Sorting (controlled / uncontrolled, multi-column) · filtering (multi / single / tree / search / custom dropdown) · row selection (checkbox / radio / batch menu / `checkStrictly`) · expandable rows · tree data · fixed columns and header · grouped headers · cell merging · column resizing · cell and row editing composed through `bodyCell` · title / footer / summary · sticky · virtual scrolling (rows, plus opt-in column virtualization via `virtualColumn` and a fixed-height fast path via `rowHeight`) · built-in locales (zh-CN / en-US) · `EXPAND_COLUMN` and `SELECTION_COLUMN` placeholders.
 
 Every one of these has a **live, clickable demo** in the docs: [feature index](https://parade0393.github.io/vtable-guild/guide/).
 
@@ -179,42 +180,82 @@ Only takes effect when the corresponding feature (`expandable` / `rowSelection`)
 
 ## Size and dependencies
 
-Measured locally on v2.4.0 (`gzip -9`):
+Measured on the current master (`gzip -9`):
 
 | Artifact                                    | raw      | gzip        |
 | ------------------------------------------- | -------- | ----------- |
-| Full ESM output (105 modules)               | 239.0 KB | **53.0 KB** |
-| `css/style.css` (prebuilt, everything)      | 57.0 KB  | **9.4 KB**  |
+| Full ESM output (106 modules)               | 251.6 KB | **57.9 KB** |
+| `css/style.css` (prebuilt, everything)      | 57.5 KB  | **9.3 KB**  |
 | `css/tailwind4.css`                         | 15.5 KB  | 3.8 KB      |
-| `dist/index.full.mjs` (browser single file) | 297.7 KB | 63.7 KB     |
+| `dist/index.full.mjs` (browser single file) | 309.5 KB | 68.0 KB     |
 
-Output uses `preserveModules` and is tree-shakeable, so real-world cost is typically below 53 KB. One runtime dependency (`tailwind-variants`); one peer (`vue ^3.5.0`).
+Output uses `preserveModules` and is tree-shakeable, so real-world cost is typically below 57.9 KB. One runtime dependency (`tailwind-variants`); one peer (`vue ^3.5.0`).
 
 ## Performance
 
-Don't take our word for it — [**run it yourself**](https://parade0393.github.io/vtable-guild/perf/). The comparison page measures vtable-guild, ant-design-vue Table and el-table-v2 on your machine, with the same data and the same column config, and exports the results in one click.
+Don't take our word for it — [**run it yourself**](https://parade0393.github.io/vtable-guild/perf/). The comparison page measures vtable-guild, ant-design-vue Table, antdv-next, el-table-v2 and vxe-table on your machine, with the same data and the same column config (1k / 10k / 100k rows × 6 / 50 / 200 columns), and exports the results in one click.
 
-Measured locally (2026-08-03 · Chrome 151 · Windows 11 · 8 cores · production build · medians, `sync render+patch / longtask` ms):
+Both tables below come from **a single session** (2026-08-10 · Chrome 151 · Windows 11 · 8 cores · DPR 1 · production build · 1 warmup round discarded + 5 measured rounds, median). Cells are `sync render+patch / longtask`, in ms.
 
-| 100k rows          | First render      | Sort toggle | DOM nodes | Memory delta |
+### The row axis
+
+| 100k rows · 6 cols | First render      | Sort toggle | DOM nodes | Memory delta |
 | ------------------ | ----------------- | ----------- | --------- | ------------ |
-| **vtable-guild**   | 131 / 130         | 133 / 133   | 251       | 6.6 MB       |
-| el-table-v2        | **5.0 / 0**       | **48 / 0**  | **185**   | **0.8 MB**   |
+| **vtable-guild**   | 13 / 0            | 63 / 64     | 167       | 2.2 MB       |
+| el-table-v2        | **6.5 / 0**       | **41 / 0**  | 185       | **0.8 MB**   |
+| antdv-next Table   | 23 / 0            | 72 / 74     | **118**   | 10.3 MB      |
+| vxe-table          | 213 / 458         | 336 / 336   | 451       | 26.6 MB      |
 | ant-design-vue 4.x | no virtual scroll | —           | —         | —            |
 
-Three takeaways, including the ones that don't flatter us:
+"Scroll to bottom" and "continuous scroll" are omitted: longtask is 0 for all four, so the column tells you nothing.
 
-- **vs antdv**: the gap is an order of magnitude. At 1k rows antdv already needs 1126 ms to first render and 7,058 DOM nodes; at **10k rows a single mount took 112,657 ms (~113 s)** — not usable. To be fair about the premise: this compares _unpaginated_ rendering. antdv's normal answer at this scale is pagination, or switching to el-table-v2.
-- **vs el-table-v2**: **it is faster than us**, and its mount cost is nearly independent of row count (~5 ms from 1k to 100k) while ours goes 12 → 131 ms — evidence of O(n) work at mount that we should optimize. Its sort number already includes the app-side `slice().sort()` it forces you to write, so this isn't a measurement artifact.
-- **What the overhead buys**: el-table-v2 is pure-div, fixed-height virtualization — no variable row heights, no grouped headers, no cell merging, no built-in sorting or filter panels, and no semantic `<table>`. That's what vtable-guild's extra cost pays for.
+Four takeaways, including the ones that don't flatter us:
 
-Virtual scrolling does work as advertised: from 1k to 100k rows the DOM stays at 251 nodes and 12 rendered rows. Full methodology, the fairness contract and all three data sizes are in the [performance doc](./docs/performance.md).
+- **vs antdv 4.x**: the gap is an order of magnitude. It has no built-in virtual scrolling, so 100k unpaginated rows means 600k cells in the DOM — the comparison page gates it behind a confirmation above 60k cells. To be fair about the premise: this compares _unpaginated_ rendering, and antdv's normal answer at this scale is pagination or el-table-v2.
+- **vs el-table-v2**: **it is still the fastest to mount** (6.5 vs 13 ms), but the gap has narrowed from an order of magnitude to a capability cost — it is pure-div with a fixed-height `FixedSizeGrid` and no position table to maintain, while our 13 ms includes initializing variable-row-height support. What matters is that **mount cost no longer grows with row count**: in the same session, 11 ms at 1k rows and 13 ms at 100k, with 167 DOM nodes at both sizes.
+- **vs vxe-table**: at 100k rows we mount ~16× faster and sort ~5× faster, with none of its 458 ms longtask. In exchange its feature surface is far wider (cell editing, Excel export, keyboard navigation), which is a fair reason for heavier initialization.
+- **Read the capability boundary alongside the numbers**: el-table-v2 requires fixed heights and supports no grouped headers, cell merging, or built-in sorting/filtering, and emits no semantic `<table>`; antdv-next renders its body as divs and drops cell merging in virtual mode. vxe-table has the widest feature surface (its body measures as real `<tbody><tr><td>`), but its own `scroll-y` typings state that enabling vertical virtual scrolling disables dynamic row heights — **so at this data size it too must be fixed-height**. Among the four, we are currently the only one that keeps variable row heights under 100k-row virtual scrolling, and the initialization that buys is exactly what sits inside our 13 ms mount.
+
+> The memory column cannot force a GC and swings by an order of magnitude between sessions — treat it as an order-of-magnitude hint only. DOM node count is the noise-free number in this set.
+
+### The column axis
+
+The trigger was [antdv-next#427](https://github.com/antdv-next/antdv-next/issues/427): 10k × 200 wide tables stutter or crash, and the maintainer confirmed there is no horizontal virtualization. The row axis is essentially free now; the column axis is a different story — and `virtualColumn` exists for exactly this case:
+
+<p align="center">
+  <a href="https://parade0393.github.io/vtable-guild/guide/virtualization">
+    <img src="https://raw.githubusercontent.com/parade0393/vtable-guild/master/cover/hero-virtual-column.gif" width="900" alt="Scrolling horizontally across 200 columns with only a dozen in the DOM">
+  </a>
+  <br/>
+  <sub>10,000 rows × 200 columns — sweep across all 200, the rendered-column count never leaves the teens · <a href="https://parade0393.github.io/vtable-guild/guide/virtualization">scroll it yourself</a></sub>
+</p>
+
+| 10k rows × 200 cols        | virtualColumn off | virtualColumn on | vxe-table    |
+| -------------------------- | ----------------- | ---------------- | ------------ |
+| Rendered columns           | 200 (all of them) | **13**           | 11           |
+| Continuous-scroll longtask | 4,391 ms          | **0**            | 0            |
+| Scroll to bottom           | 0.0 / 164         | **0.0 / 0**      | 0.0 / 0      |
+| DOM nodes                  | 3,659             | **1,415**        | 2,089        |
+| Sort toggle                | 126 / 219         | 75 / 75          | **21 / 0**   |
+| First render               | 232 / 342         | 187 / 187        | **51 / 267** |
+
+**Scrolling is now zero-longtask, same as vxe-table** — the wide-table stutter described in #427 no longer reproduces once it is on, and DOM node count drops below vxe-table's too. Two things still lag, stated plainly:
+
+- **Sorting** 75 / 75 against 21 / 0 — still ~3.5× slower
+- **First render** 187 against 51 — still ~3.7× slower. A deliberate trade-off, not a defect: with no measurements available on the first frame we fall back to rendering every column, then narrow the window once the header has been measured. A costly first frame beats positioning cells from estimated widths and getting them misaligned. In exchange, column widths need not be numeric — `auto` and percentages work
+
+(The 232 vs 187 on the first-render row does not mean enabling it is faster; the ranges overlap — the "off" run spread min 174 / max 314 across its five rounds.)
+
+`virtualColumn` is strictly opt-in and off by default: in the 6-column baseline, on and off are identical. With few columns it buys nothing and costs nothing. Usage and known limits: [virtual scrolling guide](https://parade0393.github.io/vtable-guild/guide/virtualization) (Chinese).
+
+Virtual scrolling itself works as advertised: in the same session, both 1k and 100k rows sit at 167 DOM nodes and 12 rendered rows. Full methodology, the fairness contract and every data point are in the [performance doc](./docs/performance.md).
 
 ## Documentation
 
 - [Getting started](https://parade0393.github.io/vtable-guild/guide/getting-started) · [Migrating from ant-design-vue](https://parade0393.github.io/vtable-guild/guide/migration-from-antd)
 - [Feature comparison](https://parade0393.github.io/vtable-guild/comparison/) · [Design rationale](https://parade0393.github.io/vtable-guild/guide/architecture)
 - [Three-layer theming](https://parade0393.github.io/vtable-guild/guide/theme-overrides) · [CSS variables](https://parade0393.github.io/vtable-guild/guide/theme-tokens) · [ui slot reference](https://parade0393.github.io/vtable-guild/guide/ui-slots-reference)
+- [Virtual scrolling](https://parade0393.github.io/vtable-guild/guide/virtualization) · [Editing](https://parade0393.github.io/vtable-guild/guide/editing) · [Custom rows and slots](https://parade0393.github.io/vtable-guild/guide/api-wiring-and-slots)
 - [API reference](https://parade0393.github.io/vtable-guild/guide/api-reference) · [Type reference](https://parade0393.github.io/vtable-guild/guide/type-reference)
 - [Changelog](./packages/vtable-guild/CHANGELOG.md) · [Roadmap](./docs/roadmap.md)
 

@@ -449,13 +449,14 @@ function clearResults(): void {
       <p class="perf-kicker">Performance Comparison</p>
       <h1>表格性能对照</h1>
       <p class="perf-summary">
-        在<strong>同一批数据、同一套列配置</strong>下对照 vtable-guild、ant-design-vue Table 与
-        el-table-v2。采集方法与环境全部公开，你可以在自己的机器上跑出自己的数字，
-        并一键导出对照结果。
+        在<strong>同一批数据、同一套列配置</strong>下对照 vtable-guild、ant-design-vue Table、
+        antdv-next、el-table-v2 与 vxe-table。采集方法与环境全部公开，你可以在自己的机器上跑出
+        自己的数字，并一键导出对照结果。
       </p>
       <p class="perf-summary perf-summary--muted">
         这个页面的价值在于它敢报出对 vtable-guild 不利的数字。el-table-v2 是纯 div
-        定高虚拟化，在部分指标上本就更快——差异来源写在下方的能力边界表里。
+        定高虚拟化，挂载本就更快；vxe-table 在宽表档有横向虚拟化，我们的
+        <code>virtualColumn</code> 也要开了才追得上。差异来源写在下方的能力边界表里。
       </p>
     </header>
 
@@ -580,7 +581,9 @@ function clearResults(): void {
 
     <section class="perf-card">
       <h2>能力边界（数字要和这张表一起读）</h2>
-      <p class="perf-note">只比耗时不比能力是不诚实的。el-table-v2 更快的部分，代价写在这里。</p>
+      <p class="perf-note">
+        只比耗时不比能力是不诚实的。el-table-v2 挂载更快、vxe-table 宽表更快，代价写在这里。
+      </p>
       <div class="perf-table-scroll">
         <table class="perf-matrix">
           <thead>
@@ -588,55 +591,101 @@ function clearResults(): void {
               <th>能力</th>
               <th>vtable-guild</th>
               <th>ant-design-vue Table 4.x</th>
+              <th>antdv-next Table</th>
               <th>el-table-v2</th>
+              <th>vxe-table</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>虚拟滚动</td>
+              <td>虚拟滚动（行）</td>
               <td class="ok">✅</td>
               <td class="no">❌ 无</td>
+              <td class="ok">✅</td>
+              <td class="ok">✅</td>
+              <td class="ok">✅</td>
+            </tr>
+            <tr>
+              <td>横向虚拟化（列）</td>
+              <td class="ok">✅ 需开 <code>virtualColumn</code></td>
+              <td class="no">❌</td>
+              <td class="no">❌</td>
+              <td class="no">❌</td>
               <td class="ok">✅</td>
             </tr>
             <tr>
               <td>不定行高</td>
               <td class="ok">✅</td>
               <td class="ok">✅</td>
+              <td class="ok">✅</td>
               <td class="no">❌ 必须定高</td>
+              <td class="no">❌ 开纵向虚拟滚动后不支持</td>
             </tr>
             <tr>
               <td>内置排序</td>
               <td class="ok">✅</td>
               <td class="ok">✅</td>
+              <td class="ok">✅</td>
               <td class="no">❌ 应用侧自己排</td>
+              <td class="ok">✅</td>
             </tr>
             <tr>
               <td>内置筛选面板</td>
               <td class="ok">✅</td>
               <td class="ok">✅</td>
-              <td class="no">❌</td>
-            </tr>
-            <tr>
-              <td>多级表头 / 单元格合并</td>
-              <td class="ok">✅</td>
               <td class="ok">✅</td>
               <td class="no">❌</td>
+              <td class="ok">✅</td>
             </tr>
             <tr>
-              <td>语义化 <code>&lt;table&gt;</code></td>
+              <td>多级表头</td>
+              <td class="ok">✅</td>
+              <td class="ok">✅</td>
+              <td class="ok">✅</td>
+              <td class="no">❌</td>
+              <td class="ok">✅</td>
+            </tr>
+            <tr>
+              <td>单元格合并</td>
+              <td class="ok">✅</td>
+              <td class="ok">✅</td>
+              <td class="no">❌ 虚拟模式下无效</td>
+              <td class="no">❌</td>
+              <td class="ok">✅</td>
+            </tr>
+            <tr>
+              <td>语义化 <code>&lt;table&gt;</code> 表体</td>
               <td class="ok">✅</td>
               <td class="ok">✅</td>
               <td class="no">❌ 纯 div</td>
+              <td class="no">❌ 纯 div</td>
+              <td class="ok">✅</td>
             </tr>
           </tbody>
         </table>
       </div>
+      <p class="perf-note">
+        这张表不靠印象填。「横向虚拟化」看结果表的<strong>可视列数</strong>（200 列档只有 vxe-table
+        与开了 <code>virtualColumn</code> 的我们会窗口化）；「语义化
+        <code>&lt;table&gt;</code>」直接看表体 DOM（vxe-table 的 <code>.vxe-body--row</code> 是真
+        <code>&lt;tr&gt;</code>，antdv-next 与 el-table-v2 都是 div）；其余各项查的是<strong
+          >各库自己 npm 包里的类型声明</strong
+        >，版本与上方「采集环境」一致。
+      </p>
+      <p class="perf-note">
+        两处值得单独说明：vxe-table 的
+        <code>scroll-y.gt</code>
+        在它自己的类型注释里写明「启用纵向虚拟滚动之后将不能支持动态行高」，所以大数据档它和
+        el-table-v2 一样要定高；antdv-next 的虚拟表体基于 <code>@v-c/virtual-list</code>（用
+        ResizeObserver 实测行高，<code>listItemHeight</code> 只是估算值），所以不定行高成立，
+        但它在虚拟模式下不支持单元格合并。
+      </p>
     </section>
 
     <section class="perf-card">
       <h2>被测表格</h2>
       <p class="perf-note">
-        同一时刻只挂载一个库——这样 longtask 窗口与内存读数里就不会掺进另外两家的 JS。
+        同一时刻只挂载一个库——这样 longtask 窗口与内存读数里就不会掺进其他几家的 JS。
       </p>
       <div ref="host" class="perf-host">
         <component
@@ -657,7 +706,7 @@ function clearResults(): void {
       <h3>公平性契约</h3>
       <ul>
         <li>
-          <strong>同一个数组引用</strong>传给三个库；数据用下标 + 乘法散列
+          <strong>同一个数组引用</strong>传给所有被测库；数据用下标 + 乘法散列
           <code>(i * 2654435761) &gt;&gt;&gt; 0</code> 确定性生成，<strong>不用</strong>
           <code>Math.random()</code>——随机数会让排序命中「已有序」最优路径。
         </li>
@@ -693,7 +742,7 @@ function clearResults(): void {
           <strong>可视行数</strong>两列供你核对。
         </li>
         <li>
-          注意三家「高度」的语义不同：vtable-guild 与 antdv 的
+          注意各家「高度」的语义不同：vtable-guild 与 antdv 的
           <code>scroll.y</code> 是<strong>表体</strong>高度，el-table-v2 的
           <code>height</code> 是<strong>含表头的总高</strong>， 所以传给它的是
           {{ VIEWPORT_HEIGHT }} + {{ ROW_HEIGHT }}。校准后 vtable-guild 与 el-table-v2 的表体都是
@@ -705,10 +754,10 @@ function clearResults(): void {
           对它的数字影响可忽略。
         </li>
         <li>
-          排序三家用<strong>同一个比较函数</strong>。特别注意：vtable-guild 的
+          排序各家用<strong>同一个比较函数</strong>。特别注意：vtable-guild 的
           <code>sorter: true</code> 会真的排数据，而 antdv 的
           <code>sorter: true</code> 表示「交给服务端排」、本地什么都不做——两边都写 <code>true</code>
-          会让 antdv 因为没干活而白赢。所以三家一律显式传比较函数。
+          会让 antdv 因为没干活而白赢。所以一律显式传比较函数。
         </li>
         <li>
           el-table-v2 <strong>不内置排序</strong>，应用侧的 sort 耗时<strong>计入它</strong>——
@@ -761,7 +810,7 @@ function clearResults(): void {
           渲染开销」这条主轴测干净，固定列留作后续单独一档。
         </li>
         <li>
-          <strong>不测筛选与行选择</strong>：三家 API 差异过大（el-table-v2 两者都没有内置），
+          <strong>不测筛选与行选择</strong>：各家 API 差异过大（el-table-v2 两者都没有内置），
           硬测只是凑数。
         </li>
         <li>
@@ -774,7 +823,7 @@ function clearResults(): void {
           reset 不影响 Table 自身渲染。
         </li>
         <li>
-          三家滚动都用同一个 DOM 操作 <code>el.scrollTop = …</code>， 不使用各自的
+          各家滚动都用同一个 DOM 操作 <code>el.scrollTop = …</code>， 不使用各自的
           <code>scrollTo</code> API。
         </li>
       </ul>

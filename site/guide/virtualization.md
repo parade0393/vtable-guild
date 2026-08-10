@@ -52,8 +52,8 @@
 />
 ```
 
-实测 1 万行 × 200 列：可视列数 200 → 13，连续滚动 longtask 4,269ms → **0**，
-排序切换 118ms → 32ms。完整数字与方法见[性能文档](https://github.com/parade0393/vtable-guild/blob/master/docs/performance.md)。
+实测 1 万行 × 200 列：可视列数 200 → 13，连续滚动 longtask 4,391ms → **0**，
+排序切换 126ms → 75ms，DOM 节点数 3,659 → 1,415。完整数字与方法见[性能文档](https://github.com/parade0393/vtable-guild/blob/master/docs/performance.md)。
 
 **默认关闭，而且应该保持关闭**，除非你的列数真的很多：6 列时它既无收益也无代价
 （实测完全持平），但会多一次表头测量。
@@ -97,8 +97,9 @@ dev 构建会在控制台给出原因：
 ## 自己量一遍
 
 不必相信这里的任何说法——[性能对照页](/perf/)可以在你自己的机器上，把 vtable-guild、
-ant-design-vue Table 与 el-table-v2 放在**同一批数据、同一套列配置**下跑一遍，
-给出渲染耗时、DOM 节点数与内存，并一键导出结果。采集方法与已知的不对等之处都写在页面上。
+ant-design-vue Table、antdv-next、el-table-v2 与 vxe-table 放在**同一批数据、同一套列配置**
+下跑一遍（1k / 1 万 / 10 万行 × 6 / 50 / 200 列），给出渲染耗时、DOM 节点数与内存，
+并一键导出结果。采集方法与已知的不对等之处都写在页面上。
 
 ## 相关页面
 

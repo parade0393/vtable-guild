@@ -38,7 +38,9 @@ function readWorkspaceVersion(relPath: string, fallback = 'unknown'): string {
 const libVersions = {
   'vtable-guild': readWorkspaceVersion('../packages/vtable-guild/package.json'),
   'ant-design-vue': resolveVersion('ant-design-vue'),
+  'antdv-next': resolveVersion('antdv-next'),
   'element-plus': resolveVersion('element-plus'),
+  'vxe-table': resolveVersion('vxe-table'),
   vue: resolveVersion('vue'),
 }
 
