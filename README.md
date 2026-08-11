@@ -218,8 +218,6 @@ const columns = [
 
 ### 列数这条轴
 
-起因是 [antdv-next#427](https://github.com/antdv-next/antdv-next/issues/427)：1 万行 × 200 列的宽表卡顿甚至崩溃，维护者确认没有横向虚拟滚动。行数那条轴现在几乎是免费的，列数却是另一回事——`virtualColumn` 就是为这一档做的：
-
 <p align="center">
   <a href="https://parade0393.github.io/vtable-guild/guide/virtualization">
     <img src="https://raw.githubusercontent.com/parade0393/vtable-guild/master/cover/hero-virtual-column.gif" width="900" alt="1 万行 × 200 列横向滚动：DOM 里始终只有十几列">
