@@ -35,7 +35,9 @@
     "bench": {
       "cache": false
     },
-    "lint": {},
+    // 没有 lint task：eslint 用的是仓库根一份 flat config（eslint.config.ts），
+    // 覆盖范围包含 site / play / perf / playground 这些非 packages 目录，
+    // 拆成每包一个 lint 脚本既要重复配置又会漏掉它们，所以 `pnpm lint` 在根级直跑。
     "type-check": {
       "dependsOn": ["^type-check"]
     },

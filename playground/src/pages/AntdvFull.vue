@@ -18,14 +18,13 @@
 
 import { h, ref, reactive, computed } from 'vue'
 import { VTable, VTableSummary } from '@vtable-guild/vtable-guild'
-import { SmileOutlined, SearchOutlined, DownOutlined } from '@ant-design/icons-vue'
+import { SmileOutlined, SearchOutlined } from '@ant-design/icons-vue'
 import { Tag as ATag, Space as ASpace } from 'ant-design-vue'
 import type {
   ColumnType,
   ColumnsType,
   ColumnGroupType,
   ColumnFilterItem,
-  SortOrder,
   Key,
   RowSelection,
   SelectionItem,

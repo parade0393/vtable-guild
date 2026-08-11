@@ -1,0 +1,15 @@
+# 构建产物
+**/dist/**
+**/dist-ssr/**
+**/coverage/**
+**/.vitepress/cache/**
+**/.vitepress/dist/**
+packages/vtable-guild/css/**
+packages/vtable-guild/stats/**
+
+# 由 pnpm 维护，格式不该由 prettier 决定
+pnpm-lock.yaml
+
+# prettier 会给 ```jsonc 代码块补尾逗号，而文中的示例是 package.json / tsconfig.json，
+# package.json 必须是严格 JSON，格式化后会把示例教成错的
+docs/monorepo-setup-guide.md
