@@ -220,8 +220,6 @@ Four takeaways, including the ones that don't flatter us:
 
 ### The column axis
 
-The trigger was [antdv-next#427](https://github.com/antdv-next/antdv-next/issues/427): 10k × 200 wide tables stutter or crash, and the maintainer confirmed there is no horizontal virtualization. The row axis is essentially free now; the column axis is a different story — and `virtualColumn` exists for exactly this case:
-
 <p align="center">
   <a href="https://parade0393.github.io/vtable-guild/guide/virtualization">
     <img src="https://raw.githubusercontent.com/parade0393/vtable-guild/master/cover/hero-virtual-column.gif" width="900" alt="Scrolling horizontally across 200 columns with only a dozen in the DOM">
