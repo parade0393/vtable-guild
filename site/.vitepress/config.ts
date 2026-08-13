@@ -33,6 +33,7 @@ export default defineConfig({
             { text: '指南概览', link: '/guide/' },
             { text: '为什么选择 vtable-guild', link: '/guide/why' },
             { text: '快速开始', link: '/guide/getting-started' },
+            { text: '安装与使用', link: '/guide/installation' },
             { text: '从 ant-design-vue 迁移', link: '/guide/migration-from-antd' },
             { text: '包导入与样式', link: '/guide/package-consumption' },
           ],

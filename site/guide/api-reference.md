@@ -48,13 +48,14 @@ import {
 
 ### 滚动与定位
 
-| Prop                | 类型                                             | 默认值  | 说明                                                                                                                                     |
-| ------------------- | ------------------------------------------------ | ------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `scroll`            | `{ x?: number \| string; y?: number \| string }` | -       | 横向和纵向滚动配置；提供 `y` 时形成固定表头滚动区。                                                                                      |
-| `sticky`            | `boolean \| TableSticky`                         | `false` | 粘性表头、摘要行或横向滚动条配置。                                                                                                       |
-| `virtual`           | `boolean`                                        | `false` | 启用虚拟滚动；需要同时设置 `scroll.y`。                                                                                                  |
-| `virtualColumn`     | `boolean`                                        | `false` | 横向虚拟化，只渲染视口内的列；需要同时开启 `virtual`。列数很多时才有收益，见[虚拟滚动](/guide/virtualization#横向虚拟化-virtualcolumn)。 |
-| `getPopupContainer` | `(triggerNode) => HTMLElement`                   | -       | 筛选和选择菜单的挂载容器。                                                                                                               |
+| Prop                | 类型                                             | 默认值  | 说明                                                                                                                                                                                 |
+| ------------------- | ------------------------------------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `scroll`            | `{ x?: number \| string; y?: number \| string }` | -       | 横向和纵向滚动配置；提供 `y` 时形成固定表头滚动区。                                                                                                                                  |
+| `sticky`            | `boolean \| TableSticky`                         | `false` | 粘性表头、摘要行或横向滚动条配置。                                                                                                                                                   |
+| `virtual`           | `boolean`                                        | `false` | 启用虚拟滚动；需要同时设置 `scroll.y`。                                                                                                                                              |
+| `virtualColumn`     | `boolean`                                        | `false` | 横向虚拟化，只渲染视口内的列；需要同时开启 `virtual`。列数很多时才有收益，见[虚拟滚动](/guide/virtualization#横向虚拟化-virtualcolumn)。                                             |
+| `rowHeight`         | `number`                                         | -       | 固定行高（px），仅在 `virtual` 下生效。声明后跳过全部行高测量，可视区计算恒为 O(1)。仅当每行实际高度确实等于该值时才可传，见[虚拟滚动](/guide/virtualization#定高快路径-rowheight)。 |
+| `getPopupContainer` | `(triggerNode) => HTMLElement`                   | -       | 筛选和选择菜单的挂载容器。                                                                                                                                                           |
 
 ### 主题与语言
 
@@ -77,6 +78,8 @@ import {
 | `onExpand`               | `(expanded, record) => void`                                  | -       | 树形数据展开/折叠回调。                                                |
 | `onExpandedRowsChange`   | `(expandedKeys) => void`                                      | -       | 树形数据展开 key 变化回调。                                            |
 | `transformCellText`      | `(opt) => unknown`                                            | -       | 统一转换单元格文本；`opt` 包含 `text`、`column`、`record` 和 `index`。 |
+| `showSorterTooltip`      | `boolean`                                                     | `true`  | 表级控制是否显示排序 tooltip，可被列级 `showSorterTooltip` 覆盖。      |
+| `sortDirections`         | [`SortOrder[]`](/guide/type-reference#sortorder)              | -       | 表级排序方向列表，作为列级 `sortDirections` 的默认值。                 |
 
 ### 自定义结构
 

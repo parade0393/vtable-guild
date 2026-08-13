@@ -34,16 +34,27 @@
 | `--vtg-table-border-color`         | 表格边框和单元格分隔线                  |
 | `--vtg-table-header-split-color`   | antdv 风格表头分割线                    |
 | `--vtg-table-header-sort-hover-bg` | 可排序表头 hover 背景                   |
+| `--vtg-table-header-sort-bg`       | 已激活排序的列表头背景                  |
+| `--vtg-table-body-sort-bg`         | 已激活排序的列单元格背景                |
 
 ## 行状态变量
 
-| 变量名                              | 作用                                            |
-| ----------------------------------- | ----------------------------------------------- |
-| `--vtg-table-row-hover-bg`          | `hoverable` 行 hover 背景                       |
-| `--vtg-table-row-striped-bg`        | `striped` 斑马纹背景                            |
-| `--vtg-table-row-selected-bg`       | 选中行背景                                      |
-| `--vtg-table-row-selected-hover-bg` | 选中行 hover 背景                               |
-| `--vtg-table-expanded-row-bg`       | 展开行内容背景，当前主题实现里带有默认 fallback |
+| 变量名                              | 作用                                                       |
+| ----------------------------------- | ---------------------------------------------------------- |
+| `--vtg-table-row-hover-bg`          | `hoverable` 行 hover 背景                                  |
+| `--vtg-table-row-striped-bg`        | `striped` 斑马纹背景，**仅 element-plus 预设生效**（见下） |
+| `--vtg-table-row-selected-bg`       | 选中行背景                                                 |
+| `--vtg-table-row-selected-hover-bg` | 选中行 hover 背景                                          |
+| `--vtg-table-expanded-row-bg`       | 展开行内容背景，当前主题实现里带有默认 fallback            |
+
+> [!WARNING]
+> `--vtg-table-row-striped-bg` 只有 element-plus 预设读取。**默认的 antdv 预设把斑马纹背景写死在
+> slot class 里**（`rgba(0, 0, 0, 0.02)`，对齐 antdv 原生表现），覆盖这个变量不会有任何效果。
+> 在 antdv 预设下要改斑马纹，请覆盖 `td` slot：
+>
+> ```vue
+> <VTable :striped="true" :ui="{ td: 'group-even/row:bg-slate-50' }" />
+> ```
 
 ## 排版与间距变量
 
@@ -58,6 +69,14 @@
 | `--vtg-table-cell-padding-block-md`  | `size='middle'` 的纵向 padding |
 | `--vtg-table-cell-padding-inline-sm` | `size='small'` 的横向 padding  |
 | `--vtg-table-cell-padding-block-sm`  | `size='small'` 的纵向 padding  |
+
+## 筛选面板变量
+
+| 变量名                                   | 作用                                                             |
+| ---------------------------------------- | ---------------------------------------------------------------- |
+| `--vtg-table-filter-dropdown-max-height` | 筛选面板选项区的最大高度，超出后内部滚动。未声明时回退到 `264px` |
+
+antdv 预设不声明这个变量，走 `264px` 回退值；element-plus 预设声明为 `280px`。
 
 ## 空态与加载变量
 

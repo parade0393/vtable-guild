@@ -152,10 +152,17 @@ interface CellAdditionalProps {
   style?: CSSProperties
   colSpan?: number
   rowSpan?: number
+  /** colSpan / rowSpan 的小写别名，与原生属性写法一致，两种都接受 */
+  colspan?: number
+  rowspan?: number
   onClick?: (event: MouseEvent) => void
+  onMouseenter?: (event: MouseEvent) => void
+  onMouseleave?: (event: MouseEvent) => void
   [key: string]: unknown
 }
 ```
+
+索引签名允许挂任意额外属性（`data-*`、`aria-*` 等），它们会直接落到对应的 DOM 元素上。
 
 ### RenderedCell
 
@@ -315,7 +322,13 @@ interface TableDataSlotProps<TRecord> {
 interface TableSlotsDecl<TRecord> {
   bodyCell?: (props: TableBodyCellSlotProps<TRecord>) => VNodeChild
   headerCell?: (props: TableHeaderCellSlotProps<TRecord>) => VNodeChild
+  empty?: () => VNodeChild
+  loading?: () => VNodeChild
   customFilterDropdown?: (props: CustomFilterDropdownSlotProps<TRecord>) => VNodeChild
+  customFilterIcon?: (props: { column: ColumnType<TRecord>; filtered: boolean }) => VNodeChild
+  title?: (props: TableDataSlotProps<TRecord>) => VNodeChild
+  footer?: (props: TableDataSlotProps<TRecord>) => VNodeChild
+  summary?: () => VNodeChild
 }
 ```
 
@@ -399,11 +412,26 @@ type ThemePresetName = 'antdv' | 'element-plus'
 ```ts
 interface VTableGuildOptions {
   themePreset?: ThemePresetName
+  cssMode?: VTableGuildCssMode
+  classPrefix?: string
   theme?: VTableGuildThemeOverrides
   locale?: LocaleName
   locales?: LocaleRegistry
   localeOverrides?: DeepPartial<VTableGuildLocale>
+  /** 兼容类名开关，默认关闭。安装时读取一次，不支持运行时切换 */
+  compatClass?: boolean
 }
+```
+
+`cssMode` 与 `classPrefix` 的取值和使用场景见 [安装与使用](/guide/installation)，
+`compatClass` 见 [从 ant-design-vue 迁移](/guide/migration-from-antd#保留旧的覆盖-css-兼容类名)。
+
+### VTableGuildCssMode
+
+样式模式，需要与实际引入的 CSS 入口一致。
+
+```ts
+type VTableGuildCssMode = 'prebuilt' | 'tailwind3' | 'tailwind4'
 ```
 
 ### LocaleName

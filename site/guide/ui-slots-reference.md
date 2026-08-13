@@ -133,6 +133,8 @@ app.use(
 | Slot              | 说明                             |
 | ----------------- | -------------------------------- |
 | `thSortable`      | 可排序列的 `<th>` 附加样式。     |
+| `thSorted`        | 已激活排序的列 `<th>` 背景。     |
+| `tdSorted`        | 已激活排序的列 `<td>` 背景。     |
 | `sortButton`      | 排序图标容器。                   |
 | `sortIconDown`    | 降序图标的间距调整。             |
 | `sortAreaOuter`   | 排序区最外层 flex 包裹。         |
@@ -148,20 +150,23 @@ app.use(
 
 ### 筛选下拉面板
 
-| Slot                           | 说明               |
-| ------------------------------ | ------------------ |
-| `filterDropdown`               | 筛选面板根容器。   |
-| `filterDropdownList`           | 筛选选项列表容器。 |
-| `filterDropdownItem`           | 单个筛选项。       |
-| `filterDropdownItemSelected`   | 选中项样式。       |
-| `filterDropdownItemHover`      | hover 项样式。     |
-| `filterDropdownContentWrapper` | 选项内容包裹层。   |
-| `filterDropdownActions`        | 底部操作栏。       |
-| `filterDropdownSearch`         | 搜索区外层。       |
-| `filterDropdownSearchField`    | 搜索输入框容器。   |
-| `filterDropdownSearchIcon`     | 搜索图标。         |
-| `filterDropdownSearchInput`    | 搜索输入框。       |
-| `filterDropdownListEmpty`      | 空结果提示。       |
+| Slot                               | 说明                                                |
+| ---------------------------------- | --------------------------------------------------- |
+| `filterDropdown`                   | 筛选面板根容器。                                    |
+| `filterDropdownList`               | 筛选选项列表容器。                                  |
+| `filterDropdownItem`               | 单个筛选项。                                        |
+| `filterDropdownItemSelected`       | 选中项样式。                                        |
+| `filterDropdownItemSelectedSingle` | 单选（`filterMultiple: false`）下的选中项附加样式。 |
+| `filterDropdownItemHover`          | hover 项样式。                                      |
+| `filterDropdownContentWrapper`     | 选项内容包裹层。                                    |
+| `filterDropdownActions`            | 底部操作栏。                                        |
+| `filterDropdownResetButton`        | 底部「重置」按钮的附加样式。                        |
+| `filterDropdownConfirmButton`      | 底部「确定」按钮的附加样式。                        |
+| `filterDropdownSearch`             | 搜索区外层。                                        |
+| `filterDropdownSearchField`        | 搜索输入框容器。                                    |
+| `filterDropdownSearchIcon`         | 搜索图标。                                          |
+| `filterDropdownSearchInput`        | 搜索输入框。                                        |
+| `filterDropdownListEmpty`          | 空结果提示。                                        |
 
 ### 筛选树形结构
 
@@ -176,6 +181,7 @@ app.use(
 | `filterDropdownTreeItem`           | 单个树节点行。        |
 | `filterDropdownTreeContentWrapper` | 树节点内容包裹层。    |
 | `filterDropdownTreeItemSelected`   | 选中节点样式。        |
+| `filterDropdownTreeItemMatched`    | 搜索命中节点样式。    |
 | `filterDropdownTreeCheckAll`       | “全选” 行。           |
 
 ### 空状态
