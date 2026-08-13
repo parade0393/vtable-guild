@@ -128,9 +128,13 @@ vxe-table `4.20.10` · vue `3.5.26`。
 | el-table-v2                     | 131 / 131    | 84 / 164   | 0.0 / 213 | 6,302             | 5,229      | 200      | 47.0px   |
 | antdv-next Table                | 266 / 954    | 258 / 258  | 0.1 / 217 | 5,726             | 2,640      | 200      | 47.0px   |
 
-**这一档只有两家做了横向虚拟化**：vxe-table，和开了 `virtualColumn` 的我们。el-table-v2 与 antdv-next
-的可视列数都是 200，它们在这个配置下只虚拟化行——el-table-v2 比我们（关窗口时）快，靠的是纯 div +
-定高本来就更省，不是虚拟列。
+**本次对照的这 4 个库里只有两家做了横向虚拟化**：vxe-table，和开了 `virtualColumn` 的我们。
+el-table-v2 与 antdv-next 的可视列数都是 200，它们在这个配置下只虚拟化行——el-table-v2
+比我们（关窗口时）快，靠的是纯 div + 定高本来就更省，不是虚拟列。
+
+> 限定词不能省。社区里还有别的实现做了横向虚拟化（如 `aimerthyr/virtual-table`
+> 自称行列均支持），只是不在本次对照范围内。对外任何"只有 X 家"的说法都要带上
+> "在本次实测的这几个库里"，否则一处未限定的宣称就足以让整份数据被否定。
 
 内存列本档不列：两个开启横向虚拟化的条目读数为负（−32.9 MB / −4.6 MB），是 GC 时机导致的
 已知不可靠读数，列出来只会误导。
@@ -157,7 +161,7 @@ vxe-table `4.20.10` · vue `3.5.26`。
    - antdv-next：表体是 div（`div.ant-table-tbody-virtual` + `div.ant-table-row`），虚拟模式下
      `rowSpan`/`colSpan` 无效；但基于 `@v-c/virtual-list`（ResizeObserver 实测行高），不定行高成立
    - vxe-table：能力最全，表体也是语义化 `<tbody><tr><td>`（`.vxe-body--row` 是真 `<tr>`）。
-     但它的 `scroll-y.gt` 类型注释写明「启用纵向虚拟滚动之后将不能支持动态行高」——
+     但它的 `virtual-y-config.gt` 类型注释写明「启用纵向虚拟滚动之后将不能支持动态行高」——
      **大数据档它同样要定高**
    - 所以对 vxe-table 的差异化理由**不是**语义化表格，而是两点：10 万行下挂载/排序快一个数量级，
      以及虚拟滚动下仍支持不定行高
@@ -203,7 +207,8 @@ vxe-table `4.20.10` · vue `3.5.26`。
   `TableCell.widthOverride`、`TableHeaderCell` 给叶子 `<th>` 打 `data-vtg-leaf-col`。
 
 与 vxe-table 仍存在的差距（已知，未做）：表头不虚拟化；合计行不虚拟化；
-无 `preloadSize` / `immediate` 调优旋钮，只有固定 overscan（2 列）；
+无调优旋钮（vxe 的 `virtual-x-config` 给了 `gt` / `oSize` / `preSize` / `immediate` / `threshold`
+一整套，还能按 `gt` 阈值自动启用；我们只有一个布尔开关 + 固定 overscan 2 列）；
 不处理浏览器最大滚动宽度上限（vxe 有 `isScrollXBig` 分支做比例映射）。
 
 ### 虚拟行不渲染 `<colgroup>`
@@ -254,8 +259,13 @@ fixed 布局下 `<col>` 宽度优先级高于单元格宽度，若表头只读 `
 - [ ] 竞品能力**先查已安装包的类型声明**，`node_modules/.pnpm/<pkg>@<version>/…/*.d.ts`。
       理由：版本和你实测用的完全一致，而官网写的是最新版；很多关键约束只写在类型注释里，
       官网反而找不到——vxe-table「启用纵向虚拟滚动之后将不能支持动态行高」就是在
-      `scroll-y.gt` 的注释里发现的，此前一直被记成"它这项不缺"。
+      `VirtualYConfig.gt` 的注释里发现的，此前一直被记成"它这项不缺"。
+      注意类型可能不在主包里：vxe-table 4.20.10 的 `types/` 只做转发，实际定义在
+      `vxe-pc-ui/types/components/table.d.ts`。
       解析路径：`node -e "console.log(require.resolve('<pkg>/package.json'))"`。
+- [ ] **"只有 X 家 / 独有 / 唯一"必须带范围限定**（"在本次实测的这几个库里"）。
+      对照范围之外一定还有别的实现——`aimerthyr/virtual-table` 就自称行列均支持虚拟滚动。
+      一处未限定的宣称足以让整份数据被否定。
 - [ ] DOM 层面的结论（是否语义化 `<table>`、是否真的窗口化）**用对照页实测**，别靠印象：
       可视列数看结果表，表体结构直接在 DevTools 里看标签名。
 - [ ] 核实不了就写"未核实"，不写 ✅ 也不写 ❌ —— 不替竞品下没根据的结论。
