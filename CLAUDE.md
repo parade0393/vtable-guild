@@ -11,19 +11,19 @@ vtable-guild is a Vue 3 Table component library with flexible theme customizatio
 pnpm workspaces + Turborepo. Five packages with this dependency graph:
 
 ```
-@vtable-guild/vtable-guild (aggregation entry, re-exports all)
+@vtable-guild/vtable-guild (aggregation entry, re-exports all — the only public package)
   ├── @vtable-guild/table (main table component + composables)
   │   ├── @vtable-guild/core (peer)
   │   ├── @vtable-guild/icons (peer)
   │   └── @vtable-guild/theme (peer)
-  ├── @vtable-guild/theme → core (peer)
+  ├── @vtable-guild/theme → core (devDependency, types only)
   ├── @vtable-guild/icons
   └── @vtable-guild/core (tailwind-variants, tailwind-merge, vue as peer)
 ```
 
-- **core**: `tv()` wrapper, `cn()` class merging, `useTheme()` composable, Vue plugin (`createVTableGuild`), base UI components (Tooltip, Button, Checkbox), prop helpers
-- **theme**: Pure data objects defining tailwind-variants theme configs + CSS variable tokens. Presets: `antdv` (default), `element-plus`
-- **table**: `VTable` component (TSX) with sub-components, composables (`useSorter`, `useFilter`, `useColumns`), and types
+- **core**: `tv()` / `cn()` wrappers, `useTheme()` composable, Vue plugin (`createVTableGuild`), base UI components (Tooltip, Button, Checkbox, Radio, Input, Scrollbar, VTableGuildConfigProvider), vendored `VirtualList`, prop helpers
+- **theme**: Pure data objects defining tailwind-variants theme configs + CSS variable tokens. Presets: `antdv` (default), `element-plus` — both under `src/presets/<name>/`
+- **table**: `VTable` (thin `.vue` generic bridge) over `Table.tsx`, TSX sub-components, composables (`useSorter`, `useFilter`, `useColumns`, `useSelection`, `useExpand`, `useTreeData`, `useVirtual`, …), and types
 - **icons**: SVG icon Vue components
 - **vtable-guild**: Aggregation package that re-exports everything
 
@@ -55,16 +55,16 @@ pnpm --filter @vtable-guild/vtable-guild copy-css
 2. **Global config** (`createVTableGuild({ theme })`): app-level overrides via Vue provide/inject
 3. **Instance props** (`<VTable :ui="{ th: '...' }" class="...">`): per-component overrides
 
-Layers merge via `useTheme()` composable using `cn()` (tailwind-merge) for conflict resolution. Each theme file exports a plain object with `slots`, `variants`, `defaultVariants`, and `compoundVariants`.
+Layers merge via `useTheme()` composable using `cn()` (tailwind-merge) for conflict resolution. Each theme file exports a plain object closed with `as const satisfies ThemeConfig`, holding `slots`, `variants`, `defaultVariants`, and — for the table theme — `compoundSlots` (not `compoundVariants`; one padding rule has to hit `th` / `td` / `title` / `footer` / `summaryCell` at once). Both presets must expose an identical slot key set; `TableSlots` is derived from the antdv preset.
 
 ### Table Component Patterns
 
-- All table sub-components are written in **TSX** (not Vue SFC)
+- All table sub-components are written in **TSX**. The single exception is `VTable.vue`, a generic bridge: `Table.tsx` runs monomorphically over `Record<string, unknown>`, and the SFC layer restores the caller's `TRecord` for props, events and slot params
 - State managed via composables: `useSorter()`, `useFilter()`, `useColumns()`
 - Supports both **controlled** (`column.sortOrder`) and **uncontrolled** (`column.defaultSortOrder`) modes
 - Single `change` event emitted with `(filters, sorter, extra)` — mirrors ant-design-vue API
 - Cross-component data via `provide/inject` with `TABLE_CONTEXT_KEY`
-- Data pipeline: `dataSource → filterData() → sortData() → processedData`
+- Data pipeline: `dataSource → filterData() → sortData() → processedData → flattenTree() → displayData`. `processedData` is what `extra.currentDataSource` and the `title` / `footer` callbacks see; `displayData` is what actually renders
 
 ### CSS Variables
 
@@ -93,9 +93,9 @@ Theme tokens defined as CSS custom properties in `packages/theme/css/`:
 
 ## Key File Locations
 
-- Theme definitions: `packages/theme/src/table.ts`
+- Theme definitions: `packages/theme/src/presets/antdv/table.ts` (`packages/theme/src/table.ts` is only a re-export of the current default preset)
 - Theme presets CSS: `packages/theme/css/presets/antdv.css`
-- Core utilities: `packages/core/src/utils/tv.ts` (tv wrapper), `packages/core/src/utils/cn.ts`
+- Core utilities: `packages/core/src/utils/tv.ts` — exports both `tv` and `cn`
 - Plugin setup: `packages/core/src/plugin/index.ts`
 - Table composables: `packages/table/src/composables/`
 - Table types: `packages/table/src/types/`

@@ -15,7 +15,9 @@ This repository is a `pnpm` + Turborepo monorepo.
 
 - `packages/*`: publishable libraries (`core`, `icons`, `table`, `theme`, `vtable-guild`), with source in `src/` and outputs in `dist/`.
 - `playground/`: local Vite app for manual validation and screenshots.
-- `docs/`: architecture and phase guides.
+- `site/`: VitePress documentation site (the user-facing docs); `play/` and `perf/` are standalone
+  apps assembled into it at deploy time.
+- `docs/`: maintainer-facing notes — architecture, performance, release and tooling guides.
 
 ## Build, Test, and Development Commands
 
@@ -42,11 +44,21 @@ Use Node `^20.19.0 || >=22.12.0` and `pnpm >=10.28.0`.
 
 ## Testing Guidelines
 
-Automated tests are not broadly configured yet. For new tests:
+Vitest is configured at the root (`vitest.config.ts`) as a multi-project workspace; `core`, `theme`
+and `table` carry the real suites (25 test/bench files today), the remaining projects are wired with
+`passWithNoTests`. `happy-dom` is the environment and `tests/setup.ts` the shared setup file.
 
-- Name files `*.spec.ts` or `*.test.ts`.
-- Keep tests next to implementation or in a local `__tests__/` folder.
-- Wire package-level `test` scripts so `pnpm test` runs them through Turbo.
+- `pnpm test`: run the suites through Turbo.
+- `pnpm bench`: run the `*.bench.ts` benchmarks (currently `table` only).
+- `pnpm test:coverage`: v8 coverage over `core` / `theme` / `table`.
+
+For new tests:
+
+- Name files `*.test.ts` — the project `include` globs are `src/**/*.test.ts`, so `*.spec.ts` is
+  **not** collected by Vitest. Reserve `*.spec.ts` / `*.typecheck.ts` for type-level contracts that
+  `pnpm type-check` asserts via `vue-tsc`.
+- Keep tests next to the implementation (`useSorter.ts` → `useSorter.test.ts`).
+- New packages need a `test` script plus a project entry in `vitest.config.ts`.
 
 ## Commit & Pull Request Guidelines
 

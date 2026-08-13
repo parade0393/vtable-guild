@@ -1,11 +1,10 @@
 # vtable-guild 路线图
 
 > 这份文档记录「项目现在处在哪」，不是待办清单。
-> 当前发布版本：`@vtable-guild/vtable-guild@2.4.1`（MIT，npm 公开）。
+> 当前发布版本：`@vtable-guild/vtable-guild@2.6.0`（MIT，npm 公开）。
 >
-> 早期那份逐阶段的建设计划已经全部走完，细化步骤保留在 [phase-1-guide.md](./phase-1-guide.md)、
-> [phase-2-guide.md](./phase-2-guide.md)、[phase-3-guide.md](./phase-3-guide.md)、
-> [phase-4-guide.md](./phase-4-guide.md) 等文档里，作为实现记录，不再作为排期使用。
+> 早期那份逐阶段的建设计划已经全部走完，对应的 phase 指南已从仓库移除；实现细节以代码、
+> `CHANGELOG.md` 和 git 历史为准。
 
 ---
 
@@ -19,7 +18,7 @@
 - ESLint + Stylelint + Prettier + husky/lint-staged + commitlint（conventional commits）
 - Changesets 版本管理；CI（lint / type-check / test / build）、Release（npm trusted publishing）、
   Deploy Site 三条 workflow
-- 20 个测试与基准文件，覆盖 composable 状态逻辑、组件渲染、主题合并与类型契约
+- 25 个测试与基准文件，覆盖 composable 状态逻辑、组件渲染、主题合并与类型契约
 
 ### 主题系统
 
@@ -47,16 +46,11 @@
 
 ### 文档与分发
 
-- VitePress 文档站，24 个页面 + 13 个可交互 demo，部署在 GitHub Pages
+- VitePress 文档站，28 个页面 + 16 个可交互 demo，部署在 GitHub Pages
 - 独立 Playground（`@vue/repl` + Monaco），挂在文档站 `/play/`
-
----
-
-## 进行中
-
-分发侧的补课，不涉及组件代码：
-
-- 文档正确性复核（尺寸命名等文档与代码不一致项）
+- 可复现的性能对照页，挂在文档站 `/perf/`：vtable-guild / ant-design-vue Table / antdv-next /
+  el-table-v2 / vxe-table 在同一批数据与列配置下对照（1k / 1 万 / 10 万行 × 6 / 50 / 200 列），
+  公开采集方法并支持一键导出
 
 ---
 
@@ -71,11 +65,6 @@
 `aria-rowcount` / `aria-colindex`、可见焦点环。
 
 这是目前唯一的「合规级」缺口，对有无障碍要求的团队是硬门槛。
-
-### 可复现的性能对照页
-
-把内部的 `/perf` 演练台整理为公开页面，对 vtable-guild / ant-design-vue Table / el-table-v2
-在同一批数据（1k / 1w / 10w 行）下对照，公开采集方法与环境。
 
 ### 开放子包
 
