@@ -152,6 +152,9 @@ app.mount('#app')
   自定义语言包注册表
 - `localeOverrides`
   当前语言包的局部覆盖
+- `compatClass`
+  是否额外输出 `ant-table-*` 兼容类名，默认 `false`；用于让 antdv 时期的覆盖 CSS 继续生效，
+  详见[从 ant-design-vue 迁移](./migration-from-antd#保留旧的覆盖-css-兼容类名)
 
 示例：
 

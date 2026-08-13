@@ -208,6 +208,8 @@ export interface VTableGuildOptions {
   locales?: LocaleRegistry
   /** 当前激活语言包的局部覆写 */
   localeOverrides?: DeepPartial<VTableGuildLocale>
+  /** 兼容类名开关，默认关闭；开启后为元素添加 antdv 语义类名以兼容旧项目的覆盖 CSS。安装时读取一次，不支持运行时切换 */
+  compatClass?: boolean
 }
 
 /**
@@ -221,4 +223,5 @@ export interface VTableGuildContext {
   locale: LocaleName
   locales: LocaleRegistry
   localeOverrides: DeepPartial<VTableGuildLocale>
+  compatClass?: boolean
 }

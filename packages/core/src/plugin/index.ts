@@ -52,6 +52,7 @@ export function createVTableGuild(options: VTableGuildOptions = {}): Plugin {
         locale: options.locale ?? 'zh-CN',
         locales: options.locales ?? {},
         localeOverrides: options.localeOverrides ?? {},
+        compatClass: options.compatClass,
       }) as VTableGuildContext
 
       app.provide(VTABLE_GUILD_INJECTION_KEY, context)

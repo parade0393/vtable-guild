@@ -55,6 +55,52 @@ vtable-guild 的设计方向是兼容高频表格使用方式，而不是逐项�
 | 自行关闭 hover 效果                                     | 优先改用 hoverable                                            |
 | resizable / minWidth / maxWidth                         | 继续使用同名字段；resizeColumn 事件参数顺序为 (column, width) |
 
+## 保留旧的覆盖 CSS（兼容类名）
+
+如果页面里已经写了一批 `.ant-table-thead > tr > th { ... }`、`:deep(.ant-table-cell)` 这样的覆盖样式，
+逐条重写成 Tailwind 或 `ui` prop 的成本很高。可以开启兼容类名，让 vtable-guild 在原有元素上
+额外输出一套 `ant-table-*` 类，旧选择器继续命中：
+
+```ts
+app.use(
+  createVTableGuild({
+    compatClass: true, // 默认关闭
+  }),
+)
+```
+
+这是全局开关，只在安装时读取一次，不支持运行时切换。开启后不改变 DOM 结构，也不引入任何样式，
+只是在既有元素上多加 class，所以视觉表现与关闭时完全一致。
+
+覆盖范围包括结构类（`ant-table-wrapper`、`ant-table-thead`、`ant-table-cell` 等）、
+变体类（`ant-table-small`、`ant-table-bordered`）以及状态类
+（`ant-table-row-selected`、`ant-table-cell-fix-left-last`、`ant-table-row-level-{n}` 等）。
+
+### 与 ant-design-vue 共存时会串味吗
+
+一般不会。ant-design-vue 4.x 默认通过 cssinjs 给每条规则的选择器注入 hash 类，实际产出形如：
+
+```css
+.ant-table-wrapper.css-dev-only-do-not-override-xxxxx .ant-table-thead > tr > th { ... }
+```
+
+我们的元素不带那个 hash 类，所以 **antdv 自己的样式匹配不到我们的表格**，而你手写的
+`.ant-table-thead > tr > th` 能正常命中 —— 这正是需要的效果。
+
+我们在同时加载 antdv 的页面上实测过：页面共有 178 条 `ant-table` 规则，命中我们表格元素的是 0 条。
+
+::: warning 例外
+如果你的项目使用了 `<StyleProvider :hashed="false">`，antdv 不再生成 hash 类，选择器退化为
+`[class^='ant-table']`、`.ant-table-wrapper .ant-table-cell` 这类形式，此时 antdv 的样式会真的
+作用到我们的表格上 —— 同一个页面上实测有 20 条规则会命中。这种情况下不要开启兼容类名。
+:::
+
+::: warning 这不是稳定 API
+兼容类名是迁移期的过渡辅助，不是我们承诺的 API 契约。后续版本可能调整 DOM 结构，
+届时依赖这些类名写的覆盖 CSS 可能失效。建议把它当作「先跑起来」的手段，
+长期仍应迁移到 `ui` prop 或主题覆盖。
+:::
+
 ## 推荐迁移顺序
 
 1. 先迁移一张依赖排序、筛选、选择的常规业务表格。
@@ -88,6 +134,6 @@ vtable-guild 的设计方向是兼容高频表格使用方式，而不是逐项�
 
 - 页面高度依赖 ant-design-vue Table 的分页行为。
 - 你有很多深度定制的表头、筛选下拉或复杂联动逻辑。
-- 页面已经围绕旧表格写了大量 CSS 选择器。
+- 页面已经围绕旧表格写了大量 CSS 选择器（可先开启[兼容类名](#保留旧的覆盖-css-兼容类名)过渡）。
 
 这类页面不是不能迁移，而是更适合先通过 [API Reference](/guide/api-reference) 和功能页确认具体边界。

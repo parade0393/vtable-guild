@@ -65,6 +65,12 @@ export default defineComponent({
 
     const { fixedStyle, fixedClass } = useFixedColumnStyle({ fixedInfo: () => fixedInfo.value })
 
+    const ellipsisCompatClass = computed(() =>
+      getEllipsisConfig(props.column).enabled
+        ? (tableContext.compatClass?.('cell-ellipsis') ?? '')
+        : '',
+    )
+
     const selectionState = computed(
       () =>
         tableContext.getSelectionState?.(props.record, props.rowIndex) ?? {
@@ -139,6 +145,8 @@ export default defineComponent({
         selectedClasses,
         hoverClass,
         fixedClass.value,
+        // antdv 把 ellipsis 类放在 td 上，我们的 slot 落在内层 span，故在此补
+        ellipsisCompatClass.value,
       )
     })
 
@@ -275,6 +283,7 @@ export default defineComponent({
               ? tableContext.subThemeSlots.tdRowHover()
               : '',
           fixedClass.value,
+          tableContext.compatClass?.('selection-column'),
         )
 
         return (
@@ -319,6 +328,7 @@ export default defineComponent({
           expandSelectedClass,
           expandHoverClass,
           fixedClass.value,
+          tableContext.compatClass?.('row-expand-icon-cell'),
         )
 
         if (exp?.expandIcon) {

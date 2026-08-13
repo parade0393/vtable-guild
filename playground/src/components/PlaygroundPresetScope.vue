@@ -31,6 +31,9 @@ const scopedContext = reactive({
   get localeOverrides() {
     return parentContext?.localeOverrides ?? {}
   },
+  get compatClass() {
+    return parentContext?.compatClass
+  },
 }) as VTableGuildContext
 
 provide(VTABLE_GUILD_INJECTION_KEY, scopedContext)

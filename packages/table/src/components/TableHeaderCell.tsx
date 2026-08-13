@@ -312,6 +312,7 @@ export default defineComponent({
         headerCellProps.value?.className,
         fixedClass.value,
         lastColumnDividerFix.value,
+        isExpandHeader ? tableContext.compatClass?.('row-expand-icon-cell') : '',
       )
     })
 
@@ -442,6 +443,7 @@ export default defineComponent({
           headerCellProps.value?.class,
           headerCellProps.value?.className,
           fixedClass.value,
+          tableContext.compatClass?.('selection-column'),
         )
         const cellSelStyle = cellStyle.value
 

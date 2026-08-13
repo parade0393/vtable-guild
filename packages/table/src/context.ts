@@ -180,6 +180,14 @@ export interface TableContext {
   /** 转换库内部硬编码 class。用户传入 class 不应调用此函数。 */
   vtgClass?: (className: string) => string
 
+  /**
+   * 生成 antdv 兼容类名（如 `compatClass('row-selected')` → `ant-table-row-selected`）。
+   *
+   * 仅当全局 `compatClass: true` 时存在，否则为 undefined —— 调用点用可选链即可零开销跳过。
+   * 用于 slot 覆盖不到的状态驱动类名（选中行、固定列边界、树层级等）。
+   */
+  compatClass?: (suffix: string) => string
+
   /** 当前激活语言标识 */
   localeName?: ComputedRef<LocaleName>
 

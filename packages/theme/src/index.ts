@@ -57,3 +57,7 @@ export type { RadioSlots, RadioThemeConfig } from './radio'
 export type { InputSlots, InputThemeConfig } from './input'
 export type { TooltipSlots, TooltipThemeConfig } from './tooltip'
 export type { ScrollbarSlots, ScrollbarThemeConfig } from './scrollbar'
+
+// ---------- 兼容类名 ----------
+export { antdvTableCompatClasses } from './compat/antdv-table'
+export type { CompatClassConfig } from './compat/antdv-table'

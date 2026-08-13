@@ -29,6 +29,7 @@ import {
   type VTableGuildTableLocale,
 } from '@vtable-guild/core'
 import {
+  antdvTableCompatClasses,
   resolveBuiltInTableLocale,
   resolveButtonThemePreset,
   resolveCheckboxThemePreset,
@@ -43,6 +44,7 @@ import {
 } from '@vtable-guild/theme'
 import { useColumns, useSorter, useFilter, useSelection } from '../composables'
 import { getEllipsisConfig } from '../utils/cell'
+import { getRootCompatClass } from '../utils/compat'
 import { useScroll, type ScrollConfig } from '../composables/useScroll'
 import { useColumnMetrics } from '../composables/useColumnMetrics'
 import { resolveFixedColumnRanges } from '../composables/useColumnWindow'
@@ -416,7 +418,14 @@ export default defineComponent({
       () => resolveTableThemePreset(effectiveThemePreset.value) ?? tableTheme,
     )
 
-    const { slots: themeSlots } = useTheme('table', defaultTheme, props)
+    const { slots: themeSlots } = useTheme('table', defaultTheme, props, {
+      compatClasses: antdvTableCompatClasses,
+    })
+
+    // 兼容类名开关（安装时读取一次，只读）。第二层状态类无法由 slot 覆盖，
+    // 需在调用点按运行时状态拼接，故经 context 下发一个前缀函数。
+    const compatClassEnabled = globalContext?.compatClass === true
+    const compatClassFn = compatClassEnabled ? (suffix: string) => `ant-table-${suffix}` : undefined
 
     const effectiveLocaleName = computed(() => props.locale ?? globalContext?.locale ?? 'zh-CN')
 
@@ -662,6 +671,10 @@ export default defineComponent({
     } = useScroll({
       displayColumns: () => displayColumns.value,
     })
+
+    const rootCompatClass = computed(() =>
+      getRootCompatClass({ compatClass: compatClassFn, fixedOffsets, scrollState }),
+    )
 
     const hasStickyHeader = computed(
       () => props.showHeader !== false && (!!props.scroll?.y || !!props.sticky),
@@ -1003,6 +1016,7 @@ export default defineComponent({
       classPrefix: effectiveClassPrefix,
       vtgClass: (className) =>
         prefixVtgClassNames(className, effectiveCssMode.value, effectiveClassPrefix.value),
+      compatClass: compatClassFn,
       localeName: effectiveLocaleName,
       locale: tableLocale,
       rowSelection: () => props.rowSelection as RowSelection<Record<string, unknown>> | undefined,
@@ -1224,7 +1238,7 @@ export default defineComponent({
           ) : null
 
         return (
-          <div class={themeSlots.root()}>
+          <div class={cn(themeSlots.root(), rootCompatClass.value)}>
             {titleContent && <div class={themeSlots.title()}>{titleContent}</div>}
             <div
               class={cn(
@@ -1279,7 +1293,7 @@ export default defineComponent({
       )
 
       return (
-        <div class={themeSlots.root()}>
+        <div class={cn(themeSlots.root(), rootCompatClass.value)}>
           {titleContent && <div class={themeSlots.title()}>{titleContent}</div>}
           <Scrollbar
             ref={wrapperScrollbarRef}

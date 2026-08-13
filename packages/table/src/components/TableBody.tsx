@@ -7,6 +7,7 @@ import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 import { getByDataIndex } from '../composables'
 import type { ColumnType, Key } from '../types'
 import { resolveBodyCell, type ResolvedBodyCell } from '../utils/cell'
+import { getRowCompatClass } from '../utils/compat'
 
 interface BodyRowCell {
   column: ColumnType<Record<string, unknown>>
@@ -128,7 +129,13 @@ export default defineComponent({
             return [
               <TableRow
                 key={key}
-                rowClass={cn(props.rowClass, rowClassName) ?? ''}
+                rowClass={
+                  cn(
+                    props.rowClass,
+                    rowClassName,
+                    getRowCompatClass(tableContext, record, rowIndex, rowIndent),
+                  ) ?? ''
+                }
                 rowProps={rowProps}
                 onClick={handleRowClick}
               >

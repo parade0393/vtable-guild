@@ -7,6 +7,16 @@ import { VTABLE_GUILD_INJECTION_KEY } from '../plugin/index'
 import type { ThemeConfig, VTableGuildContext } from '../index'
 import { cnByCssMode, prefixThemeConfig } from '../utils/classPrefix'
 
+export interface CompatClassConfig {
+  slots?: Record<string, string>
+  variants?: Record<string, Record<string, Record<string, string>>>
+}
+
+export interface UseThemeOptions {
+  /** 兼容类名映射表；仅当全局 compatClass 开启时生效（安装时读取一次，非响应式） */
+  compatClasses?: CompatClassConfig
+}
+
 /**
  * 三层主题合并 composable。
  *
@@ -47,11 +57,29 @@ export function useTheme<T extends ThemeConfig>(
   componentName: string,
   defaultTheme: MaybeRef<T>,
   props: Record<string, unknown>,
+  options?: UseThemeOptions,
 ) {
   // ========== Layer 2: 通过 inject 获取全局配置 ==========
   const globalContext = inject<VTableGuildContext | null>(VTABLE_GUILD_INJECTION_KEY, null)
   const cssMode = computed(() => globalContext?.cssMode ?? 'prebuilt')
   const classPrefix = computed(() => globalContext?.classPrefix ?? 'vtg')
+
+  // 兼容类名开关：安装时读取一次（只读，不支持运行时切换）
+  const compatConfig = globalContext?.compatClass ? options?.compatClasses : undefined
+
+  // 兼容类名与 variant props 同源，用独立 computed 缓存（未开启时为 null，零开销）
+  const _compatSlotClasses = compatConfig
+    ? computed(() => {
+        const globalTheme = (
+          globalContext?.theme as Record<string, Partial<ThemeConfig>> | undefined
+        )?.[componentName]
+        const defaultVariants = {
+          ...unref(defaultTheme).defaultVariants,
+          ...globalTheme?.defaultVariants,
+        }
+        return resolveCompatClasses(compatConfig, props, defaultVariants)
+      })
+    : null
 
   // 内部 computed：缓存 merge + tv() 的计算结果
   // 仅在 variant props 变化时重算，ui/class 变化不触发
@@ -95,7 +123,13 @@ export function useTheme<T extends ThemeConfig>(
       const extraClass = slotName === 'root' ? ((props.class ?? '') as string) : ''
 
       // 通过 cn() 合并（cn 底层调用 tailwind-merge 处理 class 冲突）
-      return cnByCssMode(cssMode.value, classPrefix.value, base, uiClass, extraClass) ?? ''
+      const merged = cnByCssMode(cssMode.value, classPrefix.value, base, uiClass, extraClass) ?? ''
+
+      // 兼容类名不是 Tailwind utility，绝不能进入 tailwind-merge 管道
+      //（classPrefix: 'ant' 时会被反前缀成真实工具类），故在管道之外前置拼接
+      const compatClass = _compatSlotClasses?.value[slotName]
+      if (!compatClass) return merged
+      return merged ? `${compatClass} ${merged}` : compatClass
     }
   }
 
@@ -105,6 +139,43 @@ export function useTheme<T extends ThemeConfig>(
 }
 
 // ---------- 内部辅助函数 ----------
+
+/**
+ * 解析兼容类名映射表 → 每 slot 的最终 class 字符串。
+ *
+ * variant 值优先读 props，缺省回落 defaultVariants；命中的 class 与 slots 基础 class
+ * 拼接后做 Set 去重（同一 slot 可能被 slots 与多个 variant 同时命中同名类）。
+ */
+function resolveCompatClasses(
+  config: CompatClassConfig,
+  props: Record<string, unknown>,
+  defaultVariants: Record<string, unknown>,
+): Record<string, string> {
+  const perSlot: Record<string, string[]> = {}
+
+  for (const [slot, className] of Object.entries(config.slots ?? {})) {
+    ;(perSlot[slot] ??= []).push(className)
+  }
+
+  for (const [variantName, values] of Object.entries(config.variants ?? {})) {
+    const raw =
+      variantName in props && props[variantName] !== undefined
+        ? props[variantName]
+        : defaultVariants[variantName]
+    if (raw === undefined || raw === null) continue
+    const hit = values[String(raw)]
+    if (!hit) continue
+    for (const [slot, className] of Object.entries(hit)) {
+      ;(perSlot[slot] ??= []).push(className)
+    }
+  }
+
+  const result: Record<string, string> = {}
+  for (const [slot, classNames] of Object.entries(perSlot)) {
+    result[slot] = [...new Set(classNames.join(' ').split(/\s+/).filter(Boolean))].join(' ')
+  }
+  return result
+}
 
 /**
  * 合并两层主题配置（默认主题 + 全局配置）。

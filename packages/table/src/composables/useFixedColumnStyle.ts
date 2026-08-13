@@ -1,5 +1,6 @@
 import { computed, inject, type ComputedRef } from 'vue'
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
+import { getFixedCellCompatClass } from '../utils/compat'
 import type { FixedOffset } from './useScroll'
 
 export interface UseFixedColumnStyleReturn {
@@ -32,8 +33,9 @@ export function useFixedColumnStyle(options: {
   const fixedClass = computed(() => {
     const info = options.fixedInfo()
     if (!info) return ''
+    const compatClass = getFixedCellCompatClass(tableContext, info)
     const sub = tableContext.subThemeSlots
-    if (!sub) return ''
+    if (!sub) return compatClass
     const classes: string[] = []
     const atStart = tableContext.scrollState?.atStart.value ?? true
     const atEnd = tableContext.scrollState?.atEnd.value ?? true
@@ -43,6 +45,7 @@ export function useFixedColumnStyle(options: {
     if (info.isFirstRight && !atEnd) {
       classes.push(sub.fixedShadowRight())
     }
+    if (compatClass) classes.push(compatClass)
     return classes.join(' ')
   })
 

@@ -10,6 +10,7 @@ import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 import type { ColumnMetrics } from '../composables/useColumnMetrics'
 import { resolveFixedColumnRanges, useColumnWindow } from '../composables/useColumnWindow'
 import type { ColumnType, Key } from '../types'
+import { getRowCompatClass } from '../utils/compat'
 
 type VirtualTableScrollInfo = VirtualScrollInfo & {
   maxX: number
@@ -338,7 +339,13 @@ export default defineComponent({
                   <tbody class={props.tbodyClass}>
                     <TableRow
                       key={key}
-                      rowClass={cn(props.rowClass, rowClassName) ?? ''}
+                      rowClass={
+                        cn(
+                          props.rowClass,
+                          rowClassName,
+                          getRowCompatClass(tableContext, item, rIndex, rowIndent),
+                        ) ?? ''
+                      }
                       rowProps={rowProps}
                       onClick={handleRowClick}
                     >

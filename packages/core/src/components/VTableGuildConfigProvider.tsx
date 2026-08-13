@@ -95,6 +95,11 @@ export default defineComponent({
       get localeOverrides() {
         return mergedLocaleOverrides.value
       },
+      // 兼容类名只在安装时配置，这里透传父级即可；漏掉会让嵌套 provider 下的表格
+      // 静默丢失 ant-table-* 类名。
+      get compatClass() {
+        return parentContext?.compatClass
+      },
     }) as VTableGuildContext
 
     provide(VTABLE_GUILD_INJECTION_KEY, context)
