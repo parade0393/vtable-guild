@@ -19,6 +19,7 @@
     "@vtable-guild/theme",
     "@vtable-guild/playground",
     "@vtable-guild/site",
-    "@vtable-guild/play"
+    "@vtable-guild/play",
+    "@vtable-guild/perf"
   ]
 }

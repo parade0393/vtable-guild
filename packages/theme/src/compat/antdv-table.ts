@@ -7,7 +7,8 @@
  * 仅当 `createVTableGuild({ compatClass: true })` 时启用。
  *
  * ⚠️ 注意：
- * - 这不是稳定 API，DOM 结构可能变化
+ * - 稳定性边界：类名清单向后兼容，删改走 changelog；但类名之间的 DOM 结构关系不做承诺，
+ *   调整 DOM 会让 `.ant-table-thead > tr > th` 这类结构选择器失配（单类选择器不受影响）
  * - antdv 使用 `StyleProvider hashed={false}` 时会产生样式串味
  * - 类名以 ant-design-vue 4.2.6 为准
  */
