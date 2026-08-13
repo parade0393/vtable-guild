@@ -20,6 +20,10 @@ export default defineConfigWithVueTs(
     '**/coverage/**',
     // Vite 依赖预打包的临时产物，不是源码
     '**/.vitepress/cache/**',
+    // agent 工具在 .claude/worktrees/ 下创建的 worktree 是整个仓库的副本。
+    // 副本里的路径（.claude/worktrees/x/site/demos/**）匹配不到下面 site/demos
+    // 那条按路径写死的规则豁免，于是同一批 demo 文件会在副本里重复报错。
+    '**/.claude/**',
   ]),
 
   ...pluginVue.configs['flat/essential'],
