@@ -1,5 +1,11 @@
 # @vtable-guild/vtable-guild
 
+## 2.6.1
+
+### Patch Changes
+
+- [`5fe098a`](https://github.com/parade0393/vtable-guild/commit/5fe098aa26557770992f459866e0ea2e617a67b0) Thanks [@parade0393](https://github.com/parade0393)! - fix(table): 补全 ant-design-vue 表格兼容类名，覆盖排序筛选状态、固定表头与列、选择列、展开树形、空态、概要栏及列宽拖拽结构。
+
 ## 2.6.0
 
 ### Minor Changes
