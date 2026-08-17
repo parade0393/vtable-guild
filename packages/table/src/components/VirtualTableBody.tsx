@@ -10,7 +10,7 @@ import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 import type { ColumnMetrics } from '../composables/useColumnMetrics'
 import { resolveFixedColumnRanges, useColumnWindow } from '../composables/useColumnWindow'
 import type { ColumnType, Key } from '../types'
-import { getRowCompatClass } from '../utils/compat'
+import { getExpandedRowCompatClass, getRowCompatClass } from '../utils/compat'
 
 type VirtualTableScrollInfo = VirtualScrollInfo & {
   maxX: number
@@ -388,6 +388,7 @@ export default defineComponent({
                           props.rowClass,
                           rowClassName,
                           tableContext.subThemeSlots?.expandedRow(),
+                          getExpandedRowCompatClass(tableContext, rowIndent),
                           expandedRowClassName,
                         )}
                       >
@@ -397,7 +398,14 @@ export default defineComponent({
                           colspan={plan.length}
                           class={cn(props.tdClass, tableContext.subThemeSlots?.expandedRowCell())}
                         >
-                          {exp.expandedRowRender(item, rIndex, 0, true)}
+                          {tableContext.compatClass &&
+                          (tableContext.fixedOffsets?.value?.size ?? 0) > 0 ? (
+                            <div class={tableContext.compatClass('expanded-row-fixed')}>
+                              {exp.expandedRowRender(item, rIndex, 0, true)}
+                            </div>
+                          ) : (
+                            exp.expandedRowRender(item, rIndex, 0, true)
+                          )}
                         </td>
                       </tr>
                     )}

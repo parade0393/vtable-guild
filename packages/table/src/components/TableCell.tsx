@@ -90,6 +90,12 @@ export default defineComponent({
       ),
     )
 
+    const hoverCompatClass = computed(() =>
+      isHovered.value && tableContext.hoverable?.value
+        ? (tableContext.compatClass?.('cell-row-hover') ?? '')
+        : '',
+    )
+
     function onCellEnter() {
       if (!tableContext.hoverable?.value) return
       const rowSpan = Math.max(1, resolvedCell.value.rowSpan ?? 1)
@@ -145,6 +151,7 @@ export default defineComponent({
         selectedClasses,
         hoverClass,
         fixedClass.value,
+        hoverCompatClass.value,
         // antdv 把 ellipsis 类放在 td 上，我们的 slot 落在内层 span，故在此补
         ellipsisCompatClass.value,
       )
@@ -283,6 +290,7 @@ export default defineComponent({
               ? tableContext.subThemeSlots.tdRowHover()
               : '',
           fixedClass.value,
+          hoverCompatClass.value,
           tableContext.compatClass?.('selection-column'),
         )
 
@@ -328,6 +336,7 @@ export default defineComponent({
           expandSelectedClass,
           expandHoverClass,
           fixedClass.value,
+          hoverCompatClass.value,
           tableContext.compatClass?.('row-expand-icon-cell'),
         )
 
@@ -382,6 +391,11 @@ export default defineComponent({
 
       const treeIndent = showTreeIndent ? (
         <span
+          class={
+            tableContext.compatClass
+              ? `${tableContext.compatClass('row-indent')} indent-level-${row.level}`
+              : undefined
+          }
           style={{
             display: 'inline-block',
             width: `${row.level * (tableContext.treeIndentSize?.value ?? 15)}px`,
@@ -402,6 +416,9 @@ export default defineComponent({
         ) : null
 
       const ellipsisCfg = getEllipsisConfig(props.column)
+      const treeAppendClass = showTreeIndent
+        ? (tableContext.compatClass?.('cell-with-append') ?? '')
+        : ''
       const mainContent = ellipsisCfg.enabled ? (
         ellipsisCfg.showTitle ? (
           <Tooltip
@@ -429,7 +446,7 @@ export default defineComponent({
       return (
         <td
           {...bodyDomProps.value}
-          class={cellClass.value}
+          class={cn(cellClass.value, treeAppendClass)}
           style={cellStyle.value}
           colspan={colSpan}
           rowspan={rowSpan}

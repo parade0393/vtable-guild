@@ -528,7 +528,10 @@ export default defineComponent({
           >
             {!hideSelectAll ? (
               <span
-                class={tableContext.vtgClass?.('inline-flex items-center justify-center relative')}
+                class={cn(
+                  tableContext.vtgClass?.('inline-flex items-center justify-center relative'),
+                  tableContext.compatClass?.('selection'),
+                )}
               >
                 <SelectionCheckbox
                   checked={state === 'all'}
@@ -620,6 +623,7 @@ export default defineComponent({
                 class={cn(
                   tableContext.subThemeSlots?.filterIconWrapper(),
                   tableContext.subThemeSlots?.filterIcon(),
+                  isFiltered.value && tableContext.compatClass && 'active',
                 )}
                 ref={filterAnchorRef}
                 onMouseenter={handleFilterIconMouseEnter}
@@ -643,6 +647,7 @@ export default defineComponent({
                 class={cn(
                   tableContext.subThemeSlots?.filterIconWrapper(),
                   tableContext.subThemeSlots?.filterIcon(),
+                  isFiltered.value && tableContext.compatClass && 'active',
                 )}
                 ref={filterAnchorRef}
                 onMouseenter={handleFilterIconMouseEnter}
@@ -663,7 +668,10 @@ export default defineComponent({
           return (
             <span
               ref={filterAnchorRef}
-              class={tableContext.subThemeSlots?.filterIconWrapper()}
+              class={[
+                tableContext.subThemeSlots?.filterIconWrapper(),
+                isFiltered.value && tableContext.compatClass && 'active',
+              ]}
               onMouseenter={handleFilterIconMouseEnter}
               onMouseleave={handleFilterIconMouseLeave}
               onMousedown={(e: MouseEvent) => e.stopPropagation()}
@@ -767,7 +775,11 @@ export default defineComponent({
           aria-sort={leafColumn.value ? getAriaSortValue(sortOrder.value) : undefined}
         >
           <span
-            class={cn(tableContext.vtgClass?.('flex items-center'), props.headerCellInnerClass)}
+            class={cn(
+              tableContext.vtgClass?.('flex items-center'),
+              props.headerCellInnerClass,
+              hasFilters.value && tableContext.compatClass?.('filter-column'),
+            )}
           >
             {sortArea}
             {hasFilters.value && filterIconContent}

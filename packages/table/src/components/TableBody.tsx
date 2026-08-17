@@ -7,7 +7,7 @@ import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 import { getByDataIndex } from '../composables'
 import type { ColumnType, Key } from '../types'
 import { resolveBodyCell, type ResolvedBodyCell } from '../utils/cell'
-import { getRowCompatClass } from '../utils/compat'
+import { getExpandedRowCompatClass, getRowCompatClass } from '../utils/compat'
 
 interface BodyRowCell {
   column: ColumnType<Record<string, unknown>>
@@ -159,6 +159,7 @@ export default defineComponent({
                     props.rowClass,
                     rowClassName,
                     tableContext.subThemeSlots?.expandedRow(),
+                    getExpandedRowCompatClass(tableContext, rowIndent),
                     expandedRowClassName,
                   )}
                 >
@@ -166,7 +167,14 @@ export default defineComponent({
                     colspan={props.columns.length}
                     class={cn(props.tdClass, tableContext.subThemeSlots?.expandedRowCell())}
                   >
-                    {exp.expandedRowRender(record, rowIndex, 0, true)}
+                    {tableContext.compatClass &&
+                    (tableContext.fixedOffsets?.value?.size ?? 0) > 0 ? (
+                      <div class={tableContext.compatClass('expanded-row-fixed')}>
+                        {exp.expandedRowRender(record, rowIndex, 0, true)}
+                      </div>
+                    ) : (
+                      exp.expandedRowRender(record, rowIndex, 0, true)
+                    )}
                   </td>
                 </tr>
               ),

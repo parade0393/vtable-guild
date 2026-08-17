@@ -23,28 +23,47 @@ export default defineComponent({
   setup(props) {
     const tableContext = inject(TABLE_CONTEXT_KEY, {} as TableContext)
 
-    return () => (
-      <span
-        class={[tableContext.subThemeSlots?.sortButton(), props.sortButtonClass]}
-        aria-hidden="true"
-      >
-        {h((tableContext.presetConfig?.value ?? tablePresetConfigs.antdv).sortAscIcon, {
-          class:
+    return () => {
+      const preset = tableContext.presetConfig?.value ?? tablePresetConfigs.antdv
+      const iconNodes = [
+        h(preset.sortAscIcon, {
+          class: [
+            tableContext.compatClass?.('column-sorter-up'),
+            tableContext.compatClass && props.sortOrder === 'ascend' && 'active',
             props.sortOrder === 'ascend'
               ? tableContext.vtgClass?.('text-[color:var(--color-primary)]')
               : tableContext.vtgClass?.('text-[color:var(--color-sorter-icon)]'),
-        })}
-        {h((tableContext.presetConfig?.value ?? tablePresetConfigs.antdv).sortDescIcon, {
+          ],
+        }),
+        h(preset.sortDescIcon, {
           class: [
             tableContext.subThemeSlots?.sortIconDown(),
+            tableContext.compatClass && props.sortOrder === 'descend' && 'active',
             tableContext.vtgClass?.(
               props.sortOrder === 'descend'
                 ? 'text-[color:var(--color-primary)]'
                 : 'text-[color:var(--color-sorter-icon)]',
             ),
           ],
-        })}
-      </span>
-    )
+        }),
+      ]
+
+      return (
+        <span
+          class={[
+            tableContext.subThemeSlots?.sortButton(),
+            props.sortButtonClass,
+            tableContext.compatClass?.('column-sorter-full'),
+          ]}
+          aria-hidden="true"
+        >
+          {tableContext.compatClass ? (
+            <span class={tableContext.compatClass('column-sorter-inner')}>{iconNodes}</span>
+          ) : (
+            iconNodes
+          )}
+        </span>
+      )
+    }
   },
 })

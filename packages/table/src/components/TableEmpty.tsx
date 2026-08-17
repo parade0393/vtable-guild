@@ -16,7 +16,7 @@ export default defineComponent({
       const presetConfig = tableContext.presetConfig?.value
 
       return (
-        <tr>
+        <tr class={tableContext.compatClass?.('placeholder')}>
           <td class={[props.tdClass, props.emptyClass]} colspan={props.colSpan}>
             {/* 优先使用用户自定义 empty slot */}
             {tableContext.empty ? (

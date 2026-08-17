@@ -30,11 +30,18 @@ export function getRowCompatClass(
     classes.push(compat('row-selected'))
   }
 
-  if (tableContext.isTreeData?.value) {
-    classes.push(compat(`row-level-${rowIndent}`))
-  }
+  // rc-table emits a level class for every body row; non-tree rows use level 0.
+  classes.push(compat(`row-level-${rowIndent}`))
 
   return classes.join(' ')
+}
+
+/** Expanded-row state class, including the nesting level used by rc-table. */
+export function getExpandedRowCompatClass(
+  tableContext: Pick<TableContext, 'compatClass'>,
+  rowIndent: number,
+): string {
+  return tableContext.compatClass?.(`expanded-row-level-${rowIndent + 1}`) ?? ''
 }
 
 /** 固定列单元格状态类：左右固定 + 边界位置。 */
@@ -49,20 +56,30 @@ export function getFixedCellCompatClass(
 
   if (fixedInfo.left !== undefined) {
     classes.push(compat('cell-fix-left'))
+    if (fixedInfo.left === 0) classes.push(compat('cell-fix-left-first'))
     if (fixedInfo.isLastLeft) classes.push(compat('cell-fix-left-last'))
   }
 
   if (fixedInfo.right !== undefined) {
     classes.push(compat('cell-fix-right'))
     if (fixedInfo.isFirstRight) classes.push(compat('cell-fix-right-first'))
+    if (fixedInfo.right === 0) classes.push(compat('cell-fix-right-last'))
   }
+
+  if (tableContext.sticky?.value) classes.push(compat('cell-fix-sticky'))
 
   return classes.join(' ')
 }
 
 /** 表格根元素状态类：存在固定列 + 横向滚动 ping 状态。 */
 export function getRootCompatClass(
-  tableContext: Pick<TableContext, 'compatClass' | 'fixedOffsets' | 'scrollState'>,
+  tableContext: Pick<TableContext, 'compatClass' | 'fixedOffsets' | 'scrollState'> & {
+    empty?: boolean
+    fixedHeader?: boolean
+    fixedColumn?: boolean
+    horizontalScroll?: boolean
+    layoutFixed?: boolean
+  },
 ): string {
   const compat = tableContext.compatClass
   if (!compat) return ''
@@ -82,6 +99,11 @@ export function getRootCompatClass(
 
   if (hasLeft) classes.push(compat('has-fix-left'))
   if (hasRight) classes.push(compat('has-fix-right'))
+  if (tableContext.fixedColumn) classes.push(compat('fixed-column'))
+  if (tableContext.empty) classes.push(compat('empty'))
+  if (tableContext.fixedHeader) classes.push(compat('fixed-header'))
+  if (tableContext.horizontalScroll) classes.push(compat('scroll-horizontal'))
+  if (tableContext.layoutFixed) classes.push(compat('layout-fixed'))
 
   // ping 表示该侧还有未滚动到的内容；antdv 用它驱动固定列阴影
   if (tableContext.scrollState) {

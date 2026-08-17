@@ -673,7 +673,16 @@ export default defineComponent({
     })
 
     const rootCompatClass = computed(() =>
-      getRootCompatClass({ compatClass: compatClassFn, fixedOffsets, scrollState }),
+      getRootCompatClass({
+        compatClass: compatClassFn,
+        fixedOffsets,
+        scrollState,
+        empty: displayData.value.length === 0,
+        fixedHeader: props.scroll?.y !== undefined,
+        fixedColumn: hasHorizontalScroll.value && hasFixedColumns.value,
+        horizontalScroll: hasHorizontalScroll.value,
+        layoutFixed: resolvedTableLayout.value === 'fixed',
+      }),
     )
 
     const hasStickyHeader = computed(
@@ -682,6 +691,12 @@ export default defineComponent({
 
     const hasFixedColumns = computed(() =>
       displayColumns.value.some((column) => column.fixed === 'left' || column.fixed === 'right'),
+    )
+
+    const hasHorizontalScroll = computed(
+      () =>
+        props.scroll?.x !== undefined ||
+        Boolean((props.expandable as Expandable<Record<string, unknown>> | undefined)?.fixed),
     )
 
     const hasEllipsisColumns = computed(() =>
@@ -1128,7 +1143,10 @@ export default defineComponent({
           props.showHeader !== false ? (
             <div
               ref={headerWrapRef}
-              class={themeSlots.headerWrapper()}
+              class={cn(
+                themeSlots.headerWrapper(),
+                resolvedSticky.value && compatClassFn?.('sticky-holder'),
+              )}
               style={stickyHeaderStyle.value}
             >
               <div
@@ -1214,7 +1232,11 @@ export default defineComponent({
         const fixedSummaryBlock =
           summaryContent && isSummaryFixed ? (
             <div
-              class={themeSlots.headerWrapper()}
+              class={cn(
+                themeSlots.headerWrapper(),
+                compatClassFn?.('summary'),
+                resolvedSticky.value && compatClassFn?.('sticky-holder'),
+              )}
               style={{
                 position: 'sticky',
                 bottom: `${resolvedSticky.value?.offsetSummary ?? 0}px`,

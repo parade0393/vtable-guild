@@ -32,6 +32,7 @@ export default defineComponent({
               ? 'text-[color:var(--color-primary)]'
               : 'text-[color:var(--color-filter-icon)]',
           ),
+          props.active && tableContext.compatClass && 'active',
         ]}
         onClick={handleClick}
         role="button"

@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+import { nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
 import { createVTableGuild } from '@vtable-guild/core'
 import VTable from './VTable.vue'
@@ -116,5 +117,139 @@ describe('antdv compat class', () => {
     const rows = wrapper.findAll('tbody tr')
     expect(rows[0].classes()).toContain('ant-table-row-level-0')
     expect(rows[1].classes()).toContain('ant-table-row-level-1')
+  })
+
+  it('matches antdv hover and level classes on every body cell', async () => {
+    vi.useFakeTimers()
+    try {
+      const wrapper = mountTable({}, { compatClass: true })
+      const firstCell = wrapper.get('tbody td')
+
+      expect(wrapper.get('tbody tr').classes()).toContain('ant-table-row-level-0')
+
+      await firstCell.trigger('mouseenter')
+      vi.advanceTimersByTime(100)
+      await nextTick()
+
+      expect(
+        wrapper
+          .findAll('tbody tr')[0]
+          .findAll('td')
+          .every((cell) => cell.classes().includes('ant-table-cell-row-hover')),
+      ).toBe(true)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('matches row expand cell and icon state classes', () => {
+    const wrapper = mountTable(
+      {
+        expandable: {
+          expandedRowKeys: ['1'],
+          expandedRowRender: (record) => `expanded:${record.name}`,
+        },
+      },
+      { compatClass: true },
+    )
+
+    const rows = wrapper.findAll('tbody tr')
+    const expandedIcon = rows[0].get('button')
+    const collapsedIcon = rows[2].get('button')
+
+    expect(rows[0].get('td').classes()).toContain('ant-table-row-expand-icon-cell')
+    expect(expandedIcon.classes()).toEqual(
+      expect.arrayContaining(['ant-table-row-expand-icon', 'ant-table-row-expand-icon-expanded']),
+    )
+    expect(collapsedIcon.classes()).toEqual(
+      expect.arrayContaining(['ant-table-row-expand-icon', 'ant-table-row-expand-icon-collapsed']),
+    )
+    expect(rows[1].classes()).toContain('ant-table-expanded-row-level-1')
+  })
+
+  it('matches tree indent, append and icon state classes', () => {
+    const wrapper = mountTable(
+      {
+        dataSource: [
+          { key: '1', name: 'Parent', age: 30, children: [{ key: '1-1', name: 'Child', age: 5 }] },
+        ] as DemoRow[],
+        expandedRowKeys: ['1'],
+      },
+      { compatClass: true },
+    )
+
+    const rows = wrapper.findAll('tbody tr')
+    const parentCell = rows[0].get('td')
+    const childCell = rows[1].get('td')
+
+    expect(parentCell.classes()).toContain('ant-table-cell-with-append')
+    expect(parentCell.get('.ant-table-row-indent').classes()).toContain('indent-level-0')
+    expect(parentCell.get('button').classes()).toEqual(
+      expect.arrayContaining(['ant-table-row-expand-icon', 'ant-table-row-expand-icon-expanded']),
+    )
+    expect(childCell.classes()).toContain('ant-table-cell-with-append')
+    expect(childCell.get('.ant-table-row-indent').classes()).toContain('indent-level-1')
+    expect(childCell.get('.ant-table-row-expand-icon').classes()).toContain(
+      'ant-table-row-expand-icon-spaced',
+    )
+  })
+
+  it('matches root state, selection col and resize handle classes', () => {
+    const wrapper = mountTable(
+      {
+        dataSource: [],
+        rowSelection: { selectedRowKeys: [] },
+        columns: [
+          { title: 'Name', key: 'name', dataIndex: 'name', resizable: true, width: 120 },
+          { title: 'Age', key: 'age', dataIndex: 'age' },
+        ],
+        scroll: { x: 800, y: 240 },
+      },
+      { compatClass: true },
+    )
+
+    const root = wrapper.get('div')
+    expect(root.classes()).toEqual(
+      expect.arrayContaining([
+        'ant-table-empty',
+        'ant-table-fixed-header',
+        'ant-table-scroll-horizontal',
+        'ant-table-layout-fixed',
+      ]),
+    )
+    expect(wrapper.get('col.ant-table-selection-col')).toBeTruthy()
+    expect(wrapper.get('.ant-table-resize-handle-line')).toBeTruthy()
+    expect(wrapper.get('tbody tr').classes()).toContain('ant-table-placeholder')
+  })
+
+  it('matches sorter and filter sub-classes', () => {
+    const wrapper = mountTable(
+      {
+        columns: [
+          {
+            title: 'Name',
+            key: 'name',
+            dataIndex: 'name',
+            sorter: true,
+            sortOrder: 'ascend',
+            filters: [{ text: 'Charlie', value: 'Charlie' }],
+            defaultFilteredValue: ['Charlie'],
+            filterSearch: true,
+          },
+          { title: 'Age', key: 'age', dataIndex: 'age' },
+        ],
+      },
+      { compatClass: true },
+    )
+
+    const header = wrapper.get('thead th')
+    expect(header.classes()).toEqual(
+      expect.arrayContaining(['ant-table-column-has-sorters', 'ant-table-column-sort']),
+    )
+    expect(header.get('.ant-table-column-sorters')).toBeTruthy()
+    expect(header.get('.ant-table-column-title')).toBeTruthy()
+    expect(header.get('.ant-table-column-sorter-inner')).toBeTruthy()
+    expect(header.get('.ant-table-column-sorter-up').classes()).toContain('active')
+    expect(header.get('.ant-table-filter-trigger').classes()).toContain('active')
   })
 })

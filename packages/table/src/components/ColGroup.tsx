@@ -31,7 +31,16 @@ export default defineComponent({
                 minWidth: typeof w === 'number' ? `${w}px` : w,
               }
             : undefined
-          return <col key={col.key ?? String(col.dataIndex ?? i)} style={style} />
+          const compatClass = tableContext.compatClass
+            ? col.key === '__vtg_selection__'
+              ? tableContext.compatClass('selection-col')
+              : col.key === '__vtg_expand__'
+                ? tableContext.compatClass('expand-icon-col')
+                : ''
+            : ''
+          return (
+            <col key={col.key ?? String(col.dataIndex ?? i)} class={compatClass} style={style} />
+          )
         })}
       </colgroup>
     )

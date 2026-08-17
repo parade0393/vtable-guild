@@ -28,9 +28,14 @@ export default defineComponent({
             ].join(' '),
           ),
           tableContext.subThemeSlots?.resizeHandle(),
+          tableContext.isResizing?.() && tableContext.compatClass && 'dragging',
         ].join(' ')}
         onPointerdown={handlePointerDown}
-      />
+      >
+        {tableContext.compatClass && (
+          <span class={tableContext.compatClass('resize-handle-line')} aria-hidden="true" />
+        )}
+      </span>
     )
   },
 })
