@@ -40,7 +40,9 @@ describe('useVirtual', () => {
     expect(api.itemHeight.value).toBe(55)
 
     size.value = undefined
-    expect(api.itemHeight.value).toBe(47)
+    // 兜底必须跟主题的 defaultVariants.size 一致（antdv 预设是 large）：
+    // size prop 默认就是 undefined，这里猜错等于**所有默认表格**都按错的行高估算。
+    expect(api.itemHeight.value).toBe(55)
   })
 
   it('normalizes numeric and string scroll heights', () => {
