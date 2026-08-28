@@ -33,6 +33,15 @@ const SIZE_ITEM_HEIGHT: Record<string, number> = {
   large: 55,
 }
 
+/**
+ * `size` 没传时的兜底，必须与主题的 `defaultVariants.size` 保持一致。
+ *
+ * 曾经写成 `'middle'`：而 `size` prop 默认是 `undefined`，主题按 `'large'` 渲染，
+ * 于是**任何不显式传 size 的表格**都会按 47px 估算实际约 55px 的行。
+ * 10 万行就是 80 万 px 的滚动范围缺口，末尾上万行一度滚不到。
+ */
+const DEFAULT_SIZE = 'large'
+
 export function useVirtual(options: UseVirtualOptions): UseVirtualReturn {
   const enabled = computed(() => {
     return !!options.virtual() && !!options.scrollY()
@@ -45,8 +54,8 @@ export function useVirtual(options: UseVirtualOptions): UseVirtualReturn {
 
   const itemHeight = computed(() => {
     if (fixedHeight.value) return options.rowHeight!() as number
-    const s = options.size() ?? 'middle'
-    return SIZE_ITEM_HEIGHT[s] ?? 47
+    const s = options.size() ?? DEFAULT_SIZE
+    return SIZE_ITEM_HEIGHT[s] ?? SIZE_ITEM_HEIGHT[DEFAULT_SIZE]
   })
 
   const listHeight = computed(() => {

@@ -103,6 +103,58 @@ describe('VirtualList', () => {
     expect(visibleRows.length).toBeLessThan(20)
   })
 
+  it('measures the real row element rather than a fragment anchor', async () => {
+    installResizeObserverMock()
+
+    // 行实际高度带小数，且明显高于估算值——两者都是回归判据，见下方断言。
+    const ROW_HEIGHT = 40.5
+    const ITEM_HEIGHT = 20
+    const data = Array.from({ length: 10 }, (_, key) => ({ key }))
+
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      const height = this.classList.contains('row') ? ROW_HEIGHT : 0
+      return {
+        height,
+        width: 0,
+        top: 0,
+        bottom: height,
+        left: 0,
+        right: 0,
+        x: 0,
+        y: 0,
+        toJSON: () => ({}),
+      } as DOMRect
+    })
+
+    const wrapper = mount(VirtualList, {
+      props: { data, height: 100, itemHeight: ITEM_HEIGHT, itemKey: 'key' },
+      slots: {
+        default: ({ index }: { index: number }) => h('div', { class: 'row' }, String(index)),
+      },
+      attachTo: document.body,
+    })
+
+    await flushVirtualList()
+    await flushVirtualList()
+
+    const holder = wrapper.find('.vtg-virtual-list-holder').element
+    const scrollHeight = parseFloat((holder.firstElementChild as HTMLElement).style.height)
+
+    // 回归点一：useChildren 曾把 renderFunc 的返回值再包一层数组，Vue 把内层
+    // 数组归一成 Fragment，Item 的 ref 于是落到 Fragment 的文本锚点上。
+    // useHeights.getElement() 拿到 Text 返回 null，行高**永远测不到**，
+    // scrollHeight 恒等于 行数 × itemHeight，末尾几行滚不到。
+    expect(scrollHeight).toBeGreaterThan(data.length * ITEM_HEIGHT)
+
+    // 回归点二：曾用 offsetHeight 测量，整数取整把每行的小数抹掉，
+    // 误差在可视窗口内累加（实测 9 行约 2px），表现为滚到底时最后一行被裁。
+    expect(Number.isInteger(scrollHeight)).toBe(false)
+
+    wrapper.unmount()
+  })
+
   it('skips all row measurement when disableHeightMeasure is set', async () => {
     const data = Array.from({ length: 10000 }, (_, key) => ({ key }))
 
