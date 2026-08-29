@@ -16,6 +16,7 @@ import {
   devWarn,
   mergeDeep,
   mergeThemeConfigs,
+  prefixThemeConfig,
   prefixVtgClassNames,
   type ThemeConfig,
   Scrollbar,
@@ -360,31 +361,35 @@ export default defineComponent({
     const descendantTheme = computed(() => {
       const inheritedTheme = globalContext?.theme ?? {}
       const presetName = effectiveThemePreset.value
+      // 预设类名必须与内置默认主题同样经 cssMode 前缀管道，否则 prebuilt 下落不到对应规则；
+      // inheritedTheme 是用户自定义主题，按约定保持原样不前缀。
+      const resolvePreset = <T extends ThemeConfig>(config: T) =>
+        prefixThemeConfig(config, effectiveCssMode.value, effectiveClassPrefix.value)
 
       return {
         ...inheritedTheme,
         button: mergeThemeConfigs(
-          resolveButtonThemePreset(presetName),
+          resolvePreset(resolveButtonThemePreset(presetName)),
           inheritedTheme.button as Partial<ThemeConfig> | undefined,
         ),
         checkbox: mergeThemeConfigs(
-          resolveCheckboxThemePreset(presetName),
+          resolvePreset(resolveCheckboxThemePreset(presetName)),
           inheritedTheme.checkbox as Partial<ThemeConfig> | undefined,
         ),
         input: mergeThemeConfigs(
-          resolveInputThemePreset(presetName),
+          resolvePreset(resolveInputThemePreset(presetName)),
           inheritedTheme.input as Partial<ThemeConfig> | undefined,
         ),
         radio: mergeThemeConfigs(
-          resolveRadioThemePreset(presetName),
+          resolvePreset(resolveRadioThemePreset(presetName)),
           inheritedTheme.radio as Partial<ThemeConfig> | undefined,
         ),
         scrollbar: mergeThemeConfigs(
-          resolveScrollbarThemePreset(presetName),
+          resolvePreset(resolveScrollbarThemePreset(presetName)),
           inheritedTheme.scrollbar as Partial<ThemeConfig> | undefined,
         ),
         tooltip: mergeThemeConfigs(
-          resolveTooltipThemePreset(presetName),
+          resolvePreset(resolveTooltipThemePreset(presetName)),
           inheritedTheme.tooltip as Partial<ThemeConfig> | undefined,
         ),
       }
