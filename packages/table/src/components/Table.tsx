@@ -708,10 +708,6 @@ export default defineComponent({
       dataLeafColumns.value.some((column) => getEllipsisConfig(column).enabled),
     )
 
-    const shouldExpandTableWidth = computed(
-      () => props.scroll?.x !== undefined || hasFixedColumns.value,
-    )
-
     const resolvedTableLayout = computed(() => {
       if (props.tableLayout) return props.tableLayout
       if (props.scroll?.y || props.scroll?.x || hasFixedColumns.value || hasEllipsisColumns.value) {
@@ -1114,7 +1110,9 @@ export default defineComponent({
         tableStyle.width = typeof scroll.x === 'number' ? `${scroll.x}px` : scroll.x
         tableStyle.minWidth = '100%'
       } else {
-        tableStyle.width = shouldExpandTableWidth.value ? 'max-content' : '100%'
+        // 与 ant-design-vue 一致：未声明 scroll.x 时 table 恒定 100% 宽，
+        // 列宽由 colgroup/首行单元格在 fixed 布局下分配，不足时自然横向溢出。
+        tableStyle.width = '100%'
       }
 
       const loadingValue = props.loading
