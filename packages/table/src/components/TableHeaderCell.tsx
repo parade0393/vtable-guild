@@ -296,7 +296,9 @@ export default defineComponent({
     })
 
     const cellClass = computed(() => {
-      const alignClass = props.cell.column.align ? TABLE_ALIGN_CLASSES[props.cell.column.align] : ''
+      const alignClass = props.cell.column.align
+        ? (tableContext.vtgClass?.(TABLE_ALIGN_CLASSES[props.cell.column.align]) ?? '')
+        : ''
       const sortableClass = isSortable.value ? tableContext.subThemeSlots?.thSortable() : ''
       const sortedClass = sortOrder.value ? tableContext.subThemeSlots?.thSorted() : ''
       const isExpandHeader = leafColumn.value?.key === '__vtg_expand__'

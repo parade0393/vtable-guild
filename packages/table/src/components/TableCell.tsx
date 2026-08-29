@@ -127,7 +127,9 @@ export default defineComponent({
     }))
 
     const cellClass = computed(() => {
-      const alignClass = props.column.align ? TABLE_ALIGN_CLASSES[props.column.align] : ''
+      const alignClass = props.column.align
+        ? (tableContext.vtgClass?.(TABLE_ALIGN_CLASSES[props.column.align]) ?? '')
+        : ''
       const subThemeSlots = tableContext.subThemeSlots
       const hovering = isHovered.value && tableContext.hoverable?.value
       const sortedClass =
