@@ -5,6 +5,7 @@ export { tv, cn } from './utils/tv'
 export {
   DEFAULT_VTG_CLASS_PREFIX,
   normalizeVtgClassPrefix,
+  prefixThemeConfig,
   prefixVtgClassNames,
   cnByCssMode,
 } from './utils/classPrefix'

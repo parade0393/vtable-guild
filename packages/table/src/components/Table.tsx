@@ -16,6 +16,7 @@ import {
   devWarn,
   mergeDeep,
   mergeThemeConfigs,
+  prefixThemeConfig,
   prefixVtgClassNames,
   type ThemeConfig,
   Scrollbar,
@@ -360,31 +361,35 @@ export default defineComponent({
     const descendantTheme = computed(() => {
       const inheritedTheme = globalContext?.theme ?? {}
       const presetName = effectiveThemePreset.value
+      // 预设类名必须与内置默认主题同样经 cssMode 前缀管道，否则 prebuilt 下落不到对应规则；
+      // inheritedTheme 是用户自定义主题，按约定保持原样不前缀。
+      const resolvePreset = <T extends ThemeConfig>(config: T) =>
+        prefixThemeConfig(config, effectiveCssMode.value, effectiveClassPrefix.value)
 
       return {
         ...inheritedTheme,
         button: mergeThemeConfigs(
-          resolveButtonThemePreset(presetName),
+          resolvePreset(resolveButtonThemePreset(presetName)),
           inheritedTheme.button as Partial<ThemeConfig> | undefined,
         ),
         checkbox: mergeThemeConfigs(
-          resolveCheckboxThemePreset(presetName),
+          resolvePreset(resolveCheckboxThemePreset(presetName)),
           inheritedTheme.checkbox as Partial<ThemeConfig> | undefined,
         ),
         input: mergeThemeConfigs(
-          resolveInputThemePreset(presetName),
+          resolvePreset(resolveInputThemePreset(presetName)),
           inheritedTheme.input as Partial<ThemeConfig> | undefined,
         ),
         radio: mergeThemeConfigs(
-          resolveRadioThemePreset(presetName),
+          resolvePreset(resolveRadioThemePreset(presetName)),
           inheritedTheme.radio as Partial<ThemeConfig> | undefined,
         ),
         scrollbar: mergeThemeConfigs(
-          resolveScrollbarThemePreset(presetName),
+          resolvePreset(resolveScrollbarThemePreset(presetName)),
           inheritedTheme.scrollbar as Partial<ThemeConfig> | undefined,
         ),
         tooltip: mergeThemeConfigs(
-          resolveTooltipThemePreset(presetName),
+          resolvePreset(resolveTooltipThemePreset(presetName)),
           inheritedTheme.tooltip as Partial<ThemeConfig> | undefined,
         ),
       }
@@ -701,10 +706,6 @@ export default defineComponent({
 
     const hasEllipsisColumns = computed(() =>
       dataLeafColumns.value.some((column) => getEllipsisConfig(column).enabled),
-    )
-
-    const shouldExpandTableWidth = computed(
-      () => props.scroll?.x !== undefined || hasFixedColumns.value,
     )
 
     const resolvedTableLayout = computed(() => {
@@ -1109,7 +1110,9 @@ export default defineComponent({
         tableStyle.width = typeof scroll.x === 'number' ? `${scroll.x}px` : scroll.x
         tableStyle.minWidth = '100%'
       } else {
-        tableStyle.width = shouldExpandTableWidth.value ? 'max-content' : '100%'
+        // 与 ant-design-vue 一致：未声明 scroll.x 时 table 恒定 100% 宽，
+        // 列宽由 colgroup/首行单元格在 fixed 布局下分配，不足时自然横向溢出。
+        tableStyle.width = '100%'
       }
 
       const loadingValue = props.loading

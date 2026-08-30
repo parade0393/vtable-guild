@@ -48,6 +48,11 @@ export const router = createRouter({
       component: () => import('./pages/PerfPage.vue'),
     },
     {
+      path: '/prebuilt',
+      name: 'prebuilt',
+      component: () => import('./pages/PrebuiltPage.vue'),
+    },
+    {
       path: '/antdv-full',
       name: 'antdv-full',
       component: () => import('./pages/AntdvFull.vue'),

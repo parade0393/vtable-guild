@@ -30,7 +30,9 @@ export default defineComponent({
 
     const cellClass = computed(() => {
       const sub = tableContext.subThemeSlots
-      const alignClass = props.align ? TABLE_ALIGN_CLASSES[props.align] : ''
+      const alignClass = props.align
+        ? (tableContext.vtgClass?.(TABLE_ALIGN_CLASSES[props.align]) ?? '')
+        : ''
       return cn(sub?.summaryCell() ?? '', alignClass, fixedClass.value)
     })
 

@@ -25,7 +25,7 @@ vtable-guild 是一个 Vue 3 Table 组件库，目标：
 | 引擎锁定 | node `^20.19.0 \|\| >=22.12.0`，pnpm `>=10.28.0`，`preinstall` 强制 pnpm                                         |
 | 构建     | Vite 7 library mode，仅输出 ESM；`vite-plugin-dts` 生成声明                                                      |
 | 类型     | TypeScript project references，各包 `composite: true` 继承 `tsconfig.base.json`                                  |
-| 测试     | Vitest 多 project workspace（根 `vitest.config.ts`）+ happy-dom，25 个测试/基准文件                              |
+| 测试     | Vitest 多 project workspace（根 `vitest.config.ts`）+ happy-dom，26 个测试/基准文件                              |
 | 代码规范 | ESLint 9 flat config + Prettier（无分号、单引号、100 字宽）+ Stylelint                                           |
 | Git 规范 | husky pre-commit(lint-staged) + commit-msg(commitlint) + commitizen                                              |
 | 版本发布 | Changesets；CI（lint / type-check / test / build）、Release（npm trusted publishing）、Deploy Site 三条 workflow |

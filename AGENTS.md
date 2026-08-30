@@ -45,7 +45,7 @@ Use Node `^20.19.0 || >=22.12.0` and `pnpm >=10.28.0`.
 ## Testing Guidelines
 
 Vitest is configured at the root (`vitest.config.ts`) as a multi-project workspace; `core`, `theme`
-and `table` carry the real suites (25 test/bench files today), the remaining projects are wired with
+and `table` carry the real suites (26 test/bench files today), the remaining projects are wired with
 `passWithNoTests`. `happy-dom` is the environment and `tests/setup.ts` the shared setup file.
 
 - `pnpm test`: run the suites through Turbo.
