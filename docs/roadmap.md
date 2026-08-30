@@ -1,7 +1,7 @@
 # vtable-guild 路线图
 
 > 这份文档记录「项目现在处在哪」，不是待办清单。
-> 当前发布版本：`@vtable-guild/vtable-guild@2.6.2`（MIT，npm 公开）。
+> 当前发布版本：`@vtable-guild/vtable-guild@2.6.3`（MIT，npm 公开）。
 >
 > 早期那份逐阶段的建设计划已经全部走完，对应的 phase 指南已从仓库移除；实现细节以代码、
 > `CHANGELOG.md` 和 git 历史为准。
