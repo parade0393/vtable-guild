@@ -1,7 +1,7 @@
 # vtable-guild 路线图
 
 > 这份文档记录「项目现在处在哪」，不是待办清单。
-> 当前发布版本：`@vtable-guild/vtable-guild@2.6.3`（MIT，npm 公开）。
+> 当前发布版本：`@vtable-guild/vtable-guild@2.6.2`（MIT，npm 公开）。
 >
 > 早期那份逐阶段的建设计划已经全部走完，对应的 phase 指南已从仓库移除；实现细节以代码、
 > `CHANGELOG.md` 和 git 历史为准。
@@ -18,7 +18,7 @@
 - ESLint + Stylelint + Prettier + husky/lint-staged + commitlint（conventional commits）
 - Changesets 版本管理；CI（lint / type-check / test / build）、Release（npm trusted publishing）、
   Deploy Site 三条 workflow
-- 24 个测试与基准文件，覆盖 composable 状态逻辑、组件渲染、主题合并与类型契约
+- 26 个测试与基准文件，覆盖 composable 状态逻辑、组件渲染、主题合并与类型契约
 
 ### 主题系统
 
