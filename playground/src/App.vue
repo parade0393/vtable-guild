@@ -52,6 +52,7 @@ onBeforeUnmount(() => {
         <RouterLink class="play-tab" active-class="is-active" to="/virtual">虚拟</RouterLink>
         <RouterLink class="play-tab" active-class="is-active" to="/tree">树形</RouterLink>
         <RouterLink class="play-tab" active-class="is-active" to="/perf">性能</RouterLink>
+        <RouterLink class="play-tab" active-class="is-active" to="/prebuilt">prebuilt</RouterLink>
         <RouterLink class="play-tab" active-class="is-active" to="/antdv-full"
           >antdv一比一</RouterLink
         >
