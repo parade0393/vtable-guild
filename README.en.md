@@ -129,7 +129,7 @@ To edit code and see it run without installing anything: **[🎮 open the Playgr
 
 ## Features
 
-Sorting (controlled / uncontrolled, multi-column) · filtering (multi / single / tree / search / custom dropdown) · row selection (checkbox / radio / batch menu / `checkStrictly`) · expandable rows · tree data · fixed columns and header · grouped headers · cell merging · column resizing · cell and row editing composed through `bodyCell` · title / footer / summary · sticky · virtual scrolling (rows, plus opt-in column virtualization via `virtualColumn` and a fixed-height fast path via `rowHeight`) · built-in locales (zh-CN / en-US) · `EXPAND_COLUMN` and `SELECTION_COLUMN` placeholders.
+Sorting (controlled / uncontrolled, multi-column) · filtering (multi / single / tree / search / custom dropdown) · row selection (checkbox / radio / batch menu / `checkStrictly`) · expandable rows · tree data · fixed columns and header · grouped headers · cell merging · column resizing · column visibility and order (`visible` / `columnOrder`) · row drag sorting (`rowDraggable`) · cell and row editing composed through `bodyCell` · title / footer / summary · sticky · virtual scrolling (rows, plus opt-in column virtualization via `virtualColumn` and a fixed-height fast path via `rowHeight`) · built-in locales (zh-CN / en-US) · `EXPAND_COLUMN` and `SELECTION_COLUMN` placeholders.
 
 Every one of these has a **live, clickable demo** in the docs: [feature index](https://parade0393.github.io/vtable-guild/guide/).
 

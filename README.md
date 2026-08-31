@@ -127,7 +127,7 @@ const dataSource: UserRow[] = [
 
 ## 功能
 
-排序（受控 / 非受控双轨、多列）· 筛选（多选 / 单选 / 树形 / 搜索 / 自定义面板）· 行选择（checkbox / radio / 批量菜单 / `checkStrictly`）· 展开行 · 树形数据 · 固定列与固定表头 · 多级表头 · 单元格合并 · 列宽拖拽 · 通过 `bodyCell` 组合单元格与整行编辑 · title / footer / summary · sticky · 虚拟滚动（纵向，外加可选的横向 `virtualColumn` 与定高快路径 `rowHeight`）· 内置 locale（zh-CN / en-US）· `EXPAND_COLUMN` 与 `SELECTION_COLUMN` 占位常量。
+排序（受控 / 非受控双轨、多列）· 筛选（多选 / 单选 / 树形 / 搜索 / 自定义面板）· 行选择（checkbox / radio / 批量菜单 / `checkStrictly`）· 展开行 · 树形数据 · 固定列与固定表头 · 多级表头 · 单元格合并 · 列宽拖拽 · 列显示与列顺序（`visible` / `columnOrder`）· 行拖拽排序（`rowDraggable`）· 通过 `bodyCell` 组合单元格与整行编辑 · title / footer / summary · sticky · 虚拟滚动（纵向，外加可选的横向 `virtualColumn` 与定高快路径 `rowHeight`）· 内置 locale（zh-CN / en-US）· `EXPAND_COLUMN` 与 `SELECTION_COLUMN` 占位常量。
 
 每一项在文档站都有**可以直接点的 demo**：[功能索引](https://parade0393.github.io/vtable-guild/guide/)。
 

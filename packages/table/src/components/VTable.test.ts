@@ -1165,4 +1165,251 @@ describe('VTable', () => {
       expect(VTableWithStatics.SELECTION_COLUMN).toBe(SELECTION_COLUMN)
     })
   })
+
+  describe('column display (visible / columnOrder)', () => {
+    it('hides leaf columns marked visible: false', () => {
+      const columns: ColumnsType<DemoRow> = [
+        { title: 'Name', key: 'name', dataIndex: 'name' },
+        { title: 'Age', key: 'age', dataIndex: 'age', visible: false },
+        { title: 'Status', key: 'status', dataIndex: 'status' },
+      ]
+
+      const wrapper = mountTable(columns)
+
+      expect(wrapper.findAll('thead th').map((item) => item.text())).toEqual(['Name', 'Status'])
+      expect(getBodyRows(wrapper)[0].findAll('td')).toHaveLength(2)
+
+      wrapper.unmount()
+    })
+
+    it('drops a group whose children are all hidden', () => {
+      const columns: ColumnsType<DemoRow> = [
+        {
+          title: 'User',
+          key: 'user',
+          children: [{ title: 'Age', key: 'age', dataIndex: 'age', visible: false }],
+        },
+        { title: 'Name', key: 'name', dataIndex: 'name' },
+      ]
+
+      const wrapper = mountTable(columns)
+
+      expect(wrapper.findAll('thead th').map((item) => item.text())).toEqual(['Name'])
+
+      wrapper.unmount()
+    })
+
+    it('reorders columns with columnOrder and keeps unmatched columns after', () => {
+      const wrapper = mountTable(baseColumns, { columnOrder: ['status', 'name'] })
+
+      expect(wrapper.findAll('thead th').map((item) => item.text())).toEqual([
+        'Status',
+        'Name',
+        'Age',
+      ])
+
+      wrapper.unmount()
+    })
+
+    it('pins selection column to the front when columnOrder is set', () => {
+      const wrapper = mountTable(baseColumns, {
+        rowSelection: { type: 'checkbox' },
+        columnOrder: ['status'],
+      })
+
+      const headers = wrapper.findAll('thead th')
+      expect(headers[0].find('[role="checkbox"]').exists()).toBe(true)
+      expect(headers[1].text()).toBe('Status')
+      expect(headers[2].text()).toBe('Name')
+      expect(headers[3].text()).toBe('Age')
+
+      wrapper.unmount()
+    })
+  })
+
+  describe('row drag sort (rowDraggable)', () => {
+    function stubRowRect(row: { element: Element }, top = 0, height = 100) {
+      ;(row.element as HTMLElement).getBoundingClientRect = () =>
+        ({
+          top,
+          height,
+          bottom: top + height,
+          left: 0,
+          right: 0,
+          width: 0,
+          x: 0,
+          y: top,
+          toJSON: () => ({}),
+        }) as DOMRect
+    }
+
+    it('does not make rows draggable by default', () => {
+      const wrapper = mountTable(baseColumns)
+
+      expect(getBodyRows(wrapper)[0].attributes('draggable')).toBeUndefined()
+
+      wrapper.unmount()
+    })
+
+    it('lets customRow draggable:false opt a row out of dragging', async () => {
+      const wrapper = mountTable(baseColumns, {
+        rowDraggable: true,
+        customRow: (record: DemoRow) => ({ draggable: record.key !== '1' }),
+      })
+
+      const rows = getBodyRows(wrapper)
+      expect(rows[0].attributes('draggable')).toBe('false')
+      expect(rows[1].attributes('draggable')).toBe('true')
+
+      // 退出行也不作为放置目标：dragover 不产生放置指示线
+      stubRowRect(rows[0])
+      stubRowRect(rows[1])
+      await rows[1].trigger('dragstart')
+      await rows[0].trigger('dragover', { clientY: 10 })
+      await nextTick()
+      expect(getBodyRows(wrapper)[0].classes().join(' ')).not.toContain('shadow-[inset')
+
+      wrapper.unmount()
+    })
+
+    it('emits rowDragEnd with reordered dataSource after a drop', async () => {
+      const wrapper = mountTable(baseColumns, { rowDraggable: true })
+
+      const rows = getBodyRows(wrapper)
+      stubRowRect(rows[0])
+      stubRowRect(rows[2])
+
+      // 拖第一行(Charlie)放到第三行(Bob)的上半部分 → before
+      await rows[0].trigger('dragstart')
+      await rows[2].trigger('dragover', { clientY: 10 })
+      await rows[2].trigger('drop')
+      await nextTick()
+
+      const events = wrapper.emitted('rowDragEnd')
+      expect(events).toBeTruthy()
+      const [newData, info] = events![0]
+      expect((newData as DemoRow[]).map((row) => row.key)).toEqual(['2', '1', '3'])
+      expect(info).toEqual({ draggedKey: '1', targetKey: '3', orderedKeys: ['2', '1', '3'] })
+
+      // 受控模式：外部更新 dataSource 后行序随之变化
+      await wrapper.setProps({ dataSource: newData as DemoRow[] })
+      expect(getBodyRows(wrapper)[1].text()).toContain('Charlie')
+
+      wrapper.unmount()
+    })
+
+    it('does not emit rowDragEnd when the drop keeps the original order', async () => {
+      const wrapper = mountTable(baseColumns, { rowDraggable: true })
+
+      const rows = getBodyRows(wrapper)
+      stubRowRect(rows[1])
+      stubRowRect(rows[2])
+
+      // 第二行(Alice)放到第三行(Bob)的 before = Alice 原位
+      await rows[1].trigger('dragstart')
+      await rows[2].trigger('dragover', { clientY: 10 })
+      await rows[2].trigger('drop')
+      await nextTick()
+
+      expect(wrapper.emitted('rowDragEnd')).toBeUndefined()
+
+      wrapper.unmount()
+    })
+
+    it('supports tree drag: parent carries subtree and child can move across parents', async () => {
+      interface TreeRow extends Record<string, unknown> {
+        key: string
+        name: string
+        children?: TreeRow[]
+      }
+      const treeData: TreeRow[] = [
+        { key: 'p1', name: 'P1', children: [{ key: 'c1', name: 'C1' }] },
+        { key: 'p2', name: 'P2', children: [{ key: 'd1', name: 'D1' }] },
+        { key: 'p3', name: 'P3' },
+      ]
+      const wrapper = mount(VTable<TreeRow>, {
+        attachTo: document.body,
+        props: {
+          rowKey: 'key',
+          columns: [{ title: 'Name', key: 'name', dataIndex: 'name' }],
+          dataSource: treeData,
+          rowDraggable: true,
+          defaultExpandAllRows: true,
+        },
+      })
+
+      // 初始扁平显示:p1, c1, p2, d1, p3
+      let rows = getBodyRows(wrapper)
+      expect(rows).toHaveLength(5)
+      stubRowRect(rows[0])
+      stubRowRect(rows[4])
+
+      // 父行 p1 拖到 p3 上半部 → before:顶层变为 [p2, p1(子树随行), p3]
+      await rows[0].trigger('dragstart')
+      await rows[4].trigger('dragover', { clientY: 10 })
+      await rows[4].trigger('drop')
+      await nextTick()
+
+      const firstEvents = wrapper.emitted('rowDragEnd')
+      expect(firstEvents).toHaveLength(1)
+      const [afterParentDrag] = firstEvents![0] as [TreeRow[]]
+      expect(afterParentDrag.map((row) => row.key)).toEqual(['p2', 'p1', 'p3'])
+      expect(afterParentDrag[1].children?.map((row) => row.key)).toEqual(['c1'])
+
+      await wrapper.setProps({ dataSource: afterParentDrag })
+      // 现在扁平显示:p2, d1, p1, c1, p3
+      rows = getBodyRows(wrapper)
+      expect(rows).toHaveLength(5)
+      stubRowRect(rows[3])
+      stubRowRect(rows[1])
+
+      // 子行 c1 拖到 p2 的子行 d1 上半部 → 跨父移动,变成 p2 的子节点
+      await rows[3].trigger('dragstart')
+      await rows[1].trigger('dragover', { clientY: 10 })
+      await rows[1].trigger('drop')
+      await nextTick()
+
+      const events = wrapper.emitted('rowDragEnd')
+      expect(events).toHaveLength(2)
+      const [newData, info] = events![1] as [TreeRow[], { draggedKey: string; targetKey: string }]
+      // 顶层不变,子节点跨父移动
+      expect(newData.map((row) => row.key)).toEqual(['p2', 'p1', 'p3'])
+      expect(newData[0].children?.map((row) => row.key)).toEqual(['c1', 'd1'])
+      expect(newData[1].children?.map((row) => row.key)).toEqual([])
+      expect(info.draggedKey).toBe('c1')
+      expect(info.targetKey).toBe('d1')
+
+      // 显示顺序随之更新:c1 成为 p2 的第一个子节点
+      await wrapper.setProps({ dataSource: newData })
+      const flatTexts = getBodyRows(wrapper).map((row) => row.text())
+      expect(flatTexts[0]).toContain('P2')
+      expect(flatTexts[1]).toContain('C1')
+      expect(flatTexts[2]).toContain('D1')
+
+      wrapper.unmount()
+    })
+
+    it('highlights the drop target row during dragover', async () => {
+      const wrapper = mountTable(baseColumns, { rowDraggable: true })
+
+      const rows = getBodyRows(wrapper)
+      stubRowRect(rows[0])
+      stubRowRect(rows[2])
+
+      await rows[0].trigger('dragstart')
+      await rows[2].trigger('dragover', { clientY: 10 })
+      await nextTick()
+
+      const targetClasses = getBodyRows(wrapper)[2].classes().join(' ')
+      expect(targetClasses).toContain(
+        'shadow-[inset_0_2px_0_0_var(--vtg-table-row-drop-indicator-color)]',
+      )
+
+      await rows[2].trigger('dragend')
+      await nextTick()
+      expect(getBodyRows(wrapper)[2].classes().join(' ')).not.toContain('shadow-[inset')
+
+      wrapper.unmount()
+    })
+  })
 })

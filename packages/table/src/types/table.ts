@@ -167,6 +167,13 @@ export interface TableProps<TRecord extends object = Record<string, any>> {
   dataSource: TRecord[]
   /** 列配置 */
   columns: ColumnsType<TRecord>
+  /**
+   * 列显示顺序（按列 key）。
+   *
+   * 在数组中出现的列按此顺序排前；未出现的列（含无 key 列）保持原相对顺序排在后面。
+   * 选择列 / 展开列固定在行首。仅重排顶层列，分组列整组移动。
+   */
+  columnOrder?: Key[]
   /** 行唯一标识 */
   rowKey?: string | ((record: TRecord) => Key)
   /**
@@ -183,6 +190,12 @@ export interface TableProps<TRecord extends object = Record<string, any>> {
   striped?: boolean
   /** 行 hover 高亮 */
   hoverable?: boolean
+
+  /**
+   * 是否开启行拖拽排序（整行可拖拽，原生 HTML5 拖放）。
+   * 拖拽结束后触发 `rowDragEnd` 事件并返回重排后的 dataSource，由外部更新数据。
+   */
+  rowDraggable?: boolean
   /** slot 级别样式覆盖 */
   ui?: SlotProps<{ slots: Record<TableSlots, string> }>
   /** 根元素自定义 class */
@@ -330,6 +343,16 @@ export type VTableSorterResult<TRecord extends object = Record<string, any>> =
   | SorterResultLike<TRecord>
   | Array<SorterResultLike<TRecord>>
 
+/** rowDragEnd 事件中的 info 参数 */
+export interface RowDragSortInfo {
+  /** 拖拽行的 key */
+  draggedKey: Key
+  /** 放置目标行的 key */
+  targetKey: Key
+  /** 拖拽完成后的全量行 key 顺序（对应返回的 newData；树形数据按数据顺序递归包含子节点） */
+  orderedKeys: Key[]
+}
+
 export interface VTableEventProps<TRecord extends object = Record<string, any>> {
   onChange?: (
     filters: TableFiltersInfo,
@@ -337,6 +360,7 @@ export interface VTableEventProps<TRecord extends object = Record<string, any>> 
     extra: TableChangeExtra<TRecord>,
   ) => void
   onResizeColumn?: (column: ColumnType<TRecord>, width: number) => void
+  onRowDragEnd?: (newData: TRecord[], info: RowDragSortInfo) => void
 }
 
 export type VTablePublicProps<TRecord extends object = Record<string, any>> = TableProps<TRecord> &
@@ -355,6 +379,7 @@ export declare class VTableGeneric<TRecord extends object = Record<string, any>>
     extra: TableChangeExtra<TRecord>,
   ): void
   $emit(event: 'resizeColumn', column: ColumnType<TRecord>, width: number): void
+  $emit(event: 'rowDragEnd', newData: TRecord[], info: RowDragSortInfo): void
 }
 
 export type VTableComponent = typeof VTableGeneric

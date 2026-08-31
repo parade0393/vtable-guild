@@ -9,6 +9,7 @@ import ColGroup from './ColGroup'
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 import type { ColumnMetrics } from '../composables/useColumnMetrics'
 import { resolveFixedColumnRanges, useColumnWindow } from '../composables/useColumnWindow'
+import { resolveRowDragClass } from '../composables/useRowDragSort'
 import type { ColumnType, Key } from '../types'
 import { getExpandedRowCompatClass, getRowCompatClass } from '../utils/compat'
 
@@ -285,7 +286,24 @@ export default defineComponent({
               const expandRowByClick = exp?.expandRowByClick ?? false
               const canExpand = tableContext.isRowExpandable?.(item) ?? false
               const rowClassName = tableContext.getRowClassName?.(item, rIndex)
-              const rowProps = tableContext.getRowProps?.(item, rIndex)
+              const userRowProps = tableContext.getRowProps?.(item, rIndex)
+              // 仅在启用行拖拽时绑定，避免给所有表格的行都渲染 draggable="false"
+              const rowDragBindings = tableContext.rowDrag?.enabled.value
+                ? tableContext.rowDrag.getBindings(
+                    item,
+                    rIndex,
+                    userRowProps as Record<string, unknown> | undefined,
+                  )
+                : undefined
+              const rowProps = {
+                ...userRowProps,
+                ...rowDragBindings,
+              }
+              const dragStateClass = resolveRowDragClass(
+                tableContext.rowDrag,
+                key,
+                tableContext.subThemeSlots,
+              )
               // 必须先判 isTreeData：getFlattenRow 会读 rowMetaMap → 强制求值 flattenData，
               // 而非树数据下 flattenData 是 data.map(...)，10 万行就是 10 万个对象 + 10 万项 Map。
               // 挂载与每次排序（processedData 换引用）各付一次，是虚拟模式挂载随行数增长的主因。
@@ -343,6 +361,7 @@ export default defineComponent({
                         cn(
                           props.rowClass,
                           rowClassName,
+                          dragStateClass,
                           getRowCompatClass(tableContext, item, rIndex, rowIndent),
                         ) ?? ''
                       }

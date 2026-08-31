@@ -44,6 +44,7 @@ import {
   type TableSlots,
 } from '@vtable-guild/theme'
 import { useColumns, useSorter, useFilter, useSelection } from '../composables'
+import { applyColumnOrder, filterVisibleColumns } from '../composables/useColumnDisplay'
 import { getEllipsisConfig } from '../utils/cell'
 import { getRootCompatClass } from '../utils/compat'
 import { useScroll, type ScrollConfig } from '../composables/useScroll'
@@ -54,6 +55,7 @@ import { useResize } from '../composables/useResize'
 import { useVirtual } from '../composables/useVirtual'
 import { useTreeData } from '../composables/useTreeData'
 import { useHoverState } from '../composables/useHoverState'
+import { useRowDragSort } from '../composables/useRowDragSort'
 
 import { TABLE_CONTEXT_KEY, type TableContext, type SubThemeSlots } from '../context'
 import { EXPAND_COLUMN, SELECTION_COLUMN } from '../constants'
@@ -72,6 +74,7 @@ import type {
   RowSelection,
   TableFiltersInfo,
   TableChangeExtra,
+  RowDragSortInfo,
   Expandable,
 } from '../types'
 
@@ -158,6 +161,7 @@ export default defineComponent({
   props: {
     dataSource: { type: Array as PropType<TableRecord[]>, default: () => [] },
     columns: { type: Array as PropType<ColumnsType<TableRecord>>, default: () => [] },
+    columnOrder: { type: Array as PropType<Key[]>, default: undefined },
     rowKey: {
       type: [String, Function] as PropType<string | ((record: TableRecord) => Key)>,
       default: 'key',
@@ -172,6 +176,7 @@ export default defineComponent({
     bordered: { type: Boolean, default: false },
     striped: { type: Boolean, default: false },
     hoverable: { type: Boolean, default: true },
+    rowDraggable: { type: Boolean, default: false },
     tableLayout: {
       type: String as PropType<'auto' | 'fixed'>,
       default: undefined,
@@ -318,6 +323,7 @@ export default defineComponent({
       _extra: TableChangeExtra<Record<string, unknown>>,
     ) => true,
     resizeColumn: (_column: ColumnType<Record<string, unknown>>, _width: number) => true,
+    rowDragEnd: (_newData: Record<string, unknown>[], _info: RowDragSortInfo) => true,
   },
   slots: Object as SlotsType<{
     bodyCell: {
@@ -554,6 +560,19 @@ export default defineComponent({
 
     const { hoverRange, setHoverRange, clearHoverRange } = useHoverState(100)
 
+    // ---- 行拖拽排序 ----
+    // 受控模式：drop 时在 dataSource 上搬移并把新数组交给外部更新。
+    // 树形数据同样支持：拖到目标行前/后即插入到目标行的同级位置（跨父移动）。
+    const rowDrag = useRowDragSort({
+      enabled: () => props.rowDraggable === true,
+      getRowKey: getRowKeyFn,
+      dataSource: () => props.dataSource,
+      childrenColumnName: () => props.childrenColumnName,
+      onDrop(newData, info) {
+        emit('rowDragEnd', newData, info)
+      },
+    })
+
     /** Final display data — flat records after tree expansion */
     const displayData = computed(() => {
       if (!isTreeData.value) return processedData.value
@@ -633,11 +652,15 @@ export default defineComponent({
           }
         : null
 
+      // 列显示与列顺序只作用于显示层：dataLeafColumns（排序/筛选输入）保持全量，
+      // 隐藏列的 sorter / filter 状态不会被清理，取消隐藏后状态保留。
+      const visibleColumns = filterVisibleColumns(responsiveColumns.value)
+
       const cols: ColumnsType<Record<string, unknown>> = []
       let expandPlaced = false
       let selectionPlaced = false
 
-      for (const col of responsiveColumns.value) {
+      for (const col of visibleColumns) {
         if (col === EXPAND_COLUMN) {
           if (expandCol && !expandPlaced) {
             cols.push(expandCol)
@@ -659,7 +682,8 @@ export default defineComponent({
       if (expandCol && !expandPlaced) cols.unshift(expandCol)
       if (selCol && !selectionPlaced) cols.unshift(selCol)
 
-      return cols
+      // columnOrder 重排（order 为空时恒等返回）；选择列/展开列不参与匹配、固定行首
+      return applyColumnOrder(cols, props.columnOrder, [SELECTION_COLUMN_KEY, EXPAND_COLUMN_KEY])
     })
 
     const { leafColumns: displayColumns, headerRows } = useColumns(() => displayColumnTree.value)
@@ -1002,6 +1026,9 @@ export default defineComponent({
       resizeHandle: themeSlots.resizeHandle,
       tdRowHover: themeSlots.tdRowHover,
       tdRowSelectedHover: themeSlots.tdRowSelectedHover,
+      trDragging: themeSlots.trDragging,
+      trDropAbove: themeSlots.trDropAbove,
+      trDropBelow: themeSlots.trDropBelow,
     }
 
     const presetConfig = computed(() => resolveTablePresetConfig(effectiveThemePreset.value))
@@ -1078,7 +1105,14 @@ export default defineComponent({
       hoverRange,
       setHoverRange,
       clearHoverRange,
-      hoverable: computed(() => props.hoverable !== false),
+      // 拖拽期间抑制 hover 高亮，避免干扰拖放指示线
+      hoverable: computed(() => props.hoverable !== false && rowDrag.draggingKey.value === null),
+      rowDrag: {
+        enabled: computed(() => props.rowDraggable === true),
+        draggingKey: rowDrag.draggingKey,
+        dropTarget: rowDrag.dropTarget,
+        getBindings: (record, index, userProps) => rowDrag.getBindings(record, index, userProps),
+      },
     })
 
     return () => {

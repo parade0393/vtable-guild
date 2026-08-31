@@ -59,6 +59,7 @@ export type {
   CustomFilterDropdownSlotProps,
   TableFiltersInfo,
   TableChangeExtra,
+  RowDragSortInfo,
   VTableSorterResult,
   VTableEventProps,
   VTablePublicProps,
@@ -76,5 +77,12 @@ export type { SummaryFixed } from './components/VTableSummary'
 export type { VTableGuildTableLocale } from '@vtable-guild/core'
 
 export { useColumns, getByDataIndex } from './composables'
-export type { SorterResult, SelectionState } from './composables'
+export { useRowDragSort, moveTreeNode } from './composables'
+export type {
+  SorterResult,
+  SelectionState,
+  DropPosition,
+  RowDragBindings,
+  RowDragDropTarget,
+} from './composables'
 export type { FlattenRow } from './composables/useTreeData'

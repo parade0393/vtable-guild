@@ -260,6 +260,21 @@ interface TableChangeExtra<TRecord> {
 }
 ```
 
+### RowDragSortInfo
+
+`rowDragEnd` 事件的 info 参数，见[行拖拽排序](/guide/row-drag-sort)。
+
+```ts
+interface RowDragSortInfo {
+  /** 拖拽行的 key */
+  draggedKey: Key
+  /** 放置目标行的 key */
+  targetKey: Key
+  /** 拖拽完成后的全量行 key 顺序（对应事件的 newData；树形数据按数据顺序递归包含子节点） */
+  orderedKeys: Key[]
+}
+```
+
 ## Slot 类型
 
 ### TableBodyCellSlotProps
@@ -370,12 +385,13 @@ type MyTableProps<TRecord extends object> = TableProps<TRecord>
 
 ### VTableEventProps
 
-`change` 与 `resizeColumn` 事件 props 类型。
+`change`、`resizeColumn` 与 `rowDragEnd` 事件 props 类型。
 
 ```ts
 interface VTableEventProps<TRecord> {
   onChange?: (filters, sorter, extra) => void
   onResizeColumn?: (column: ColumnType<TRecord>, width: number) => void
+  onRowDragEnd?: (newData: TRecord[], info: RowDragSortInfo) => void
 }
 ```
 

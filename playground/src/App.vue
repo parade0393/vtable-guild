@@ -48,6 +48,7 @@ onBeforeUnmount(() => {
         <RouterLink class="play-tab" active-class="is-active" to="/filter">筛选</RouterLink>
         <RouterLink class="play-tab" active-class="is-active" to="/selection">选择</RouterLink>
         <RouterLink class="play-tab" active-class="is-active" to="/sort">排序</RouterLink>
+        <RouterLink class="play-tab" active-class="is-active" to="/drag-sort">拖拽</RouterLink>
         <RouterLink class="play-tab" active-class="is-active" to="/advanced">高级</RouterLink>
         <RouterLink class="play-tab" active-class="is-active" to="/virtual">虚拟</RouterLink>
         <RouterLink class="play-tab" active-class="is-active" to="/tree">树形</RouterLink>

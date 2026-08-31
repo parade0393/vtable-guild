@@ -157,6 +157,11 @@ export const antdvTableTheme = {
     tdRowHover: 'bg-[color:var(--vtg-table-row-hover-bg)]',
     tdRowSelectedHover: 'bg-[color:var(--vtg-table-row-selected-hover-bg)]',
 
+    // ---- 行拖拽排序 ----
+    trDragging: 'opacity-50',
+    trDropAbove: '[&>td]:shadow-[inset_0_2px_0_0_var(--vtg-table-row-drop-indicator-color)]',
+    trDropBelow: '[&>td]:shadow-[inset_0_-2px_0_0_var(--vtg-table-row-drop-indicator-color)]',
+
     // ---- 选择下拉相关 ----
     selectionDropdown: [
       'rounded-[6px] bg-[color:var(--color-surface)]',

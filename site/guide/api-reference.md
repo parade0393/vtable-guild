@@ -24,13 +24,14 @@ import {
 
 ### 数据与结构
 
-| Prop                 | 类型                                                             | 默认值       | 说明                                   |
-| -------------------- | ---------------------------------------------------------------- | ------------ | -------------------------------------- |
-| `dataSource`         | `TRecord[]`                                                      | `[]`         | 表格数据源。                           |
-| `columns`            | [`TableColumnsType<TRecord>`](/guide/type-reference#columnstype) | `[]`         | 列配置，支持叶子列、列组和列占位常量。 |
-| `rowKey`             | `string \| (record) => Key`                                      | -            | 行唯一标识，建议显式传入。             |
-| `childrenColumnName` | `string`                                                         | `'children'` | 树形数据的子节点字段名。               |
-| `indentSize`         | `number`                                                         | `15`         | 树形数据缩进宽度，单位 px。            |
+| Prop                 | 类型                                                             | 默认值       | 说明                                                                       |
+| -------------------- | ---------------------------------------------------------------- | ------------ | -------------------------------------------------------------------------- |
+| `dataSource`         | `TRecord[]`                                                      | `[]`         | 表格数据源。                                                               |
+| `columns`            | [`TableColumnsType<TRecord>`](/guide/type-reference#columnstype) | `[]`         | 列配置，支持叶子列、列组和列占位常量。                                     |
+| `columnOrder`        | [`Key[]`](/guide/type-reference#key)                             | -            | 列显示顺序，见[列显示与列顺序](/guide/column-display#列顺序-columnorder)。 |
+| `rowKey`             | `string \| (record) => Key`                                      | -            | 行唯一标识，建议显式传入。                                                 |
+| `childrenColumnName` | `string`                                                         | `'children'` | 树形数据的子节点字段名。                                                   |
+| `indentSize`         | `number`                                                         | `15`         | 树形数据缩进宽度，单位 px。                                                |
 
 ### 视觉与布局
 
@@ -72,6 +73,7 @@ import {
 | ------------------------ | ------------------------------------------------------------- | ------- | ---------------------------------------------------------------------- |
 | `rowSelection`           | [`RowSelection<TRecord>`](/guide/type-reference#rowselection) | -       | 开启行选择列。                                                         |
 | `expandable`             | [`Expandable<TRecord>`](/guide/type-reference#expandable)     | -       | 开启展开行能力。                                                       |
+| `rowDraggable`           | `boolean`                                                     | `false` | 开启行拖拽排序，见[行拖拽排序](/guide/row-drag-sort)。                 |
 | `expandedRowKeys`        | `Key[]`                                                       | -       | 树形数据的受控展开 key 列表。                                          |
 | `defaultExpandedRowKeys` | `Key[]`                                                       | -       | 树形数据的默认展开 key 列表。                                          |
 | `defaultExpandAllRows`   | `boolean`                                                     | `false` | 树形数据默认展开所有节点。                                             |
@@ -95,17 +97,18 @@ import {
 
 ### 基础字段
 
-| 字段         | 类型                                               | 默认值  | 说明                                                              |
-| ------------ | -------------------------------------------------- | ------- | ----------------------------------------------------------------- |
-| `key`        | [`Key`](/guide/type-reference#key)                 | -       | 列唯一标识，建议显式传入。                                        |
-| `title`      | `VNodeChild \| function`                           | -       | 列标题，可以是文本、VNode 或渲染函数。                            |
-| `dataIndex`  | [`DataIndex`](/guide/type-reference#dataindex)     | -       | 数据字段路径，如 `'name'` 或 `['address', 'city']`。              |
-| `width`      | `number \| string`                                 | -       | 列宽，数字按 px 处理。                                            |
-| `align`      | [`AlignType`](/guide/type-reference#aligntype)     | -       | 列内容对齐方式。                                                  |
-| `ellipsis`   | `boolean \| { showTitle?: boolean }`               | `false` | 单元格内容超出时省略；`showTitle: false` 时不显示 hover tooltip。 |
-| `className`  | `string`                                           | -       | 列单元格额外 class。                                              |
-| `colSpan`    | `number`                                           | -       | 表头单元格跨列数。                                                |
-| `responsive` | [`Breakpoint[]`](/guide/type-reference#breakpoint) | -       | 当前屏幕命中任一断点时显示该列。                                  |
+| 字段         | 类型                                               | 默认值  | 说明                                                                       |
+| ------------ | -------------------------------------------------- | ------- | -------------------------------------------------------------------------- |
+| `key`        | [`Key`](/guide/type-reference#key)                 | -       | 列唯一标识，建议显式传入。                                                 |
+| `title`      | `VNodeChild \| function`                           | -       | 列标题，可以是文本、VNode 或渲染函数。                                     |
+| `dataIndex`  | [`DataIndex`](/guide/type-reference#dataindex)     | -       | 数据字段路径，如 `'name'` 或 `['address', 'city']`。                       |
+| `width`      | `number \| string`                                 | -       | 列宽，数字按 px 处理。                                                     |
+| `align`      | [`AlignType`](/guide/type-reference#aligntype)     | -       | 列内容对齐方式。                                                           |
+| `ellipsis`   | `boolean \| { showTitle?: boolean }`               | `false` | 单元格内容超出时省略；`showTitle: false` 时不显示 hover tooltip。          |
+| `className`  | `string`                                           | -       | 列单元格额外 class。                                                       |
+| `colSpan`    | `number`                                           | -       | 表头单元格跨列数。                                                         |
+| `visible`    | `boolean`                                          | `true`  | 控制列是否显示，见[列显示与列顺序](/guide/column-display#列显示-visible)。 |
+| `responsive` | [`Breakpoint[]`](/guide/type-reference#breakpoint) | -       | 当前屏幕命中任一断点时显示该列。                                           |
 
 ### 自定义渲染
 
@@ -219,10 +222,11 @@ customRender: ({ text, index }) =>
 
 ## Events
 
-| 事件           | 参数                       | 说明                               |
-| -------------- | -------------------------- | ---------------------------------- |
-| `change`       | `(filters, sorter, extra)` | 排序、筛选、选择后的统一事件出口。 |
-| `resizeColumn` | `(column, width)`          | 拖拽列宽结束后触发。               |
+| 事件           | 参数                       | 说明                                                                     |
+| -------------- | -------------------------- | ------------------------------------------------------------------------ |
+| `change`       | `(filters, sorter, extra)` | 排序、筛选、选择后的统一事件出口。                                       |
+| `resizeColumn` | `(column, width)`          | 拖拽列宽结束后触发。                                                     |
+| `rowDragEnd`   | `(newData, info)`          | 行拖拽排序结束且顺序有变化时触发，见[行拖拽排序](/guide/row-drag-sort)。 |
 
 `change` 当前不包含 pagination 参数。`extra.action` 取值为 `'sort'`、`'filter'` 或 `'select'`。
 

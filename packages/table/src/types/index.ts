@@ -37,6 +37,7 @@ export type {
   TableFiltersInfo,
   SorterResultLike,
   TableChangeExtra,
+  RowDragSortInfo,
   VTableSorterResult,
   VTableEventProps,
   VTablePublicProps,

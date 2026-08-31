@@ -31,6 +31,14 @@ VTable 提供明确的列类型、行数据类型、事件参数类型，以及�
 
 通过 `virtual` 配合 `scroll.y` 直接启用，适合长列表和性能敏感页面。详见 [虚拟滚动](/guide/virtualization)。
 
+### 列设置：列显示与列顺序
+
+`column.visible` 控制列是否显示、`columnOrder` 按列 key 重排顶层列，都是受控属性——显示状态可以持久化成用户偏好。antdv / element-plus 的原生表格都需要自行拼装这类「列设置」面板。详见 [列显示与列顺序](/guide/column-display)。
+
+### 行拖拽排序
+
+`rowDraggable` 开启原生 HTML5 整行拖拽，拖放结束通过 `rowDragEnd` 返回重排后的数据（受控模式），不需要再引入第三方拖拽库。详见 [行拖拽排序](/guide/row-drag-sort)。
+
 ### 更直接的视觉状态开关
 
 - `striped`
@@ -51,4 +59,6 @@ VTable 提供明确的列类型、行数据类型、事件参数类型，以及�
 - [功能对比总览](/comparison/)
 - [虚拟滚动](/guide/virtualization)
 - [列宽拖拽](/guide/column-resize)
+- [列显示与列顺序](/guide/column-display)
+- [行拖拽排序](/guide/row-drag-sort)
 - [三层主题覆盖](/guide/theme-overrides)

@@ -28,6 +28,11 @@ export const router = createRouter({
       component: () => import('./pages/SortPage.vue'),
     },
     {
+      path: '/drag-sort',
+      name: 'drag-sort',
+      component: () => import('./pages/DragSortPage.vue'),
+    },
+    {
       path: '/advanced',
       name: 'advanced',
       component: () => import('./pages/AdvancedPage.vue'),

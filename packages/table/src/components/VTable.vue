@@ -11,6 +11,7 @@ import type {
   TableHeaderCellSlotProps,
   TableProps,
   TableSlotsDecl,
+  RowDragSortInfo,
   VTableSorterResult,
 } from '../types'
 import type { SorterResult } from '../composables'
@@ -28,6 +29,7 @@ const emit = defineEmits<{
     extra: TableChangeExtra<TRecord>,
   ]
   resizeColumn: [column: ColumnType<TRecord>, width: number]
+  rowDragEnd: [newData: TRecord[], info: RowDragSortInfo]
 }>()
 
 defineSlots<TableSlotsDecl<TRecord>>()
@@ -36,7 +38,7 @@ const instance = getCurrentInstance()
 function getForwardedBindings() {
   const result: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(instance?.vnode.props ?? {})) {
-    if (key !== 'onChange' && key !== 'onResizeColumn') {
+    if (key !== 'onChange' && key !== 'onResizeColumn' && key !== 'onRowDragEnd') {
       result[key] = value
     }
   }
@@ -70,6 +72,10 @@ function handleResizeColumn(column: ColumnType<Record<string, unknown>>, width: 
   emit('resizeColumn', withRecordType<ColumnType<TRecord>>(column), width)
 }
 
+function handleRowDragEnd(newData: Record<string, unknown>[], info: RowDragSortInfo) {
+  emit('rowDragEnd', withRecordType<TRecord[]>(newData), info)
+}
+
 function asBodyCellSlotProps(slotProps: TableBodyCellSlotProps<Record<string, unknown>>) {
   return withRecordType<TableBodyCellSlotProps<TRecord>>(slotProps)
 }
@@ -101,6 +107,7 @@ function asDataSlotProps(slotProps: TableDataSlotProps<Record<string, unknown>>)
     v-bind="getForwardedBindings()"
     @change="handleChange"
     @resize-column="handleResizeColumn"
+    @row-drag-end="handleRowDragEnd"
   >
     <template v-if="$slots.bodyCell" #bodyCell="slotProps">
       <slot name="bodyCell" v-bind="asBodyCellSlotProps(slotProps)" />

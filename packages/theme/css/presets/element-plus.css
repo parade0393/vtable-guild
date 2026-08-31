@@ -58,6 +58,7 @@
   --vtg-table-row-hover-bg: var(--color-surface-hover);
   --vtg-table-row-selected-bg: #ecf5ff;
   --vtg-table-row-selected-hover-bg: #d9ecff;
+  --vtg-table-row-drop-indicator-color: var(--color-primary);
 
   /* 尺寸类 token */
   --vtg-table-font-size: 14px;
@@ -189,6 +190,7 @@
   --vtg-tooltip-arrow-outer-color: #4c4d4f;
   --vtg-table-row-selected-bg: #18222c;
   --vtg-table-row-selected-hover-bg: #1d3043;
+  --vtg-table-row-drop-indicator-color: var(--color-primary);
 
   /* Loading overlay */
   --vtg-table-loading-overlay-bg: rgb(20 20 20 / 90%);

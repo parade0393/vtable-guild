@@ -5,6 +5,7 @@ import TableCell from './TableCell'
 import TableEmpty from './TableEmpty'
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 import { getByDataIndex } from '../composables'
+import { resolveRowDragClass } from '../composables/useRowDragSort'
 import type { ColumnType, Key } from '../types'
 import { resolveBodyCell, type ResolvedBodyCell } from '../utils/cell'
 import { getExpandedRowCompatClass, getRowCompatClass } from '../utils/compat'
@@ -113,7 +114,24 @@ export default defineComponent({
               : undefined
             const rowIndent = treeRow?.level ?? 0
             const rowClassName = tableContext.getRowClassName?.(record, rowIndex)
-            const rowProps = tableContext.getRowProps?.(record, rowIndex)
+            const userRowProps = tableContext.getRowProps?.(record, rowIndex)
+            // 仅在启用行拖拽时绑定，避免给所有表格的行都渲染 draggable="false"
+            const rowDragBindings = tableContext.rowDrag?.enabled.value
+              ? tableContext.rowDrag.getBindings(
+                  record,
+                  rowIndex,
+                  userRowProps as Record<string, unknown> | undefined,
+                )
+              : undefined
+            const rowProps = {
+              ...userRowProps,
+              ...rowDragBindings,
+            }
+            const dragStateClass = resolveRowDragClass(
+              tableContext.rowDrag,
+              key,
+              tableContext.subThemeSlots,
+            )
             const expandedRowClassName =
               typeof exp?.expandedRowClassName === 'function'
                 ? exp.expandedRowClassName(record, rowIndex, rowIndent)
@@ -133,6 +151,7 @@ export default defineComponent({
                   cn(
                     props.rowClass,
                     rowClassName,
+                    dragStateClass,
                     getRowCompatClass(tableContext, record, rowIndex, rowIndent),
                   ) ?? ''
                 }

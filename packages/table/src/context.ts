@@ -20,6 +20,7 @@ import type { TablePresetConfig } from './preset-config'
 import type { FixedOffset, ScrollEdgeState } from './composables/useScroll'
 import type { FlattenRow } from './composables/useTreeData'
 import type { SelectionState } from './composables/useSelection'
+import type { RowDragBindings, RowDragDropTarget } from './composables/useRowDragSort'
 import type { SummaryFixed } from './components/VTableSummary'
 
 /**
@@ -109,6 +110,9 @@ export interface SubThemeSlots {
   resizeHandle: () => string
   tdRowHover: () => string
   tdRowSelectedHover: () => string
+  trDragging: () => string
+  trDropAbove: () => string
+  trDropBelow: () => string
 }
 
 /**
@@ -303,6 +307,22 @@ export interface TableContext {
   setHoverRange?: (startRow: number, endRow: number) => void
   clearHoverRange?: () => void
   hoverable?: ComputedRef<boolean>
+
+  // ---- 行拖拽排序 ----
+  rowDrag?: {
+    /** 是否启用行拖拽 */
+    enabled: ComputedRef<boolean>
+    /** 当前拖拽行的 key */
+    draggingKey: Ref<Key | null>
+    /** 当前放置目标与插入位置 */
+    dropTarget: Ref<RowDragDropTarget | null>
+    /** 生成拖拽行 props（draggable + 拖拽事件；传入用户 customRow 产物时同名事件内部先行） */
+    getBindings: (
+      record: Record<string, unknown>,
+      index: number,
+      userProps?: Record<string, unknown>,
+    ) => RowDragBindings
+  }
 }
 
 /**

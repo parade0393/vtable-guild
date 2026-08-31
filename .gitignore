@@ -26,6 +26,9 @@ coverage
 *.sln
 *.sw?
 
+# ZCode session workspace
+.zcode/
+
 *.tsbuildinfo
 
 .eslintcache

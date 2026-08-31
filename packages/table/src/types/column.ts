@@ -228,6 +228,13 @@ export interface ColumnType<TRecord extends object = Record<string, any>> {
   showSorterTooltip?: boolean
 
   /**
+   * 控制列是否显示。`false` 时该列从表头/表体中移除，默认显示。
+   * 受控属性：显示与否完全由外部字段决定，隐藏不会丢失该列的排序/筛选状态。
+   * 可与 `responsive` 组合使用（两者任一不满足即不显示）。
+   */
+  visible?: boolean
+
+  /**
    * 响应式可见断点。
    * 当前屏幕命中任一断点时显示该列。
    */

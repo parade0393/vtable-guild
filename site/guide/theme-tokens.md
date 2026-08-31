@@ -39,13 +39,14 @@
 
 ## 行状态变量
 
-| 变量名                              | 作用                                                       |
-| ----------------------------------- | ---------------------------------------------------------- |
-| `--vtg-table-row-hover-bg`          | `hoverable` 行 hover 背景                                  |
-| `--vtg-table-row-striped-bg`        | `striped` 斑马纹背景，**仅 element-plus 预设生效**（见下） |
-| `--vtg-table-row-selected-bg`       | 选中行背景                                                 |
-| `--vtg-table-row-selected-hover-bg` | 选中行 hover 背景                                          |
-| `--vtg-table-expanded-row-bg`       | 展开行内容背景，当前主题实现里带有默认 fallback            |
+| 变量名                                 | 作用                                                                |
+| -------------------------------------- | ------------------------------------------------------------------- |
+| `--vtg-table-row-hover-bg`             | `hoverable` 行 hover 背景                                           |
+| `--vtg-table-row-striped-bg`           | `striped` 斑马纹背景，**仅 element-plus 预设生效**（见下）          |
+| `--vtg-table-row-selected-bg`          | 选中行背景                                                          |
+| `--vtg-table-row-selected-hover-bg`    | 选中行 hover 背景                                                   |
+| `--vtg-table-row-drop-indicator-color` | 行拖拽排序的放置指示线颜色（见 [行拖拽排序](/guide/row-drag-sort)） |
+| `--vtg-table-expanded-row-bg`          | 展开行内容背景，当前主题实现里带有默认 fallback                     |
 
 > [!WARNING]
 > `--vtg-table-row-striped-bg` 只有 element-plus 预设读取。**默认的 antdv 预设把斑马纹背景写死在
