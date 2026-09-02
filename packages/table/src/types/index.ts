@@ -41,7 +41,6 @@ export type {
   VTableSorterResult,
   VTableEventProps,
   VTablePublicProps,
-  VTableComponent,
   RowSelection,
   RowSelectionType,
   SelectionItem,

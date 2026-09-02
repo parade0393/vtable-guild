@@ -63,7 +63,6 @@ export type {
   VTableSorterResult,
   VTableEventProps,
   VTablePublicProps,
-  VTableComponent,
   RowSelection,
   RowSelectionType,
   SelectionItem,
@@ -73,6 +72,12 @@ export type {
   SelectionColumnSentinel,
   Expandable,
 } from './types'
+
+/**
+ * 直接从真实导出（泛型 SFC）派生组件类型，而不是在 types/ 里手写一份
+ * declare class——手写副本会随 props/emit 演进静默漂移。
+ */
+export type VTableComponent = typeof _VTable
 export type { SummaryFixed } from './components/VTableSummary'
 export type { VTableGuildTableLocale } from '@vtable-guild/core'
 

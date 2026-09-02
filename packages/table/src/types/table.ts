@@ -6,7 +6,7 @@ import type {
   SlotProps,
   VTableGuildTableLocale,
 } from '@vtable-guild/core'
-import type { AllowedComponentProps, ComponentCustomProps, VNodeChild, VNodeProps } from 'vue'
+import type { VNodeChild } from 'vue'
 import type {
   ColumnsType,
   ColumnType,
@@ -373,21 +373,3 @@ export interface VTableEventProps<TRecord extends object = Record<string, any>> 
 
 export type VTablePublicProps<TRecord extends object = Record<string, any>> = TableProps<TRecord> &
   VTableEventProps<TRecord>
-
-export declare class VTableGeneric<TRecord extends object = Record<string, any>> {
-  readonly $props: VTablePublicProps<TRecord> &
-    VNodeProps &
-    AllowedComponentProps &
-    ComponentCustomProps
-  readonly $slots: TableSlotsDecl<TRecord>
-  $emit(
-    event: 'change',
-    filters: TableFiltersInfo,
-    sorter: VTableSorterResult<TRecord>,
-    extra: TableChangeExtra<TRecord>,
-  ): void
-  $emit(event: 'resizeColumn', column: ColumnType<TRecord>, width: number): void
-  $emit(event: 'rowDragEnd', newData: TRecord[], info: RowDragSortInfo): void
-}
-
-export type VTableComponent = typeof VTableGeneric
