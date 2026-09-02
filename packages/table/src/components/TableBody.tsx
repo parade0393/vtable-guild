@@ -3,12 +3,14 @@ import { cn } from '@vtable-guild/core'
 import TableRow from './TableRow'
 import TableCell from './TableCell'
 import TableEmpty from './TableEmpty'
+import ExpandedRowTr from './ExpandedRowTr'
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 import { getByDataIndex } from '../composables'
 import { resolveRowDragClass } from '../composables/useRowDragSort'
 import type { ColumnType, Key } from '../types'
 import { resolveBodyCell, type ResolvedBodyCell } from '../utils/cell'
-import { getExpandedRowCompatClass, getRowCompatClass } from '../utils/compat'
+import { resolveRowKey } from '../utils/rowKey'
+import { getRowCompatClass } from '../utils/compat'
 
 interface BodyRowCell {
   column: ColumnType<Record<string, unknown>>
@@ -41,11 +43,7 @@ export default defineComponent({
     const tableContext = inject(TABLE_CONTEXT_KEY, {} as TableContext)
 
     function getRowKey(record: Record<string, unknown>, index: number): Key {
-      if (typeof props.rowKey === 'function') return props.rowKey(record)
-      if (typeof props.rowKey === 'string' && props.rowKey in record) {
-        return record[props.rowKey] as Key
-      }
-      return index
+      return resolveRowKey(record, index, props.rowKey)
     }
 
     const bodyRows = computed<BodyRowCell[][]>(() => {
@@ -171,32 +169,20 @@ export default defineComponent({
                   />
                 ))}
               </TableRow>,
-              isExpanded && exp?.expandedRowRender && (
-                <tr
+              isExpanded && exp?.expandedRowRender ? (
+                <ExpandedRowTr
                   key={`${key}-expanded`}
-                  class={cn(
-                    props.rowClass,
-                    rowClassName,
-                    tableContext.subThemeSlots?.expandedRow(),
-                    getExpandedRowCompatClass(tableContext, rowIndent),
-                    expandedRowClassName,
-                  )}
-                >
-                  <td
-                    colspan={props.columns.length}
-                    class={cn(props.tdClass, tableContext.subThemeSlots?.expandedRowCell())}
-                  >
-                    {tableContext.compatClass &&
-                    (tableContext.fixedOffsets?.value?.size ?? 0) > 0 ? (
-                      <div class={tableContext.compatClass('expanded-row-fixed')}>
-                        {exp.expandedRowRender(record, rowIndex, 0, true)}
-                      </div>
-                    ) : (
-                      exp.expandedRowRender(record, rowIndex, 0, true)
-                    )}
-                  </td>
-                </tr>
-              ),
+                  record={record}
+                  rowIndex={rowIndex}
+                  colspan={props.columns.length}
+                  rowIndent={rowIndent}
+                  rowClass={props.rowClass}
+                  rowClassName={rowClassName}
+                  expandedRowClassName={expandedRowClassName}
+                  tdClass={props.tdClass}
+                  expandedRowRender={exp.expandedRowRender}
+                />
+              ) : null,
             ]
           })
         ) : (

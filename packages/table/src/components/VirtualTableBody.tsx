@@ -5,13 +5,15 @@ import type { ListRef, VirtualScrollInfo } from '@vtable-guild/core'
 import TableRow from './TableRow'
 import TableCell from './TableCell'
 import TableEmpty from './TableEmpty'
+import ExpandedRowTr from './ExpandedRowTr'
 import ColGroup from './ColGroup'
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 import type { ColumnMetrics } from '../composables/useColumnMetrics'
 import { resolveFixedColumnRanges, useColumnWindow } from '../composables/useColumnWindow'
 import { resolveRowDragClass } from '../composables/useRowDragSort'
 import type { ColumnType, Key } from '../types'
-import { getExpandedRowCompatClass, getRowCompatClass } from '../utils/compat'
+import { getRowCompatClass } from '../utils/compat'
+import { resolveRowKey } from '../utils/rowKey'
 
 type VirtualTableScrollInfo = VirtualScrollInfo & {
   maxX: number
@@ -75,21 +77,13 @@ export default defineComponent({
     }
 
     function getRowKey(record: Record<string, unknown>, index: number): Key {
-      if (typeof props.rowKey === 'function') return props.rowKey(record)
-      if (typeof props.rowKey === 'string' && props.rowKey in record) {
-        return record[props.rowKey] as Key
-      }
-      return index
+      return resolveRowKey(record, index, props.rowKey)
     }
 
     function itemKey(item: Record<string, unknown>): Key {
       // 避免在 VirtualList 的 O(n) range 计算里对每个 item 做 indexOf（否则整体 O(n²)）。
       // rowKey 提供时直接取记录上的 key；仅无 rowKey 的兜底分支才回退到 indexOf。
-      if (typeof props.rowKey === 'function') return props.rowKey(item)
-      if (typeof props.rowKey === 'string' && props.rowKey in item) {
-        return item[props.rowKey] as Key
-      }
-      return props.dataSource.indexOf(item)
+      return resolveRowKey(item, props.dataSource.indexOf(item), props.rowKey)
     }
 
     // 列总宽只随 columns 变化，提为 computed，避免每次渲染在 render 函数里 O(列数) 重算
@@ -405,34 +399,22 @@ export default defineComponent({
                         )
                       })}
                     </TableRow>
-                    {isExpanded && exp?.expandedRowRender && (
-                      <tr
+                    {isExpanded && exp?.expandedRowRender ? (
+                      <ExpandedRowTr
                         key={`${key}-expanded`}
-                        class={cn(
-                          props.rowClass,
-                          rowClassName,
-                          tableContext.subThemeSlots?.expandedRow(),
-                          getExpandedRowCompatClass(tableContext, rowIndent),
-                          expandedRowClassName,
-                        )}
-                      >
-                        <td
-                          // 跨的是**实际渲染出来的**单元格数，不是列总数：
-                          // 窗口化之后这一行只有十几个 td，按列总数跨会撑出多余的列。
-                          colspan={plan.length}
-                          class={cn(props.tdClass, tableContext.subThemeSlots?.expandedRowCell())}
-                        >
-                          {tableContext.compatClass &&
-                          (tableContext.fixedOffsets?.value?.size ?? 0) > 0 ? (
-                            <div class={tableContext.compatClass('expanded-row-fixed')}>
-                              {exp.expandedRowRender(item, rIndex, 0, true)}
-                            </div>
-                          ) : (
-                            exp.expandedRowRender(item, rIndex, 0, true)
-                          )}
-                        </td>
-                      </tr>
-                    )}
+                        record={item}
+                        rowIndex={rIndex}
+                        // 跨的是**实际渲染出来的**单元格数，不是列总数：
+                        // 窗口化之后这一行只有十几个 td，按列总数跨会撑出多余的列。
+                        colspan={plan.length}
+                        rowIndent={rowIndent}
+                        rowClass={props.rowClass}
+                        rowClassName={rowClassName}
+                        expandedRowClassName={expandedRowClassName}
+                        tdClass={props.tdClass}
+                        expandedRowRender={exp.expandedRowRender}
+                      />
+                    ) : null}
                   </tbody>
                 </table>
               )

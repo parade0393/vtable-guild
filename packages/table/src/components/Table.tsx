@@ -47,6 +47,7 @@ import { useColumns, useSorter, useFilter, useSelection } from '../composables'
 import { applyColumnOrder, filterVisibleColumns } from '../composables/useColumnDisplay'
 import { getEllipsisConfig } from '../utils/cell'
 import { getRootCompatClass } from '../utils/compat'
+import { resolveRowKey } from '../utils/rowKey'
 import { useScroll, type ScrollConfig } from '../composables/useScroll'
 import { useAutoHeight } from '../composables/useAutoHeight'
 import { useColumnMetrics } from '../composables/useColumnMetrics'
@@ -527,16 +528,18 @@ export default defineComponent({
 
     // ---- 行 key 解析 ----
     function getRowKeyFn(record: Record<string, unknown>, index: number): Key {
-      if (typeof props.rowKey === 'function') return props.rowKey(record)
-      if (typeof props.rowKey === 'string' && props.rowKey in record) {
-        return record[props.rowKey] as Key
+      const key = resolveRowKey(record, index, props.rowKey)
+      const fellBack =
+        props.rowKey === undefined ||
+        (typeof props.rowKey === 'string' && !(props.rowKey in record))
+      if (key === index && fellBack) {
+        devWarn(
+          'vtable-rowkey-fallback-index',
+          '[VTable] rowKey 未配置或无法在记录上取到，已回退到行索引作为 key。' +
+            '在行选择、展开行、树形数据场景下这会导致状态错乱，请配置 rowKey。',
+        )
       }
-      devWarn(
-        'vtable-rowkey-fallback-index',
-        '[VTable] rowKey 未配置或无法在记录上取到，已回退到行索引作为 key。' +
-          '在行选择、展开行、树形数据场景下这会导致状态错乱，请配置 rowKey。',
-      )
-      return index
+      return key
     }
 
     // ---- 树形数据 ----
