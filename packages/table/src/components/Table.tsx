@@ -1331,21 +1331,27 @@ export default defineComponent({
           </Scrollbar>
         ) : null
 
-        const fixedSummaryBlock =
-          summaryContent && isSummaryFixed ? (
+        // 虚拟表体是独立滚动容器，tfoot 无法放进 VirtualList 内部；
+        // 非 fixed 的 summary 也渲染在表体之后，fixed 才走 sticky 底部块。
+        const summaryBlock =
+          summaryContent && (isSummaryFixed || virtualEnabled.value) ? (
             <div
               ref={summaryWrapRef}
               class={cn(
                 themeSlots.headerWrapper(),
                 compatClassFn?.('summary'),
-                resolvedSticky.value && compatClassFn?.('sticky-holder'),
+                resolvedSticky.value && isSummaryFixed && compatClassFn?.('sticky-holder'),
               )}
-              style={{
-                position: 'sticky',
-                bottom: `${resolvedSticky.value?.offsetSummary ?? 0}px`,
-                zIndex: '4',
-                overflow: 'hidden',
-              }}
+              style={
+                isSummaryFixed
+                  ? {
+                      position: 'sticky',
+                      bottom: `${resolvedSticky.value?.offsetSummary ?? 0}px`,
+                      zIndex: '4',
+                      overflow: 'hidden',
+                    }
+                  : undefined
+              }
             >
               <div
                 class={prefixVtgClassNames(
@@ -1387,7 +1393,7 @@ export default defineComponent({
               {headerTable}
               {virtualBody}
               {normalBody}
-              {fixedSummaryBlock}
+              {summaryBlock}
               {loadingOverlay}
             </div>
             {footerContent && <div class={themeSlots.footer()}>{footerContent}</div>}

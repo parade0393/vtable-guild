@@ -951,6 +951,42 @@ describe('VTable', () => {
     wrapper.unmount()
   })
 
+  it('keeps non-fixed summary slot content visible in virtual mode', async () => {
+    const virtualData = Array.from({ length: 80 }, (_, index) => ({
+      key: `s-${index}`,
+      name: `User ${index}`,
+      age: 20 + (index % 30),
+      status: 'active',
+    })) satisfies DemoRow[]
+
+    const wrapper = mount(VTable<DemoRow>, {
+      attachTo: document.body,
+      props: {
+        rowKey: 'key',
+        columns: [
+          { title: 'Name', key: 'name', dataIndex: 'name', width: 160 },
+          { title: 'Age', key: 'age', dataIndex: 'age', width: 120 },
+        ],
+        dataSource: virtualData,
+        scroll: { y: 200 },
+        virtual: true,
+      },
+      slots: {
+        summary: '<tr><td colspan="2">Virtual Summary Row</td></tr>',
+      },
+    })
+
+    await nextTick()
+
+    // 虚拟表体是独立滚动容器，tfoot 放不进去；summary 必须渲染在其后的独立块里，
+    // 而不是被静默丢弃。
+    const tfoots = wrapper.findAll('tfoot')
+    expect(tfoots).toHaveLength(1)
+    expect(tfoots[0].text()).toContain('Virtual Summary Row')
+
+    wrapper.unmount()
+  })
+
   it('renders summary content when using the VTableSummary helper', () => {
     const wrapper = mount(VTable<DemoRow>, {
       attachTo: document.body,
