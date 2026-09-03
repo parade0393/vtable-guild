@@ -67,5 +67,10 @@ export const router = createRouter({
       name: 'antdv-full',
       component: () => import('./pages/AntdvFull.vue'),
     },
+    {
+      path: '/agent-demo',
+      name: 'agent-demo',
+      component: () => import('./pages/AgentDemoPage.vue'),
+    },
   ],
 })
