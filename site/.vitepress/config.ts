@@ -1,3 +1,5 @@
+import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { defineConfig } from 'vitepress'
 
 // 导航 / 侧边栏与 locale 相关，分别挂在各 locale 的 themeConfig 下；
@@ -164,5 +166,118 @@ export default defineConfig({
       // 避免 SSR 构建阶段的 ESM 解析问题。
       noExternal: ['@vtable-guild/vtable-guild'],
     },
+  },
+  buildEnd(siteConfig) {
+    // ---- llms.txt / llms-full.txt ----
+    // Agent（Claude Code / Codex 等）不浏览 VitePress 站点，只抓纯文本。
+    // 构建时把全部文档页的 markdown 原文汇总成两个 LLM 友好文件写进 outDir。
+    const siteRoot = process.cwd()
+    const outDir = siteConfig.outDir
+    const siteUrl = 'https://parade0393.github.io/vtable-guild'
+    interface DocPage {
+      url: string
+      title: string
+      description: string
+      body: string
+      lang: 'zh' | 'en'
+    }
+
+    const collect = (dir: string): string[] => {
+      try {
+        return readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+          e.isDirectory()
+            ? collect(join(dir, e.name))
+            : e.name.endsWith('.md')
+              ? [join(dir, e.name)]
+              : [],
+        )
+      } catch {
+        return []
+      }
+    }
+
+    const parseFrontmatter = (raw: string) => {
+      const fm = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/.exec(raw)
+      if (!fm) return { meta: {} as Record<string, string>, body: raw }
+      const meta: Record<string, string> = {}
+      for (const line of fm[1].split('\n')) {
+        const m = /^(title|description):\s*(.+)$/.exec(line.trim())
+        if (m) meta[m[1]] = m[2].trim()
+      }
+      return { meta, body: raw.slice(fm[0].length) }
+    }
+
+    const titleFrom = (meta: Record<string, string>, body: string, file: string) =>
+      meta.title || /^#\s+(.+)$/m.exec(body)?.[1]?.trim() || file
+
+    const sources: Array<{ dir: string; urlPrefix: string; lang: 'zh' | 'en' }> = [
+      { dir: join(siteRoot, 'guide'), urlPrefix: 'guide', lang: 'zh' },
+      { dir: join(siteRoot, 'comparison'), urlPrefix: 'comparison', lang: 'zh' },
+      { dir: join(siteRoot, 'en', 'guide'), urlPrefix: 'en/guide', lang: 'en' },
+    ]
+    const pages: DocPage[] = []
+
+    for (const { dir, urlPrefix, lang } of sources) {
+      for (const file of collect(dir)) {
+        const raw = readFileSync(file, 'utf8')
+        const { meta, body } = parseFrontmatter(raw)
+        const rel = file.slice(dir.length + 1).replace(/\.md$/, '')
+        const url = urlPrefix + (rel === 'index' ? '' : `/${rel}`)
+        pages.push({
+          url: `${siteUrl}/${url}`,
+          title: titleFrom(meta, body, rel),
+          description: meta.description || '',
+          body,
+          lang,
+        })
+      }
+    }
+    // 根首页（layout: home）
+    const homeRaw = readFileSync(join(siteRoot, 'index.md'), 'utf8')
+    const home = parseFrontmatter(homeRaw)
+    pages.unshift({
+      url: siteUrl,
+      title: 'vtable-guild',
+      description:
+        home.meta.description || '面向 ant-design-vue 和 element-plus 用户的高性能表格替换方案。',
+      body: home.body,
+      lang: 'zh',
+    })
+
+    const zhPages = pages.filter((p) => p.lang === 'zh')
+    const enPages = pages.filter((p) => p.lang === 'en')
+
+    const llmsTxt = [
+      '# vtable-guild',
+      '',
+      '> 面向 ant-design-vue 和 element-plus 用户的高性能 Vue 表格组件：内置纵向/横向虚拟滚动、固定列、行拖拽排序与三层主题系统。API 与 ant-design-vue Table 对齐。',
+      '',
+      'Chinese-first docs with partial English coverage. 文档站为中文主导向，英文覆盖入门与 API。',
+      '',
+      '## 中文文档',
+      '',
+      ...zhPages.map((p) => `- [${p.title}](${p.url})${p.description ? `: ${p.description}` : ''}`),
+      '',
+      '## English docs',
+      '',
+      ...enPages.map((p) => `- [${p.title}](${p.url})${p.description ? `: ${p.description}` : ''}`),
+      '',
+      '## For coding agents',
+      '',
+      `- Full docs in one file: ${siteUrl}/llms-full.txt`,
+      `- Repository: https://github.com/parade0393/vtable-guild`,
+      '',
+    ].join('\n')
+
+    const llmsFullTxt = [
+      '# vtable-guild — full documentation',
+      '',
+      '> 面向 ant-design-vue 和 element-plus 用户的高性能 Vue 表格组件。以下为全部文档页的 markdown 原文。',
+      '',
+      ...pages.flatMap((p) => ['---', `<!-- page: ${p.url} -->`, '', p.body.trim(), '']),
+    ].join('\n')
+
+    writeFileSync(join(outDir, 'llms.txt'), llmsTxt)
+    writeFileSync(join(outDir, 'llms-full.txt'), llmsFullTxt)
   },
 })
