@@ -1,3 +1,8 @@
+---
+title: 为什么选择 vtable-guild - ant-design-vue / element-plus 表格替换方案
+description: vtable-guild 是面向 ant-design-vue 和 element-plus 用户的表格组件：保留原有列定义与插槽用法，补齐大数据量渲染、列布局控制与主题扩展能力。
+---
+
 # 为什么选择 vtable-guild
 
 vtable-guild 不是一套全新的 UI 体系，而是给已经在使用 ant-design-vue 或 element-plus 的项目提供一条更顺手的表格替换路径。

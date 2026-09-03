@@ -1,3 +1,8 @@
+---
+title: ant-design-vue / element-plus 表格功能对比 | vtable-guild
+description: vtable-guild 与 ant-design-vue Table、element-plus Table 的逐项功能对比：虚拟滚动、列宽拖拽、行拖拽排序、主题 token 等增强能力与迁移成本。
+---
+
 # 功能对比总览
 
 这一页只回答一个问题：如果你已经在使用 ant-design-vue Table 或 element-plus Table，vtable-guild 多了什么，迁移成本主要落在哪里。

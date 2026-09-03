@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://parade0393.github.io/vtable-guild/sitemap.xml
