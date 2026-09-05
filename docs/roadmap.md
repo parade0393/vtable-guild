@@ -18,7 +18,7 @@
 - ESLint + Stylelint + Prettier + husky/lint-staged + commitlint（conventional commits）
 - Changesets 版本管理；CI（lint / type-check / test / build）、Release（npm trusted publishing）、
   Deploy Site 三条 workflow
-- 27 个测试与基准文件，覆盖 composable 状态逻辑、组件渲染、主题合并与类型契约
+- 28 个测试与基准文件，覆盖 composable 状态逻辑、组件渲染、主题合并与类型契约
 
 ### 主题系统
 
@@ -46,7 +46,7 @@
 
 ### 文档与分发
 
-- VitePress 文档站，28 个页面 + 16 个可交互 demo，部署在 GitHub Pages
+- VitePress 文档站，28 个页面 + 17 个可交互 demo，部署在 GitHub Pages
 - 独立 Playground（`@vue/repl` + Monaco），挂在文档站 `/play/`
 - 可复现的性能对照页，挂在文档站 `/perf/`：vtable-guild / ant-design-vue Table / antdv-next /
   el-table-v2 / vxe-table 在同一批数据与列配置下对照（1k / 1 万 / 10 万行 × 6 / 50 / 200 列），
