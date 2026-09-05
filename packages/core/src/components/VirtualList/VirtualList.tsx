@@ -385,13 +385,14 @@ export default defineComponent({
 
     const lastVirtualScrollInfo = ref<ScrollInfo>(getVirtualScrollInfo())
 
-    const triggerScroll = (params?: Partial<ScrollInfo>) => {
+    const triggerScroll = (params?: Partial<ScrollInfo>, force = false) => {
       if (props.onVirtualScroll) {
         const nextInfo: ScrollInfo = {
           ...getVirtualScrollInfo(),
           ...params,
         }
         if (
+          force ||
           lastVirtualScrollInfo.value.x !== nextInfo.x ||
           lastVirtualScrollInfo.value.y !== nextInfo.y
         ) {
@@ -413,6 +414,17 @@ export default defineComponent({
     const keepInHorizontalRange = (nextOffsetLeft: number) => {
       return Math.max(0, Math.min(nextOffsetLeft, horizontalRange.value))
     }
+
+    // 内容宽或视口宽变化时，横向上限也会变化。即使当前位置仍在范围内，
+    // 消费方也必须收到通知，以便同步表头位置和 fixed column 的边缘状态。
+    watch(
+      horizontalRange,
+      () => {
+        offsetLeft.value = keepInHorizontalRange(offsetLeft.value)
+        triggerScroll(undefined, true)
+      },
+      { flush: 'post' },
+    )
 
     const delayHideScrollBar = () => {
       verticalScrollBarRef.value?.delayHidden()

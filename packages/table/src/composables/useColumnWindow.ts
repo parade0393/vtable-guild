@@ -156,22 +156,22 @@ export interface UseColumnWindowReturn {
 export function useColumnWindow(options: UseColumnWindowOptions): UseColumnWindowReturn {
   // 长期存活：列宽变化才重建，滚动只做二分。
   const prefix = new PrefixSums()
-
-  const columnCount = computed(() => {
+  const layout = computed(() => {
     const widths = options.widths()
     if (!widths || widths.length === 0) return null
     prefix.markAllDirty()
     prefix.sync(widths.length, (i) => widths[i], 0)
-    return widths.length
+    // 每份新列宽必须使窗口失效；只返回不变的列数会被 computed 稳定性优化拦住。
+    return { count: widths.length, prefix }
   })
 
   const range = computed<ColumnWindow | null>(() => {
-    const count = columnCount.value
-    if (count === null) return null
+    const current = layout.value
+    if (!current) return null
 
     return computeColumnWindow({
-      prefix,
-      columnCount: count,
+      prefix: current.prefix,
+      columnCount: current.count,
       leftFixedCount: options.leftFixedCount(),
       rightFixedStart: options.rightFixedStart(),
       offsetX: options.offsetX(),

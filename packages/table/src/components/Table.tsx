@@ -665,6 +665,17 @@ export default defineComponent({
     const { leafColumns: displayColumns, headerRows } = useColumns(() => displayColumnTree.value)
     const hasGroupedHeader = computed(() => headerRows.value.length > 1)
 
+    // ---- 列宽调整 ----
+    const {
+      columnWidths: resizeColumnWidths,
+      startResize: resizeStartResize,
+      isResizing: resizeIsResizing,
+    } = useResize({
+      onResizeColumn(column, width) {
+        emit('resizeColumn', column, width)
+      },
+    })
+
     // ---- 滚动/固定列 ----
     const {
       headerWrapRef,
@@ -675,6 +686,7 @@ export default defineComponent({
       syncHorizontalScroll,
     } = useScroll({
       displayColumns: () => displayColumns.value,
+      columnWidths: resizeColumnWidths,
     })
 
     const rootCompatClass = computed(() =>
@@ -793,17 +805,6 @@ export default defineComponent({
         if (el) bodyWrapRef.value = el
       },
     )
-
-    // ---- 列宽调整 ----
-    const {
-      columnWidths: resizeColumnWidths,
-      startResize: resizeStartResize,
-      isResizing: resizeIsResizing,
-    } = useResize({
-      onResizeColumn(column, width) {
-        emit('resizeColumn', column, width)
-      },
-    })
 
     // ---- 横向虚拟化 ----
     const displayFixedRanges = computed(() => resolveFixedColumnRanges(displayColumns.value))

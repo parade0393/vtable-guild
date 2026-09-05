@@ -103,6 +103,72 @@ describe('VirtualList', () => {
     expect(visibleRows.length).toBeLessThan(20)
   })
 
+  it('resyncs horizontal position when the content width changes', async () => {
+    const observers = installResizeObserverMock()
+    const onVirtualScroll = vi.fn()
+    const wrapper = mount(VirtualList, {
+      props: {
+        data: [{ key: 1 }],
+        height: 80,
+        itemHeight: 20,
+        itemKey: 'key',
+        scrollWidth: 600,
+        onVirtualScroll,
+      },
+      slots: {
+        default: () => h('div', { class: 'row' }, 'row'),
+      },
+      attachTo: document.body,
+    })
+
+    await flushVirtualList()
+
+    const holder = wrapper.find('.vtg-virtual-list-holder').element as HTMLElement
+    Object.defineProperty(holder, 'offsetWidth', { configurable: true, value: 200 })
+    const holderObserver = observers.find((observer) =>
+      observer.observe.mock.calls.some(([target]) => target === holder),
+    )
+    expect(holderObserver).toBeDefined()
+    holderObserver?.callback(
+      [{ target: holder } as unknown as ResizeObserverEntry],
+      holderObserver as unknown as ResizeObserver,
+    )
+    await flushVirtualList()
+
+    const list = wrapper.vm as unknown as ListRef
+    list.scrollTo({ left: 100 })
+    onVirtualScroll.mockClear()
+
+    await wrapper.setProps({ scrollWidth: 500 })
+    await flushVirtualList()
+
+    expect(list.getScrollInfo().x).toBe(100)
+    expect(onVirtualScroll).toHaveBeenLastCalledWith({ x: 100, y: 0 })
+
+    // 上一次通知已经是 x=100；仅范围变化仍须通知，否则表头/边缘状态可能过期。
+    onVirtualScroll.mockClear()
+    await wrapper.setProps({ scrollWidth: 450 })
+    await flushVirtualList()
+    expect(list.getHorizontalRange()).toBe(250)
+    expect(onVirtualScroll).toHaveBeenCalledExactlyOnceWith({ x: 100, y: 0 })
+
+    list.scrollTo({ left: 300 })
+    onVirtualScroll.mockClear()
+    await wrapper.setProps({ scrollWidth: 250 })
+    await flushVirtualList()
+
+    expect(list.getScrollInfo().x).toBe(50)
+    expect(onVirtualScroll).toHaveBeenLastCalledWith({ x: 50, y: 0 })
+
+    onVirtualScroll.mockClear()
+    await wrapper.setProps({ scrollWidth: 180 })
+    await flushVirtualList()
+    expect(list.getHorizontalRange()).toBe(0)
+    expect(onVirtualScroll).toHaveBeenCalledExactlyOnceWith({ x: 0, y: 0 })
+
+    wrapper.unmount()
+  })
+
   it('measures the real row element rather than a fragment anchor', async () => {
     installResizeObserverMock()
 

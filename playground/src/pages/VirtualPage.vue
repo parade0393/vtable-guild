@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, type ComponentPublicInstance, type Ref } from 'vue'
 import { VTable } from '@vtable-guild/vtable-guild'
-import type { ColumnsType, Key, RowSelection } from '@vtable-guild/vtable-guild'
+import type { ColumnsType, ColumnType, Key, RowSelection } from '@vtable-guild/vtable-guild'
 
 interface VirtualRow {
   key: number
@@ -217,45 +217,128 @@ const rowSelection = computed<RowSelection<VirtualRow>>(() => ({
 
 // ---- Case 07：宽表 + 横向虚拟化 ----
 
-/** 合成列数。加上 7 个真实列共 201 个叶子列，对齐 antdv-next#427 的 200 列量级。 */
-const WIDE_SYNTHETIC_COUNT = 194
+/** 合成列数。加上 8 个真实列共 201 个叶子列，对齐 antdv-next#427 的 200 列量级。 */
+const WIDE_SYNTHETIC_COUNT = 193
 /** 合成列轮换取数的字段，都取短值，避免 100px 下换行把行高顶起来。 */
 const WIDE_SOURCES = ['age', 'score', 'city', 'level'] as const
 /**
  * 表宽。百分比列按它解析，`auto` 列吃剩下的余量：
- * 160 + 90 + 100 + 100 + 260 + 194×100 + 1% = 20,316，余 284 给 auto 列。
+ * 160 + 90 + 100 + 100 + 180 + 260 + 193×100 + 1% = 20,396，余 204 给 auto 列。
  */
 const WIDE_TABLE_WIDTH = 20600
 
 const wideVirtualColumn = ref(true)
+const wideNumericWidths = ref(false)
+const wideResizedWidths = ref<Record<string, number>>({})
+const wideScrollWidth = computed(() =>
+  wideNumericWidths.value
+    ? WIDE_TABLE_WIDTH +
+      Object.values(wideResizedWidths.value).reduce((sum, delta) => sum + delta, 0)
+    : WIDE_TABLE_WIDTH,
+)
+
+function recordWideResize(column: ColumnType<VirtualRow>, width: number) {
+  if (typeof column.width === 'number') {
+    wideResizedWidths.value[String(column.key)] = width - column.width
+  }
+  void settle().then(refreshWideMetrics)
+}
+
+async function toggleWideWidths() {
+  wideResizedWidths.value = {}
+  wideNumericWidths.value = !wideNumericWidths.value
+  await settle()
+  refreshWideMetrics()
+}
 const wideAlignment = ref('未采集')
-/** 叶子列总数：2 左固定 + 2 分组子列 + auto + 百分比 + 合成列 + 1 右固定。 */
-const WIDE_LEAF_COUNT = WIDE_SYNTHETIC_COUNT + 7
+/** 叶子列总数：2 左固定 + 2 分组子列 + auto + 百分比 + 合成列 + 2 右固定。 */
+const WIDE_LEAF_COUNT = WIDE_SYNTHETIC_COUNT + 8
 
 const wideColumns = computed<ColumnsType<VirtualRow>>(() => [
-  { title: 'Name', dataIndex: 'name', key: 'w-name', width: 160, fixed: 'left' },
-  { title: 'Age', dataIndex: 'age', key: 'w-age', width: 90, align: 'right', fixed: 'left' },
+  {
+    title: 'Name',
+    dataIndex: 'name',
+    key: 'w-name',
+    width: 160,
+    minWidth: 50,
+    fixed: 'left',
+    resizable: true,
+  },
+  {
+    title: 'Age',
+    dataIndex: 'age',
+    key: 'w-age',
+    width: 90,
+    minWidth: 50,
+    align: 'right',
+    fixed: 'left',
+    resizable: true,
+  },
   {
     // 分组表头：Score / Level 落在第 2 行，其余顶层叶子列带 rowSpan 落在第 1 行。
     // 这正是「按 DOM 顺序数 th」会错、必须用 leafIndex 的场景。
     title: 'Metrics',
     key: 'w-metrics',
     children: [
-      { title: 'Score', dataIndex: 'score', key: 'w-score', width: 100, align: 'right' },
-      { title: 'Level', dataIndex: 'level', key: 'w-level', width: 100 },
+      {
+        title: 'Score',
+        dataIndex: 'score',
+        key: 'w-score',
+        width: 100,
+        minWidth: 50,
+        align: 'right',
+        resizable: true,
+      },
+      {
+        title: 'Level',
+        dataIndex: 'level',
+        key: 'w-level',
+        width: 100,
+        minWidth: 50,
+        resizable: true,
+      },
     ],
   },
   // 不声明宽度：吃掉表格余量。只有量表头才知道它最终多宽。
-  { title: 'Region (auto)', dataIndex: 'region', key: 'w-region' },
+  {
+    title: wideNumericWidths.value ? 'Region (204px)' : 'Region (auto)',
+    dataIndex: 'region',
+    key: 'w-region',
+    width: wideNumericWidths.value ? 204 : undefined,
+  },
   // 百分比宽度：相对表宽解析，同样算不出来、只能量。
-  { title: 'Team (1%)', dataIndex: 'team', key: 'w-team', width: '1%' },
+  {
+    title: wideNumericWidths.value ? 'Team (206px)' : 'Team (1%)',
+    dataIndex: 'team',
+    key: 'w-team',
+    width: wideNumericWidths.value ? 206 : '1%',
+  },
   ...Array.from({ length: WIDE_SYNTHETIC_COUNT }, (_, i) => ({
     title: `C${i + 1}`,
     dataIndex: WIDE_SOURCES[i % WIDE_SOURCES.length],
     key: `w-syn-${i}`,
     width: 100,
+    minWidth: 50,
+    resizable: true,
   })),
-  { title: 'Address', dataIndex: 'address', key: 'w-address', width: 260, fixed: 'right' },
+  {
+    title: 'Manager',
+    dataIndex: 'manager',
+    key: 'w-manager',
+    width: 180,
+    minWidth: 70,
+    fixed: 'right',
+    resizable: true,
+  },
+  {
+    title: 'Address',
+    dataIndex: 'address',
+    key: 'w-address',
+    width: 260,
+    minWidth: 90,
+    fixed: 'right',
+    resizable: true,
+  },
 ])
 
 function setCaseRef(caseKey: CaseKey) {
@@ -373,8 +456,7 @@ function countRenderedCells(caseKey: CaseKey) {
  * 而单测钉不住（它只保证宽度之和自洽，不保证与浏览器实际布局一致）。
  * 所以把它做成页面上可反复按的自检，而不是靠肉眼看截图。
  *
- * 固定列跳过：sticky 让表头表体两侧都停在同一个视口位置，比的是同一件事，
- * 而它们的内容坐标会与窗口列撞车，反而制造假阳性。
+ * 固定列单独按列顺序配对，避免 sticky 坐标与窗口列混淆。
  */
 function checkWideAlignment() {
   const el = getCaseElement('wide')
@@ -400,6 +482,7 @@ function checkWideAlignment() {
       index: Number(th.dataset.vtgLeafCol),
       left: rect.left - headerOrigin,
       width: rect.width,
+      fixed: getComputedStyle(th).position === 'sticky',
     }
   })
   if (headerCols.length !== WIDE_LEAF_COUNT) {
@@ -410,21 +493,24 @@ function checkWideAlignment() {
   const bodyOrigin = bodyTable.getBoundingClientRect().left
   const cells = Array.from(bodyTable.querySelectorAll<HTMLElement>('tbody tr:first-child > td'))
 
-  let maxDelta = 0
+  // 内容坐标只用于匹配列，整体滚动偏移必须单独比较，不能被减去各自原点抵消。
+  let maxDelta = Math.abs(headerOrigin - bodyOrigin)
   let compared = 0
   let duplicate = false
   const matchedIndices = new Set<number>()
+  const fixedHeaders = headerCols.filter((col) => col.fixed)
+  let fixedIndex = 0
 
   for (const td of cells) {
     if (td.getAttribute('aria-hidden') === 'true') continue
-    if (getComputedStyle(td).position === 'sticky') continue
 
     const rect = td.getBoundingClientRect()
     const left = rect.left - bodyOrigin
 
-    let best = headerCols[0]
+    const fixed = getComputedStyle(td).position === 'sticky'
+    let best = fixed ? fixedHeaders[fixedIndex++] : undefined
     let bestDelta = Number.POSITIVE_INFINITY
-    for (const col of headerCols) {
+    for (const col of fixed ? [] : headerCols.filter((col) => !col.fixed)) {
       const delta = Math.abs(col.left - left)
       if (delta < bestDelta) {
         bestDelta = delta
@@ -436,7 +522,11 @@ function checkWideAlignment() {
     if (matchedIndices.has(best.index)) duplicate = true
     matchedIndices.add(best.index)
     compared += 1
-    maxDelta = Math.max(maxDelta, bestDelta, Math.abs(best.width - rect.width))
+    maxDelta = Math.max(
+      maxDelta,
+      Math.abs(headerOrigin + best.left - rect.left),
+      Math.abs(best.width - rect.width),
+    )
   }
 
   const verdict = duplicate
@@ -769,17 +859,20 @@ onMounted(async () => {
           <h2>宽表 + 横向虚拟化 (virtualColumn)</h2>
         </div>
         <p class="play-case__desc">
-          201 个叶子列、左固定 2 列 + 右固定 1 列、分组表头，并混入一个 auto 宽度列与一个 1%
+          201 个叶子列、左右各固定 2 列、可拖拽列宽与分组表头，并混入一个 auto 宽度列与一个 1%
           百分比宽度列——这两种宽度只有量表头才知道结果。
         </p>
       </header>
       <p class="play-inline-note">
-        「可视列数」等于 201 就是没窗口化；「对齐自检」逐列比对表头与表体的绝对像素位置，
-        请在多个横向滚动位置各按一次。
+        「可视列数」等于 201 就是没窗口化；滚到最右后可从右向左连续拖窄列，再用「重新自检」
+        逐列比对表头与表体的绝对像素位置。
       </p>
       <div class="virtual-case-tools">
         <button type="button" class="play-solid-button" @click="toggleWideVirtualColumn">
           virtualColumn: {{ wideVirtualColumn ? '开' : '关' }}
+        </button>
+        <button type="button" class="play-ghost-button" @click="toggleWideWidths">
+          宽度模式：{{ wideNumericWidths ? '总宽随拖拽缩小' : 'auto / 百分比' }}
         </button>
         <button type="button" class="play-ghost-button" @click="scrollWideBy(1200)">
           右移 1200px
@@ -803,15 +896,20 @@ onMounted(async () => {
         <span>可视列数 {{ countRenderedCells('wide') }} / {{ WIDE_LEAF_COUNT }}</span>
         <span>对齐自检 {{ wideAlignment }}</span>
       </div>
+      <p class="play-inline-note">
+        表格总宽 {{ wideScrollWidth }}px；数字宽度模式用于验证滚动上限收缩。
+      </p>
       <VTable
+        :key="String(wideNumericWidths)"
         :data-source="wideData"
         :columns="wideColumns"
-        :scroll="{ x: WIDE_TABLE_WIDTH, y: tableHeight }"
+        :scroll="{ x: wideScrollWidth, y: tableHeight }"
         :virtual="true"
         :virtual-column="wideVirtualColumn"
         size="middle"
         row-key="key"
         bordered
+        @resize-column="recordWideResize"
       />
     </section>
   </main>
