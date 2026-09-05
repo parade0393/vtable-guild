@@ -47,11 +47,12 @@ import { useColumns, useSorter, useFilter, useSelection } from '../composables'
 import { getEllipsisConfig } from '../utils/cell'
 import { getRootCompatClass } from '../utils/compat'
 import { useScroll, type ScrollConfig } from '../composables/useScroll'
+import { useAutoHeight } from '../composables/useAutoHeight'
 import { useColumnMetrics } from '../composables/useColumnMetrics'
 import { resolveFixedColumnRanges } from '../composables/useColumnWindow'
 import { useExpand } from '../composables/useExpand'
 import { useResize } from '../composables/useResize'
-import { useVirtual } from '../composables/useVirtual'
+import { INVALID_SCROLL_Y_FALLBACK, useVirtual } from '../composables/useVirtual'
 import { useTreeData } from '../composables/useTreeData'
 import { useHoverState } from '../composables/useHoverState'
 
@@ -702,8 +703,13 @@ export default defineComponent({
       }),
     )
 
+    const autoScrollY = computed(() => props.scroll?.y === 'auto')
+
+    // scroll.y: 'auto' 时即使 showHeader: false 也进分离表体路径（表体仍需
+    // 可滚动视口），只是没有表头块可扣减；数字 scroll.y 维持原有门控不变。
     const hasStickyHeader = computed(
-      () => props.showHeader !== false && (!!props.scroll?.y || !!props.sticky),
+      () =>
+        autoScrollY.value || (props.showHeader !== false && (!!props.scroll?.y || !!props.sticky)),
     )
 
     const hasFixedColumns = computed(() =>
@@ -738,17 +744,46 @@ export default defineComponent({
       }
     })
 
+    // ---- 自动高度（scroll.y: 'auto'）----
+    // 表体高度 = wrapper − 表头 − 固定 summary，由组件内部测量扣减，
+    // 业务侧不再需要自己监听 resize 并读取表头高度（issue #38 的诉求）。
+    const wrapperRef = ref<HTMLElement | null>(null)
+    const summaryWrapRef = ref<HTMLElement | null>(null)
+
+    const { bodyHeight: autoBodyHeight } = useAutoHeight({
+      enabled: () => autoScrollY.value,
+      wrapperEl: () => wrapperRef.value,
+      headerEl: () => headerWrapRef.value,
+      summaryEl: () => summaryWrapRef.value,
+      hasData: () => displayData.value.length > 0,
+    })
+
+    /** 非虚拟固定表头路径的表体 maxHeight。 */
+    const normalBodyMaxHeight = computed<number | string | undefined>(() => {
+      const y = props.scroll?.y
+      if (y === undefined) return undefined
+      if (autoScrollY.value) return autoBodyHeight.value
+      // 非法数字（负数 / Infinity）不给 CSS 制造非法值；CSS 字符串（'100%'、
+      // calc 等）保持原样透传——非虚拟模式它们是合法的 max-height。
+      if (typeof y === 'number') {
+        return Number.isFinite(y) && y > 0 ? y : undefined
+      }
+      return y
+    })
+
     // ---- 虚拟滚动 ----
     const {
       enabled: virtualEnabled,
       itemHeight: virtualItemHeight,
       listHeight: virtualListHeight,
       fixedHeight: virtualFixedHeight,
+      resolvedScrollY,
     } = useVirtual({
       virtual: () => props.virtual,
       scrollY: () => props.scroll?.y,
       size: () => props.size,
       rowHeight: () => props.rowHeight,
+      measuredHeight: () => autoBodyHeight.value,
     })
 
     const hasPotentialBodySpan = computed(() =>
@@ -783,6 +818,41 @@ export default defineComponent({
           'vtable-virtual-body-span',
           '[VTable] Body cell merging via customCell/customRender is not supported when virtual=true.',
         )
+      },
+      { immediate: true },
+    )
+
+    // 虚拟模式下字符串 scroll.y 的兼容 / 无效告警。
+    // 必须基于原始 virtual prop 判定：0 / NaN 这类 falsy 无效值不会启用虚拟
+    // （virtualEnabled 恒为 false），挂上去就永远轮不到「该值已被忽略」的提示。
+    watch(
+      [() => props.virtual, resolvedScrollY],
+      ([virtual, resolved]) => {
+        if (!virtual) return
+        const raw = String(props.scroll?.y)
+        if (resolved.kind === 'compat-px') {
+          devWarn(
+            'vtable-scroll-y-compat-px',
+            `[VTable] virtual 模式下字符串 scroll.y（${raw}）按 ${resolved.value}px 解析，` +
+              `这是兼容行为；请改用数字或 'auto'。`,
+          )
+        } else if (resolved.kind === 'invalid-string') {
+          devWarn(
+            'vtable-scroll-y-invalid-string',
+            `[VTable] virtual 模式下 scroll.y（${raw}）无法解析为可靠的虚拟视口高度，` +
+              `已回落 ${INVALID_SCROLL_Y_FALLBACK}px。仅支持数字、'auto' 或正数 px 字符串。`,
+          )
+        } else if (resolved.kind === 'invalid-number') {
+          // 0 / NaN 是 falsy，连双表模式都不会进，scroll.y 整体被忽略；
+          // 负数 / Infinity 走虚拟路径时回落 400。
+          const detail = props.scroll?.y
+            ? `已回落 ${INVALID_SCROLL_Y_FALLBACK}px。`
+            : '该值已被忽略，虚拟滚动未启用。'
+          devWarn(
+            'vtable-scroll-y-invalid-number',
+            `[VTable] virtual 模式下 scroll.y（${raw}）不是有效的视口高度（需正数），${detail}`,
+          )
+        }
       },
       { immediate: true },
     )
@@ -1203,13 +1273,7 @@ export default defineComponent({
         const normalBody = !virtualEnabled.value ? (
           <Scrollbar
             ref={bodyScrollbarRef}
-            maxHeight={
-              scroll?.y !== undefined
-                ? typeof scroll.y === 'number'
-                  ? scroll.y
-                  : String(scroll.y)
-                : undefined
-            }
+            maxHeight={normalBodyMaxHeight.value}
             wrapClass={themeSlots.bodyWrapper()}
             viewStyle={scrollbarViewStyle}
             onScroll={handleBodyScroll}
@@ -1236,6 +1300,7 @@ export default defineComponent({
         const fixedSummaryBlock =
           summaryContent && isSummaryFixed ? (
             <div
+              ref={summaryWrapRef}
               class={cn(
                 themeSlots.headerWrapper(),
                 compatClassFn?.('summary'),
@@ -1264,11 +1329,19 @@ export default defineComponent({
           ) : null
 
         return (
-          <div class={cn(themeSlots.root(), rootCompatClass.value)}>
+          <div
+            class={cn(
+              themeSlots.root(),
+              autoScrollY.value && themeSlots.rootAutoHeight(),
+              rootCompatClass.value,
+            )}
+          >
             {titleContent && <div class={themeSlots.title()}>{titleContent}</div>}
             <div
+              ref={wrapperRef}
               class={cn(
                 themeSlots.wrapper(),
+                autoScrollY.value && themeSlots.wrapperAutoHeight(),
                 resolvedSticky.value &&
                   prefixVtgClassNames(
                     'overflow-clip',

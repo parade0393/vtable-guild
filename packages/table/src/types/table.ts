@@ -251,7 +251,15 @@ export interface TableProps<TRecord extends object = Record<string, any>> {
   /** 表格页脚渲染函数 */
   footer?: (data: TRecord[]) => VNodeChild
 
-  /** 滚动配置。x 为横向滚动宽度，y 为纵向滚动高度（启用固定表头）。 */
+  /**
+   * 滚动配置。x 为横向滚动宽度，y 为纵向滚动高度（启用固定表头）。
+   *
+   * y 的取值语义：
+   * - 数字：固定的表体视口高度
+   * - `'auto'`：自动适应父容器高度，组件内部扣减表头 / 固定 summary（需父容器有确定高度）
+   * - 其他字符串：非虚拟模式下按 CSS max-height 原样生效；**虚拟模式下仅兼容
+   *   正数 px（如 `'480px'`）**，`'100%'` / `calc(...)` 等会 dev 告警并回落 400px 视口
+   */
   scroll?: { x?: number | string; y?: number | string }
 
   /** 是否开启虚拟滚动（需同时设置 scroll.y） */

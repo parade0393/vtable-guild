@@ -8,6 +8,13 @@ function getColKey(col: ColumnType<Record<string, unknown>>, index: number): Key
 
 export interface ScrollConfig {
   x?: number | string
+  /**
+   * 纵向滚动高度（启用固定表头）。
+   *
+   * 数字表示固定视口；`'auto'` 表示自动适应父容器高度（组件内部扣减表头 /
+   * 固定 summary，需父容器有确定高度）。虚拟模式下仅兼容正数 px 字符串，
+   * 其余字符串 dev 告警并回落 400px 视口；非虚拟模式下按 CSS max-height 原样生效。
+   */
   y?: number | string
 }
 

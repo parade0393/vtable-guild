@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { h, nextTick } from 'vue'
 import { createVTableGuild } from '@vtable-guild/core'
@@ -1229,6 +1229,179 @@ describe('VTable', () => {
       }
       expect(VTableWithStatics.EXPAND_COLUMN).toBe(EXPAND_COLUMN)
       expect(VTableWithStatics.SELECTION_COLUMN).toBe(SELECTION_COLUMN)
+    })
+  })
+
+  describe('scroll.y auto height', () => {
+    function buildVirtualData(count: number): DemoRow[] {
+      return Array.from({ length: count }, (_, index) => ({
+        key: `auto-${index}`,
+        name: `User ${index}`,
+        age: 20 + (index % 30),
+        status: index % 2 === 0 ? 'active' : 'paused',
+      })) satisfies DemoRow[]
+    }
+
+    it('applies auto-height layout classes and keeps virtual windowing on', async () => {
+      const virtualData = buildVirtualData(120)
+      const wrapper = mount(VTable<DemoRow>, {
+        attachTo: document.body,
+        props: {
+          rowKey: 'key',
+          columns: baseColumns,
+          dataSource: virtualData,
+          scroll: { y: 'auto' },
+          virtual: true,
+        },
+      })
+      await nextTick()
+
+      // 双表模式 + 自动高度布局：root 填满父容器、wrapper 纵向吃剩余空间。
+      expect(wrapper.element.className).toContain('vtg-box-border')
+      expect(wrapper.element.className).toContain('vtg-flex-col')
+      // wrapper 同时具备 flex-col（auto 布局）与 overflow-auto（原 slot），可唯一定位。
+      const wrapperEl = wrapper
+        .findAll('div')
+        .find(
+          (item) =>
+            item.classes().includes('vtg-flex-col') && item.classes().includes('vtg-overflow-auto'),
+        )
+      expect(wrapperEl).toBeTruthy()
+      // overflow-hidden 覆盖 wrapper 自身的 overflow-auto（两者都在 DOM 上，靠 CSS 顺序取胜）。
+      expect(wrapperEl?.classes()).toContain('vtg-overflow-hidden')
+
+      // happy-dom 量到的容器高度是 0：实测高度钳到 1px，但窗口化必须保持，
+      // 不能因为初始零高度全量渲染 120 行。
+      expect(getBodyRows(wrapper).length).toBeLessThan(virtualData.length)
+
+      wrapper.unmount()
+    })
+
+    it('drives the non-virtual body maxHeight from the measured height', async () => {
+      const wrapper = mountTable(baseColumns, { scroll: { y: 'auto' } })
+      await nextTick()
+
+      // 实测高度（happy-dom 下钳到 1px）作为数字 maxHeight 传入，
+      // 而不是把 'auto' 原样交给 CSS。
+      const wrap = findScrollWrap(wrapper)
+      expect(wrap.attributes('style')).toContain('max-height: 1px')
+
+      wrapper.unmount()
+    })
+
+    it('keeps the separated body path for auto height even without a header', async () => {
+      const wrapper = mountTable(baseColumns, { scroll: { y: 'auto' }, showHeader: false })
+      await nextTick()
+
+      // 数字 scroll.y + showHeader:false 会退回单表模式；auto 不退——表体仍要
+      // 有可滚动的视口，只是没有表头块可扣减。
+      expect(wrapper.find('thead').exists()).toBe(false)
+      expect(wrapper.element.className).toContain('vtg-flex-col')
+      expect(getBodyRows(wrapper)).toHaveLength(3)
+
+      wrapper.unmount()
+    })
+
+    it('does not apply auto-height layout when scroll.y is a fixed number', () => {
+      const wrapper = mountTable(baseColumns, { scroll: { y: 220 } })
+
+      expect(wrapper.element.className).not.toContain('vtg-box-border')
+      expect(wrapper.element.className).not.toContain('vtg-flex-col')
+      // 表格 wrapper（overflow-auto）不应被加上 auto 布局的 flex-col。
+      // 注意 Scrollbar 自身的 root 也带 overflow-hidden，不能全局查找。
+      const tableWrapper = wrapper
+        .findAll('div')
+        .find((item) => item.classes().includes('vtg-overflow-auto'))
+      expect(tableWrapper?.classes()).not.toContain('vtg-flex-col')
+
+      wrapper.unmount()
+    })
+
+    it('warns and falls back to a 400px virtual viewport for unparseable strings', async () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const virtualData = buildVirtualData(120)
+      const wrapper = mount(VTable<DemoRow>, {
+        attachTo: document.body,
+        props: {
+          rowKey: 'key',
+          columns: baseColumns,
+          dataSource: virtualData,
+          scroll: { y: '100%' },
+          virtual: true,
+        },
+      })
+      await nextTick()
+
+      expect(warnSpy.mock.calls.some((call) => String(call[0]).includes('无法解析'))).toBe(true)
+      // 兜底是「保持虚拟 + 400px 视口」，不是全量渲染的普通表体。
+      expect(getBodyRows(wrapper).length).toBeLessThan(virtualData.length)
+
+      wrapper.unmount()
+      warnSpy.mockRestore()
+    })
+
+    it('warns on compat-px strings but keeps parsing them', async () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const virtualData = buildVirtualData(120)
+      const wrapper = mount(VTable<DemoRow>, {
+        attachTo: document.body,
+        props: {
+          rowKey: 'key',
+          columns: baseColumns,
+          dataSource: virtualData,
+          scroll: { y: '480px' },
+          virtual: true,
+        },
+      })
+      await nextTick()
+
+      expect(warnSpy.mock.calls.some((call) => String(call[0]).includes('按 480px 解析'))).toBe(
+        true,
+      )
+      expect(getBodyRows(wrapper).length).toBeLessThan(virtualData.length)
+
+      wrapper.unmount()
+      warnSpy.mockRestore()
+    })
+
+    it('warns on invalid numbers and ignores falsy ones entirely', async () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const virtualData = buildVirtualData(120)
+      const negative = mount(VTable<DemoRow>, {
+        attachTo: document.body,
+        props: {
+          rowKey: 'key',
+          columns: baseColumns,
+          dataSource: virtualData,
+          scroll: { y: -5 },
+          virtual: true,
+        },
+      })
+      await nextTick()
+
+      expect(
+        warnSpy.mock.calls.some((call) => String(call[0]).includes('不是有效的视口高度')),
+      ).toBe(true)
+      expect(getBodyRows(negative).length).toBeLessThan(virtualData.length)
+      negative.unmount()
+
+      // 0 是 falsy：连双表模式都不进（现状行为），行不会被窗口化。
+      const zero = mount(VTable<DemoRow>, {
+        attachTo: document.body,
+        props: {
+          rowKey: 'key',
+          columns: baseColumns,
+          dataSource: virtualData,
+          scroll: { y: 0 },
+          virtual: true,
+        },
+      })
+      await nextTick()
+      expect(getBodyRows(zero)).toHaveLength(virtualData.length)
+      // 告警按 id 去重：同文件内 invalid-number 已告警过，这里只验证行为。
+      zero.unmount()
+
+      warnSpy.mockRestore()
     })
   })
 })
