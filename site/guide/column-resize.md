@@ -14,7 +14,7 @@
 
 ## 基础示例
 
-在列上设置 `resizable: true`，并为可拖拽列提供 `width`。需要限制范围时，再补上 `minWidth` 和 `maxWidth`。
+在列上设置 `resizable: true` 即可。`width` 可以是像素数值、`auto`、百分比等 CSS 宽度，也可以省略。需要限制拖拽范围时，再补上 `minWidth` 和 `maxWidth`。
 
 ```vue
 <script setup lang="ts">
@@ -47,8 +47,9 @@ const columns: TableColumnsType<UserRow> = [
 ## 关键行为
 
 - 只有 `resizable: true` 的列会显示拖拽手柄
+- `width` 是数字时，拖拽从该数值开始；`width` 是 `auto`、百分比等非数字值或未设置时，拖拽从表头单元格的实际渲染宽度开始，不会发生起点跳变
 - 拖拽过程中会实时更新列宽
-- 拖拽结束时会触发 `resizeColumn` 事件，参数顺序为 `(column, width)`
+- 拖拽结束时会触发 `resizeColumn` 事件，参数顺序为 `(column, width)`；其中 `width` 是调整后的像素数值，适合直接回写到列配置
 - 未显式设置 `minWidth` 时，默认下限是 `50`
 
 ## 什么时候用
