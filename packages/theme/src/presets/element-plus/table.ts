@@ -32,6 +32,9 @@ export const elementPlusTableTheme = {
       'leading-[var(--vtg-table-line-height)]',
     ].join(' '),
     wrapper: 'w-full overflow-auto',
+    // ---- scroll.y: 'auto' 自动高度布局（与 antdv 预设保持一致） ----
+    rootAutoHeight: 'box-border flex h-full min-h-0 flex-1 flex-col',
+    wrapperAutoHeight: 'flex min-h-0 flex-1 flex-col overflow-hidden',
     table: [
       'w-full border-separate border-spacing-0',
       'bg-[color:var(--vtg-table-bg)]',

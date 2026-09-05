@@ -29,6 +29,15 @@ export const antdvTableTheme = {
       'leading-[var(--vtg-table-line-height)]',
     ].join(' '),
     wrapper: 'w-full overflow-auto',
+    // ---- scroll.y: 'auto' 自动高度布局 ----
+    // root 填满父容器：块级父靠 h-full，flex 父靠 flex-1（对非 flex 父无效，无副作用）；
+    // title/footer 自然占位，wrapper 吃掉剩余高度供表体测量。box-border 防止
+    // 无 Tailwind preflight 环境下边框/内边距把 h-full 撑出父容器。
+    rootAutoHeight: 'box-border flex h-full min-h-0 flex-1 flex-col',
+    // flex-col 必须：默认 row 会把表头/表体/summary 横排。overflow-hidden 覆盖
+    // wrapper 的 overflow-auto——prebuilt CSS 中 .vtg-overflow-hidden 排在
+    // .vtg-overflow-auto 之后（Tailwind 同组工具类的固定顺序），后者胜出成立。
+    wrapperAutoHeight: 'flex min-h-0 flex-1 flex-col overflow-hidden',
     table: [
       'w-full border-separate border-spacing-0',
       'bg-[color:var(--vtg-table-bg)]',

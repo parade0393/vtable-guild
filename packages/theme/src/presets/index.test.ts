@@ -15,6 +15,11 @@ describe('theme presets', () => {
       expect(preset.tooltip?.slots.content).toBeTruthy()
       expect(preset.scrollbar?.slots.root).toBeTruthy()
       expect(preset.table.defaultVariants?.size).toBeTruthy()
+      // scroll.y: 'auto' 自动高度布局 slots 必须两套预设同时具备。
+      expect(preset.table.slots.rootAutoHeight).toContain('flex-col')
+      expect(preset.table.slots.rootAutoHeight).toContain('h-full')
+      expect(preset.table.slots.wrapperAutoHeight).toContain('flex-col')
+      expect(preset.table.slots.wrapperAutoHeight).toContain('overflow-hidden')
       const bordered = preset.table.variants?.bordered?.true as Record<string, string>
       expect(bordered.tbody).toContain(':not([data-vtg-preserve-last-border])')
       expect(preset.locales['zh-CN'].table.header.sortTriggerAsc).toBeTruthy()
