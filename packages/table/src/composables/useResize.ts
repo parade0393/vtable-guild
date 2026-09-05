@@ -12,6 +12,14 @@ export interface UseResizeReturn {
   isResizing: Ref<boolean>
 }
 
+function getMeasuredHeaderWidth(event: PointerEvent): number | undefined {
+  const target = event.currentTarget
+  if (!(target instanceof Element)) return undefined
+
+  const width = target.closest('th')?.getBoundingClientRect().width
+  return width !== undefined && Number.isFinite(width) && width > 0 ? width : undefined
+}
+
 export function useResize(options: {
   onResizeColumn?: (column: ColumnType<Record<string, unknown>>, width: number) => void
 }): UseResizeReturn {
@@ -64,13 +72,14 @@ export function useResize(options: {
     activeKey = String(key)
     startX = event.clientX
 
-    // Get current width: from overrides, then column.width, then measured
+    // String widths (for example `auto` or percentages) must start from their rendered size.
     const existing = columnWidths[activeKey]
-    if (existing) {
+    if (existing !== undefined) {
       startWidth = existing
     } else {
       const w = column.width
-      startWidth = typeof w === 'number' ? w : parseInt(String(w) || '100', 10)
+      startWidth =
+        typeof w === 'number' && Number.isFinite(w) ? w : (getMeasuredHeaderWidth(event) ?? 100)
     }
 
     isResizing.value = true

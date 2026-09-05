@@ -86,6 +86,7 @@ export function useColumnMetrics(options: UseColumnMetricsOptions): UseColumnMet
   let rafId = 0
   let resizeObserver: ResizeObserver | null = null
   let observed: HTMLElement | null = null
+  let observedTable: HTMLTableElement | null = null
 
   function measure(): ColumnMetrics | null {
     const columns = options.columns()
@@ -150,10 +151,13 @@ export function useColumnMetrics(options: UseColumnMetricsOptions): UseColumnMet
 
   function syncObserver() {
     const target = options.enabled() && options.hasHeader() ? options.headerEl() : null
-    if (target === observed) return
+    const table = target?.querySelector('table') ?? null
+    if (target === observed && table === observedTable) return
 
     if (resizeObserver && observed) resizeObserver.unobserve(observed)
+    if (resizeObserver && observedTable) resizeObserver.unobserve(observedTable)
     observed = target
+    observedTable = table
 
     if (target) {
       if (!resizeObserver && typeof ResizeObserver !== 'undefined') {
@@ -161,6 +165,8 @@ export function useColumnMetrics(options: UseColumnMetricsOptions): UseColumnMet
         resizeObserver = new ResizeObserver(schedule)
       }
       resizeObserver?.observe(target)
+      // scroll.x 可在拖拽回调后改变，而外层 viewport 不变；表格总宽也必须重测。
+      if (table) resizeObserver?.observe(table)
     }
   }
 
@@ -176,7 +182,7 @@ export function useColumnMetrics(options: UseColumnMetricsOptions): UseColumnMet
       syncObserver()
       schedule()
     },
-    { deep: false },
+    { deep: false, flush: 'post' },
   )
 
   onMounted(() => {
@@ -189,6 +195,7 @@ export function useColumnMetrics(options: UseColumnMetricsOptions): UseColumnMet
     resizeObserver?.disconnect()
     resizeObserver = null
     observed = null
+    observedTable = null
   })
 
   return { metrics, remeasure: schedule }

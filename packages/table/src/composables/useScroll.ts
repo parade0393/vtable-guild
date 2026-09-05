@@ -35,6 +35,7 @@ export interface UseScrollReturn {
 
 export function useScroll(options: {
   displayColumns: () => ColumnType<Record<string, unknown>>[]
+  columnWidths?: Record<string, number>
 }): UseScrollReturn {
   const headerWrapRef = ref<HTMLElement | null>(null)
   const bodyWrapRef = ref<HTMLElement | null>(null)
@@ -94,7 +95,13 @@ export function useScroll(options: {
       const col = columns[i]
       if (col.fixed !== 'left') continue
       const key = getColKey(col, i)
-      const w = typeof col.width === 'number' ? col.width : parseInt(String(col.width) || '0', 10)
+      const resized = options.columnWidths?.[String(key)]
+      const w =
+        typeof resized === 'number'
+          ? resized
+          : typeof col.width === 'number'
+            ? col.width
+            : parseInt(String(col.width) || '0', 10)
       map.set(key, {
         left: leftOffset,
         isLastLeft: i === lastLeftIndex,
@@ -115,7 +122,13 @@ export function useScroll(options: {
       const col = columns[i]
       if (col.fixed !== 'right') continue
       const key = getColKey(col, i)
-      const w = typeof col.width === 'number' ? col.width : parseInt(String(col.width) || '0', 10)
+      const resized = options.columnWidths?.[String(key)]
+      const w =
+        typeof resized === 'number'
+          ? resized
+          : typeof col.width === 'number'
+            ? col.width
+            : parseInt(String(col.width) || '0', 10)
       map.set(key, {
         right: rightOffset,
         isFirstRight: i === firstRightIndex,

@@ -1,13 +1,56 @@
 import { describe, expect, it } from 'vitest'
+import { computed, shallowRef } from 'vue'
 import { PrefixSums } from '@vtable-guild/core'
 import type { ColumnType } from '../types'
 import {
   computeColumnWindow,
   resolveFixedColumnRanges,
+  useColumnWindow,
   type ComputeColumnWindowOptions,
 } from './useColumnWindow'
 
 type Col = ColumnType<Record<string, unknown>>
+
+describe('useColumnWindow', () => {
+  it('updates spacers when widths change without changing the column count or scroll offset', () => {
+    const widths = shallowRef(Array.from({ length: 20 }, () => 100))
+    const window = useColumnWindow({
+      widths: () => widths.value,
+      leftFixedCount: () => 2,
+      rightFixedStart: () => 18,
+      offsetX: () => 1300,
+      viewportWidth: () => 700,
+    })
+    const rendered = computed(() => ({
+      start: window.start.value,
+      end: window.end.value,
+      spacer: window.leftSpacer.value,
+    }))
+    const before = rendered.value
+    // An auto column outside the window absorbs the space released by resizing.
+    for (const index of [17, 16, 15]) {
+      const next = [...widths.value]
+      next[index] -= 50
+      next[2] += 50
+      widths.value = next
+      const expected = computeColumnWindow({
+        prefix: makePrefix(next),
+        columnCount: next.length,
+        leftFixedCount: 2,
+        rightFixedStart: 18,
+        offsetX: 1300,
+        viewportWidth: 700,
+        overscan: 2,
+      })
+      expect(rendered.value).toEqual({
+        start: expected.start,
+        end: expected.end,
+        spacer: expected.leftSpacer,
+      })
+    }
+    expect(rendered.value).not.toEqual(before)
+  })
+})
 
 function makePrefix(widths: number[]): PrefixSums {
   const p = new PrefixSums()
