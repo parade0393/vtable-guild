@@ -38,6 +38,11 @@ export const router = createRouter({
       component: () => import('./pages/VirtualPage.vue'),
     },
     {
+      path: '/auto-height',
+      name: 'auto-height',
+      component: () => import('./pages/AutoHeightPage.vue'),
+    },
+    {
       path: '/tree',
       name: 'tree',
       component: () => import('./pages/TreePage.vue'),
