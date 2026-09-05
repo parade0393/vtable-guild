@@ -951,6 +951,72 @@ describe('VTable', () => {
     wrapper.unmount()
   })
 
+  it('preserves row dividers for virtual windows, expanded rows, and the actual last item', async () => {
+    const virtualData = Array.from({ length: 120 }, (_, index) => ({
+      key: `divider-${index}`,
+      name: `User ${index}`,
+      age: 20 + (index % 30),
+      status: index % 2 === 0 ? 'active' : 'paused',
+    })) satisfies DemoRow[]
+    const wrapper = mount(VTable<DemoRow>, {
+      attachTo: document.body,
+      props: {
+        rowKey: 'key',
+        columns: baseColumns,
+        dataSource: virtualData,
+        bordered: true,
+        scroll: { y: 220 },
+        virtual: true,
+        expandable: {
+          expandRowByClick: true,
+          expandedRowRender: (record) => `expanded:${record.name}`,
+        },
+      },
+    })
+
+    await nextTick()
+
+    let bodySections = wrapper.findAll('tbody')
+    expect(bodySections.length).toBeLessThan(virtualData.length)
+    expect(
+      bodySections.every((tbody) => tbody.attributes('data-vtg-preserve-last-border') === ''),
+    ).toBe(true)
+
+    await bodySections[0].get('tr').trigger('click')
+    await nextTick()
+
+    bodySections = wrapper.findAll('tbody')
+    expect(bodySections[0].findAll('tr')).toHaveLength(2)
+    expect(bodySections[0].attributes('data-vtg-preserve-last-border')).toBe('')
+
+    const virtualList = wrapper.findComponent({ name: 'VirtualList' })
+    const exposed = virtualList.vm.$.exposed as { scrollTo: (config: { top: number }) => void }
+    exposed.scrollTo({ top: 999_999 })
+    await nextTick()
+
+    bodySections = wrapper.findAll('tbody')
+    expect(bodySections.at(-1)?.text()).toContain('User 119')
+    expect(bodySections.at(-1)?.attributes('data-vtg-preserve-last-border')).toBeUndefined()
+
+    await bodySections.at(-1)?.get('tr').trigger('click')
+    await nextTick()
+    expect(wrapper.findAll('tbody').at(-1)?.findAll('tr')).toHaveLength(2)
+    expect(
+      wrapper.findAll('tbody').at(-1)?.attributes('data-vtg-preserve-last-border'),
+    ).toBeUndefined()
+
+    wrapper.unmount()
+  })
+
+  it('does not add virtual divider state to a regular table body', () => {
+    const wrapper = mountTable(baseColumns, { bordered: true })
+
+    expect(wrapper.findAll('tbody')).toHaveLength(1)
+    expect(wrapper.get('tbody').attributes('data-vtg-preserve-last-border')).toBeUndefined()
+
+    wrapper.unmount()
+  })
+
   it('renders summary content when using the VTableSummary helper', () => {
     const wrapper = mount(VTable<DemoRow>, {
       attachTo: document.body,

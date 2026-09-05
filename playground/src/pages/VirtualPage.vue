@@ -215,6 +215,11 @@ const rowSelection = computed<RowSelection<VirtualRow>>(() => ({
   },
 }))
 
+const dividerExpandable = {
+  expandRowByClick: true,
+  expandedRowRender: (record: VirtualRow) => `展开内容：${record.name} 的虚拟行分隔线验收区域`,
+}
+
 // ---- Case 07：宽表 + 横向虚拟化 ----
 
 /** 合成列数。加上 7 个真实列共 201 个叶子列，对齐 antdv-next#427 的 200 列量级。 */
@@ -350,6 +355,24 @@ async function sampleScrollToBottom(caseKey: CaseKey) {
       scrollMs: performance.now() - start,
     },
   }
+}
+
+async function sampleScrollToMiddle(caseKey: CaseKey) {
+  const holder = findVirtualHolder(caseKey)
+  if (!holder) return
+
+  holder.scrollTop = holder.scrollHeight / 2
+  holder.dispatchEvent(new Event('scroll', { bubbles: true }))
+  await measureCase(caseKey, 'scroll')
+}
+
+async function sampleScrollToTop(caseKey: CaseKey) {
+  const holder = findVirtualHolder(caseKey)
+  if (!holder) return
+
+  holder.scrollTop = 0
+  holder.dispatchEvent(new Event('scroll', { bubbles: true }))
+  await measureCase(caseKey, 'scroll')
 }
 
 function formatMs(value: number | null) {
@@ -567,11 +590,20 @@ onMounted(async () => {
           <p class="play-case__index">Case 01</p>
           <h2>基础大数据虚拟滚动</h2>
         </div>
-        <p class="play-case__desc">virtual + scroll.y，仅渲染可见行，支持全局行数和高度切换。</p>
+        <p class="play-case__desc">
+          bordered + virtual +
+          scroll.y；点击任意行展开，检查顶部、中部、底部及展开内容的横向分隔线。
+        </p>
       </header>
       <div class="virtual-case-tools">
         <button type="button" class="play-ghost-button" @click="measureCase('basic')">
           重新采集渲染
+        </button>
+        <button type="button" class="play-ghost-button" @click="sampleScrollToTop('basic')">
+          回到顶部
+        </button>
+        <button type="button" class="play-ghost-button" @click="sampleScrollToMiddle('basic')">
+          滚动到中部采样
         </button>
         <button type="button" class="play-solid-button" @click="sampleScrollToBottom('basic')">
           滚动到底部采样
@@ -588,8 +620,10 @@ onMounted(async () => {
         :columns="basicColumns"
         :scroll="{ y: tableHeight }"
         :virtual="true"
+        :expandable="dividerExpandable"
         size="middle"
         row-key="key"
+        bordered
       />
     </section>
 
@@ -760,6 +794,7 @@ onMounted(async () => {
         :scroll="{ y: 300 }"
         size="middle"
         row-key="key"
+        bordered
       />
     </section>
     <section :ref="setCaseRef('wide')" class="play-case">

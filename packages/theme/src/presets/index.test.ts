@@ -15,6 +15,8 @@ describe('theme presets', () => {
       expect(preset.tooltip?.slots.content).toBeTruthy()
       expect(preset.scrollbar?.slots.root).toBeTruthy()
       expect(preset.table.defaultVariants?.size).toBeTruthy()
+      const bordered = preset.table.variants?.bordered?.true as Record<string, string>
+      expect(bordered.tbody).toContain(':not([data-vtg-preserve-last-border])')
       expect(preset.locales['zh-CN'].table.header.sortTriggerAsc).toBeTruthy()
       expect(preset.locales['en-US'].table.filterDropdown.confirmText).toBeTruthy()
     }

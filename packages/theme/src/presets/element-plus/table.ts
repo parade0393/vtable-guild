@@ -248,7 +248,7 @@ export const elementPlusTableTheme = {
         table: '',
         th: 'border-r border-[color:var(--vtg-table-border-color)] last:border-r-0',
         td: 'border-r border-[color:var(--vtg-table-border-color)] last:border-r-0',
-        tbody: '[&>tr:last-child>td]:border-b-0',
+        tbody: '[&:not([data-vtg-preserve-last-border])>tr:last-child>td]:border-b-0',
         title: 'border-b border-[color:var(--vtg-table-border-color)]',
         footer: 'border-t border-[color:var(--vtg-table-border-color)]',
         summaryCell: 'border-r border-[color:var(--vtg-table-border-color)] last:border-r-0',

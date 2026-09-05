@@ -336,7 +336,12 @@ export default defineComponent({
                     错位，而不像以前那样由 colgroup 兜住。该组合本就有 devWarn 拦截
                     （见 Table.tsx 的 vtable-virtual-body-span）。
                   */}
-                  <tbody class={props.tbodyClass}>
+                  <tbody
+                    class={props.tbodyClass}
+                    data-vtg-preserve-last-border={
+                      absoluteIndex < props.dataSource.length - 1 ? '' : undefined
+                    }
+                  >
                     <TableRow
                       key={key}
                       rowClass={
