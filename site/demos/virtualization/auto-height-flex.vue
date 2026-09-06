@@ -39,8 +39,8 @@ const columns: TableColumnsType<Row> = [
 const dataSource = shallowRef<Row[]>(buildRows(1000))
 
 // 正确写法：可收缩祖先（VTable 的直接父级）必须带 min-height: 0。
-// 取消勾选可复现高度链断裂——flex 子项默认 min-height: auto，会拒绝收缩，
-// 表体把父容器撑破。
+// 取消勾选后拖动高度滑杆可复现高度链断裂——flex 子项默认 min-height: auto，
+// 会拒绝收缩：容器缩了表格不跟随，底部摘要栏被挤出可视区。
 const minHeightZero = ref(true)
 const parentHeight = ref(420)
 </script>
@@ -66,13 +66,12 @@ const parentHeight = ref(420)
       可收缩祖先带 <code>min-height: 0</code>
     </label>
     <span style="opacity: 0.7"
-      >取消勾选后拖动高度滑杆，复现「容器缩了表格不跟随、撑破容器」——flex 子项默认 min-height:
-      auto，拒绝收缩</span
+      >取消勾选后拖动高度滑杆：容器缩了表格不跟随（被裁切），底部摘要栏被挤出可视区——flex 子项默认
+      min-height: auto，拒绝收缩</span
     >
   </div>
 
-  <!-- flex 布局：VTable 与兄弟节点共存。高度链 = flex 容器确定高度 →
-       section（flex: 1 1 0 + min-height: 0）→ VTable root（h-full） -->
+  <!-- overflow: hidden 把断裂演示裁切在容器内，避免溢出内容盖住页面下方 -->
   <div
     :style="{
       display: 'flex',
@@ -82,6 +81,7 @@ const parentHeight = ref(420)
       padding: '12px',
       border: '1px dashed rgba(128, 128, 128, 0.45)',
       borderRadius: '8px',
+      overflow: 'hidden',
     }"
   >
     <div style="flex-shrink: 0; font-size: 13px; opacity: 0.75">

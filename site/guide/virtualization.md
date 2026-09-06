@@ -83,7 +83,8 @@
 - 内容自然撑高的父容器（高度不确定）不适用；dev 构建下连续测不到可用高度会在控制台提示
 
 flex 布局 + 兄弟节点的写法（勾选框切掉 `min-height: 0` 后拖动高度滑杆，可以现场复现高度链
-断裂——flex 子项默认 `min-height: auto` 会拒绝收缩，容器缩了表格却不跟随、撑破容器）：
+断裂——flex 子项默认 `min-height: auto` 会拒绝收缩，容器缩了表格却不跟随：表体被裁切、
+底部摘要栏被挤出可视区）：
 
 <Demo src="virtualization/auto-height-flex" :min-height="420">
 
