@@ -14,7 +14,6 @@ interface Row {
 const TEAMS = ['平台', '交易', '设计系统', '基础设施']
 const CITIES = ['杭州', '上海', '成都', '深圳', '北京']
 
-// 5000 行在运行时确定性生成
 function buildRows(count: number): Row[] {
   const rows: Row[] = new Array(count)
   for (let i = 0; i < count; i += 1) {
@@ -39,8 +38,13 @@ const columns: TableColumnsType<Row> = [
 
 const dataSource = shallowRef<Row[]>(buildRows(5000))
 
-// 拖动滑杆改变父容器高度，表体高度自动跟随——等价于浏览器缩放 / 窗口变化
+// 块级父：VTable 是专用填充子项；flex 父：与兄弟节点共存。
+// flex 模式下可收缩祖先（VTable 的直接父级）必须带 min-height: 0——取消勾选后
+// 拖动高度滑杆可复现高度链断裂：flex 子项默认 min-height: auto 会拒绝收缩，
+// 容器缩了表格不跟随（被裁切），底部摘要栏被挤出可视区。
 const parentHeight = ref(320)
+const layoutMode = ref<'block' | 'flex'>('block')
+const minHeightZero = ref(true)
 </script>
 
 <template>
@@ -49,23 +53,37 @@ const parentHeight = ref(320)
       margin-bottom: 12px;
       font-size: 13px;
       display: flex;
-      gap: 12px;
+      gap: 16px;
       align-items: center;
       flex-wrap: wrap;
     "
   >
     <label style="display: inline-flex; gap: 6px; align-items: center">
       父容器高度
-      <input v-model.number="parentHeight" type="range" min="160" max="560" step="20" />
+      <input v-model.number="parentHeight" type="range" min="200" max="560" step="20" />
       <span style="font-variant-numeric: tabular-nums">{{ parentHeight }}px</span>
     </label>
-    <span style="opacity: 0.7">
-      scroll.y 传 'auto'：表体自动充满父容器，无需自己监听 resize、扣减表头高度
-    </span>
+    <label style="display: inline-flex; gap: 6px; align-items: center; cursor: pointer">
+      <input v-model="layoutMode" type="radio" value="block" />
+      块级父（专用子项）
+    </label>
+    <label style="display: inline-flex; gap: 6px; align-items: center; cursor: pointer">
+      <input v-model="layoutMode" type="radio" value="flex" />
+      flex 布局 + 兄弟节点
+    </label>
+    <label v-if="layoutMode === 'flex'" style="display: inline-flex; gap: 6px; align-items: center">
+      <input v-model="minHeightZero" type="checkbox" />
+      可收缩祖先带 <code>min-height: 0</code>
+    </label>
+    <span v-if="layoutMode === 'flex'" style="opacity: 0.7"
+      >取消勾选后拖动高度滑杆：容器缩了表格不跟随（被裁切），底部摘要栏被挤出可视区——flex 子项默认
+      min-height: auto，拒绝收缩</span
+    >
   </div>
 
-  <!-- 父容器是普通块级元素，需要确定高度；VTable 是它的专用填充子项 -->
+  <!-- 块级父：确定高度，VTable 是唯一子项，靠 h-full 填满 -->
   <div
+    v-if="layoutMode === 'block'"
     :style="{
       height: `${parentHeight}px`,
       padding: '12px',
@@ -80,5 +98,36 @@ const parentHeight = ref(320)
       :data-source="dataSource"
       :scroll="{ y: 'auto' }"
     />
+  </div>
+
+  <!-- flex 父：VTable 与兄弟节点共存。高度链 = flex 容器确定高度 →
+       section（flex: 1 1 0 + min-height: 0）→ VTable root（h-full）。
+       overflow: hidden 把断裂演示裁切在容器内，避免溢出盖住页面下方 -->
+  <div
+    v-else
+    :style="{
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '8px',
+      height: `${parentHeight}px`,
+      padding: '12px',
+      border: '1px dashed rgba(128, 128, 128, 0.45)',
+      borderRadius: '8px',
+      overflow: 'hidden',
+    }"
+  >
+    <div style="flex-shrink: 0; font-size: 13px; opacity: 0.75">
+      ▦ 兄弟节点：统计栏（flex-shrink: 0）
+    </div>
+    <div :style="{ flex: '1 1 0', minHeight: minHeightZero ? '0' : 'auto' }">
+      <VTable
+        row-key="key"
+        virtual
+        :columns="columns"
+        :data-source="dataSource"
+        :scroll="{ y: 'auto' }"
+      />
+    </div>
+    <div style="flex-shrink: 0; font-size: 13px; opacity: 0.75">▦ 兄弟节点：底部摘要栏</div>
   </div>
 </template>
