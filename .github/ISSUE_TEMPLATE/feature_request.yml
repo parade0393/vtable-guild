@@ -5,10 +5,8 @@ body:
   - type: markdown
     attributes:
       value: |
-        提之前请先看一眼 [路线图](https://github.com/parade0393/vtable-guild/blob/master/docs/roadmap.md)，
-        里面写了「规划中」和「明确不做」的部分——比如分页是刻意不做的。
-
-        本项目定位是 ant-design-vue / element-plus 的表格替换件，不打算长成完整 UI 库。
+        本项目定位是 ant-design-vue / element-plus 的表格替换件，不打算长成完整 UI 库，
+        分页等部分能力是刻意不做的。
 
   - type: textarea
     id: problem

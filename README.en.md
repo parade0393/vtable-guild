@@ -255,14 +255,14 @@ Virtual scrolling itself works as advertised: in the same session, both 1k and 1
 - [Three-layer theming](https://parade0393.github.io/vtable-guild/guide/theme-overrides) · [CSS variables](https://parade0393.github.io/vtable-guild/guide/theme-tokens) · [ui slot reference](https://parade0393.github.io/vtable-guild/guide/ui-slots-reference)
 - [Virtual scrolling](https://parade0393.github.io/vtable-guild/guide/virtualization) · [Editing](https://parade0393.github.io/vtable-guild/guide/editing) · [Custom rows and slots](https://parade0393.github.io/vtable-guild/guide/api-wiring-and-slots)
 - [API reference](https://parade0393.github.io/vtable-guild/guide/api-reference) · [Type reference](https://parade0393.github.io/vtable-guild/guide/type-reference)
-- [Changelog](./packages/vtable-guild/CHANGELOG.md) · [Roadmap](./docs/roadmap.md)
+- [Changelog](./packages/vtable-guild/CHANGELOG.md)
 
 ## Contributing
 
 - [Contributing guide](./CONTRIBUTING.md) — local setup, commit conventions, when a changeset is needed
 - [Security policy](./SECURITY.md) — report vulnerabilities privately, not via public issues
 - When filing a bug, include a [Playground](https://parade0393.github.io/vtable-guild/play/) reproduction link — it saves everyone time
-- The [roadmap](./docs/roadmap.md) lists what's planned and what's deliberately out of scope (pagination is)
+- Pagination is deliberately out of scope — this project is a table replacement, not a full UI library
 
 ## Acknowledgements
 

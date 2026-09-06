@@ -176,30 +176,3 @@ describe('TableProps 与 API Reference', () => {
     expect(diff(documented, new Set(props))).toEqual([])
   })
 })
-
-describe('roadmap 的版本号与计数', () => {
-  const roadmap = read('docs/roadmap.md')
-
-  it('发布版本与 vtable-guild package.json 一致', () => {
-    const pkg = JSON.parse(read('packages/vtable-guild/package.json')) as { version: string }
-    const declared = roadmap.match(/@vtable-guild\/vtable-guild@([\d.]+)/)?.[1]
-    expect(declared).toBe(pkg.version)
-  })
-
-  it('测试与基准文件数一致', () => {
-    const actual = walk('packages', (p) => /\.(test|bench|spec|typecheck)\.ts$/.test(p)).length
-    const declared = Number(roadmap.match(/(\d+)\s*个测试与基准文件/)?.[1])
-    expect(declared).toBe(actual)
-  })
-
-  it('文档站页面数与 demo 数一致', () => {
-    const pages =
-      walk('site/guide', (p) => p.endsWith('.md')).length +
-      walk('site/comparison', (p) => p.endsWith('.md')).length +
-      1 // site/index.md
-    const demos = walk('site/demos', (p) => p.endsWith('.vue')).length
-    const m = roadmap.match(/(\d+)\s*个页面\s*\+\s*(\d+)\s*个可交互 demo/)
-    expect(Number(m?.[1])).toBe(pages)
-    expect(Number(m?.[2])).toBe(demos)
-  })
-})
