@@ -1,5 +1,13 @@
 # @vtable-guild/vtable-guild
 
+## 2.6.4
+
+### Patch Changes
+
+- [`d390508`](https://github.com/parade0393/vtable-guild/commit/d39050809dbd51465cdd0d14adbf0c614ba7dcfa) Thanks [@parade0393](https://github.com/parade0393)! - - 新增 `scroll.y: 'auto'`：表格自动适应父容器高度，组件内部扣减表头与固定 summary，虚拟 / 普通模式均支持
+  - 修复拖拽列宽后虚拟列不同步、表头与表体错位的问题 ([#40](https://github.com/parade0393/vtable-guild/issues/40))
+  - 修复虚拟模式下行分隔线丢失的问题 ([#39](https://github.com/parade0393/vtable-guild/issues/39))
+
 ## 2.6.3
 
 ### Patch Changes
