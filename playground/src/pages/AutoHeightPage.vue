@@ -50,6 +50,9 @@ function regenerate(count: number) {
 // scroll.y: 'auto'——表体高度自动 = 父容器 − 表头 − 固定 summary
 const virtual = ref(true)
 const parentHeight = ref(420)
+// flex 模式验证「兄弟节点共存 + 可收缩祖先 min-height: 0」的高度链
+const layoutMode = ref<'block' | 'flex'>('block')
+const minHeightZero = ref(true)
 
 const summary = computed(
   () => `${rowCount.value.toLocaleString()} 行 · 父容器 ${parentHeight.value}px`,
@@ -82,10 +85,26 @@ const summary = computed(
         <input v-model.number="parentHeight" type="range" min="160" max="720" step="20" />
         <span>{{ parentHeight }}px</span>
       </label>
+      <button
+        type="button"
+        class="auto-page__toggle"
+        :style="{ opacity: layoutMode === 'flex' ? 1 : 0.55 }"
+        @click="layoutMode = layoutMode === 'flex' ? 'block' : 'flex'"
+      >
+        布局：{{ layoutMode === 'flex' ? 'flex + 兄弟节点' : '块级父（专用子项）' }}
+      </button>
+      <label v-if="layoutMode === 'flex'" class="auto-page__slider" style="gap: 4px">
+        <input v-model="minHeightZero" type="checkbox" />
+        可收缩祖先 min-height: 0
+      </label>
       <span class="auto-page__hint">{{ summary }} · 拖动滑杆或缩放窗口，表体自动跟随</span>
     </header>
 
-    <div class="auto-page__frame" :style="{ height: `${parentHeight}px` }">
+    <div
+      v-if="layoutMode === 'block'"
+      class="auto-page__frame"
+      :style="{ height: `${parentHeight}px` }"
+    >
       <VTable
         row-key="key"
         bordered
@@ -94,6 +113,24 @@ const summary = computed(
         :data-source="dataSource"
         :scroll="{ x: 880, y: 'auto' }"
       />
+    </div>
+    <div
+      v-else
+      class="auto-page__frame auto-page__frame--flex"
+      :style="{ height: `${parentHeight}px` }"
+    >
+      <div class="auto-page__sibling">▦ 兄弟节点：统计栏（flex-shrink: 0）</div>
+      <div class="auto-page__fill" :style="{ minHeight: minHeightZero ? '0' : 'auto' }">
+        <VTable
+          row-key="key"
+          bordered
+          :virtual="virtual"
+          :columns="columns"
+          :data-source="dataSource"
+          :scroll="{ x: 880, y: 'auto' }"
+        />
+      </div>
+      <div class="auto-page__sibling">▦ 兄弟节点：底部摘要栏</div>
     </div>
 
     <p class="auto-page__note">
@@ -144,6 +181,23 @@ const summary = computed(
   padding: 12px;
   border: 1px dashed rgb(128 128 128 / 45%);
   border-radius: 8px;
+}
+
+.auto-page__frame--flex {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.auto-page__sibling {
+  flex-shrink: 0;
+  font-size: 13px;
+  opacity: 0.75;
+}
+
+/* 可收缩祖先：min-height 由开关控制（去掉它复现高度链断裂） */
+.auto-page__fill {
+  flex: 1 1 0;
 }
 
 .auto-page__note {
