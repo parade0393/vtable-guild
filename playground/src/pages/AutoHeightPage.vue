@@ -187,6 +187,9 @@ const summary = computed(
   display: flex;
   flex-direction: column;
   gap: 8px;
+
+  /* 断裂演示（去掉 min-height: 0）时把溢出裁切在容器内 */
+  overflow: hidden;
 }
 
 .auto-page__sibling {
