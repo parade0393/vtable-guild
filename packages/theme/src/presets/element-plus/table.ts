@@ -32,6 +32,9 @@ export const elementPlusTableTheme = {
       'leading-[var(--vtg-table-line-height)]',
     ].join(' '),
     wrapper: 'w-full overflow-auto',
+    // ---- scroll.y: 'auto' 自动高度布局（与 antdv 预设保持一致） ----
+    rootAutoHeight: 'box-border flex h-full min-h-0 flex-1 flex-col',
+    wrapperAutoHeight: 'flex min-h-0 flex-1 flex-col overflow-hidden',
     table: [
       'w-full border-separate border-spacing-0',
       'bg-[color:var(--vtg-table-bg)]',
@@ -253,7 +256,7 @@ export const elementPlusTableTheme = {
         table: '',
         th: 'border-r border-[color:var(--vtg-table-border-color)] last:border-r-0',
         td: 'border-r border-[color:var(--vtg-table-border-color)] last:border-r-0',
-        tbody: '[&>tr:last-child>td]:border-b-0',
+        tbody: '[&:not([data-vtg-preserve-last-border])>tr:last-child>td]:border-b-0',
         title: 'border-b border-[color:var(--vtg-table-border-color)]',
         footer: 'border-t border-[color:var(--vtg-table-border-color)]',
         summaryCell: 'border-r border-[color:var(--vtg-table-border-color)] last:border-r-0',

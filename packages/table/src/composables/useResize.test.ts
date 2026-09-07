@@ -4,9 +4,20 @@ import { describe, expect, it, vi } from 'vitest'
 import { useResize } from './useResize'
 import type { ColumnType } from '../types'
 
-function createPointerEvent(clientX: number) {
+function createPointerEvent(clientX: number, headerWidth?: number) {
+  let currentTarget: HTMLElement | null = null
+
+  if (headerWidth !== undefined) {
+    const headerCell = document.createElement('th')
+    const resizeHandle = document.createElement('span')
+    headerCell.appendChild(resizeHandle)
+    vi.spyOn(headerCell, 'getBoundingClientRect').mockReturnValue({ width: headerWidth } as DOMRect)
+    currentTarget = resizeHandle
+  }
+
   return {
     clientX,
+    currentTarget,
     preventDefault: vi.fn(),
     stopPropagation: vi.fn(),
   } as unknown as PointerEvent
@@ -109,6 +120,46 @@ describe('useResize', () => {
     document.dispatchEvent(new PointerEvent('pointerup', { clientX: 80 }))
     expect(onResizeColumn).toHaveBeenCalledWith(column, 120)
 
+    wrapper.unmount()
+  })
+
+  it.each([
+    ['auto width', 'auto'],
+    ['percentage width', '1%'],
+    ['omitted width', undefined],
+  ])('starts from the measured header width for %s', (_case, width) => {
+    const column: ColumnType<Record<string, unknown>> = {
+      key: 'name',
+      width,
+      resizable: true,
+    }
+
+    const { api: resize, wrapper } = mountUseResize({})
+
+    resize.startResize(column, 0, createPointerEvent(100, 240))
+    document.dispatchEvent(new PointerEvent('pointermove', { clientX: 125 }))
+
+    expect(resize.columnWidths.name).toBe(265)
+
+    document.dispatchEvent(new PointerEvent('pointerup', { clientX: 125 }))
+    wrapper.unmount()
+  })
+
+  it('falls back to a finite default when a non-numeric width cannot be measured', () => {
+    const column: ColumnType<Record<string, unknown>> = {
+      key: 'name',
+      width: 'auto',
+      resizable: true,
+    }
+
+    const { api: resize, wrapper } = mountUseResize({})
+
+    resize.startResize(column, 0, createPointerEvent(100))
+    document.dispatchEvent(new PointerEvent('pointermove', { clientX: 125 }))
+
+    expect(resize.columnWidths.name).toBe(125)
+
+    document.dispatchEvent(new PointerEvent('pointerup', { clientX: 125 }))
     wrapper.unmount()
   })
 })

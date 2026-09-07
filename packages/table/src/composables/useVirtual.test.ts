@@ -1,6 +1,48 @@
 import { ref } from 'vue'
 import { describe, expect, it } from 'vitest'
-import { useVirtual } from './useVirtual'
+import {
+  INVALID_SCROLL_Y_FALLBACK,
+  MIN_VIRTUAL_VIEWPORT,
+  resolveScrollY,
+  useVirtual,
+} from './useVirtual'
+
+describe('resolveScrollY', () => {
+  it('classifies numbers: positive finite vs zero / negative / non-finite', () => {
+    expect(resolveScrollY(420)).toEqual({ kind: 'fixed-number', value: 420 })
+    expect(resolveScrollY(0)).toEqual({ kind: 'invalid-number' })
+    expect(resolveScrollY(-5)).toEqual({ kind: 'invalid-number' })
+    expect(resolveScrollY(Number.NaN)).toEqual({ kind: 'invalid-number' })
+    expect(resolveScrollY(Number.POSITIVE_INFINITY)).toEqual({ kind: 'invalid-number' })
+  })
+
+  it('classifies the auto sentinel, including surrounding whitespace', () => {
+    expect(resolveScrollY('auto')).toEqual({ kind: 'auto' })
+    expect(resolveScrollY('  auto  ')).toEqual({ kind: 'auto' })
+  })
+
+  it('only accepts trimmed positive decimal px strings as compat', () => {
+    expect(resolveScrollY('480px')).toEqual({ kind: 'compat-px', value: 480 })
+    expect(resolveScrollY(' 480px ')).toEqual({ kind: 'compat-px', value: 480 })
+    expect(resolveScrollY('480.5px')).toEqual({ kind: 'compat-px', value: 480.5 })
+
+    // 0px / 负号 / 裸数字 / 其他单位 / 表达式都不能进虚拟路径
+    expect(resolveScrollY('0px')).toEqual({ kind: 'invalid-string' })
+    expect(resolveScrollY('-5px')).toEqual({ kind: 'invalid-string' })
+    expect(resolveScrollY('480')).toEqual({ kind: 'invalid-string' })
+    expect(resolveScrollY('480foo')).toEqual({ kind: 'invalid-string' })
+    expect(resolveScrollY('100%')).toEqual({ kind: 'invalid-string' })
+    expect(resolveScrollY('50vh')).toEqual({ kind: 'invalid-string' })
+    expect(resolveScrollY('calc(100% - 20px)')).toEqual({ kind: 'invalid-string' })
+  })
+
+  it('treats missing values as missing instead of guessing', () => {
+    expect(resolveScrollY(undefined)).toEqual({ kind: 'missing' })
+    expect(resolveScrollY(null)).toEqual({ kind: 'missing' })
+    expect(resolveScrollY('')).toEqual({ kind: 'missing' })
+    expect(resolveScrollY('   ')).toEqual({ kind: 'missing' })
+  })
+})
 
 describe('useVirtual', () => {
   it('only enables virtual mode when virtual and scroll.y are both provided', () => {
@@ -45,7 +87,7 @@ describe('useVirtual', () => {
     expect(api.itemHeight.value).toBe(55)
   })
 
-  it('normalizes numeric and string scroll heights', () => {
+  it('normalizes numeric and compat-px scroll heights and falls back for invalid ones', () => {
     const scrollY = ref<number | string | undefined>(320)
 
     const api = useVirtual({
@@ -59,11 +101,37 @@ describe('useVirtual', () => {
     scrollY.value = '480px'
     expect(api.listHeight.value).toBe(480)
 
+    // 无法解析的字符串与非法数字：保持虚拟可用，视口回落 400（issue #38 语义，
+    // 不回落全量渲染的普通表体——万行宽表上那是秒级冻结）。
     scrollY.value = 'bad-value'
-    expect(api.listHeight.value).toBe(400)
+    expect(api.listHeight.value).toBe(INVALID_SCROLL_Y_FALLBACK)
+
+    scrollY.value = '100%'
+    expect(api.listHeight.value).toBe(INVALID_SCROLL_Y_FALLBACK)
+
+    scrollY.value = -5
+    expect(api.listHeight.value).toBe(INVALID_SCROLL_Y_FALLBACK)
 
     scrollY.value = undefined
-    expect(api.listHeight.value).toBe(400)
+    expect(api.listHeight.value).toBe(INVALID_SCROLL_Y_FALLBACK)
+  })
+
+  it('drives the virtual viewport from measured height in auto mode', () => {
+    const measured = ref<number | undefined>(517)
+
+    const api = useVirtual({
+      virtual: () => true,
+      scrollY: () => 'auto',
+      size: () => 'middle',
+      measuredHeight: () => measured.value,
+    })
+
+    expect(api.enabled.value).toBe(true)
+    expect(api.listHeight.value).toBe(517)
+
+    // 未测得（ref 异常等边缘）钳到 1px，绝不让 core 的 falsy 检查关闭窗口化。
+    measured.value = undefined
+    expect(api.listHeight.value).toBe(MIN_VIRTUAL_VIEWPORT)
   })
 
   it('stays on the measured path unless rowHeight is explicitly declared', () => {

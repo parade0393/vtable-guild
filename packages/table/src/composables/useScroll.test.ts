@@ -1,3 +1,4 @@
+import { reactive } from 'vue'
 import { describe, expect, it } from 'vitest'
 import { useScroll, type UseScrollReturn } from './useScroll'
 import type { ColumnType } from '../types'
@@ -42,14 +43,22 @@ describe('useScroll', () => {
       { key: 'status', width: 110, fixed: 'right' },
     ]
 
+    const columnWidths = reactive<Record<string, number>>({})
     const scroll = useScroll({
       displayColumns: () => columns,
+      columnWidths,
     })
 
     expect(scroll.fixedOffsets.value.get('name')).toMatchObject({ left: 0, isLastLeft: false })
     expect(scroll.fixedOffsets.value.get('team')).toMatchObject({ left: 120, isLastLeft: true })
     expect(scroll.fixedOffsets.value.get('status')).toMatchObject({ right: 0, isFirstRight: false })
     expect(scroll.fixedOffsets.value.get('score')).toMatchObject({ right: 110, isFirstRight: true })
+
+    columnWidths.name = 80
+    columnWidths.status = 70
+
+    expect(scroll.fixedOffsets.value.get('team')).toMatchObject({ left: 80, isLastLeft: true })
+    expect(scroll.fixedOffsets.value.get('score')).toMatchObject({ right: 70, isFirstRight: true })
   })
 
   it('syncs header scroll position and scroll state', () => {

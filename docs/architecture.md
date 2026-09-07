@@ -2,7 +2,7 @@
 
 > 这份文档描述**当前实现**的结构与设计取舍，面向维护者和二次开发者。
 > 面向使用者的说明在文档站：[指南](../site/guide/index.md)、[API Reference](../site/guide/api-reference.md)。
-> 项目进度看 [roadmap.md](./roadmap.md)，性能设计与实测看 [performance.md](./performance.md)。
+> 性能设计与实测看 [performance.md](./performance.md)。
 
 ## 1. 项目定位
 
@@ -36,7 +36,7 @@ vtable-guild 是一个 Vue 3 Table 组件库，目标：
 ## 3. packages 目录结构
 
 五个包。只有聚合入口 `@vtable-guild/vtable-guild` 是公开发布的，其余四个当前均为 `private`，
-仅通过聚合入口对外（见 [roadmap 的「开放子包」](./roadmap.md)）。
+仅通过聚合入口对外。
 
 ```
 packages/
@@ -320,4 +320,4 @@ dataSource
 | 列占位常量            | `EXPAND_COLUMN` / `SELECTION_COLUMN`                                            | 已实现                                    |
 | 分页                  | —                                                                               | **明确不做**，由使用方自带                |
 | 声明式列              | `<VTableColumn>` / `<VTableColumnGroup>`                                        | **未实现**，列只能通过 `columns` 数组配置 |
-| 键盘可达性            | `tabindex` / `keydown`                                                          | **未实现**，见 roadmap                    |
+| 键盘可达性            | `tabindex` / `keydown`                                                          | **未实现**                                |

@@ -51,6 +51,9 @@ onBeforeUnmount(() => {
         <RouterLink class="play-tab" active-class="is-active" to="/drag-sort">拖拽</RouterLink>
         <RouterLink class="play-tab" active-class="is-active" to="/advanced">高级</RouterLink>
         <RouterLink class="play-tab" active-class="is-active" to="/virtual">虚拟</RouterLink>
+        <RouterLink class="play-tab" active-class="is-active" to="/auto-height"
+          >自动高度</RouterLink
+        >
         <RouterLink class="play-tab" active-class="is-active" to="/tree">树形</RouterLink>
         <RouterLink class="play-tab" active-class="is-active" to="/perf">性能</RouterLink>
         <RouterLink class="play-tab" active-class="is-active" to="/prebuilt">prebuilt</RouterLink>
