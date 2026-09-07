@@ -1,6 +1,6 @@
 # vtable-guild Agent API Reference
 
-> **对应版本**：`@vtable-guild/vtable-guild@2.6.3`。本文档是给 AI 编码助手（Claude Code / Codex / Cursor 等）的单文件速查，内容来自官方 API 文档与运行时告警，无营销描述。
+> **对应版本**：当前仓库实现。本文档是给 AI 编码助手（Claude Code / Codex / Cursor 等）的单文件速查，内容来自官方 API 文档与运行时告警，无营销描述。
 >
 > **最重要的规则**：vtable-guild 的 API 与 **ant-design-vue Table 对齐**（props 命名、column 结构、slots、事件模型基本一致）。你可以按 antdv 的习惯生成代码，然后对照本文核对差异——尤其是「不支持的功能」一节。
 
@@ -83,11 +83,11 @@ const dataSource: UserRow[] = [
 | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 生成 `<a-pagination>` 或 `pagination` prop                      | **没有分页功能**。组件刻意不做分页，也不要伪造 `pagination` prop——TS 会报错。数据分页请在外层自行切片。                                                                         |
 | `change` 事件带 `pagination` 参数                               | `change(filters, sorter, extra)` 只有三个参数，`extra.action` 取值仅 `'sort' \| 'filter' \| 'select'`（没有 `'paginate'`）。                                                    |
-| `scroll.y` 传 `'50%'` / `'30vh'`                                | `virtual` 模式下 `scroll.y` **必须是像素值**（数字或 `'400px'`）；相对单位会被回退到默认高度。非虚拟模式可用字符串但建议 px。                                                   |
+| `scroll.y` 传 `'50%'` / `'30vh'`                                | `virtual` 模式支持正数、`'auto'` 或正数 px 字符串；相对单位会告警并回退到 400px。非虚拟模式可按 CSS `max-height` 传入其他字符串。                                               |
 | 虚拟模式下用 `customCell` / `customRender` 返回 colSpan/rowSpan | **虚拟滚动不支持单元格合并**。开启 `virtual` 后列上存在 `customCell`/`customRender` 会被告警并禁用。                                                                            |
 | 树形选择按 antdv 习惯写（不传 `checkStrictly`）                 | **本库 `checkStrictly` 默认 `true`（父子独立选择），antdv 默认 `false`（父子联动）**。要 antdv 式的勾父带子必须显式传 `checkStrictly: false`，否则静默失去联动。                |
 | 树形数据 + 筛选 = 递归过滤                                      | **`onFilter` 只过滤顶层记录**：不递归 `children`，匹配子节点也不会保留其父节点。树形数据慎用筛选，或在外层自行实现递归过滤。                                                    |
-| `virtual` 模式下用 `summary` 插槽                               | 2.6.3 中虚拟模式下 summary **不会渲染**（已知问题，修复在途）。需要 summary 的表格请勿同时开 `virtual`。                                                                        |
+| `virtual` 模式下 `summary` 会静默丢失                           | 已支持 summary：非 fixed summary 渲染在虚拟表体后，fixed summary 保持 sticky 底部块。                                                                                           |
 | 所有 antdv Table props 都存在                                   | 只实现了本文列出的 props。`expandIconColumnIndex`、`scroll.scrollToFirstRowOnChange`、`sticky.offsetScroll`/`getContainer` 等尚未实现，不要使用。                               |
 | 树形数据的展开 props 写在 `expandable` 里                       | 树形数据的 `expandedRowKeys` / `defaultExpandAllRows` / `onExpand` / `onExpandedRowsChange` 在 **VTable 顶层 props**；`expandable` 对象只管展开行渲染（见下文 Expandable 表）。 |
 | `column.ellipsis` 支持多行 `{ rows }`                           | 只支持 `boolean \| { showTitle?: boolean }`（单行省略）。                                                                                                                       |
@@ -259,7 +259,7 @@ const expandable: Expandable<UserRow> = {
 
 ```vue
 <template>
-  <!-- scroll.y 必须是 px；不要用 '%'。不要在列上放 customCell/customRender。 -->
+  <!-- scroll.y 传正数或 'auto'；不要用 '%'。不要在列上放 customCell/customRender。 -->
   <VTable
     :data-source="bigData"
     :columns="plainColumns"
@@ -278,14 +278,16 @@ const expandable: Expandable<UserRow> = {
 
 dev 构建下组件通过 `console.warn` 输出一次性告警，格式为 `[VTable] ...`。每条告警对应一个稳定 id（下表），Agent 可根据 id 直接定位修法。
 
-| id                                                | 触发原因                                                                  | 修法                                                                     |
-| ------------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `vtable-rowkey-fallback-index`                    | 未配置 `rowKey` 或记录上取不到该字段，回退到行索引                        | 给 `rowKey` 传记录的唯一字段名或函数；选择/展开/树形场景下不配会状态错乱 |
-| `vtable-row-height-mismatch`                      | 声明了 `rowHeight`，但实测首行高度与之不符                                | 去掉 `rowHeight`，交给默认实测路径                                       |
-| `vtable-virtual-body-span`                        | `virtual` 开启且列上存在 `customCell`/`customRender`（可能返回合并 span） | 虚拟模式移除单元格合并，或关闭 `virtual`                                 |
-| `vtable-virtual-column-disabled`                  | `virtualColumn` 开启但前置条件不满足（如固定列不连续、存在 customCell）   | 按告警说明调整列定义，或放弃横向虚拟化                                   |
-| `vtable-virtual-column-no-header`                 | `virtualColumn` + `showHeader: false` 且有非数字列宽                      | 提供全数字列宽或保留表头                                                 |
-| `virtual-scroll-y-non-px`（随修复分支合入后生效） | `virtual` 下 `scroll.y` 为 `%`/`vh`/`calc` 等非 px 值                     | 改用像素值                                                               |
+| id                                | 触发原因                                                                  | 修法                                                                     |
+| --------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `vtable-rowkey-fallback-index`    | 未配置 `rowKey` 或记录上取不到该字段，回退到行索引                        | 给 `rowKey` 传记录的唯一字段名或函数；选择/展开/树形场景下不配会状态错乱 |
+| `vtable-row-height-mismatch`      | 声明了 `rowHeight`，但实测首行高度与之不符                                | 去掉 `rowHeight`，交给默认实测路径                                       |
+| `vtable-virtual-body-span`        | `virtual` 开启且列上存在 `customCell`/`customRender`（可能返回合并 span） | 虚拟模式移除单元格合并，或关闭 `virtual`                                 |
+| `vtable-virtual-column-disabled`  | `virtualColumn` 开启但前置条件不满足（如固定列不连续、存在 customCell）   | 按告警说明调整列定义，或放弃横向虚拟化                                   |
+| `vtable-virtual-column-no-header` | `virtualColumn` + `showHeader: false` 且有非数字列宽                      | 提供全数字列宽或保留表头                                                 |
+| `vtable-scroll-y-compat-px`       | `virtual` 下 `scroll.y` 使用了兼容的正数 px 字符串                        | 改用正数数字或 `'auto'`                                                  |
+| `vtable-scroll-y-invalid-string`  | `virtual` 下 `scroll.y` 为 `%`/`vh`/`calc` 等无法可靠解析的值             | 改用正数、`'auto'` 或正数 px 字符串                                      |
+| `vtable-scroll-y-invalid-number`  | `virtual` 下 `scroll.y` 为负数或非有限数                                  | 改用有限正数或 `'auto'`                                                  |
 
 ## 相关完整文档
 
