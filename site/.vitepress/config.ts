@@ -64,6 +64,10 @@ const zhTheme = {
           { text: '类型参考', link: '/guide/type-reference' },
         ],
       },
+      {
+        text: 'AI 工具',
+        items: [{ text: 'LLMs.txt', link: '/guide/llms-txt' }],
+      },
     ],
     '/comparison/': [
       {
