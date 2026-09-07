@@ -772,7 +772,8 @@ export default defineComponent({
     })
 
     // ---- 自动高度（scroll.y: 'auto'）----
-    // 表体高度 = wrapper − 表头 − 固定 summary，由组件内部测量扣减，
+    // 表体高度 = wrapper − 表头 − 外置 summary，由组件内部测量扣减，
+    // 外置 summary 包括 fixed summary 与虚拟表体后的非 fixed summary。
     // 业务侧不再需要自己监听 resize 并读取表头高度（issue #38 的诉求）。
     const wrapperRef = ref<HTMLElement | null>(null)
     const summaryWrapRef = ref<HTMLElement | null>(null)
