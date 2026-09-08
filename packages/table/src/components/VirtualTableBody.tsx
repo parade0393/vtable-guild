@@ -80,10 +80,11 @@ export default defineComponent({
       return resolveRowKey(record, index, props.rowKey)
     }
 
-    function itemKey(item: Record<string, unknown>, index: number): Key {
+    function itemKey(item: Record<string, unknown>): Key {
       // 避免在 VirtualList 的 O(n) range 计算里对每个 item 做 indexOf（否则整体 O(n²)）。
-      // rowKey 提供时直接取记录上的 key；仅无 rowKey 的兜底分支才回退到 index。
-      // VirtualList 已经提供了 index 参数，直接使用而不是 indexOf。
+      // rowKey 提供时直接取记录上的 key；仅无 rowKey 的兜底分支才回退到 indexOf。
+      // VirtualList 会在需要时自行回退到 index（它内部维护了 index 信息）。
+      const index = props.dataSource.indexOf(item)
       return resolveRowKey(item, index, props.rowKey)
     }
 
