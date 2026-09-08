@@ -1,5 +1,5 @@
 ---
-title: vtable-guild 相对原表格的增强能力 | vtable-guild
+title: vtable-guild 相对原表格的增强能力
 description: vtable-guild 在 ant-design-vue 与 element-plus 表格之外的独有能力：虚拟滚动、列显示与顺序、行拖拽、三层主题覆盖等，附迁移说明。
 ---
 

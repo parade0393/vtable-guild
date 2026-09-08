@@ -80,10 +80,11 @@ export default defineComponent({
       return resolveRowKey(record, index, props.rowKey)
     }
 
-    function itemKey(item: Record<string, unknown>): Key {
+    function itemKey(item: Record<string, unknown>, index: number): Key {
       // 避免在 VirtualList 的 O(n) range 计算里对每个 item 做 indexOf（否则整体 O(n²)）。
-      // rowKey 提供时直接取记录上的 key；仅无 rowKey 的兜底分支才回退到 indexOf。
-      return resolveRowKey(item, props.dataSource.indexOf(item), props.rowKey)
+      // rowKey 提供时直接取记录上的 key；仅无 rowKey 的兜底分支才回退到 index。
+      // VirtualList 已经提供了 index 参数，直接使用而不是 indexOf。
+      return resolveRowKey(item, index, props.rowKey)
     }
 
     // 列总宽只随 columns 变化，提为 computed，避免每次渲染在 render 函数里 O(列数) 重算

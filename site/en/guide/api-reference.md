@@ -1,5 +1,5 @@
 ---
-title: API Reference | vtable-guild
+title: API Reference
 description: Complete props, column fields, events, slots and summary components reference for the vtable-guild Vue table, with defaults and controlled/uncontrolled rules.
 ---
 

@@ -1,5 +1,5 @@
 ---
-title: 表格虚拟滚动（10 万行） | vtable-guild
+title: 表格虚拟滚动（10 万行）
 description: vtable-guild 内置纵向/横向虚拟滚动：10 万行数据只渲染可视区十几行 DOM，支持不定行高、固定列与排序的组合，实测数据与在线示例。
 ---
 

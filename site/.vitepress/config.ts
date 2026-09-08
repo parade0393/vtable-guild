@@ -214,6 +214,26 @@ export default defineConfig({
     const titleFrom = (meta: Record<string, string>, body: string, file: string) =>
       meta.title || /^#\s+(.+)$/m.exec(body)?.[1]?.trim() || file
 
+    // 展开 VitePress 的 <<< @/demos/xxx.vue 与 <Demo src="xxx"> 语法
+    const expandDemoSyntax = (body: string): string => {
+      // 展开 <<< @/demos/xxx.vue
+      body = body.replace(/<<<\s+@\/demos\/([^\s]+)/g, (_, demoPath) => {
+        const fullPath = join(siteRoot, 'demos', demoPath)
+        try {
+          const demoContent = readFileSync(fullPath, 'utf8')
+          return `\`\`\`vue\n// @/demos/${demoPath}\n${demoContent.trim()}\n\`\`\``
+        } catch {
+          return `<!-- demo not found: @/demos/${demoPath} -->`
+        }
+      })
+
+      // 移除 <Demo src="xxx"> 组件标签（VitePress 自定义组件，agent 无法解析）
+      // 但保留对应的 demo 文件引用（已经被上面的 <<< 展开）
+      body = body.replace(/<Demo\s+src="[^"]+"\s*\/?>(\s*<\/Demo>)?/g, '')
+
+      return body
+    }
+
     const sources: Array<{ dir: string; urlPrefix: string; lang: 'zh' | 'en' }> = [
       { dir: join(siteRoot, 'guide'), urlPrefix: 'guide', lang: 'zh' },
       { dir: join(siteRoot, 'comparison'), urlPrefix: 'comparison', lang: 'zh' },
@@ -231,7 +251,7 @@ export default defineConfig({
           url: `${siteUrl}/${url}`,
           title: titleFrom(meta, body, rel),
           description: meta.description || '',
-          body,
+          body: expandDemoSyntax(body),
           lang,
         })
       }
@@ -244,7 +264,7 @@ export default defineConfig({
       title: 'vtable-guild',
       description:
         home.meta.description || '面向 ant-design-vue 和 element-plus 用户的高性能表格替换方案。',
-      body: home.body,
+      body: expandDemoSyntax(home.body),
       lang: 'zh',
     })
 

@@ -1,5 +1,5 @@
 ---
-title: Getting started | vtable-guild
+title: Getting started
 description: Install and initialize vtable-guild in a Vue 3 + Vite project and render your first high-performance table within minutes, with ant-design-vue and element-plus theme presets.
 ---
 

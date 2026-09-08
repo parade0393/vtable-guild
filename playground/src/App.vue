@@ -48,7 +48,7 @@ onBeforeUnmount(() => {
         <RouterLink class="play-tab" active-class="is-active" to="/filter">筛选</RouterLink>
         <RouterLink class="play-tab" active-class="is-active" to="/selection">选择</RouterLink>
         <RouterLink class="play-tab" active-class="is-active" to="/sort">排序</RouterLink>
-        <RouterLink class="play-tab" active-class="is-active" to="/drag-sort">拖拽</RouterLink>
+        <RouterLink class="play-tab" active-class="is-active" to="/drag-sort">行拖拽</RouterLink>
         <RouterLink class="play-tab" active-class="is-active" to="/advanced">高级</RouterLink>
         <RouterLink class="play-tab" active-class="is-active" to="/virtual">虚拟</RouterLink>
         <RouterLink class="play-tab" active-class="is-active" to="/auto-height"
@@ -59,6 +59,9 @@ onBeforeUnmount(() => {
         <RouterLink class="play-tab" active-class="is-active" to="/prebuilt">prebuilt</RouterLink>
         <RouterLink class="play-tab" active-class="is-active" to="/antdv-full"
           >antdv一比一</RouterLink
+        >
+        <RouterLink class="play-tab" active-class="is-active" to="/agent-demo"
+          >Agent Demo</RouterLink
         >
       </nav>
       <div class="play-nav__controls">

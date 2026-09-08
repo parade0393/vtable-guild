@@ -85,7 +85,7 @@ const dataSource: UserRow[] = [
 | `change` 事件带 `pagination` 参数                               | `change(filters, sorter, extra)` 只有三个参数，`extra.action` 取值仅 `'sort' \| 'filter' \| 'select'`（没有 `'paginate'`）。                                                    |
 | `scroll.y` 传 `'50%'` / `'30vh'`                                | `virtual` 模式支持正数、`'auto'` 或正数 px 字符串；相对单位会告警并回退到 400px。非虚拟模式可按 CSS `max-height` 传入其他字符串。                                               |
 | 虚拟模式下用 `customCell` / `customRender` 返回 colSpan/rowSpan | **虚拟滚动不支持单元格合并**。开启 `virtual` 后列上存在 `customCell`/`customRender` 会被告警并禁用。                                                                            |
-| 树形选择按 antdv 习惯写（不传 `checkStrictly`）                 | **本库 `checkStrictly` 默认 `true`（父子独立选择），antdv 默认 `false`（父子联动）**。要 antdv 式的勾父带子必须显式传 `checkStrictly: false`，否则静默失去联动。                |
+| 树形选择按 antdv 习惯写（不传 `checkStrictly`）                 | **本库与 ant-design-vue 4.x 都默认 `checkStrictly: true`（父子独立选择）**。两个库默认行为一致，无需显式传 `true`。如需父子联动（勾父带子），显式传 `checkStrictly: false`。    |
 | 树形数据 + 筛选 = 递归过滤                                      | **`onFilter` 只过滤顶层记录**：不递归 `children`，匹配子节点也不会保留其父节点。树形数据慎用筛选，或在外层自行实现递归过滤。                                                    |
 | `virtual` 模式下 `summary` 会静默丢失                           | 已支持 summary：非 fixed summary 渲染在虚拟表体后，fixed summary 保持 sticky 底部块。                                                                                           |
 | 所有 antdv Table props 都存在                                   | 只实现了本文列出的 props。`expandIconColumnIndex`、`scroll.scrollToFirstRowOnChange`、`sticky.offsetScroll`/`getContainer` 等尚未实现，不要使用。                               |
@@ -201,7 +201,7 @@ const rowSelection: RowSelection<UserRow> = {
 }
 ```
 
-常用字段：`type`（默认 `'checkbox'`）、`selectedRowKeys`/`defaultSelectedRowKeys`、`onChange(keys, rows)`、`onSelect(record, selected, rows)`、`onSelectAll(selected, rows, changeRows)`、`onSelectInvert(keys)`、`onSelectNone()`、`getCheckboxProps`、`columnWidth`、`fixed: boolean \| 'left' \| 'right'`、`columnTitle`、`renderCell`、`checkStrictly`（**本库默认 `true` 父子独立；antdv 默认 `false`**，要联动必须显式传 `false`）、`selections`（批量菜单，`true` 给默认项）、`hideSelectAll`、`preserveSelectedRowKeys`。
+常用字段：`type`（默认 `'checkbox'`）、`selectedRowKeys`/`defaultSelectedRowKeys`、`onChange(keys, rows)`、`onSelect(record, selected, rows)`、`onSelectAll(selected, rows, changeRows)`、`onSelectInvert(keys)`、`onSelectNone()`、`getCheckboxProps`、`columnWidth`、`fixed: boolean \| 'left' \| 'right'`、`columnTitle`、`renderCell`、`checkStrictly`（**本库与 antdv 4.x 都默认 `true` 父子独立选择；如需联动显式传 `false`**）、`selections`（批量菜单，`true` 给默认项）、`hideSelectAll`、`preserveSelectedRowKeys`。
 
 ## Expandable
 
@@ -288,6 +288,8 @@ dev 构建下组件通过 `console.warn` 输出一次性告警，格式为 `[VTa
 | `vtable-scroll-y-compat-px`       | `virtual` 下 `scroll.y` 使用了兼容的正数 px 字符串                        | 改用正数数字或 `'auto'`                                                  |
 | `vtable-scroll-y-invalid-string`  | `virtual` 下 `scroll.y` 为 `%`/`vh`/`calc` 等无法可靠解析的值             | 改用正数、`'auto'` 或正数 px 字符串                                      |
 | `vtable-scroll-y-invalid-number`  | `virtual` 下 `scroll.y` 为负数或非有限数                                  | 改用有限正数或 `'auto'`                                                  |
+| `vtable-auto-height-unavailable`  | `scroll.y: 'auto'` 但父容器无确定高度或 wrapper 不可见                    | 确保表格父容器有明确高度（px / vh / flex 等）                            |
+| `vtable-table-context`            | Table 子组件在 VTable 外部使用，缺失 context                              | 只在 VTable 内部使用 TableCell 等子组件                                  |
 
 ## 相关完整文档
 

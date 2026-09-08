@@ -1,5 +1,5 @@
 ---
-title: 快速开始 | vtable-guild
+title: 快速开始
 description: 在 Vue 3 + Vite 项目中安装并初始化 vtable-guild，几分钟内跑起第一张高性能表格，支持 ant-design-vue 与 element-plus 两套主题预设。
 ---
 
