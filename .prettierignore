@@ -13,3 +13,6 @@ pnpm-lock.yaml
 # prettier 会给 ```jsonc 代码块补尾逗号，而文中的示例是 package.json / tsconfig.json，
 # package.json 必须是严格 JSON，格式化后会把示例教成错的
 docs/monorepo-setup-guide.md
+
+# 静态资源（验证文件、robots、favicon 等）不走 prettier
+**/public/**
