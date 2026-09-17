@@ -1,5 +1,11 @@
 # @vtable-guild/vtable-guild
 
+## 2.7.1
+
+### Patch Changes
+
+- [`723938a`](https://github.com/parade0393/vtable-guild/commit/723938aba158b4d135a85e8bf4f352fed2dac543) Thanks [@parade0393](https://github.com/parade0393)! - 修复未开启 `virtualColumn` 时，虚拟表滚到最右再连续拖窄列导致表头与表体错位的问题（[#38](https://github.com/parade0393/vtable-guild/issues/38) 后续）
+
 ## 2.7.0
 
 ### Minor Changes
