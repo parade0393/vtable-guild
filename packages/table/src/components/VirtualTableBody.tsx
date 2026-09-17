@@ -14,6 +14,7 @@ import { resolveRowDragClass } from '../composables/useRowDragSort'
 import type { ColumnType, Key } from '../types'
 import { getRowCompatClass } from '../utils/compat'
 import { resolveRowKey } from '../utils/rowKey'
+import { parseStylePxWidth, sumDeclaredColumnWidths } from '../utils/columnWidth'
 
 type VirtualTableScrollInfo = VirtualScrollInfo & {
   maxX: number
@@ -88,26 +89,25 @@ export default defineComponent({
       return resolveRowKey(item, index, props.rowKey)
     }
 
-    // 列总宽只随 columns 变化，提为 computed，避免每次渲染在 render 函数里 O(列数) 重算
-    const declaredScrollWidth = computed(() => {
-      let total = 0
-      for (const col of props.columns) {
-        const w = typeof col.width === 'number' ? col.width : parseInt(String(col.width || '0'), 10)
-        total += w || 0
-      }
-      return total
-    })
-
     /**
      * 传给 VirtualList 的内容宽度。
      *
      * 横向虚拟化开启时优先用实测总宽：声明宽度的求和会把 `auto` / 百分比列算成 0，
      * 横向滚动范围因此短一截，滚到底也露不出最后几列。实测值是浏览器算好的结果。
+     *
+     * 未开 virtualColumn 时必须把拖拽覆写算进去：表头 colgroup 已经变窄，
+     * 若这里仍按 column.width 求和，横向 max 不收缩，表头被浏览器钳到新 max、
+     * 表体还停在旧 offsetLeft，表现为最右连续拖窄后的错位。
+     *
+     * 有数字 scroll.x 时取 max(列宽之和, scroll.x)：tableStyle.width 钉在 scroll.x，
+     * 列变窄后余量仍在表上，内容宽不能跟着列宽之和一起掉。
      */
     const scrollWidth = computed(() => {
       const measured = props.virtualColumn ? props.columnMetrics?.total : undefined
       if (measured && measured > 0) return measured
-      return declaredScrollWidth.value
+      const declared = sumDeclaredColumnWidths(props.columns, tableContext.columnWidths)
+      const tablePx = parseStylePxWidth(props.tableStyle?.width)
+      return Math.max(declared, tablePx)
     })
 
     const fixedRanges = computed(() => resolveFixedColumnRanges(props.columns))

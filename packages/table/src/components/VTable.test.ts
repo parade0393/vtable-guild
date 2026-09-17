@@ -951,6 +951,111 @@ describe('VTable', () => {
     wrapper.unmount()
   })
 
+  it('shrinks virtual scrollWidth after a column resize when virtualColumn is off', async () => {
+    const virtualData = Array.from({ length: 40 }, (_, index) => ({
+      key: `w-${index}`,
+      name: `User ${index}`,
+      age: 20 + (index % 30),
+      status: index % 2 === 0 ? 'active' : 'paused',
+    })) satisfies DemoRow[]
+
+    const wrapper = mount(VTable<DemoRow>, {
+      attachTo: document.body,
+      props: {
+        rowKey: 'key',
+        columns: [
+          {
+            title: 'Name',
+            key: 'name',
+            dataIndex: 'name',
+            width: 160,
+            resizable: true,
+            minWidth: 50,
+          },
+          { title: 'Age', key: 'age', dataIndex: 'age', width: 120, resizable: true, minWidth: 50 },
+          {
+            title: 'Status',
+            key: 'status',
+            dataIndex: 'status',
+            width: 180,
+            resizable: true,
+            minWidth: 50,
+          },
+        ],
+        dataSource: virtualData,
+        scroll: { y: 220 },
+        virtual: true,
+      },
+    })
+
+    await nextTick()
+
+    const list = wrapper.findComponent({ name: 'VirtualList' })
+    expect(list.props('scrollWidth')).toBe(460)
+
+    await findResizeHandle(wrapper, 'Status').trigger('pointerdown', { clientX: 200 })
+    document.dispatchEvent(new PointerEvent('pointermove', { clientX: 70 }))
+    document.dispatchEvent(new PointerEvent('pointerup', { clientX: 70 }))
+    await nextTick()
+
+    // Status 180 → minWidth 50，总宽 460 → 330；VirtualList 必须跟着缩，
+    // 否则滚在最右时表头被钳、表体仍用旧 offsetLeft。
+    expect(wrapper.findComponent({ name: 'VirtualList' }).props('scrollWidth')).toBe(330)
+
+    wrapper.unmount()
+  })
+
+  it('does not shrink virtual scrollWidth below a numeric scroll.x after column resize', async () => {
+    const virtualData = Array.from({ length: 40 }, (_, index) => ({
+      key: `x-${index}`,
+      name: `User ${index}`,
+      age: 20 + (index % 30),
+      status: 'active',
+    })) satisfies DemoRow[]
+
+    const wrapper = mount(VTable<DemoRow>, {
+      attachTo: document.body,
+      props: {
+        rowKey: 'key',
+        columns: [
+          {
+            title: 'Name',
+            key: 'name',
+            dataIndex: 'name',
+            width: 160,
+            resizable: true,
+            minWidth: 50,
+          },
+          { title: 'Age', key: 'age', dataIndex: 'age', width: 120, resizable: true, minWidth: 50 },
+          {
+            title: 'Status',
+            key: 'status',
+            dataIndex: 'status',
+            width: 180,
+            resizable: true,
+            minWidth: 50,
+          },
+        ],
+        dataSource: virtualData,
+        scroll: { x: 800, y: 220 },
+        virtual: true,
+      },
+    })
+
+    await nextTick()
+    expect(wrapper.findComponent({ name: 'VirtualList' }).props('scrollWidth')).toBe(800)
+
+    await findResizeHandle(wrapper, 'Status').trigger('pointerdown', { clientX: 200 })
+    document.dispatchEvent(new PointerEvent('pointermove', { clientX: 70 }))
+    document.dispatchEvent(new PointerEvent('pointerup', { clientX: 70 }))
+    await nextTick()
+
+    // tableStyle.width 仍钉在 800px，列变窄后余量留在表上，内容宽不能掉到 330。
+    expect(wrapper.findComponent({ name: 'VirtualList' }).props('scrollWidth')).toBe(800)
+
+    wrapper.unmount()
+  })
+
   it('keeps non-fixed summary slot content visible in virtual mode', async () => {
     const virtualData = Array.from({ length: 80 }, (_, index) => ({
       key: `s-${index}`,
