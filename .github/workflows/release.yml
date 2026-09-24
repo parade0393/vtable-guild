@@ -45,6 +45,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Create release PR or publish
+        id: changesets
         uses: changesets/action@v1
         with:
           version: pnpm run version:packages
@@ -53,3 +54,21 @@ jobs:
           title: 'chore(release): version packages'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Release 正文由 changesets/action 从 CHANGELOG 生成，这里在末尾补上反馈入口。
+      # 只有真的发了新版本才会走到这一步，重跑时发布脚本会因 tag 已存在而跳过。
+      - name: Append feedback link to release notes
+        if: steps.changesets.outputs.published == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
+          FEEDBACK: |
+            ---
+
+            💬 升级后遇到问题或有其他想法？来[讨论区](https://github.com/parade0393/vtable-guild/discussions/44)；能复现的 bug 请[提 issue](https://github.com/parade0393/vtable-guild/issues/new/choose)。
+        run: |
+          for tag in $(jq -r '.[] | "\(.name)@\(.version)"' <<< "$PUBLISHED_PACKAGES"); do
+            notes=$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json body --jq .body)
+            printf '%s\n\n%s' "$notes" "$FEEDBACK" |
+              gh release edit "$tag" --repo "$GITHUB_REPOSITORY" --notes-file -
+          done
