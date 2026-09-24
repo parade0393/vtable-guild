@@ -1,5 +1,8 @@
 blank_issues_enabled: true
 contact_links:
+  - name: 💡 想法、建议、使用反馈
+    url: https://github.com/parade0393/vtable-guild/discussions/44
+    about: 用着别扭、有想法，或者试了没用上——一句话也行，不用写完整需求
   - name: 📖 文档站
     url: https://parade0393.github.io/vtable-guild/
     about: API、指南和可交互 demo，大部分用法问题这里能解决

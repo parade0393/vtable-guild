@@ -257,6 +257,7 @@ const columns = [
 
 ## 参与贡献
 
+- [使用反馈征集](https://github.com/parade0393/vtable-guild/discussions/44) —— 用着别扭、有想法，或者试了没用上，一句话就行，不用写完整需求
 - [贡献指南](./CONTRIBUTING.md) —— 本地怎么跑起来、提交规范、什么时候需要加 changeset
 - [安全策略](./SECURITY.md) —— 安全问题请走私密报告通道，不要开公开 issue
 - 提 Bug 时请附一个 [Playground](https://parade0393.github.io/vtable-guild/play/) 复现链接，这是最省双方时间的方式

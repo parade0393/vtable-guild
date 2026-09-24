@@ -259,6 +259,7 @@ Virtual scrolling itself works as advertised: in the same session, both 1k and 1
 
 ## Contributing
 
+- [Feedback thread](https://github.com/parade0393/vtable-guild/discussions/44) — something feels off, you have an idea, or you tried it and moved on? One sentence is enough, English is welcome
 - [Contributing guide](./CONTRIBUTING.md) — local setup, commit conventions, when a changeset is needed
 - [Security policy](./SECURITY.md) — report vulnerabilities privately, not via public issues
 - When filing a bug, include a [Playground](https://parade0393.github.io/vtable-guild/play/) reproduction link — it saves everyone time
