@@ -3,22 +3,23 @@ import { computed, ref } from 'vue'
 import { CDN_SOURCES, type CdnSource } from '@/utils/cdn'
 import {
   DOCS_URL,
+  LATEST,
   MIN_SUPPORTED_VTG_VERSION,
   REPO_URL,
   THEME_PRESETS,
   type ThemePreset,
+  type VersionSelection,
 } from '@/constants'
 
 const props = defineProps<{
   vtgVersions: string[]
   vueVersions: string[]
-  defaultVueVersion: string
   versionError: string
   dark: boolean
 }>()
 
-const vtgVersion = defineModel<string>('vtgVersion', { required: true })
-const vueVersion = defineModel<string | null>('vueVersion', { required: true })
+const vtgVersion = defineModel<VersionSelection>('vtgVersion', { required: true })
+const vueVersion = defineModel<VersionSelection>('vueVersion', { required: true })
 const preset = defineModel<ThemePreset>('preset', { required: true })
 const cdn = defineModel<CdnSource>('cdn', { required: true })
 
@@ -37,7 +38,18 @@ async function copyShareLink() {
 
 // 版本列表还没回来时，至少让下拉里有当前选中的版本，不要显示成空
 const vtgOptions = computed(() =>
-  props.vtgVersions.length ? props.vtgVersions : [vtgVersion.value],
+  props.vtgVersions.length
+    ? props.vtgVersions
+    : vtgVersion.value === LATEST
+      ? []
+      : [vtgVersion.value],
+)
+const vueOptions = computed(() =>
+  props.vueVersions.length
+    ? props.vueVersions
+    : vueVersion.value === LATEST
+      ? []
+      : [vueVersion.value],
 )
 </script>
 
@@ -52,7 +64,13 @@ const vtgOptions = computed(() =>
     <div class="play-header__controls">
       <label class="play-field">
         <span>版本</span>
+        <!--
+          「最新」只写哨兵、不解析具体版本号（参考 Element Plus Playground 的做法）：
+          列表没回来时也成立，不会出现「最新（加载中）」这种假装知道的文案。
+          具体指向哪一版，看下拉里的第一条。
+        -->
         <select v-model="vtgVersion">
+          <option :value="LATEST">最新</option>
           <option v-for="version in vtgOptions" :key="version" :value="version">
             {{ version }}
           </option>
@@ -62,8 +80,8 @@ const vtgOptions = computed(() =>
       <label class="play-field">
         <span>Vue</span>
         <select v-model="vueVersion">
-          <option :value="null">{{ defaultVueVersion }}（默认）</option>
-          <option v-for="version in vueVersions" :key="version" :value="version">
+          <option :value="LATEST">最新</option>
+          <option v-for="version in vueOptions" :key="version" :value="version">
             {{ version }}
           </option>
         </select>
