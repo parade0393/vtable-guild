@@ -150,6 +150,18 @@ body {
   color: #b45309;
 }
 
+/* ---- boot: 版本列表落地前的占位 ---- */
+
+.play-boot {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: var(--play-muted);
+}
+
 /* ---- repl ---- */
 
 .play-repl {

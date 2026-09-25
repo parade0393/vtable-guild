@@ -13,11 +13,10 @@ const {
   previewOptions,
   cdn,
   preset,
-  vtgVersion,
+  vtgSelection,
   vtgVersions,
-  vueVersion,
+  vueSelection,
   vueVersions,
-  defaultVueVersion,
   versionError,
 } = useVtgRepl()
 
@@ -43,18 +42,22 @@ watchEffect(() => {
 <template>
   <div class="play-root">
     <PlayHeader
-      v-model:vtg-version="vtgVersion"
-      v-model:vue-version="vueVersion"
+      v-model:vtg-version="vtgSelection"
+      v-model:vue-version="vueSelection"
       v-model:preset="preset"
       v-model:cdn="cdn"
       v-model:dark="dark"
       :vtg-versions="vtgVersions"
       :vue-versions="vueVersions"
-      :default-vue-version="defaultVueVersion"
       :version-error="versionError"
     />
 
+    <!--
+      版本列表落地前不挂载 Repl：先挂载会让预览 iframe 按兜底版本把产物拉一遍，
+      等列表回来再换最新版，首屏就闪一次「旧版本」。
+    -->
     <Repl
+      v-if="store"
       class="play-repl"
       :store="store"
       :editor="Monaco"
@@ -64,5 +67,6 @@ watchEffect(() => {
       :clear-console="false"
       :editor-options="{ autoSaveText: '自动保存' }"
     />
+    <div v-else class="play-boot">正在确认版本…</div>
   </div>
 </template>
