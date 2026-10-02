@@ -1,6 +1,7 @@
 // packages/theme/src/presets/index.ts
 
 import type { BuiltInLocaleName, ThemePreset } from './types'
+import { paginationTheme, paginationZhCN, paginationEnUS } from '../pagination'
 import type {
   LocaleName,
   ThemePresetName,
@@ -43,10 +44,11 @@ const presetMap: Record<ThemePresetName, ThemePreset> = {
     input: antdvInputTheme,
     tooltip: antdvTooltipTheme,
     scrollbar: antdvScrollbarTheme,
+    pagination: paginationTheme,
     tableLocale: antdvTableLocale,
     locales: {
-      'zh-CN': { table: antdvTableLocale },
-      'en-US': { table: antdvTableEnUSLocale },
+      'zh-CN': { table: antdvTableLocale, pagination: paginationZhCN },
+      'en-US': { table: antdvTableEnUSLocale, pagination: paginationEnUS },
     },
   },
   'element-plus': {
@@ -57,10 +59,11 @@ const presetMap: Record<ThemePresetName, ThemePreset> = {
     input: elementPlusInputTheme,
     tooltip: elementPlusTooltipTheme,
     scrollbar: elementPlusScrollbarTheme,
+    pagination: paginationTheme,
     tableLocale: elementPlusTableLocale,
     locales: {
-      'zh-CN': { table: elementPlusTableLocale },
-      'en-US': { table: elementPlusTableEnUSLocale },
+      'zh-CN': { table: elementPlusTableLocale, pagination: paginationZhCN },
+      'en-US': { table: elementPlusTableEnUSLocale, pagination: paginationEnUS },
     },
   },
 }

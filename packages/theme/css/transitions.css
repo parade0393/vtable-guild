@@ -19,3 +19,28 @@
   opacity: 1;
   transform: scaleY(1);
 }
+
+/* Pagination popup origin follows its measured above/below placement. */
+.vtg-pagination-popup-enter-active,
+.vtg-pagination-popup-leave-active {
+  transition:
+    opacity var(--vtg-pagination-motion-duration) var(--vtg-pagination-motion-easing),
+    transform var(--vtg-pagination-motion-duration) var(--vtg-pagination-motion-easing);
+}
+
+.vtg-pagination-popup-enter-from,
+.vtg-pagination-popup-leave-to {
+  opacity: 0;
+  transform: scaleY(0.8);
+}
+
+.vtg-pagination-popup-leave-active {
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vtg-pagination-popup-enter-active,
+  .vtg-pagination-popup-leave-active {
+    transition: none;
+  }
+}

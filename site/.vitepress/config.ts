@@ -32,6 +32,7 @@ const zhTheme = {
         text: '功能',
         items: [
           { text: '排序', link: '/guide/sorting' },
+          { text: '分页', link: '/guide/pagination' },
           { text: '筛选', link: '/guide/filtering' },
           { text: '行选择', link: '/guide/selection' },
           { text: '展开行', link: '/guide/expandable-rows' },
@@ -109,7 +110,10 @@ const enTheme = {
       },
       {
         text: 'Reference',
-        items: [{ text: 'API Reference', link: '/en/guide/api-reference' }],
+        items: [
+          { text: 'API Reference', link: '/en/guide/api-reference' },
+          { text: 'Pagination', link: '/en/guide/pagination' },
+        ],
       },
     ],
   },

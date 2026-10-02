@@ -8,3 +8,5 @@ English coverage is expanding. The pages below are available in English; the res
 
 - [Getting started](/en/guide/getting-started) — install, pick a style mode and initialize the plugin.
 - [API Reference](/en/guide/api-reference) — props, column fields, events, slots and the summary components.
+
+- [Pagination](/en/guide/pagination) — local/remote data, controlled state, advanced configuration, migration, themes and locales.

@@ -4,6 +4,11 @@ export const router = createRouter({
   history: createWebHashHistory(),
   routes: [
     {
+      path: '/pagination',
+      name: 'pagination',
+      component: () => import('./pages/PaginationPage.vue'),
+    },
+    {
       path: '/',
       redirect: '/basic',
     },

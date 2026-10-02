@@ -455,8 +455,8 @@ export default defineComponent({
             selectionItems = [
               {
                 key: '__vtg_select_all__',
-                text: tableLocale?.selection?.selectAll ?? '全选当页',
-                onSelect: () => tableContext.toggleAll?.(true),
+                text: tableLocale?.selection?.selectAll ?? '全选所有',
+                onSelect: () => tableContext.toggleAll?.(true, true),
               },
               {
                 key: '__vtg_select_invert__',
@@ -474,8 +474,8 @@ export default defineComponent({
               if (item === SELECTION_ALL) {
                 return {
                   key: '__vtg_select_all__',
-                  text: tableLocale?.selection?.selectAll ?? '全选当页',
-                  onSelect: () => tableContext.toggleAll?.(true),
+                  text: tableLocale?.selection?.selectAll ?? '全选所有',
+                  onSelect: () => tableContext.toggleAll?.(true, true),
                 }
               }
               if (item === SELECTION_INVERT) {

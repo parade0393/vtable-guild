@@ -193,3 +193,7 @@ app.use(createVTableGuild({ cssMode: 'tailwind4' }))
 - [Table CSS 变量参考](/guide/theme-tokens)
 - [预设与语言](/guide/presets-and-locales)
 - [安装与使用](/guide/installation)
+
+## 分页主题
+
+通过 `theme.pagination` 覆盖分页 slots（`root`、`pages`、`item`、`active`、`controls`、`input`、`select`、`popup`、`option`、`optionActive`、`total`、`icon`）及 `size` / `align` variants。实例可用 `pagination.class` / `style`。[分页示例](/guide/pagination)。

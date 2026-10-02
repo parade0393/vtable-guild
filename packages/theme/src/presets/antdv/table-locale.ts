@@ -21,7 +21,7 @@ export const antdvTableLocale = {
     text: '加载中...',
   },
   selection: {
-    selectAll: '全选当页',
+    selectAll: '全选所有',
     selectInvert: '反选当页',
     selectNone: '清空所有',
   },
@@ -48,7 +48,7 @@ export const antdvTableEnUSLocale = {
     text: 'Loading...',
   },
   selection: {
-    selectAll: 'Select current page',
+    selectAll: 'Select all data',
     selectInvert: 'Invert current page',
     selectNone: 'Clear all',
   },

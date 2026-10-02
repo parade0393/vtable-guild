@@ -19,7 +19,7 @@
 ### 如果你正在实现具体功能
 
 - 数据交互：
-  [排序](/guide/sorting)、[筛选](/guide/filtering)、[行选择](/guide/selection)
+  [排序](/guide/sorting)、[筛选](/guide/filtering)、[分页](/guide/pagination)、[行选择](/guide/selection)
 - 数据层级：
   [展开行](/guide/expandable-rows)、[树形表格](/guide/tree-table)
 - 大表格体验：

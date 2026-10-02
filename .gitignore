@@ -40,6 +40,9 @@ coverage
 # Vitest
 __screenshots__/
 
+# Playwright CLI snapshots
+.playwright-cli/
+
 # VitePress
 site/.vitepress/cache
 site/.vitepress/dist

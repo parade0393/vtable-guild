@@ -2,6 +2,7 @@ import {
   computed,
   defineComponent,
   inject,
+  nextTick,
   onBeforeUnmount,
   onMounted,
   provide,
@@ -32,6 +33,8 @@ import {
 import {
   antdvTableCompatClasses,
   resolveBuiltInTableLocale,
+  resolveBuiltInLocale,
+  paginationZhCN,
   resolveButtonThemePreset,
   resolveCheckboxThemePreset,
   resolveInputThemePreset,
@@ -44,6 +47,9 @@ import {
   type TableSlots,
 } from '@vtable-guild/theme'
 import { useColumns, useSorter, useFilter, useSelection } from '../composables'
+import { usePagination } from '../composables/usePagination'
+import type { TablePaginationConfig, TablePaginationState } from '../types/pagination'
+import TablePagination from './TablePagination'
 import { applyColumnOrder, filterVisibleColumns } from '../composables/useColumnDisplay'
 import { getEllipsisConfig } from '../utils/cell'
 import { getRootCompatClass } from '../utils/compat'
@@ -161,6 +167,10 @@ function filterResponsiveColumns<TRecord extends Record<string, unknown>>(
 export default defineComponent({
   name: 'VTable',
   props: {
+    pagination: {
+      type: [Boolean, Object] as PropType<false | TablePaginationConfig>,
+      default: false,
+    },
     dataSource: { type: Array as PropType<TableRecord[]>, default: () => [] },
     columns: { type: Array as PropType<ColumnsType<TableRecord>>, default: () => [] },
     columnOrder: { type: Array as PropType<Key[]>, default: undefined },
@@ -500,7 +510,9 @@ export default defineComponent({
           emit('change', getAllFilters(), sorterResult, {
             action: 'sort',
             currentDataSource: processedData,
+            ...paginationExtra(),
           })
+          scrollToFirstRow()
         },
       })
 
@@ -509,10 +521,13 @@ export default defineComponent({
       columns: () => dataLeafColumns.value,
       onFilterChange(filters) {
         const processedData = getProcessedData()
+        const requestedPagination = pagination.resetForFilter()
         emit('change', filters, sorterResult.value, {
           action: 'filter',
           currentDataSource: processedData,
+          ...paginationExtra(requestedPagination),
         })
+        scrollToFirstRow()
       },
     })
 
@@ -525,6 +540,58 @@ export default defineComponent({
     }
 
     const processedData = computed(() => getProcessedData())
+
+    const pagination = usePagination({
+      pagination: () => props.pagination,
+      data: () => processedData.value,
+      onChange(state) {
+        emit('change', getAllFilters(), sorterResult.value, {
+          action: 'paginate',
+          currentDataSource: processedData.value,
+          pagination: state,
+        })
+        scrollToFirstRow()
+      },
+    })
+    function paginationExtra(state?: TablePaginationState) {
+      return pagination.enabled.value ? { pagination: state ?? pagination.state.value } : {}
+    }
+    const paginationLocale = computed(() => ({
+      ...paginationZhCN,
+      ...resolveBuiltInLocale(effectiveThemePreset.value, effectiveLocaleName.value)?.pagination,
+      ...effectiveLocales.value[effectiveLocaleName.value]?.pagination,
+      ...globalContext?.localeOverrides?.pagination,
+      ...pagination.config.value.locale,
+    }))
+    const virtualBodyRef = ref<{ scrollToTop: () => void } | null>(null)
+    function scrollToFirstRow() {
+      const enabled = props.scroll?.scrollToFirstRowOnChange ?? pagination.enabled.value
+      if (!enabled) return
+      void nextTick(() => {
+        if (virtualEnabled.value) virtualBodyRef.value?.scrollToTop()
+        else if (bodyWrapRef.value) bodyWrapRef.value.scrollTop = 0
+      })
+    }
+    function renderPagination(area: 'top' | 'bottom') {
+      if (!pagination.enabled.value || pagination.state.value.total === 0) return null
+      const positions = pagination.config.value.position ?? ['bottomRight']
+      const position = positions.find((position) => position.startsWith(area))
+      if (!position) return null
+      const align = position.slice(area.length).toLowerCase() as 'left' | 'center' | 'right'
+      return (
+        <TablePagination
+          key={area}
+          config={pagination.config.value}
+          state={pagination.state.value}
+          locale={paginationLocale.value}
+          align={align}
+          tableSize={props.size}
+          narrow={matchedResponsiveBreakpoints.value.has('xs')}
+          getPopupContainer={props.getPopupContainer}
+          onChange={pagination.change}
+        />
+      )
+    }
 
     // ---- 行 key 解析 ----
     function getRowKeyFn(record: Record<string, unknown>, index: number): Key {
@@ -552,6 +619,8 @@ export default defineComponent({
       indentSize: treeIndentSize,
     } = useTreeData({
       data: () => processedData.value,
+      pageData: () => pagination.pageData.value,
+      preserveStateOnDataChange: () => pagination.enabled.value,
       childrenColumnName: () => props.childrenColumnName,
       indentSize: () => props.indentSize,
       getRowKey: getRowKeyFn,
@@ -579,7 +648,7 @@ export default defineComponent({
 
     /** Final display data — flat records after tree expansion */
     const displayData = computed(() => {
-      if (!isTreeData.value) return processedData.value
+      if (!isTreeData.value) return pagination.pageData.value
       return treeFlattenData.value.map((row) => row.record)
     })
 
@@ -599,11 +668,13 @@ export default defineComponent({
       getRowKey: getRowKeyFn,
       data: () => processedData.value,
       visibleData: () => displayData.value,
+      paginate: () => pagination.enabled.value,
       childrenColumnName: () => props.childrenColumnName,
       onSelectionChange() {
         emit('change', getAllFilters(), sorterResult.value, {
           action: 'select',
           currentDataSource: displayData.value,
+          ...paginationExtra(),
         })
       },
     })
@@ -612,7 +683,9 @@ export default defineComponent({
     const { isExpanded: expIsExpanded, toggleExpand: expToggleExpand } = useExpand({
       expandable: () => props.expandable as Expandable<Record<string, unknown>> | undefined,
       getRowKey: getRowKeyFn,
-      data: () => displayData.value,
+      data: () => (pagination.enabled.value ? processedData.value : displayData.value),
+      childrenColumnName: () => props.childrenColumnName,
+      initializeNewRows: () => pagination.enabled.value,
     })
 
     const isRowExpandable = (record: Record<string, unknown>): boolean => {
@@ -1285,6 +1358,7 @@ export default defineComponent({
         // Virtual scroll body
         const virtualBody = virtualEnabled.value ? (
           <VirtualTableBody
+            ref={virtualBodyRef}
             dataSource={displayData.value}
             columns={displayColumns.value}
             tbodyClass={themeSlots.tbody()}
@@ -1380,6 +1454,7 @@ export default defineComponent({
               rootCompatClass.value,
             )}
           >
+            {renderPagination('top')}
             {titleContent && <div class={themeSlots.title()}>{titleContent}</div>}
             <div
               ref={wrapperRef}
@@ -1401,6 +1476,7 @@ export default defineComponent({
               {loadingOverlay}
             </div>
             {footerContent && <div class={themeSlots.footer()}>{footerContent}</div>}
+            {renderPagination('bottom')}
           </div>
         )
       }
@@ -1437,6 +1513,7 @@ export default defineComponent({
 
       return (
         <div class={cn(themeSlots.root(), rootCompatClass.value)}>
+          {renderPagination('top')}
           {titleContent && <div class={themeSlots.title()}>{titleContent}</div>}
           <Scrollbar
             ref={wrapperScrollbarRef}
@@ -1447,6 +1524,7 @@ export default defineComponent({
             {tableContent}
           </Scrollbar>
           {footerContent && <div class={themeSlots.footer()}>{footerContent}</div>}
+          {renderPagination('bottom')}
         </div>
       )
     }

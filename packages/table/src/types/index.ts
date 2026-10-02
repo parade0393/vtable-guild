@@ -24,6 +24,12 @@ export type {
 } from './column'
 
 export type { ColumnType as TableColumnType } from './column'
+export type {
+  TablePaginationConfig,
+  TablePaginationState,
+  TablePaginationPosition,
+  PaginationItemType,
+} from './pagination'
 export type { ColumnGroupType as TableColumnGroupType } from './column'
 export type { ColumnsType as TableColumnsType } from './column'
 

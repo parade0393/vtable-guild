@@ -9,6 +9,38 @@
 
 :where(:root),
 [data-vtg-preset='antdv'] {
+  --vtg-pagination-size: 32px;
+  --vtg-pagination-size-sm: 24px;
+  --vtg-pagination-gap: 8px;
+  --vtg-pagination-margin: 16px;
+  --vtg-pagination-radius: 6px;
+  --vtg-pagination-input-width: 50px;
+  --vtg-pagination-border: transparent;
+  --vtg-pagination-bg: transparent;
+  --vtg-pagination-hover-bg: var(--color-text-hover-bg);
+  --vtg-pagination-hover-color: var(--color-on-surface);
+  --vtg-pagination-active-hover-color: var(--color-primary-hover);
+  --vtg-pagination-option-hover-bg: var(--color-control-item-hover-bg);
+  --vtg-pagination-slash-margin: 2px;
+  --vtg-pagination-focus-shadow: 0 0 0 2px rgb(5 145 255 / 10%);
+  --vtg-pagination-motion-duration: 0.2s;
+  --vtg-pagination-motion-easing: cubic-bezier(0.23, 1, 0.32, 1);
+  --vtg-pagination-simple-input-width: 63px;
+  --vtg-pagination-select-padding: 9px;
+  --vtg-pagination-icon-size: 12px;
+  --vtg-pagination-active-weight: 600;
+  --vtg-pagination-active-disabled-bg: rgb(0 0 0 / 15%);
+  --vtg-pagination-active-bg: var(--color-surface);
+  --vtg-pagination-active-color: var(--color-primary);
+  --vtg-pagination-active-border: var(--color-primary);
+  --vtg-pagination-popup-z: 1050;
+  --vtg-pagination-popup-radius: 8px;
+  --vtg-pagination-option-height: 32px;
+  --vtg-pagination-option-active-color: var(--color-on-surface);
+  --vtg-pagination-option-active-bg: var(--vtg-table-row-selected-bg);
+  --vtg-pagination-popup-shadow:
+    0 6px 16px rgb(0 0 0 / 8%), 0 3px 6px -4px rgb(0 0 0 / 12%), 0 9px 28px 8px rgb(0 0 0 / 5%);
+
   /* ===== 语义 token — antdv 设计体系值 ===== */
 
   /* 排版 */
@@ -92,6 +124,7 @@
 
   /* 筛选下拉选项 hover 背景 */
   --color-control-item-hover-bg: rgb(0 0 0 / 4%);
+  --color-text-hover-bg: rgb(0 0 0 / 6%);
 
   /* 筛选下拉选项选中态背景 */
   --color-control-item-active-bg: #e6f4ff;
@@ -133,6 +166,8 @@
 :where(.dark),
 .dark [data-vtg-preset='antdv'],
 [data-vtg-preset='antdv'].dark {
+  --vtg-pagination-active-disabled-bg: rgb(255 255 255 / 15%);
+
   /* ===== 语义 token 暗色值 — 只改语义 token，组件 token 自动跟随 ===== */
   --color-surface: #141414;
   --color-surface-hover: #1d1d1d;
@@ -170,6 +205,7 @@
 
   /* 筛选下拉选项 hover 背景 */
   --color-control-item-hover-bg: rgb(255 255 255 / 8%);
+  --color-text-hover-bg: rgb(255 255 255 / 12%);
 
   /* 筛选下拉选项选中态背景 */
   --color-control-item-active-bg: #111a2c;

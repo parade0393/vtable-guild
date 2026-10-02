@@ -27,6 +27,7 @@ import {
 | Prop                 | 类型                                                             | 默认值       | 说明                                                                       |
 | -------------------- | ---------------------------------------------------------------- | ------------ | -------------------------------------------------------------------------- |
 | `dataSource`         | `TRecord[]`                                                      | `[]`         | 表格数据源。                                                               |
+| `pagination`         | `false \| TablePaginationConfig`                                 | `false`      | 传 `{}` 启用本地或远程分页，见[分页](/guide/pagination)。                  |
 | `columns`            | [`TableColumnsType<TRecord>`](/guide/type-reference#columnstype) | `[]`         | 列配置，支持叶子列、列组和列占位常量。                                     |
 | `columnOrder`        | [`Key[]`](/guide/type-reference#key)                             | -            | 列显示顺序，见[列显示与列顺序](/guide/column-display#列顺序-columnorder)。 |
 | `rowKey`             | `string \| (record) => Key`                                      | -            | 行唯一标识，建议显式传入。                                                 |
@@ -49,14 +50,14 @@ import {
 
 ### 滚动与定位
 
-| Prop                | 类型                                             | 默认值  | 说明                                                                                                                                                                                                     |
-| ------------------- | ------------------------------------------------ | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `scroll`            | `{ x?: number \| string; y?: number \| string }` | -       | 横向和纵向滚动配置；提供 `y` 时形成固定表头滚动区。`y: 'auto'` 表示自动适应内容区（组件内部扣减表头/固定 summary 高度，需父容器有确定高度，见[虚拟滚动](/guide/virtualization#自动高度-scrolly-auto)）。 |
-| `sticky`            | `boolean \| TableSticky`                         | `false` | 粘性表头、摘要行或横向滚动条配置。                                                                                                                                                                       |
-| `virtual`           | `boolean`                                        | `false` | 启用虚拟滚动；需要同时设置 `scroll.y`。                                                                                                                                                                  |
-| `virtualColumn`     | `boolean`                                        | `false` | 横向虚拟化，只渲染视口内的列；需要同时开启 `virtual`。列数很多时才有收益，见[虚拟滚动](/guide/virtualization#横向虚拟化-virtualcolumn)。                                                                 |
-| `rowHeight`         | `number`                                         | -       | 固定行高（px），仅在 `virtual` 下生效。声明后跳过全部行高测量，可视区计算恒为 O(1)。仅当每行实际高度确实等于该值时才可传，见[虚拟滚动](/guide/virtualization#定高快路径-rowheight)。                     |
-| `getPopupContainer` | `(triggerNode) => HTMLElement`                   | -       | 筛选和选择菜单的挂载容器。                                                                                                                                                                               |
+| Prop                | 类型                                                                                 | 默认值  | 说明                                                                                                                                                                                                                                                                                                        |
+| ------------------- | ------------------------------------------------------------------------------------ | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `scroll`            | `{ x?: number \| string; y?: number \| string; scrollToFirstRowOnChange?: boolean }` | -       | 横向和纵向滚动配置；提供 `y` 时形成固定表头滚动区。`y: 'auto'` 表示自动适应内容区（组件内部扣减表头/固定 summary 高度，需父容器有确定高度，见[虚拟滚动](/guide/virtualization#自动高度-scrolly-auto)）。 `scrollToFirstRowOnChange` 控制排序、筛选、分页后的纵向复位，开启分页时默认 true，否则默认 false。 |
+| `sticky`            | `boolean \| TableSticky`                                                             | `false` | 粘性表头、摘要行或横向滚动条配置。                                                                                                                                                                                                                                                                          |
+| `virtual`           | `boolean`                                                                            | `false` | 启用虚拟滚动；需要同时设置 `scroll.y`。                                                                                                                                                                                                                                                                     |
+| `virtualColumn`     | `boolean`                                                                            | `false` | 横向虚拟化，只渲染视口内的列；需要同时开启 `virtual`。列数很多时才有收益，见[虚拟滚动](/guide/virtualization#横向虚拟化-virtualcolumn)。                                                                                                                                                                    |
+| `rowHeight`         | `number`                                                                             | -       | 固定行高（px），仅在 `virtual` 下生效。声明后跳过全部行高测量，可视区计算恒为 O(1)。仅当每行实际高度确实等于该值时才可传，见[虚拟滚动](/guide/virtualization#定高快路径-rowheight)。                                                                                                                        |
+| `getPopupContainer` | `(triggerNode) => HTMLElement`                                                       | -       | 筛选、选择和页大小菜单的挂载容器。                                                                                                                                                                                                                                                                          |
 
 ### 主题与语言
 
@@ -200,6 +201,8 @@ customRender: ({ text, index }) =>
 
 默认批量选择常量见 [SelectionSentinel](/guide/type-reference#selectionsentinel)。
 
+启用分页后，表头全选和反选限定当前页。“全选所有”菜单（`selections: true` 或 `[SELECTION_ALL]`）选择筛选后全部已加载的可选记录。远程分页使用 `preserveSelectedRowKeys: true` 保留跨页 key 和已选记录，不会自动请求未加载页。见[分页与跨页选择](/guide/selection#分页与跨页选择)。
+
 ## Expandable
 
 `expandable` 用于展开行内容。树形数据的展开 props 在 `VTable` 顶层配置。
@@ -224,11 +227,13 @@ customRender: ({ text, index }) =>
 
 | 事件           | 参数                       | 说明                                                                     |
 | -------------- | -------------------------- | ------------------------------------------------------------------------ |
-| `change`       | `(filters, sorter, extra)` | 排序、筛选、选择后的统一事件出口。                                       |
+| `change`       | `(filters, sorter, extra)` | 排序、筛选、选择、分页后的统一事件出口。                                 |
 | `resizeColumn` | `(column, width)`          | 拖拽列宽结束后触发。                                                     |
 | `rowDragEnd`   | `(newData, info)`          | 行拖拽排序结束且顺序有变化时触发，见[行拖拽排序](/guide/row-drag-sort)。 |
 
-`change` 当前不包含 pagination 参数。`extra.action` 取值为 `'sort'`、`'filter'` 或 `'select'`。
+`change` 保留三参数签名。启用分页后增加 `extra.pagination`；`extra.action` 支持 `'sort'`、`'filter'`、`'select'`、`'paginate'`。
+
+排序、筛选、分页事件的 `extra.currentDataSource` 为分页前处理后的数据；选择事件为当前页展示数据。远程场景仅包含已加载记录。
 
 ```ts
 function handleChange(filters, sorter, extra) {
@@ -270,3 +275,7 @@ function handleChange(filters, sorter, extra) {
 - [ui Slot 参考](/guide/ui-slots-reference)
 - [排序](/guide/sorting)
 - [筛选](/guide/filtering)
+
+## Pagination
+
+`pagination?: false | TablePaginationConfig`，默认关闭，传 `{}` 启用。[完整配置与示例](/guide/pagination)。`scroll.scrollToFirstRowOnChange?: boolean` 控制排序、筛选、分页后的纵向复位，启用分页时默认 true，其他场景默认保持原行为。

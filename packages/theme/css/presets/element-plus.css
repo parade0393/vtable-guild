@@ -12,6 +12,37 @@
  */
 
 [data-vtg-preset='element-plus'] {
+  --vtg-pagination-size: 32px;
+  --vtg-pagination-size-sm: 24px;
+  --vtg-pagination-gap: 8px;
+  --vtg-pagination-margin: 16px;
+  --vtg-pagination-radius: 2px;
+  --vtg-pagination-input-width: 50px;
+  --vtg-pagination-border: transparent;
+  --vtg-pagination-bg: transparent;
+  --vtg-pagination-hover-bg: transparent;
+  --vtg-pagination-hover-color: var(--color-primary);
+  --vtg-pagination-active-hover-color: var(--color-primary-hover);
+  --vtg-pagination-option-hover-bg: var(--color-control-item-hover-bg);
+  --vtg-pagination-slash-margin: 2px;
+  --vtg-pagination-focus-shadow: 0 0 0 1px var(--color-primary) inset;
+  --vtg-pagination-motion-duration: 0.2s;
+  --vtg-pagination-motion-easing: cubic-bezier(0.23, 1, 0.32, 1);
+  --vtg-pagination-simple-input-width: 63px;
+  --vtg-pagination-select-padding: 8px;
+  --vtg-pagination-icon-size: 14px;
+  --vtg-pagination-active-weight: 500;
+  --vtg-pagination-active-disabled-bg: var(--color-bg-disabled);
+  --vtg-pagination-active-bg: transparent;
+  --vtg-pagination-active-color: var(--color-primary);
+  --vtg-pagination-active-border: transparent;
+  --vtg-pagination-popup-z: 1050;
+  --vtg-pagination-popup-radius: 4px;
+  --vtg-pagination-option-height: 32px;
+  --vtg-pagination-option-active-color: var(--color-primary);
+  --vtg-pagination-option-active-bg: var(--color-surface-hover);
+  --vtg-pagination-popup-shadow: 0 6px 16px rgb(0 0 0 / 12%);
+
   /* ===== 语义 token — element-plus 设计体系值 ===== */
 
   /* 排版 */

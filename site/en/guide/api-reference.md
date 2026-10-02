@@ -29,14 +29,15 @@ import {
 
 ### Data and structure
 
-| Prop                 | Type                                                             | Default      | Description                                                                  |
-| -------------------- | ---------------------------------------------------------------- | ------------ | ---------------------------------------------------------------------------- |
-| `dataSource`         | `TRecord[]`                                                      | `[]`         | Table data source.                                                           |
-| `columns`            | [`TableColumnsType<TRecord>`](/guide/type-reference#columnstype) | `[]`         | Column configuration: leaf columns, column groups and sentinel constants.    |
-| `columnOrder`        | [`Key[]`](/guide/type-reference#key)                             | -            | Column display order. See [column display](/guide/column-display) (Chinese). |
-| `rowKey`             | `string \| (record) => Key`                                      | -            | Unique row identity; passing it explicitly is recommended.                   |
-| `childrenColumnName` | `string`                                                         | `'children'` | Child field name for tree data.                                              |
-| `indentSize`         | `number`                                                         | `15`         | Tree data indent width in px.                                                |
+| Prop                 | Type                                                             | Default      | Description                                                                             |
+| -------------------- | ---------------------------------------------------------------- | ------------ | --------------------------------------------------------------------------------------- |
+| `dataSource`         | `TRecord[]`                                                      | `[]`         | Table data source.                                                                      |
+| `pagination`         | `false \| TablePaginationConfig`                                 | `false`      | Pass `{}` to enable local or remote pagination; see [pagination](/en/guide/pagination). |
+| `columns`            | [`TableColumnsType<TRecord>`](/guide/type-reference#columnstype) | `[]`         | Column configuration: leaf columns, column groups and sentinel constants.               |
+| `columnOrder`        | [`Key[]`](/guide/type-reference#key)                             | -            | Column display order. See [column display](/guide/column-display) (Chinese).            |
+| `rowKey`             | `string \| (record) => Key`                                      | -            | Unique row identity; passing it explicitly is recommended.                              |
+| `childrenColumnName` | `string`                                                         | `'children'` | Child field name for tree data.                                                         |
+| `indentSize`         | `number`                                                         | `15`         | Tree data indent width in px.                                                           |
 
 ### Visuals and layout
 
@@ -54,14 +55,14 @@ import {
 
 ### Scrolling and positioning
 
-| Prop                | Type                                             | Default | Description                                                                                                                                                                                                                                                                                                                                                |
-| ------------------- | ------------------------------------------------ | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `scroll`            | `{ x?: number \| string; y?: number \| string }` | -       | Horizontal and vertical scroll config; providing `y` creates a fixed-header scroll area. A numeric `y` sets a fixed viewport; `y: 'auto'` fills a parent with a definite height and deducts the header and external summary. In `virtual` mode, other strings must be positive pixel values; relative units fall back to 400px with a development warning. |
-| `sticky`            | `boolean \| TableSticky`                         | `false` | Sticky header, summary or horizontal scrollbar config.                                                                                                                                                                                                                                                                                                     |
-| `virtual`           | `boolean`                                        | `false` | Enable virtual scrolling; requires `scroll.y`.                                                                                                                                                                                                                                                                                                             |
-| `virtualColumn`     | `boolean`                                        | `false` | Horizontal virtualization: render only columns in the viewport; requires `virtual`. Pays off with many columns, see [virtualization](/guide/virtualization) (Chinese).                                                                                                                                                                                     |
-| `rowHeight`         | `number`                                         | -       | Fixed row height (px), only in `virtual` mode. Declaring it skips all row measurement and makes viewport math O(1) — only pass it if every row truly has that height.                                                                                                                                                                                      |
-| `getPopupContainer` | `(triggerNode) => HTMLElement`                   | -       | Mount container for filter and selection menus.                                                                                                                                                                                                                                                                                                            |
+| Prop                | Type                                                                                 | Default | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ------------------- | ------------------------------------------------------------------------------------ | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `scroll`            | `{ x?: number \| string; y?: number \| string; scrollToFirstRowOnChange?: boolean }` | -       | Horizontal and vertical scroll config; providing `y` creates a fixed-header scroll area. A numeric `y` sets a fixed viewport; `y: 'auto'` fills a parent with a definite height and deducts the header and external summary. In `virtual` mode, other strings must be positive pixel values; relative units fall back to 400px with a development warning. `scrollToFirstRowOnChange` resets vertical scroll after sort/filter/paginate; defaults to true with pagination and false otherwise. |
+| `sticky`            | `boolean \| TableSticky`                                                             | `false` | Sticky header, summary or horizontal scrollbar config.                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `virtual`           | `boolean`                                                                            | `false` | Enable virtual scrolling; requires `scroll.y`.                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `virtualColumn`     | `boolean`                                                                            | `false` | Horizontal virtualization: render only columns in the viewport; requires `virtual`. Pays off with many columns, see [virtualization](/guide/virtualization) (Chinese).                                                                                                                                                                                                                                                                                                                         |
+| `rowHeight`         | `number`                                                                             | -       | Fixed row height (px), only in `virtual` mode. Declaring it skips all row measurement and makes viewport math O(1) — only pass it if every row truly has that height.                                                                                                                                                                                                                                                                                                                          |
+| `getPopupContainer` | `(triggerNode) => HTMLElement`                                                       | -       | Mount container for filter, selection and page-size menus.                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 
 ### Theming and locale
 
@@ -205,6 +206,8 @@ Column groups do not receive leaf-column behaviors such as sorting, filtering, `
 
 Default batch-selection constants: see [SelectionSentinel](/guide/type-reference#selectionsentinel) (Chinese).
 
+With pagination enabled, the header checkbox and invert selection affect the current page. The “Select all data” menu (`selections: true` or `[SELECTION_ALL]`) selects all loaded, selectable records after filtering. Use `preserveSelectedRowKeys: true` to retain selected keys and records across remote pages; unloaded pages are never fetched automatically. See [pagination](/en/guide/pagination).
+
 ## Expandable
 
 `expandable` configures expandable row content. Tree-data expand props live at the `VTable` top level.
@@ -229,11 +232,13 @@ Default batch-selection constants: see [SelectionSentinel](/guide/type-reference
 
 | Event          | Payload                    | Description                                                                                                     |
 | -------------- | -------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `change`       | `(filters, sorter, extra)` | Unified event after sorting, filtering and selection.                                                           |
+| `change`       | `(filters, sorter, extra)` | Unified event after sorting, filtering, selection and pagination.                                               |
 | `resizeColumn` | `(column, width)`          | Fired after a column resize drag ends.                                                                          |
 | `rowDragEnd`   | `(newData, info)`          | Fired when row drag sorting finishes with a changed order, see [row drag sort](/guide/row-drag-sort) (Chinese). |
 
-`change` currently has no pagination payload. `extra.action` is `'sort'`, `'filter'` or `'select'`.
+`change` keeps its three arguments. Enabled pagination adds `extra.pagination`; actions are `'sort'`, `'filter'`, `'select'` and `'paginate'`.
+
+`extra.currentDataSource` contains processed data before pagination for sort/filter/paginate, and displayed page data for selection. Remote data is limited to loaded records.
 
 ```ts
 function handleChange(filters, sorter, extra) {
@@ -275,3 +280,7 @@ function handleChange(filters, sorter, extra) {
 - [ui slot reference](/guide/ui-slots-reference) (Chinese)
 - [Sorting](/guide/sorting) (Chinese)
 - [Filtering](/guide/filtering) (Chinese)
+
+## Pagination
+
+`pagination?: false | TablePaginationConfig` defaults to disabled. Pass `{}` to enable. See [configuration and examples](/en/guide/pagination). `scroll.scrollToFirstRowOnChange?: boolean` controls vertical scroll reset on sort/filter/paginate; enabled pagination defaults to true, other tables retain their previous behavior.

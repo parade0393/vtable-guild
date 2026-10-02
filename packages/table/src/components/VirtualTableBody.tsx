@@ -60,9 +60,10 @@ export default defineComponent({
       default: 'hover',
     },
   },
-  setup(props) {
+  setup(props, { expose }) {
     const tableContext = inject(TABLE_CONTEXT_KEY, {} as TableContext)
     const virtualListRef = ref<ListRef>()
+    expose({ scrollToTop: () => virtualListRef.value?.scrollTo({ top: 0 }) })
 
     /** 当前横向滚动偏移。与 Filler 的 `marginLeft: -offsetX` 同源。 */
     const offsetX = ref(0)

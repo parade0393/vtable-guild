@@ -10,6 +10,7 @@ import type { RadioThemeConfig } from './radio'
 import type { InputThemeConfig } from './input'
 import type { TooltipThemeConfig } from './tooltip'
 import type { ScrollbarThemeConfig } from './scrollbar'
+import type { PaginationThemeConfig } from './pagination'
 
 declare module '@vtable-guild/core' {
   interface VTableGuildThemeOverridesMap {
@@ -20,5 +21,6 @@ declare module '@vtable-guild/core' {
     input: ThemeOverrideConfig<InputThemeConfig>
     tooltip: ThemeOverrideConfig<TooltipThemeConfig>
     scrollbar: ThemeOverrideConfig<ScrollbarThemeConfig>
+    pagination: ThemeOverrideConfig<PaginationThemeConfig>
   }
 }

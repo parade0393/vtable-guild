@@ -210,7 +210,7 @@ export interface TableContext {
   /** 切换某行选中状态 */
   toggleRow?: (record: Record<string, unknown>, index: number, nativeEvent?: MouseEvent) => void
   /** 全选/取消全选 */
-  toggleAll?: (selected: boolean) => void
+  toggleAll?: (selected: boolean, allData?: boolean) => void
   /** 全选状态 */
   allCheckedState?: () => 'all' | 'partial' | 'none'
   /** 获取行 key */

@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
+import { effectScope, nextTick, ref, shallowRef } from 'vue'
 import { useSelection } from './useSelection'
 import type { RowSelection } from '../types'
 
@@ -30,6 +31,60 @@ const treeData: TreeRow[] = [
 ]
 
 describe('useSelection', () => {
+  it('preserves controlled off-page records until the parent accepts a clear request', async () => {
+    const scope = effectScope()
+    const data = shallowRef([strictData[0]])
+    const selectedRowKeys = ref(['1'])
+    const onChange = vi.fn()
+    const api = scope.run(() =>
+      useSelection<DemoRow>({
+        rowSelection: () => ({
+          selectedRowKeys: selectedRowKeys.value,
+          preserveSelectedRowKeys: true,
+          onChange,
+        }),
+        getRowKey: (record) => record.key,
+        data: () => data.value,
+        visibleData: () => data.value,
+        paginate: () => true,
+      }),
+    )!
+    try {
+      data.value = [strictData[1]]
+      await nextTick()
+      api.clearSelection()
+      expect(onChange).toHaveBeenLastCalledWith([], [])
+      expect(api.isSelected('1')).toBe(true)
+
+      // The parent has not accepted the clear request, so row 1 is still selected.
+      api.toggleRow(strictData[1], 0)
+      expect(onChange).toHaveBeenLastCalledWith(
+        ['1', '2'],
+        expect.arrayContaining([strictData[0], strictData[1]]),
+      )
+
+      selectedRowKeys.value = ['1', '2']
+      data.value = []
+      await nextTick()
+      api.toggleAll(true)
+      expect(onChange).toHaveBeenLastCalledWith(
+        ['1', '2'],
+        expect.arrayContaining([strictData[0], strictData[1]]),
+      )
+
+      // Once the parent accepts clearing, old off-page records must be evicted.
+      api.clearSelection()
+      selectedRowKeys.value = []
+      await nextTick()
+      selectedRowKeys.value = ['1']
+      await nextTick()
+      api.toggleAll(true)
+      expect(onChange).toHaveBeenLastCalledWith(['1'], [])
+    } finally {
+      scope.stop()
+    }
+  })
+
   it('toggles rows and batch operations in strict checkbox mode', () => {
     const onChange = vi.fn()
     const onSelectAll = vi.fn()

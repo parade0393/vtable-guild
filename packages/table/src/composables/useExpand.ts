@@ -12,9 +12,24 @@ export function useExpand(options: {
   expandable: () => Expandable | undefined
   getRowKey: (record: Record<string, unknown>, index: number) => Key
   data: () => Record<string, unknown>[]
+  childrenColumnName?: () => string | undefined
+  initializeNewRows?: () => boolean
 }): UseExpandReturn {
   const internalKeys = ref<Key[]>([])
   let initialized = false
+  const initializedKeys = new Set<Key>()
+  function collectKeys(records: Record<string, unknown>[]) {
+    const keys: Key[] = []
+    function walk(items: Record<string, unknown>[]) {
+      for (const record of items) {
+        keys.push(options.getRowKey(record, keys.length))
+        const children = record[options.childrenColumnName?.() ?? 'children']
+        if (Array.isArray(children)) walk(children)
+      }
+    }
+    walk(records)
+    return keys
+  }
 
   // Initialize from defaultExpandedRowKeys or defaultExpandAllRows
   watch(
@@ -23,7 +38,10 @@ export function useExpand(options: {
       if (initialized || !exp) return
       initialized = true
       if (exp.defaultExpandAllRows) {
-        internalKeys.value = options.data().map((r, i) => options.getRowKey(r, i))
+        internalKeys.value = options.initializeNewRows?.()
+          ? collectKeys(options.data())
+          : options.data().map((r, i) => options.getRowKey(r, i))
+        internalKeys.value.forEach((key) => initializedKeys.add(key))
       } else if (exp.defaultExpandedRowKeys) {
         internalKeys.value = [...exp.defaultExpandedRowKeys]
       }
@@ -35,6 +53,23 @@ export function useExpand(options: {
     const exp = options.expandable()
     return exp?.expandedRowKeys !== undefined
   })
+
+  watch(
+    () =>
+      options.initializeNewRows?.() && options.expandable()?.defaultExpandAllRows
+        ? options.data()
+        : null,
+    (data) => {
+      if (!data || isControlled.value) return
+      const next = new Set(internalKeys.value)
+      for (const key of collectKeys(data)) {
+        if (!initializedKeys.has(key)) next.add(key)
+        initializedKeys.add(key)
+      }
+      internalKeys.value = [...next]
+    },
+    { immediate: true },
+  )
 
   const expandedKeySet = computed(() => {
     const exp = options.expandable()

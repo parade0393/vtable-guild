@@ -31,6 +31,7 @@ export type {
   ThemePresetName,
   VTableGuildCssMode,
   VTableGuildLocale,
+  VTableGuildPaginationLocale,
   VTableGuildTableLocale,
   VTableGuildTableHeaderLocale,
   VTableGuildTableFilterDropdownLocale,

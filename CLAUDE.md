@@ -62,9 +62,9 @@ Layers merge via `useTheme()` composable using `cn()` (tailwind-merge) for confl
 - All table sub-components are written in **TSX**. The single exception is `VTable.vue`, a generic bridge: `Table.tsx` runs monomorphically over `Record<string, unknown>`, and the SFC layer restores the caller's `TRecord` for props, events and slot params
 - State managed via composables: `useSorter()`, `useFilter()`, `useColumns()`
 - Supports both **controlled** (`column.sortOrder`) and **uncontrolled** (`column.defaultSortOrder`) modes
-- Single `change` event emitted with `(filters, sorter, extra)` — mirrors ant-design-vue API
+- Single `change` event emitted with `(filters, sorter, extra)`; pagination is opt-in via a config object and adds `extra.pagination` and the `'paginate'` action, rather than Ant's first callback argument
 - Cross-component data via `provide/inject` with `TABLE_CONTEXT_KEY`
-- Data pipeline: `dataSource → filterData() → sortData() → processedData → flattenTree() → displayData`. `processedData` is what `extra.currentDataSource` and the `title` / `footer` callbacks see; `displayData` is what actually renders
+- Data pipeline: `dataSource → filterData() → sortData() → processedData → pagination.pageData → flattenTree() → displayData`. Pagination slices root records before tree expansion. Sort/filter/paginate events expose `processedData` as `extra.currentDataSource`; selection events and `title` / `footer` callbacks receive `displayData`
 
 ### CSS Variables
 

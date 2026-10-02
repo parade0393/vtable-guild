@@ -9,7 +9,7 @@
 vtable-guild 是一个 Vue 3 Table 组件库，目标：
 
 - **API 对齐** ant-design-vue Table（排序、筛选、选择、展开、树形、固定列、虚拟滚动等）。
-  明确**不做分页**——由使用方自带，`change` 事件签名为 `(filters, sorter, extra)`。
+  分页默认关闭，显式配置启用；在筛选、排序后按根记录切片。`change` 保留 `(filters, sorter, extra)`，状态通过 `extra.pagination` 提供。
 - **样式系统** 基于 tailwind-variants，参考 Nuxt UI 的三层主题覆盖机制
 - **多预设** 同一套表格逻辑贴合不同 UI 体系的视觉，当前内置 `antdv`（默认）与 `element-plus`
 - **多包架构** pnpm workspace monorepo，按职责拆分
@@ -276,9 +276,11 @@ colSpan/rowSpan 合并，用渲染函数比模板直观得多。
 dataSource
   → filterData()    useFilter
   → sortData()      useSorter
-  = processedData   ← change 事件的 extra.currentDataSource、title / footer 的入参
+  = processedData   ← sort / filter / paginate 事件的 extra.currentDataSource
+  → 分页根记录       usePagination（默认关闭；远程模式保留当前页记录）
+  = pageData
   → flattenTree()   useTreeData（仅树形数据；非树形时直接透传）
-  = displayData     ← 实际渲染的行
+  = displayData     ← 实际渲染的行、title / footer 入参、select 事件的 extra.currentDataSource
 ```
 
 ### 5.4 虚拟化
@@ -318,6 +320,6 @@ dataSource
 | 粘性表头              | `sticky`                                                                        | 已实现                                    |
 | 自定义行 / 单元格属性 | `customRow` / `customHeaderRow` / `customCell` / `customHeaderCell`             | 已实现                                    |
 | 列占位常量            | `EXPAND_COLUMN` / `SELECTION_COLUMN`                                            | 已实现                                    |
-| 分页                  | —                                                                               | **明确不做**，由使用方自带                |
+| 分页                  | `pagination` / `extra.pagination`                                               | 显式启用，支持本地 / 远程与双预设         |
 | 声明式列              | `<VTableColumn>` / `<VTableColumnGroup>`                                        | **未实现**，列只能通过 `columns` 数组配置 |
 | 键盘可达性            | `tabindex` / `keydown`                                                          | **未实现**                                |

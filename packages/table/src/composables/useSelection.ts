@@ -21,6 +21,7 @@ export interface UseSelectionOptions<TRecord extends Record<string, unknown>> {
   getRowKey: (record: TRecord, index: number) => Key
   data: () => TRecord[]
   visibleData: () => TRecord[]
+  paginate?: () => boolean
   childrenColumnName?: () => string | undefined
   onSelectionChange?: () => void
 }
@@ -94,6 +95,7 @@ export function useSelection<TRecord extends Record<string, unknown>>(
   const innerSelectedKeys = ref<Set<Key>>(new Set()) as Ref<Set<Key>>
   const hasInitializedDefaultKeys = ref(false)
   const lastShiftAnchorKey = ref<Key | null>(null)
+  const preservedRecords = new Map<Key, TRecord>()
 
   watch(
     () => rowSelection()?.defaultSelectedRowKeys,
@@ -122,7 +124,9 @@ export function useSelection<TRecord extends Record<string, unknown>>(
    */
   const allNodes = computed(() => {
     if (!rowSelection()) return []
-    return isTreeSelectionEnabled.value
+    return isTreeSelectionEnabled.value ||
+      (options.paginate?.() &&
+        data().some((record) => Array.isArray(record[childrenColumnName?.() ?? 'children'])))
       ? flattenSelectionNodes({
           data: data(),
           childrenColumnName: childrenColumnName?.() ?? 'children',
@@ -139,6 +143,31 @@ export function useSelection<TRecord extends Record<string, unknown>>(
     allNodes.value.forEach((node) => map.set(node.key, node))
     return map
   })
+
+  watch(
+    [
+      allNodes,
+      () => rowSelection()?.preserveSelectedRowKeys,
+      () => rowSelection()?.selectedRowKeys,
+    ],
+    () => {
+      if (!rowSelection()?.preserveSelectedRowKeys) {
+        preservedRecords.clear()
+        return
+      }
+      const keys = new Set(rowSelection()?.selectedRowKeys ?? innerSelectedKeys.value)
+      for (const key of preservedRecords.keys()) if (!keys.has(key)) preservedRecords.delete(key)
+      for (const node of allNodes.value)
+        if (keys.has(node.key)) preservedRecords.set(node.key, node.record)
+    },
+    { immediate: true, flush: 'sync' },
+  )
+  watch(
+    () => visibleData(),
+    () => {
+      lastShiftAnchorKey.value = null
+    },
+  )
 
   const rootNodeKeys = computed(() =>
     allNodes.value.filter((node) => node.parentKey === undefined).map((node) => node.key),
@@ -243,7 +272,14 @@ export function useSelection<TRecord extends Record<string, unknown>>(
   }
 
   function getSelectedRows(keys: Set<Key>): TRecord[] {
-    return allNodes.value.filter((node) => keys.has(node.key)).map((node) => node.record)
+    const rows = allNodes.value.filter((node) => keys.has(node.key)).map((node) => node.record)
+    if (rowSelection()?.preserveSelectedRowKeys) {
+      for (const key of keys) {
+        if (!nodeMap.value.has(key) && preservedRecords.has(key))
+          rows.push(preservedRecords.get(key)!)
+      }
+    }
+    return rows
   }
 
   function getVisibleNodes(): SelectionNode<TRecord>[] {
@@ -294,6 +330,16 @@ export function useSelection<TRecord extends Record<string, unknown>>(
 
   function applyKeys(nextKeys: Set<Key>, triggerChange: boolean) {
     const normalizedKeys = normalizeTreeSelection(nextKeys)
+    if (rowSelection()?.preserveSelectedRowKeys) {
+      // Controlled requests may be rejected or accepted later. Prune their cache
+      // only when the selectedRowKeys watcher observes the accepted state.
+      if (!isControlled()) {
+        for (const key of preservedRecords.keys())
+          if (!normalizedKeys.has(key)) preservedRecords.delete(key)
+      }
+      for (const node of allNodes.value)
+        if (normalizedKeys.has(node.key)) preservedRecords.set(node.key, node.record)
+    }
 
     if (!isControlled()) {
       innerSelectedKeys.value = normalizedKeys
@@ -421,15 +467,20 @@ export function useSelection<TRecord extends Record<string, unknown>>(
     toggleStrictRow(record, index, nativeEvent)
   }
 
-  function toggleAll(selected: boolean): void {
+  function toggleAll(selected: boolean, allData = false): void {
     const sel = rowSelection()
     if (!sel) return
 
-    const selectableNodes = getSelectableNodes()
+    const selectableNodes =
+      options.paginate?.() && !allData ? getVisibleSelectableNodes() : getSelectableNodes()
     const nextKeys = new Set(selectedKeySet.value)
     const changeRows: TRecord[] = []
 
     selectableNodes.forEach((node) => {
+      if (sel.checkStrictly === false) {
+        toggleSubtree(node.key, nextKeys, selected, changeRows)
+        return
+      }
       const hadKey = nextKeys.has(node.key)
 
       if (selected) {

@@ -10,6 +10,7 @@ import type {
   InputThemeConfig,
   TooltipThemeConfig,
   ScrollbarThemeConfig,
+  PaginationThemeConfig,
 } from '@vtable-guild/theme'
 
 declare module '@vtable-guild/core' {
@@ -21,5 +22,6 @@ declare module '@vtable-guild/core' {
     input: ThemeOverrideConfig<InputThemeConfig>
     tooltip: ThemeOverrideConfig<TooltipThemeConfig>
     scrollbar: ThemeOverrideConfig<ScrollbarThemeConfig>
+    pagination: ThemeOverrideConfig<PaginationThemeConfig>
   }
 }

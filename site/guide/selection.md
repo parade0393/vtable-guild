@@ -77,6 +77,16 @@ const rowSelection = computed<RowSelection<UserRow>>(() => ({
 - selections 也可以传入自定义菜单项，用于“只选当前结果”“只选可操作项”等业务动作。
 - hideSelectAll 可以隐藏表头全选入口。
 
+## 分页与跨页选择
+
+开启 `pagination` 后，表头复选框只选择或取消当前页的可选行；反选和 Shift 连选也限定当前页。本地分页切换页码时会保留其他页的选择。
+
+`selections: true` 开启“全选所有 / 反选当页 / 清空所有”菜单，也可通过 `[SELECTION_ALL]` 单独开启“全选所有”。“全选所有”（英文 `Select all data`）选择筛选后全部已加载的可选记录，不受当前页限制。远程分页通常只加载当前页，不会因此请求或选择尚未加载的页。
+
+远程翻页会替换 `dataSource`，需设置 `preserveSelectedRowKeys: true` 保留跨页 key 和已选记录，使 `onChange(keys, rows)` 能返回此前页的选中记录。请为每条记录提供稳定的 `rowKey`。
+
+可在[本地分页示例](/guide/pagination#本地分页)验证表头全选与菜单全选的范围，在[远程分页示例](/guide/pagination#远程分页)验证跨页保留与已选记录回填。
+
 ## 树形数据联动
 
 当 checkStrictly 为 false 时，父子节点会联动：

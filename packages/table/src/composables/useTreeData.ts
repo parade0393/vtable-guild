@@ -18,6 +18,10 @@ export interface FlattenRow<TRecord = Record<string, unknown>> {
 export interface UseTreeDataOptions<TRecord = Record<string, unknown>> {
   /** Data source accessor */
   data: () => TRecord[]
+  /** Optional page roots; state initialization still uses the complete data. */
+  pageData?: () => TRecord[]
+  /** Keep user choices when a remote page replaces the loaded roots. */
+  preserveStateOnDataChange?: () => boolean
   /** Field name for children, defaults to 'children' */
   childrenColumnName?: () => string | undefined
   /** Indent size in pixels, defaults to 15 */
@@ -73,6 +77,8 @@ export function useTreeData<TRecord extends Record<string, unknown> = Record<str
 
   // Expanded keys state (controlled / uncontrolled)
   const internalExpandedKeys = ref<Set<Key>>(new Set())
+  const initializedDefaultKeys = new Set<Key>()
+  let initializedDefaultList = false
 
   // Initialize from defaults
   const isControlled = computed(() => options.expandedRowKeys?.() !== undefined)
@@ -89,7 +95,8 @@ export function useTreeData<TRecord extends Record<string, unknown> = Record<str
 
       if (options.defaultExpandAllRows?.()) {
         // Collect all keys that have children
-        const allKeys = new Set<Key>()
+        const preserve = options.preserveStateOnDataChange?.() === true
+        const allKeys = preserve ? new Set(internalExpandedKeys.value) : new Set<Key>()
         const field = childrenField.value
         let keyCounter = 0
         function collectExpandableKeys(records: TRecord[]) {
@@ -97,7 +104,9 @@ export function useTreeData<TRecord extends Record<string, unknown> = Record<str
             const children = (record as Record<string, unknown>)[field]
             const idx = keyCounter++
             if (Array.isArray(children) && children.length > 0) {
-              allKeys.add(options.getRowKey(record, idx))
+              const key = options.getRowKey(record, idx)
+              if (!preserve || !initializedDefaultKeys.has(key)) allKeys.add(key)
+              initializedDefaultKeys.add(key)
               collectExpandableKeys(children)
             }
           })
@@ -105,7 +114,10 @@ export function useTreeData<TRecord extends Record<string, unknown> = Record<str
         collectExpandableKeys(options.data())
         internalExpandedKeys.value = allKeys
       } else if (options.defaultExpandedRowKeys?.()) {
-        internalExpandedKeys.value = new Set(options.defaultExpandedRowKeys!())
+        if (!options.preserveStateOnDataChange?.() || !initializedDefaultList) {
+          internalExpandedKeys.value = new Set(options.defaultExpandedRowKeys!())
+          initializedDefaultList = true
+        }
       }
     },
     { immediate: true },
@@ -151,7 +163,7 @@ export function useTreeData<TRecord extends Record<string, unknown> = Record<str
 
   // Flatten tree data into visible rows
   const flattenData = computed<FlattenRow<TRecord>[]>(() => {
-    const data = options.data()
+    const data = options.pageData?.() ?? options.data()
     if (!isTreeData.value) {
       // No tree structure — return flat rows with level 0
       return data.map((record) => ({

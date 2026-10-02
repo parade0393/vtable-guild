@@ -21,6 +21,39 @@ function createContainer({
 }
 
 describe('getPopupPositionStyle', () => {
+  it('flips a measured popup above the anchor near the viewport bottom', () => {
+    const bottom = window.innerHeight - 10
+    const rect = { ...anchorRect, top: bottom - 32, bottom }
+    expect(getPopupPositionStyle(rect, document.body, 100, 136)).toMatchObject({
+      top: `${rect.top - 140}px`,
+      transformOrigin: 'bottom center',
+    })
+  })
+
+  it('keeps a measured popup below when it fits and constrains a tall popup', () => {
+    expect(getPopupPositionStyle(anchorRect, 'body', 100, 136)).toMatchObject({
+      top: '44px',
+      transformOrigin: 'top center',
+    })
+    const middle = window.innerHeight / 2
+    const rect = { ...anchorRect, top: middle - 16, bottom: middle + 16 }
+    expect(getPopupPositionStyle(rect, 'body', 100, window.innerHeight)).toMatchObject({
+      top: `${rect.bottom + 4}px`,
+      maxHeight: `${window.innerHeight - rect.bottom - 4}px`,
+    })
+  })
+
+  it('converts flipped coordinates to the custom scrolling container', () => {
+    const container = createContainer({ top: 20, scrollTop: 30 })
+    const bottom = window.innerHeight - 10
+    const rect = { ...anchorRect, top: bottom - 32, bottom }
+    expect(getPopupPositionStyle(rect, container, 100, 136)).toMatchObject({
+      position: 'absolute',
+      top: `${rect.top - 140 - 20 + 30}px`,
+      transformOrigin: 'bottom center',
+    })
+  })
+
   it('positions fixed below the anchor when mounted to body', () => {
     const style = getPopupPositionStyle(anchorRect, 'body', 150)
 

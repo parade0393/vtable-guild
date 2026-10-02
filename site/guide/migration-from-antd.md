@@ -29,8 +29,8 @@ vtable-guild 的设计方向是兼容高频表格使用方式，而不是逐项�
 
 最重要的已知差异是：
 
-- 当前没有内置 pagination。
-- change 事件签名为 (filters, sorter, extra)，不包含 ant-design-vue 里的 pagination 参数。
+- 内置分页默认关闭，传 `pagination` 配置对象启用，详见[分页](/guide/pagination)。
+- `change` 事件签名为 `(filters, sorter, extra)`，启用分页后从 `extra.pagination` 读取分页状态；新增 `extra.action === 'paginate'`。
 - resizeColumn 事件参数顺序为 (column, width)，而 ant-design-vue 文档里的顺序是 (width, column)。
 
 下列以前需要调整、现在已与 ant-design-vue 完全对齐，可直接迁移：
@@ -42,18 +42,18 @@ vtable-guild 的设计方向是兼容高频表格使用方式，而不是逐项�
 
 ## 常见映射
 
-| ant-design-vue                                          | vtable-guild                                                  |
-| ------------------------------------------------------- | ------------------------------------------------------------- |
-| bordered                                                | bordered                                                      |
-| rowSelection                                            | rowSelection                                                  |
-| expandable                                              | expandable                                                    |
-| scroll.x / scroll.y                                     | scroll.x / scroll.y                                           |
-| sorter / sortOrder / defaultSortOrder                   | sorter / sortOrder / defaultSortOrder                         |
-| filters / onFilter                                      | filters / onFilter                                            |
-| pagination / change(pagination, filters, sorter, extra) | 分页自行在页面层处理；change 为 (filters, sorter, extra)      |
-| rowClassName 实现斑马纹                                 | 优先改用 striped                                              |
-| 自行关闭 hover 效果                                     | 优先改用 hoverable                                            |
-| resizable / minWidth / maxWidth                         | 继续使用同名字段；resizeColumn 事件参数顺序为 (column, width) |
+| ant-design-vue                                          | vtable-guild                                                        |
+| ------------------------------------------------------- | ------------------------------------------------------------------- |
+| bordered                                                | bordered                                                            |
+| rowSelection                                            | rowSelection                                                        |
+| expandable                                              | expandable                                                          |
+| scroll.x / scroll.y                                     | scroll.x / scroll.y                                                 |
+| sorter / sortOrder / defaultSortOrder                   | sorter / sortOrder / defaultSortOrder                               |
+| filters / onFilter                                      | filters / onFilter                                                  |
+| pagination / change(pagination, filters, sorter, extra) | 传分页对象启用；change 保留三参数，分页状态从 extra.pagination 读取 |
+| rowClassName 实现斑马纹                                 | 优先改用 striped                                                    |
+| 自行关闭 hover 效果                                     | 优先改用 hoverable                                                  |
+| resizable / minWidth / maxWidth                         | 继续使用同名字段；resizeColumn 事件参数顺序为 (column, width)       |
 
 ## 保留旧的覆盖 CSS（兼容类名）
 
@@ -144,7 +144,7 @@ app.use(
 
 1. 保留原有数据结构和 columns 定义。
 2. 把表格组件替换为 VTable。
-3. 检查 change 回调是否依赖 pagination 参数，如果依赖，需要先从页面逻辑中拆掉。
+3. 检查 change 回调是否依赖 pagination 参数，如果依赖，改为从 extra.pagination 读取。
 4. 把样式补丁中与条纹行、hover 行、边框相关的部分改成对应 props。
 5. 如果页面监听过 resizeColumn，一并确认事件参数顺序是否需要调整。
 6. 确认是否需要 virtual 或 resizable，再逐步开启。

@@ -61,7 +61,6 @@ app.use(createVTableGuild({ themePreset: 'element-plus' }))
 
 写在前面，省得你走到一半才发现：
 
-- **要分页**：没有内置 `pagination`，需要自己接（`change` 事件只带 `filters / sorter / extra`）
 - **要完整编辑引擎、Excel 导出、列拖拽换序、右键菜单**：单元格和整行编辑可通过 [`bodyCell`](https://parade0393.github.io/vtable-guild/guide/editing) 组合，但不内置编辑状态、校验和 Excel 式键盘导航；这些完整企业表格能力仍是 [vxe-table](https://vxetable.cn/) 的主场
 - **有键盘可达性 / 无障碍合规要求**：目前排序头和筛选触发器还不能键盘操作，正在补
 - **只需要一张基础表格**：原生 `a-table` / `el-table` 就够了，不必多引一个依赖
@@ -130,6 +129,8 @@ const dataSource: UserRow[] = [
 排序（受控 / 非受控双轨、多列）· 筛选（多选 / 单选 / 树形 / 搜索 / 自定义面板）· 行选择（checkbox / radio / 批量菜单 / `checkStrictly`）· 展开行 · 树形数据 · 固定列与固定表头 · 多级表头 · 单元格合并 · 列宽拖拽 · 列显示与列顺序（`visible` / `columnOrder`）· 行拖拽排序（`rowDraggable`）· 通过 `bodyCell` 组合单元格与整行编辑 · title / footer / summary · sticky · 虚拟滚动（纵向，外加可选的横向 `virtualColumn` 与定高快路径 `rowHeight`）· 内置 locale（zh-CN / en-US）· `EXPAND_COLUMN` 与 `SELECTION_COLUMN` 占位常量。
 
 每一项在文档站都有**可以直接点的 demo**：[功能索引](https://parade0393.github.io/vtable-guild/guide/)。
+
+内置[分页](https://parade0393.github.io/vtable-guild/guide/pagination)，传 `:pagination="{}"` 启用，默认关闭。支持本地 / 远程分页、受控状态和跨页选择；`change(filters, sorter, extra)` 保留三参数，分页状态从 `extra.pagination` 读取。
 
 ## 样式接入
 
@@ -260,7 +261,7 @@ const columns = [
 - [贡献指南](./CONTRIBUTING.md) —— 本地怎么跑起来、提交规范、什么时候需要加 changeset
 - [安全策略](./SECURITY.md) —— 安全问题请走私密报告通道，不要开公开 issue
 - 提 Bug 时请附一个 [Playground](https://parade0393.github.io/vtable-guild/play/) 复现链接，这是最省双方时间的方式
-- 分页是刻意不做的——本项目定位是表格替换件，不打算长成完整 UI 库
+- 本项目聚焦表格能力，包含可选的内置分页，不扩展为完整 UI 库
 
 ## 致谢
 

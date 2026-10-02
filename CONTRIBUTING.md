@@ -7,7 +7,7 @@
 ## 提问题之前
 
 - **Bug**：请附一个可复现的最小例子。最省事的方式是用 [在线 Playground](https://parade0393.github.io/vtable-guild/play/) 复现后点「分享链接」，把链接贴进 issue。
-- **功能建议**：先说清楚你实际遇到的场景，而不是直接给 API 设计。本项目定位是「ant-design-vue / element-plus 的表格替换件」，不打算长成完整 UI 库，分页等部分能力是刻意不做的。
+- **功能建议**：先说清楚你实际遇到的场景，而不是直接给 API 设计。本项目定位是「ant-design-vue / element-plus 的表格替换件」，聚焦表格能力，包含可选的[内置分页](https://parade0393.github.io/vtable-guild/guide/pagination)，不扩展为完整 UI 库。
 - **用法疑问**：先翻[文档站](https://parade0393.github.io/vtable-guild/)，尤其是 [API Reference](https://parade0393.github.io/vtable-guild/guide/api-reference)。
 
 ## 本地跑起来

@@ -7,6 +7,7 @@ function getColKey(col: ColumnType<Record<string, unknown>>, index: number): Key
 }
 
 export interface ScrollConfig {
+  scrollToFirstRowOnChange?: boolean
   x?: number | string
   /**
    * 纵向滚动高度（启用固定表头）。

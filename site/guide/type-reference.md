@@ -255,7 +255,8 @@ type VTableSorterResult<TRecord> = SorterResultLike<TRecord> | Array<SorterResul
 
 ```ts
 interface TableChangeExtra<TRecord> {
-  action: 'sort' | 'filter' | 'select'
+  action: 'sort' | 'filter' | 'select' | 'paginate'
+  pagination?: TablePaginationState
   currentDataSource: TRecord[]
 }
 ```
@@ -495,3 +496,7 @@ import type { TableSlots, TableThemeConfig } from '@vtable-guild/vtable-guild'
 - [API Reference](/guide/api-reference)
 - [ui Slot 参考](/guide/ui-slots-reference)
 - [三层主题覆盖](/guide/theme-overrides)
+
+## TablePaginationConfig / TablePaginationState
+
+公开导出 `TablePaginationConfig`、`TablePaginationState`、`TablePaginationPosition`、`PaginationItemType`。状态为 `{ current: number; pageSize: number; total: number }`。[配置参考](/guide/pagination)。

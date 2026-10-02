@@ -84,7 +84,7 @@ function buildPrefixedRawContent() {
   for (const dir of sourceDirs) {
     for (const file of listSourceFiles(dir)) {
       const content = readFileSync(file, 'utf8')
-      for (const match of content.matchAll(/[!A-Za-z0-9_:/.[\]()%,#>&-]+/g)) {
+      for (const match of content.matchAll(/[!A-Za-z0-9_:/.[\]()%,#>&=-]+/g)) {
         const candidate = match[0]
         candidates.add(candidate)
         candidates.add(prefixClassCandidate(candidate))

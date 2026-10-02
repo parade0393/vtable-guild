@@ -136,3 +136,7 @@ antdv 预设不声明这个变量，走 `264px` 回退值；element-plus 预设�
 - [三层主题覆盖](/guide/theme-overrides)
 - [ui Slot 参考](/guide/ui-slots-reference)
 - [预设与语言](/guide/presets-and-locales)
+
+## 分页 tokens
+
+双预设支持 `--vtg-pagination-size`、`size-sm`、`gap`、`margin`、`radius`、`input-width`、`border`、`bg`、`active-bg`、`active-color`、`active-border`、`popup-z`、`popup-shadow`（均带 `--vtg-pagination-` 前缀）。颜色引用语义 tokens，自动跟随暗色模式。

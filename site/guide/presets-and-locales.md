@@ -112,3 +112,7 @@ app.use(
 
 - [三层主题覆盖](/guide/theme-overrides)
 - [安装与使用](/guide/installation)
+
+## 分页语言
+
+语言包增加可选 `pagination` 分组，旧语言包无需修改。内置中英文；可用 `localeOverrides.pagination` 全局覆盖，或 `pagination.locale` 实例覆盖（最高优先级）。键包括 `items_per_page`、`jump_to`、`jump_to_confirm`、`page`、`prev_page`、`next_page`、`prev_3` / `next_3`、`prev_5` / `next_5`、`navigation`、`page_size`。

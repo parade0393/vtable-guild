@@ -63,7 +63,6 @@ app.use(createVTableGuild({ themePreset: 'element-plus' }))
 
 Up front, so you don't find out halfway:
 
-- **You need pagination** — there is no built-in `pagination`; wire your own (`change` only carries `filters / sorter / extra`)
 - **You need a full editing engine, Excel export, column reordering or a context menu** — cell and row editing can be composed through [`bodyCell`](https://parade0393.github.io/vtable-guild/guide/editing), but there is no built-in edit state, validation or Excel-style keyboard navigation. Those full enterprise-table capabilities remain [vxe-table](https://vxetable.cn/)'s territory
 - **You have keyboard-accessibility / a11y compliance requirements** — sort headers and filter triggers are not yet keyboard operable; this is being worked on
 - **You just need a plain table** — native `a-table` / `el-table` is enough; don't add a dependency
@@ -132,6 +131,8 @@ To edit code and see it run without installing anything: **[🎮 open the Playgr
 Sorting (controlled / uncontrolled, multi-column) · filtering (multi / single / tree / search / custom dropdown) · row selection (checkbox / radio / batch menu / `checkStrictly`) · expandable rows · tree data · fixed columns and header · grouped headers · cell merging · column resizing · column visibility and order (`visible` / `columnOrder`) · row drag sorting (`rowDraggable`) · cell and row editing composed through `bodyCell` · title / footer / summary · sticky · virtual scrolling (rows, plus opt-in column virtualization via `virtualColumn` and a fixed-height fast path via `rowHeight`) · built-in locales (zh-CN / en-US) · `EXPAND_COLUMN` and `SELECTION_COLUMN` placeholders.
 
 Every one of these has a **live, clickable demo** in the docs: [feature index](https://parade0393.github.io/vtable-guild/guide/).
+
+Built-in [pagination](https://parade0393.github.io/vtable-guild/en/guide/pagination) is disabled by default; pass `:pagination="{}"` to enable local or remote pagination, controlled state and cross-page selection. The event remains `change(filters, sorter, extra)`, with pagination state in `extra.pagination`.
 
 ## Styling setup
 
@@ -262,7 +263,7 @@ Virtual scrolling itself works as advertised: in the same session, both 1k and 1
 - [Contributing guide](./CONTRIBUTING.md) — local setup, commit conventions, when a changeset is needed
 - [Security policy](./SECURITY.md) — report vulnerabilities privately, not via public issues
 - When filing a bug, include a [Playground](https://parade0393.github.io/vtable-guild/play/) reproduction link — it saves everyone time
-- Pagination is deliberately out of scope — this project is a table replacement, not a full UI library
+- The project focuses on table features, including optional built-in pagination, rather than expanding into a full UI library
 
 ## Acknowledgements
 

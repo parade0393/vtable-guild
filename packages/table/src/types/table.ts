@@ -24,6 +24,7 @@ import type {
 } from './column'
 import type { SelectionSentinel } from '../constants'
 import type { TableSlots } from '@vtable-guild/theme'
+import type { TablePaginationConfig, TablePaginationState } from './pagination'
 
 // ---- 展开行类型 ----
 
@@ -163,6 +164,8 @@ export interface TableSlotsDecl<TRecord extends object = Record<string, any>> {
  * Table 组件 Props。
  */
 export interface TableProps<TRecord extends object = Record<string, any>> {
+  /** Explicitly opt in with an object; omitted or false preserves unpaginated behavior. */
+  pagination?: false | TablePaginationConfig
   /** 数据源 */
   dataSource: TRecord[]
   /** 列配置 */
@@ -273,7 +276,7 @@ export interface TableProps<TRecord extends object = Record<string, any>> {
    * - 其他字符串：非虚拟模式下按 CSS max-height 原样生效；**虚拟模式下仅兼容
    *   正数 px（如 `'480px'`）**，`'100%'` / `calc(...)` 等会 dev 告警并回落 400px 视口
    */
-  scroll?: { x?: number | string; y?: number | string }
+  scroll?: { x?: number | string; y?: number | string; scrollToFirstRowOnChange?: boolean }
 
   /** 是否开启虚拟滚动（需同时设置 scroll.y） */
   virtual?: boolean
@@ -342,7 +345,9 @@ export interface SorterResultLike<TRecord extends object = Record<string, any>> 
 /** change 事件中的 extra 参数 */
 export interface TableChangeExtra<TRecord extends object = Record<string, any>> {
   /** 触发变化的来源 */
-  action: 'sort' | 'filter' | 'select'
+  action: 'sort' | 'filter' | 'select' | 'paginate'
+  /** Present only when pagination is enabled. */
+  pagination?: TablePaginationState
   /** 当前显示的数据（经排序/筛选后） */
   currentDataSource: TRecord[]
 }
