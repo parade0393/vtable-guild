@@ -564,6 +564,7 @@ export default defineComponent({
             {!hideSelectAll && hasSelections && (
               <SelectionDropdown
                 items={selectionItems}
+                anchorElement={selectionAnchorRef.value}
                 anchorRect={getSelectionAnchorRect()}
                 popupContainer={resolvePopupContainer(tableContext, selectionAnchorRef.value)}
                 visible={selectionDropdownVisible.value}

@@ -221,6 +221,44 @@ describe('table pagination integration', () => {
     expect(onChange.mock.lastCall?.[1]).toEqual(expect.arrayContaining([rows[0], rows[10]]))
   })
   describe.each(['antdv', 'element-plus'] as const)('%s selection menus', (themePreset) => {
+    it.each(['mousedown', 'touchstart'])(
+      'keeps the menu open for %s on the arrow and closes it outside',
+      async (eventType) => {
+        const w = mount(VTable, {
+          attachTo: document.body,
+          props: {
+            columns: [{ key: 'name', dataIndex: 'name', title: 'Name' }],
+            dataSource: rows,
+            rowKey: 'key',
+            pagination: {},
+            rowSelection: { selections: true },
+          },
+          global: { plugins: [createVTableGuild({ themePreset, locale: 'en-US' })] },
+        })
+        wrappers.push(w)
+        const trigger = w.get('[aria-label="Selection options"]')
+        const getItem = () =>
+          [...document.body.querySelectorAll('li')].find(
+            (node) => node.textContent === 'Select all data',
+          )
+
+        await trigger.trigger('mouseenter')
+        expect(getItem()).toBeDefined()
+        // The actual pointer target is the nested icon, not the trigger span.
+        await trigger.get('svg').trigger(eventType)
+        await trigger.get('svg').trigger('click')
+        expect(getItem()).toBeDefined()
+        expect(w.get('thead [role="checkbox"]').attributes('aria-checked')).toBe('false')
+
+        getItem()!.dispatchEvent(new Event(eventType, { bubbles: true }))
+        await nextTick()
+        expect(getItem()).toBeDefined()
+
+        document.body.dispatchEvent(new Event(eventType, { bubbles: true }))
+        await nextTick()
+        expect(getItem()).toBeUndefined()
+      },
+    )
     it.each([
       { locale: 'zh-CN', text: '全选所有', selections: true as const },
       { locale: 'en-US', text: 'Select all data', selections: [SELECTION_ALL] },

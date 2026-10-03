@@ -31,6 +31,10 @@ export default defineComponent({
       type: Object as PropType<{ top: number; left: number; right: number; bottom: number }>,
       required: true,
     },
+    anchorElement: {
+      type: Object as PropType<HTMLElement | null>,
+      default: null,
+    },
     popupContainer: {
       type: [String, Object] as PropType<string | HTMLElement>,
       default: 'body',
@@ -45,21 +49,27 @@ export default defineComponent({
     const tableContext = inject(TABLE_CONTEXT_KEY, {} as TableContext)
     const dropdownRef = ref<HTMLElement | null>(null)
 
-    function handleMouseDown(e: MouseEvent) {
+    function handleOutsideInteraction(e: MouseEvent | TouchEvent) {
       if (!props.visible) return
-      if (dropdownRef.value && !dropdownRef.value.contains(e.target as Node)) {
+      if (
+        dropdownRef.value &&
+        !dropdownRef.value.contains(e.target as Node) &&
+        !props.anchorElement?.contains(e.target as Node)
+      ) {
         emit('close')
       }
     }
 
     onMounted(() => {
       nextTick(() => {
-        document.addEventListener('mousedown', handleMouseDown)
+        document.addEventListener('mousedown', handleOutsideInteraction)
+        document.addEventListener('touchstart', handleOutsideInteraction, { passive: true })
       })
     })
 
     onBeforeUnmount(() => {
-      document.removeEventListener('mousedown', handleMouseDown)
+      document.removeEventListener('mousedown', handleOutsideInteraction)
+      document.removeEventListener('touchstart', handleOutsideInteraction)
     })
 
     function handleItemClick(item: SelectionDropdownItemDef) {
