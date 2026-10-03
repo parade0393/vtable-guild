@@ -116,6 +116,10 @@ export default defineConfig({
           include: ['src/**/*.test.ts'],
           passWithNoTests: true,
         },
+        // play 自己的 tsconfig / vite.config 都配了 `@/`，测试里不补上就解析不了
+        resolve: {
+          alias: { ...packageAliases, '@': resolve(rootDir, 'play/src') },
+        },
       },
       {
         extends: true,

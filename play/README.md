@@ -37,6 +37,23 @@ pnpm play:dev                                     # 在「CDN」下拉里选「�
 只列出 `>= MIN_SUPPORTED_VTG_VERSION`（见 `src/constants.ts`）的版本——更早的版本没有
 `dist/index.full.mjs`，选了必然白屏。顶栏会把这个限制写出来，不假装能选全部历史版本。
 
+### 默认是「最新」
+
+两个版本下拉的默认值都是 `latest` 哨兵（见 `src/constants.ts` 的 `LATEST`），不是某个写死的
+版本号。真正的版本号要等 npm 版本列表回来才能定，所以：
+
+- 选择持久化存的是 `latest` / 具体版本号，不是解析后的版本号；老数据里的 `null` 按 `latest` 读
+- 版本列表落地前**不挂载 `<Repl>`**，只显示 Loading。否则预览 iframe 会先把兜底版本的产物拉一遍、
+  等列表回来再换一次，表现出来就是「打开时选中的是旧版本，然后跳成新版」
+- 列表请求最多等 3 秒（`useVtgRepl.ts` 的 `VERSION_LOAD_TIMEOUT`），到点先用兜底版本把编辑器开起来，
+  列表真回来后再切，避免一次慢请求把整个 Playground 挂住
+- 「最新」这一项只写哨兵、不解析具体版本号（参考 Element Plus Playground）：列表没回来时也成立，
+  具体指向哪一版看下拉里的第一条
+
+Vue 那一侧额外一点：跟随最新时不给 `@vue/repl` 具体版本号，它会直接用打包进来的 `compiler-sfc`，
+不会为了一个版本号再去 CDN 拉一份；只有用户主动钉了具体版本，才按那个版本去拉编译器。
+运行时版本始终跟着最新走（见 `builtinImportMap` 里的 `effectiveVueVersion`）。
+
 ## 两种链接
 
 | 场景                                 | 形式              | 归属                                          |

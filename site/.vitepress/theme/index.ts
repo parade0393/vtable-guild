@@ -1,7 +1,9 @@
+import { h } from 'vue'
 import DefaultTheme from 'vitepress/theme'
 import type { Theme } from 'vitepress'
 import { createVTableGuild } from '@vtable-guild/vtable-guild'
 import Demo from './components/Demo.vue'
+import DocFeedback from './components/DocFeedback.vue'
 import './style.css'
 
 // 文档站使用 prebuilt 模式（默认 cssMode），与独立 Playground 完全一致：
@@ -12,6 +14,7 @@ import '@vtable-guild/vtable-guild/css/style'
 
 export default {
   extends: DefaultTheme,
+  Layout: () => h(DefaultTheme.Layout, null, { 'doc-footer-before': () => h(DocFeedback) }),
   enhanceApp({ app }) {
     app.use(createVTableGuild())
     app.component('Demo', Demo)
