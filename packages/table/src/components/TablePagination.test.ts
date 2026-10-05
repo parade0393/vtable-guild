@@ -457,6 +457,31 @@ describe('pagination controls', () => {
     await trigger.trigger('keydown', { key: 'Escape' })
     expect(trigger.attributes('aria-expanded')).toBe('false')
   })
+  it.each(['clip', 'hidden', 'auto', 'scroll'])(
+    'keeps a body-mounted size popup within an overflow:%s ancestor',
+    async (overflow) => {
+      const w = pager({ showSizeChanger: true })
+      const card = w.element.parentElement!
+      card.style.overflowY = overflow
+      vi.spyOn(card, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 50, 800, 250))
+      const trigger = w.get('[aria-haspopup="listbox"]')
+      let rect = new DOMRect(100, 250, 100, 32)
+      vi.spyOn(trigger.element, 'getBoundingClientRect').mockImplementation(() => rect)
+      vi.spyOn(HTMLElement.prototype, 'scrollHeight', 'get').mockReturnValue(136)
+      await trigger.trigger('click')
+      await nextTick()
+      const popup = document.body.querySelector<HTMLElement>('[role="listbox"]')!
+      expect(card.contains(popup)).toBe(false)
+      expect(popup.style.top).toBe('110px')
+      expect(popup.style.transformOrigin).toBe('bottom center')
+      rect = new DOMRect(100, 80, 100, 32)
+      card.dispatchEvent(new Event('scroll'))
+      await nextTick()
+      expect(popup.style.top).toBe('116px')
+      expect(popup.style.transformOrigin).toBe('top center')
+      expect(popup.style.maxHeight).toBe('184px')
+    },
+  )
   it('offers page size options in the configured container with keyboard support', async () => {
     const host = document.createElement('div')
     document.body.append(host)

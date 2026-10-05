@@ -18,6 +18,8 @@ export default defineConfigWithVueTs(
     '**/dist/**',
     '**/dist-ssr/**',
     '**/coverage/**',
+    // Playwright 临时诊断脚本和截图，不属于项目源码。
+    'output/playwright/**',
     // Vite 依赖预打包的临时产物，不是源码
     '**/.vitepress/cache/**',
     // agent 工具在 .claude/worktrees/ 下创建的 worktree 是整个仓库的副本。

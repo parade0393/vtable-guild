@@ -15,7 +15,7 @@ import {
 import { cnByCssMode, VTABLE_GUILD_INJECTION_KEY } from '@vtable-guild/core'
 import { DownOutlinedIcon } from '@vtable-guild/icons'
 import type { PaginationSlots } from '@vtable-guild/theme'
-import { getPopupPositionStyle } from '../utils/popupPosition'
+import { getPopupPositionStyle, getPopupVerticalBoundary } from '../utils/popupPosition'
 
 export default defineComponent({
   name: 'PaginationSizeSelect',
@@ -57,7 +57,13 @@ export default defineComponent({
       if (!trigger.value || !open.value) return
       const rect = trigger.value.getBoundingClientRect()
       position.value = {
-        ...getPopupPositionStyle(rect, container.value, rect.width, popup.value?.scrollHeight),
+        ...getPopupPositionStyle(
+          rect,
+          container.value,
+          rect.width,
+          popup.value?.scrollHeight,
+          getPopupVerticalBoundary(trigger.value),
+        ),
         minWidth: `${rect.width}px`,
         zIndex: 'var(--vtg-pagination-popup-z)',
       }

@@ -7,6 +7,22 @@ export interface PopupAnchorRect {
   bottom: number
 }
 
+/** Available vertical space around a trigger, including ancestors that clip its content. */
+export function getPopupVerticalBoundary(
+  trigger: HTMLElement,
+): Pick<PopupAnchorRect, 'top' | 'bottom'> {
+  let top = 0
+  let bottom = window.innerHeight
+  for (let ancestor = trigger.parentElement; ancestor; ancestor = ancestor.parentElement) {
+    const style = getComputedStyle(ancestor)
+    if (!/^(auto|scroll|hidden|clip|overlay)$/.test(style.overflowY)) continue
+    const rect = ancestor.getBoundingClientRect()
+    top = Math.max(top, rect.top + (parseFloat(style.borderTopWidth) || 0))
+    bottom = Math.min(bottom, rect.bottom - (parseFloat(style.borderBottomWidth) || 0))
+  }
+  return { top, bottom }
+}
+
 /**
  * 解析下拉层挂载容器：优先表级 getPopupContainer，回退 document.body。
  */
@@ -34,11 +50,15 @@ export function getPopupPositionStyle(
   container: HTMLElement | string,
   minimumWidth: number,
   popupHeight?: number,
+  boundary?: Pick<PopupAnchorRect, 'top' | 'bottom'>,
 ): Record<string, string> {
   const viewportWidth = typeof window === 'undefined' ? 0 : window.innerWidth
   const viewportHeight = typeof window === 'undefined' ? 0 : window.innerHeight
-  const below = Math.max(0, viewportHeight - anchorRect.bottom - 4)
-  const above = Math.max(0, anchorRect.top - 4)
+  const below = Math.max(
+    0,
+    Math.min(viewportHeight, boundary?.bottom ?? viewportHeight) - anchorRect.bottom - 4,
+  )
+  const above = Math.max(0, anchorRect.top - Math.max(0, boundary?.top ?? 0) - 4)
   const flip = popupHeight !== undefined && popupHeight > below && above > below
   const height = Math.min(popupHeight ?? 0, flip ? above : below)
   const top = flip ? anchorRect.top - height - 4 : anchorRect.bottom + 4

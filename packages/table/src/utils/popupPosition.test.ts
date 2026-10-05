@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { getPopupPositionStyle } from './popupPosition'
+import { afterEach, describe, expect, it } from 'vitest'
+import { getPopupPositionStyle, getPopupVerticalBoundary } from './popupPosition'
 
 const anchorRect = { top: 10, left: 100, right: 140, bottom: 40 }
 
@@ -20,7 +20,48 @@ function createContainer({
   return el
 }
 
+describe('getPopupVerticalBoundary', () => {
+  afterEach(() => {
+    document.body.innerHTML = ''
+  })
+
+  it('intersects nested clipping ancestors with the viewport and ignores visible overflow', () => {
+    const outer = document.createElement('div')
+    const inner = document.createElement('div')
+    const visible = document.createElement('div')
+    const trigger = document.createElement('button')
+    outer.style.overflowY = 'auto'
+    inner.style.overflowY = 'clip'
+    visible.style.overflowY = 'visible'
+    outer.getBoundingClientRect = () => new DOMRect(0, 100, 800, window.innerHeight)
+    inner.getBoundingClientRect = () => new DOMRect(0, 50, 800, 300)
+    visible.getBoundingClientRect = () => new DOMRect(0, 200, 800, 32)
+    document.body.append(outer)
+    outer.append(inner)
+    inner.append(visible)
+    visible.append(trigger)
+    expect(getPopupVerticalBoundary(trigger)).toEqual({ top: 100, bottom: 350 })
+    inner.style.overflowY = 'visible'
+    expect(getPopupVerticalBoundary(trigger)).toEqual({ top: 100, bottom: window.innerHeight })
+    outer.style.overflowY = 'visible'
+    expect(getPopupVerticalBoundary(trigger)).toEqual({ top: 0, bottom: window.innerHeight })
+  })
+})
+
 describe('getPopupPositionStyle', () => {
+  it('uses clipping bounds before converting to a custom container coordinate system', () => {
+    const container = createContainer({ top: 50, scrollTop: 20 })
+    const rect = { ...anchorRect, top: 250, bottom: 282 }
+    expect(
+      getPopupPositionStyle(rect, container, 100, 136, { top: 50, bottom: 300 }),
+    ).toMatchObject({
+      position: 'absolute',
+      top: '80px',
+      maxHeight: '196px',
+      transformOrigin: 'bottom center',
+    })
+  })
+
   it('flips a measured popup above the anchor near the viewport bottom', () => {
     const bottom = window.innerHeight - 10
     const rect = { ...anchorRect, top: bottom - 32, bottom }

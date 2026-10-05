@@ -77,6 +77,9 @@ export default defineComponent({
       get simple() {
         return !!props.config.simple
       },
+      get disabled() {
+        return !!props.config.disabled
+      },
       get class() {
         return props.config.class
       },

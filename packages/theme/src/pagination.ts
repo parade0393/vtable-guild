@@ -45,7 +45,21 @@ export const paginationTheme = {
       true: { root: '[--vtg-pagination-size:var(--vtg-pagination-size-sm)]' },
       false: {},
     },
+    disabled: {
+      true: {},
+      false: {},
+    },
   },
+  compoundVariants: [
+    {
+      simple: true,
+      disabled: true,
+      class: {
+        simpleControls: 'text-[color:var(--color-text-disabled)]',
+        go: 'text-[color:var(--color-text-disabled)]',
+      },
+    },
+  ],
   defaultVariants: { size: 'default', align: 'right' },
 } as const satisfies ThemeConfig
 
