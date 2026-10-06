@@ -38,7 +38,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="play-shell">
-    <header class="play-nav">
+    <header v-if="$route.name !== 'issue-49'" class="play-nav">
       <div>
         <p class="play-nav__eyebrow">Playground pages</p>
         <h1>功能矩阵路由实验场</h1>
@@ -59,6 +59,9 @@ onBeforeUnmount(() => {
         <RouterLink class="play-tab" active-class="is-active" to="/prebuilt">prebuilt</RouterLink>
         <RouterLink class="play-tab" active-class="is-active" to="/antdv-full"
           >antdv一比一</RouterLink
+        >
+        <RouterLink class="play-tab" active-class="is-active" to="/issue-49"
+          >#49 minWidth</RouterLink
         >
         <RouterLink class="play-tab" active-class="is-active" to="/agent-demo"
           >Agent Demo</RouterLink

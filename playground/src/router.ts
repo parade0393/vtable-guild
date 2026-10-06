@@ -68,6 +68,11 @@ export const router = createRouter({
       component: () => import('./pages/AntdvFull.vue'),
     },
     {
+      path: '/issue-49',
+      name: 'issue-49',
+      component: () => import('./pages/MinWidthIssuePage.vue'),
+    },
+    {
       path: '/agent-demo',
       name: 'agent-demo',
       component: () => import('./pages/AgentDemoPage.vue'),
