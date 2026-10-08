@@ -1,9 +1,9 @@
 import { mount, type VueWrapper } from '@vue/test-utils'
-import { nextTick, h, cloneVNode, isVNode } from 'vue'
+import { nextTick, h, cloneVNode, isVNode, ref } from 'vue'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { createVTableGuild } from '@vtable-guild/core'
-import { paginationEnUS } from '@vtable-guild/theme'
-import TablePagination, { paginationItems } from './TablePagination'
+import { createVTableGuild, VTABLE_GUILD_INJECTION_KEY } from '@vtable-guild/core'
+import { paginationEnUS, elementPlusPaginationEnUS } from '@vtable-guild/theme'
+import TablePagination, { paginationItems, elementPlusPaginationItems } from './TablePagination'
 import VTable from './VTable.vue'
 import { SELECTION_ALL } from '../constants'
 import type { TablePaginationConfig, TableProps } from '../types'
@@ -29,10 +29,18 @@ function table(props: Partial<TableProps<(typeof rows)[number]>> = {}) {
   wrappers.push(w)
   return w
 }
-function pager(config: TablePaginationConfig = {}) {
+function pager(
+  config: TablePaginationConfig = {},
+  themePreset: 'antdv' | 'element-plus' = 'antdv',
+) {
   const w = mount(TablePagination, {
     attachTo: document.body,
-    props: { config, state: { current: 3, pageSize: 10, total: 200 }, locale: paginationEnUS },
+    props: {
+      config,
+      state: { current: 3, pageSize: 10, total: 200 },
+      locale: themePreset === 'element-plus' ? elementPlusPaginationEnUS : paginationEnUS,
+    },
+    global: { plugins: [createVTableGuild({ themePreset })] },
   })
   wrappers.push(w)
   return w
@@ -330,8 +338,157 @@ describe('table pagination integration', () => {
       expect(w.get('nav').attributes('aria-label')).toBe('Local pager')
     },
   )
+  it('updates pagination behavior and locale when the table preset changes', async () => {
+    const preset = ref<'antdv' | 'element-plus'>('antdv')
+    const w = mount(VTable, {
+      props: {
+        columns: [{ key: 'name', dataIndex: 'name', title: 'Name' }],
+        dataSource: rows.slice(0, 10),
+        locale: 'en-US',
+        size: 'middle',
+        pagination: { total: 200, showQuickJumper: true },
+      },
+      global: {
+        provide: {
+          [VTABLE_GUILD_INJECTION_KEY as symbol]: {
+            get themePreset() {
+              return preset.value
+            },
+            cssMode: 'tailwind4',
+            theme: {},
+            locale: 'en-US',
+            locales: {},
+            localeOverrides: {},
+          },
+        },
+      },
+    })
+    wrappers.push(w)
+    expect(w.find('[aria-label="Page 6"]').exists()).toBe(false)
+    expect(w.get('input').element.value).toBe('')
+    preset.value = 'element-plus'
+    await nextTick()
+    expect(w.find('[aria-label="Page 6"]').exists()).toBe(true)
+    expect(w.get('input').element.value).toBe('1')
+    expect(w.find('[aria-label="Go to previous page"]').exists()).toBe(true)
+    expect(
+      w
+        .get('nav')
+        .classes()
+        .some((c) => c.includes('--vtg-pagination-size:')),
+    ).toBe(false)
+    await w.setProps({ locale: 'zh-CN' })
+    expect(w.find('[aria-label="前往"]').exists()).toBe(true)
+    await w.setProps({
+      pagination: {
+        total: 200,
+        showQuickJumper: true,
+        locale: { jump_to: '定位', page: '自定义页' },
+      },
+    })
+    expect(w.find('[aria-label="定位"]').exists()).toBe(true)
+    expect(w.get('nav').text()).toContain('自定义页')
+  })
 })
 describe('pagination controls', () => {
+  it('matches Element Plus page windows at the first, middle and last pages', async () => {
+    const pages = (current: number, count = 7) =>
+      elementPlusPaginationItems(current, 20, count).map(({ page, type }) =>
+        type === 'page' ? page : type,
+      )
+    expect(pages(1)).toEqual([1, 2, 3, 4, 5, 6, 'jump-next', 20])
+    expect(pages(4)).toEqual(pages(1))
+    expect(pages(5)).toEqual([1, 'jump-prev', 3, 4, 5, 6, 7, 'jump-next', 20])
+    expect(pages(17)).toEqual([1, 'jump-prev', 15, 16, 17, 18, 19, 20])
+    expect(pages(3, 5)).toEqual([1, 2, 3, 4, 'jump-next', 20])
+    expect(elementPlusPaginationItems(1, 1)).toEqual([{ page: 1, type: 'page' }])
+    expect(elementPlusPaginationItems(1, 7)).toHaveLength(7)
+    expect(elementPlusPaginationItems(50000, 1000000)).toHaveLength(9)
+    const w = pager({ showLessItems: true }, 'element-plus')
+    await w.get('[aria-label="Next 3 pages"]').trigger('click')
+    expect(w.emitted('change')).toEqual([[6]])
+  })
+  it('uses native Element Plus jump input while retaining Ant configuration defaults', async () => {
+    const w = pager({ showQuickJumper: true }, 'element-plus')
+    expect(w.get('input').element.value).toBe('3')
+    expect(w.text()).not.toContain('Total')
+    expect(w.text()).not.toContain('Page')
+    await w.get('[aria-current="page"]').trigger('click')
+    await w.get('input').trigger('keydown', { key: 'Enter' })
+    expect(w.emitted('change')).toBeUndefined()
+    await w.get('input').setValue('8.9')
+    await w.get('input').trigger('blur')
+    expect(w.emitted('change')).toEqual([[8]])
+    expect(w.get('input').element.value).toBe('3')
+    await w.setProps({ state: { current: 8, pageSize: 10, total: 200 } })
+    expect(w.get('input').element.value).toBe('8')
+    await w.get('input').setValue('999')
+    await w.get('input').trigger('keydown', { key: 'Enter' })
+    expect(w.emitted('change')!.at(-1)).toEqual([20])
+    await w.get('[aria-haspopup="listbox"]').trigger('click')
+    expect(
+      [...document.body.querySelectorAll('[role="option"]')].map((node) => node.textContent),
+    ).toEqual(['10/page', '20/page', '50/page', '100/page'])
+    expect(document.body.querySelector('[role="listbox"]')?.getAttribute('data-vtg-preset')).toBe(
+      'element-plus',
+    )
+    await w.setProps({ config: { disabled: true, showQuickJumper: true } })
+    expect(document.body.querySelector('[role="listbox"]')).toBeNull()
+    expect(w.get('input').attributes('disabled')).toBeDefined()
+    await w.get('input').trigger('keydown', { key: 'Enter' })
+    expect(w.emitted('change')).toHaveLength(2)
+  })
+  it.each(['antdv', 'element-plus'] as const)(
+    'keeps %s visibility defaults and simple extensions',
+    async (preset) => {
+      const w = pager({}, preset)
+      expect(w.find('input').exists()).toBe(false)
+      expect(w.find('[aria-haspopup="listbox"]').exists()).toBe(true)
+      await w.setProps({ state: { current: 1, pageSize: 10, total: 50 } })
+      expect(w.find('[aria-haspopup="listbox"]').exists()).toBe(false)
+      await w.setProps({
+        config: {
+          simple: true,
+          showTotal: () => 'Total',
+          showSizeChanger: true,
+          showQuickJumper: { goButton: 'Go' },
+        },
+      })
+      expect(w.text()).not.toContain('Total')
+      expect(w.find('[aria-haspopup="listbox"]').exists()).toBe(false)
+      await w.get('input').setValue('3')
+      await w
+        .findAll('button')
+        .find((button) => button.text() === 'Go')!
+        .trigger('click')
+      expect(w.emitted('change')).toEqual([[3]])
+    },
+  )
+  it.each(['prebuilt', 'tailwind4'] as const)(
+    'uses Element Plus theme overrides in %s mode',
+    (cssMode) => {
+      const w = mount(TablePagination, {
+        props: {
+          config: { size: 'small', disabled: true, showQuickJumper: true },
+          state: { current: 3, pageSize: 10, total: 200 },
+          locale: elementPlusPaginationEnUS,
+        },
+        global: { plugins: [createVTableGuild({ themePreset: 'element-plus', cssMode })] },
+      })
+      wrappers.push(w)
+      const prefix = cssMode === 'prebuilt' ? 'vtg-' : ''
+      expect(w.get('[aria-current="page"]').classes()).toContain(`${prefix}cursor-default`)
+      expect(w.get('[aria-current="page"]').classes()).not.toContain(`${prefix}cursor-pointer`)
+      expect(w.get('[aria-haspopup="listbox"]').classes()).toContain(`${prefix}border`)
+      expect(w.get('[aria-haspopup="listbox"]').classes()).not.toContain(`${prefix}border-0`)
+      expect(
+        w
+          .get('nav')
+          .classes()
+          .some((c) => c.includes('--vtg-pagination-font-size:var(--vtg-pagination-font-size-sm)')),
+      ).toBe(true)
+    },
+  )
   it.each(['prebuilt', 'tailwind4'] as const)(
     'keeps active colors free of conflicting base styles in %s mode',
     (cssMode) => {

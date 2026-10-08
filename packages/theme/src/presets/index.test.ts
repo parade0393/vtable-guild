@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { resolveBuiltInLocale, resolveBuiltInTableLocale, resolveThemePreset } from './index'
 import { tableTheme } from '../table'
+import { resolvePaginationThemePreset } from '../pagination'
 
 describe('theme presets', () => {
   it('exposes complete preset structures for supported UI libraries', () => {
@@ -31,5 +32,14 @@ describe('theme presets', () => {
     expect(resolveBuiltInTableLocale('antdv', 'en-US')?.header.sortTriggerAsc).toBeTruthy()
     expect(resolveBuiltInLocale('element-plus', 'zh-CN')?.table.empty.text).toBeTruthy()
     expect(tableTheme).toBe(resolveThemePreset('antdv').table)
+  })
+  it('resolves pagination themes and wording for each preset', () => {
+    expect(resolvePaginationThemePreset('element-plus')).toBe(
+      resolveThemePreset('element-plus').pagination,
+    )
+    expect(resolvePaginationThemePreset()).toBe(resolveThemePreset('antdv').pagination)
+    expect(resolveBuiltInLocale('element-plus', 'zh-CN')?.pagination?.jump_to).toBe('前往')
+    expect(resolveBuiltInLocale('antdv', 'zh-CN')?.pagination?.jump_to).toBe('跳至')
+    expect(resolveBuiltInLocale('element-plus', 'en-US')?.pagination?.items_per_page).toBe('/page')
   })
 })

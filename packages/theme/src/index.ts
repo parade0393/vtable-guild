@@ -36,6 +36,9 @@ export { tooltipTheme } from './tooltip'
 export { scrollbarTheme } from './scrollbar'
 export {
   paginationTheme,
+  elementPlusPaginationTheme,
+  elementPlusPaginationZhCN,
+  elementPlusPaginationEnUS,
   resolvePaginationThemePreset,
   paginationZhCN,
   paginationEnUS,

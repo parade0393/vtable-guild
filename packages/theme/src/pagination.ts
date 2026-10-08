@@ -66,11 +66,54 @@ export const paginationTheme = {
 export type PaginationThemeConfig = typeof paginationTheme
 export type PaginationSlots = keyof typeof paginationTheme.slots
 
-// Both presets share the structure; preset CSS supplies their visual tokens.
+export const elementPlusPaginationTheme = {
+  ...paginationTheme,
+  slots: {
+    ...paginationTheme.slots,
+    root: 'flex shrink-0 items-center gap-[var(--vtg-pagination-gap)] py-[var(--vtg-pagination-margin)] text-[length:var(--vtg-pagination-font-size)] text-[color:var(--color-on-surface)]',
+    pages: 'flex items-center gap-[var(--vtg-pagination-page-gap)]',
+    item: `${paginationTheme.slots.item} border-0 focus-visible:outline-1 focus-visible:-outline-offset-1 aria-disabled:text-[color:var(--color-text-placeholder)] disabled:text-[color:var(--color-text-placeholder)]`,
+    active:
+      'font-[number:var(--vtg-pagination-active-weight)] text-[color:var(--vtg-pagination-active-color)] bg-[color:var(--vtg-pagination-active-bg)] cursor-default [&:not([aria-disabled=true]):hover]:text-[color:var(--vtg-pagination-active-color)] [&:not([aria-disabled=true]):hover]:bg-[color:var(--vtg-pagination-active-bg)] aria-disabled:text-[color:var(--color-muted)] aria-disabled:bg-[color:var(--vtg-pagination-active-disabled-bg)] disabled:text-[color:var(--color-muted)] disabled:bg-[color:var(--vtg-pagination-active-disabled-bg)]',
+    jump: 'group relative [&:not([aria-disabled=true]):hover]:text-[color:var(--color-primary)]',
+    controls:
+      'flex items-center gap-[var(--vtg-pagination-control-gap)] text-[color:var(--color-text-regular)]',
+    total: 'whitespace-nowrap text-[color:var(--color-text-regular)]',
+    input: `${paginationTheme.slots.input} rounded-[var(--vtg-input-border-radius)] text-[color:var(--color-text-regular)] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none enabled:hover:border-[color:var(--color-border-hover)] enabled:focus:border-[color:var(--color-primary)] enabled:focus:shadow-none`,
+    select: `${paginationTheme.slots.select} border w-[var(--vtg-pagination-select-width)] rounded-[var(--vtg-input-border-radius)] text-[color:var(--color-text-regular)] [&:not([aria-disabled=true]):hover]:border-[color:var(--color-border-hover)] aria-expanded:shadow-none [&_svg]:transition-transform aria-expanded:[&_svg]:rotate-180`,
+    popup: `${paginationTheme.slots.popup} border border-[color:var(--vtg-border-color-lighter)] py-[var(--vtg-pagination-popup-padding)] px-0`,
+    option:
+      'flex min-h-[var(--vtg-pagination-option-height)] cursor-pointer items-center px-5 text-[color:var(--color-text-regular)] outline-none hover:bg-[color:var(--vtg-pagination-option-hover-bg)] focus:bg-[color:var(--vtg-pagination-option-hover-bg)]',
+    optionActive:
+      'font-[number:var(--vtg-pagination-active-weight)] text-[color:var(--vtg-pagination-option-active-color)] bg-transparent hover:bg-[color:var(--vtg-pagination-option-hover-bg)] focus:bg-[color:var(--vtg-pagination-option-hover-bg)]',
+  },
+  variants: {
+    ...paginationTheme.variants,
+    size: {
+      default: {},
+      small: {
+        root: '[--vtg-pagination-size:var(--vtg-pagination-size-sm)] [--vtg-pagination-font-size:var(--vtg-pagination-font-size-sm)] [--vtg-pagination-select-width:var(--vtg-pagination-select-width-sm)]',
+      },
+    },
+  },
+  compoundVariants: [
+    ...paginationTheme.compoundVariants,
+    {
+      disabled: true,
+      class: {
+        total: 'text-[color:var(--color-text-placeholder)]',
+        controls: 'text-[color:var(--color-text-placeholder)]',
+      },
+    },
+  ],
+} as const satisfies ThemeConfig
+
 export function resolvePaginationThemePreset(
-  _preset: ThemePresetName = 'antdv',
+  preset: ThemePresetName = 'antdv',
 ): PaginationThemeConfig {
-  return paginationTheme
+  return (
+    preset === 'element-plus' ? elementPlusPaginationTheme : paginationTheme
+  ) as PaginationThemeConfig
 }
 
 export const paginationZhCN: VTableGuildPaginationLocale = {
@@ -101,4 +144,16 @@ export const paginationEnUS: VTableGuildPaginationLocale = {
   next_3: 'Next 3 pages',
   navigation: 'Pagination',
   page_size: 'Page size',
+}
+
+export const elementPlusPaginationZhCN: VTableGuildPaginationLocale = {
+  ...paginationZhCN,
+  jump_to: '前往',
+}
+
+export const elementPlusPaginationEnUS: VTableGuildPaginationLocale = {
+  ...paginationEnUS,
+  items_per_page: '/page',
+  prev_page: 'Go to previous page',
+  next_page: 'Go to next page',
 }

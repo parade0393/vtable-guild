@@ -1,7 +1,14 @@
 // packages/theme/src/presets/index.ts
 
 import type { BuiltInLocaleName, ThemePreset } from './types'
-import { paginationTheme, paginationZhCN, paginationEnUS } from '../pagination'
+import {
+  paginationTheme,
+  paginationZhCN,
+  paginationEnUS,
+  elementPlusPaginationTheme,
+  elementPlusPaginationZhCN,
+  elementPlusPaginationEnUS,
+} from '../pagination'
 import type {
   LocaleName,
   ThemePresetName,
@@ -59,11 +66,11 @@ const presetMap: Record<ThemePresetName, ThemePreset> = {
     input: elementPlusInputTheme,
     tooltip: elementPlusTooltipTheme,
     scrollbar: elementPlusScrollbarTheme,
-    pagination: paginationTheme,
+    pagination: elementPlusPaginationTheme,
     tableLocale: elementPlusTableLocale,
     locales: {
-      'zh-CN': { table: elementPlusTableLocale, pagination: paginationZhCN },
-      'en-US': { table: elementPlusTableEnUSLocale, pagination: paginationEnUS },
+      'zh-CN': { table: elementPlusTableLocale, pagination: elementPlusPaginationZhCN },
+      'en-US': { table: elementPlusTableEnUSLocale, pagination: elementPlusPaginationEnUS },
     },
   },
 }

@@ -140,3 +140,5 @@ antdv 预设不声明这个变量，走 `264px` 回退值；element-plus 预设�
 ## 分页 tokens
 
 双预设支持 `--vtg-pagination-size`、`size-sm`、`gap`、`margin`、`radius`、`input-width`、`border`、`bg`、`active-bg`、`active-color`、`active-border`、`popup-z`、`popup-shadow`（均带 `--vtg-pagination-` 前缀）。颜色引用语义 tokens，自动跟随暗色模式。
+
+Element Plus 预设另提供 `font-size`、`font-size-sm`、`page-gap`、`control-gap`、`select-width`、`select-width-sm` 和 `popup-padding`，分别控制分页字号、页码与跳页间距、选择器宽度及弹层留白。

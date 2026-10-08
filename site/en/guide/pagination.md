@@ -83,6 +83,8 @@ Only the first matching position in each top/bottom region is used. `position: [
 
 Both presets use `theme.pagination` slots/variants and `--vtg-pagination-*` tokens: size, size-sm, gap, margin, radius, input-width, border, bg, active-bg, active-color, active-border, popup-z and popup-shadow. Semantic colors follow dark mode. Style generation supports prebuilt CSS and Tailwind 3/4 with custom class prefixes.
 
+The `element-plus` preset retains the same Ant-style configuration, callbacks, visibility defaults and page-size options. It uses contiguous, borderless page buttons with a bold active page; the order is total, sizes, pages, jumper. Its page window follows Element Plus (7, or 5 with `showLessItems`), with 5/3-page jumps. The quick-jump input shows the current page, truncates decimals on submission, and restores the effective page after Enter or blur; an explicit Go button retains the existing submission rules. Chinese uses “前往”; English omits the trailing “Page”. Default buttons are 32px; small buttons are 24px with 12px text. Without an explicit pagination size, small tables use small pagination, while middle/large tables use default pagination. `simple`, Go buttons and `itemRender` remain supported extensions.
+
 Existing locale packs remain valid. Add an optional global `pagination` group or `localeOverrides.pagination`; table `pagination.locale` takes final precedence. Locale keys include items_per_page, jump_to, jump_to_confirm, page, prev_page, next_page, prev_3/next_3, prev_5/next_5, navigation and page_size.
 
 Ant internal `selectComponentClass`, `selectPrefixCls` and `prefixCls` are unsupported. Use the existing theme system, `classPrefix` and table `getPopupContainer`. A standalone Pagination component is not exported.

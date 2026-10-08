@@ -76,6 +76,18 @@
 
 使用 `theme.pagination.slots` / `variants` 和 `--vtg-pagination-*` tokens 定制，两套预设均支持。全局语言包可包含可选的 `pagination` 分组，也可以使用 `localeOverrides.pagination`；实例 `pagination.locale` 最后覆盖。旧语言包无需新增字段。
 
+### Element Plus 预设
+
+分页配置与事件继续使用上述 Ant 风格 API，两套预设的默认显隐规则和页大小选项一致。切换到 `element-plus` 后，分页视觉与交互跟随 Element Plus：
+
+- 页码相邻无间隙，当前页加粗且无边框；总数、页大小选择、页码和跳页依次排列。
+- 默认使用原生 7 页窗口，`showLessItems: true` 对应 5 页窗口；省略号分别前后跳 5 / 3 页。
+- 快捷跳页输入显示当前页，Enter 或失焦提交并恢复有效页码，小数取整数部分；配置 Go 按钮时仍由按钮或 Enter 提交。
+- 中文跳页文案为“前往”，英文不显示输入后的 `Page`；实例语言覆盖继续生效。
+- 默认分页按钮为 32px，`size: 'small'` 为 24px / 12px 字号；未指定分页尺寸时，表格 `small` 对应紧凑分页，`middle` / `large` 对应默认分页。
+
+`simple`、Go 按钮、`itemRender` 等统一扩展仍可使用，不要求 Element Plus 用户改写为 `layout` / `currentPage` / `pageSizes`。
+
 不支持 Ant 内部的 `selectComponentClass`、`selectPrefixCls` 和 `prefixCls`；使用本项目的主题、`classPrefix` 与表级 `getPopupContainer`。首版不导出独立 Pagination 组件。
 
 ## 事件与其他功能

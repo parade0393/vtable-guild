@@ -14,13 +14,17 @@
 [data-vtg-preset='element-plus'] {
   --vtg-pagination-size: 32px;
   --vtg-pagination-size-sm: 24px;
-  --vtg-pagination-gap: 8px;
+  --vtg-pagination-font-size: 14px;
+  --vtg-pagination-font-size-sm: 12px;
+  --vtg-pagination-gap: 16px;
+  --vtg-pagination-page-gap: 0px;
+  --vtg-pagination-control-gap: 8px;
   --vtg-pagination-margin: 16px;
   --vtg-pagination-radius: 2px;
-  --vtg-pagination-input-width: 50px;
+  --vtg-pagination-input-width: 56px;
   --vtg-pagination-border: transparent;
-  --vtg-pagination-bg: transparent;
-  --vtg-pagination-hover-bg: transparent;
+  --vtg-pagination-bg: var(--color-surface);
+  --vtg-pagination-hover-bg: var(--color-surface);
   --vtg-pagination-hover-color: var(--color-primary);
   --vtg-pagination-active-hover-color: var(--color-primary-hover);
   --vtg-pagination-option-hover-bg: var(--color-control-item-hover-bg);
@@ -29,19 +33,22 @@
   --vtg-pagination-motion-duration: 0.2s;
   --vtg-pagination-motion-easing: cubic-bezier(0.23, 1, 0.32, 1);
   --vtg-pagination-simple-input-width: 63px;
-  --vtg-pagination-select-padding: 8px;
-  --vtg-pagination-icon-size: 14px;
-  --vtg-pagination-active-weight: 500;
-  --vtg-pagination-active-disabled-bg: var(--color-bg-disabled);
-  --vtg-pagination-active-bg: transparent;
+  --vtg-pagination-select-padding: 12px;
+  --vtg-pagination-select-width: 128px;
+  --vtg-pagination-select-width-sm: 100px;
+  --vtg-pagination-icon-size: 12px;
+  --vtg-pagination-active-weight: 700;
+  --vtg-pagination-active-disabled-bg: var(--color-surface);
+  --vtg-pagination-active-bg: var(--color-surface);
   --vtg-pagination-active-color: var(--color-primary);
   --vtg-pagination-active-border: transparent;
-  --vtg-pagination-popup-z: 1050;
+  --vtg-pagination-popup-z: 2000;
   --vtg-pagination-popup-radius: 4px;
-  --vtg-pagination-option-height: 32px;
+  --vtg-pagination-option-height: 34px;
+  --vtg-pagination-popup-padding: 6px;
   --vtg-pagination-option-active-color: var(--color-primary);
   --vtg-pagination-option-active-bg: var(--color-surface-hover);
-  --vtg-pagination-popup-shadow: 0 6px 16px rgb(0 0 0 / 12%);
+  --vtg-pagination-popup-shadow: 0 0 12px rgb(0 0 0 / 12%);
 
   /* ===== 语义 token — element-plus 设计体系值 ===== */
 

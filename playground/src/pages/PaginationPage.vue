@@ -17,10 +17,14 @@ import RemoteDemo from '../../../site/demos/pagination/remote.vue'
 import ControlledDemo from '../../../site/demos/pagination/controlled.vue'
 import AdvancedDemo from '../../../site/demos/pagination/advanced.vue'
 import { PLAYGROUND_CONTEXT_KEY } from '../playgroundContext'
+import ElementPaginationReference from '../components/ElementPaginationReference.vue'
 const playground = inject(PLAYGROUND_CONTEXT_KEY)!
 const antLocale = computed(() => (playground.locale.value === 'en-US' ? enUS : zhCN))
 const presetLabel = computed(() =>
   playground.preset.value === 'antdv' ? 'antdv preset' : 'element-plus preset',
+)
+const nativeLabel = computed(() =>
+  playground.preset.value === 'antdv' ? 'ant-design-vue' : 'Element Plus',
 )
 const simple = ref(false)
 const virtual = ref(false)
@@ -68,6 +72,7 @@ const pagination = computed<TablePaginationConfig>(() => ({
     current.value = page
     pageSize.value = size
   },
+  showLessItems: true,
 }))
 const lastAction = ref('—')
 const antPagination = computed<AntPaginationConfig>(() => ({
@@ -169,7 +174,7 @@ const advancedPagination = computed<AntPaginationConfig>(() => ({
           <p class="play-kicker">Pagination Playground</p>
           <h1>分页功能对照</h1>
           <p class="play-summary">
-            左侧使用 ant-design-vue 原生表格，右侧为 VTable
+            左侧随预设切换对应 UI 库的原生表格与分页，右侧为 VTable
             Guild。对照基础分页、受控状态、远程数据与高级配置。
           </p>
         </div>
@@ -195,17 +200,27 @@ const advancedPagination = computed<AntPaginationConfig>(() => ({
             <div class="play-panel__head">
               <div>
                 <span class="play-badge">reference</span>
-                <h3>ant-design-vue</h3>
+                <h3>{{ nativeLabel }}</h3>
               </div>
               <p>原生分页 / 固定滚动高度</p>
             </div>
             <AntTable
+              v-if="playground.preset.value === 'antdv'"
               :columns="columns"
               :data-source="data"
               row-key="key"
               :pagination="antPagination"
               :scroll="{ y: 240 }"
               :row-selection="antRowSelection"
+            />
+            <ElementPaginationReference
+              v-else
+              :columns="columns"
+              :data="data"
+              :pagination="pagination"
+              :height="296"
+              selection
+              @selection-change="antSelectedCount = $event"
             />
             <p role="status" aria-live="polite">已选 {{ antSelectedCount }} 条</p>
           </article>
@@ -247,14 +262,21 @@ const advancedPagination = computed<AntPaginationConfig>(() => ({
             <div class="play-panel__head">
               <div>
                 <span class="play-badge">reference</span>
-                <h3>ant-design-vue</h3>
+                <h3>{{ nativeLabel }}</h3>
               </div>
               <p>受控分页 / 上下分页器</p>
             </div>
             <AntTable
+              v-if="playground.preset.value === 'antdv'"
               row-key="key"
               :columns="compactColumns"
               :data-source="controlledData"
+              :pagination="controlledPagination"
+            />
+            <ElementPaginationReference
+              v-else
+              :columns="compactColumns"
+              :data="controlledData"
               :pagination="controlledPagination"
             />
           </article>
@@ -284,17 +306,26 @@ const advancedPagination = computed<AntPaginationConfig>(() => ({
             <div class="play-panel__head">
               <div>
                 <span class="play-badge">reference</span>
-                <h3>ant-design-vue</h3>
+                <h3>{{ nativeLabel }}</h3>
               </div>
               <p>远程数据 / 跨页选择</p>
             </div>
             <AntTable
+              v-if="playground.preset.value === 'antdv'"
               row-key="key"
               :columns="compactColumns"
               :data-source="remoteData"
               :pagination="remotePagination"
               :loading="remoteLoading"
               :row-selection="antRemoteSelection"
+            />
+            <ElementPaginationReference
+              v-else
+              :columns="compactColumns"
+              :data="remoteData"
+              :pagination="remotePagination"
+              selection
+              @selection-change="antRemoteSelectedCount = $event"
             />
             <p role="status" aria-live="polite">已选 {{ antRemoteSelectedCount }} 条（跨页保留）</p>
           </article>
@@ -324,7 +355,7 @@ const advancedPagination = computed<AntPaginationConfig>(() => ({
             <div class="play-panel__head">
               <div>
                 <span class="play-badge">reference</span>
-                <h3>ant-design-vue</h3>
+                <h3>{{ nativeLabel }}</h3>
               </div>
               <p>自定义分页器</p>
             </div>
@@ -332,9 +363,16 @@ const advancedPagination = computed<AntPaginationConfig>(() => ({
               <label><input v-model="advancedSimple" type="checkbox" /> Simple</label>
               <label><input v-model="advancedDisabled" type="checkbox" /> Disabled</label>
               <AntTable
+                v-if="playground.preset.value === 'antdv'"
                 row-key="key"
                 :columns="compactColumns"
                 :data-source="data"
+                :pagination="advancedPagination"
+              />
+              <ElementPaginationReference
+                v-else
+                :columns="compactColumns"
+                :data="data"
                 :pagination="advancedPagination"
               />
             </div>
