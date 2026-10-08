@@ -28,6 +28,18 @@ const innerCurrent = ref(props.pagination.defaultCurrent ?? 1)
 const innerSize = ref(props.pagination.defaultPageSize ?? 10)
 const pageSize = computed(() => props.pagination.pageSize ?? innerSize.value)
 const total = computed(() => props.pagination.total ?? props.data.length)
+const pagerCount = computed(() => {
+  const count = props.pagination.pagerCount
+  return count !== undefined &&
+    Number.isInteger(count) &&
+    count >= 5 &&
+    count <= 21 &&
+    count % 2 === 1
+    ? count
+    : props.pagination.showLessItems
+      ? 5
+      : 7
+})
 const current = computed(() =>
   Math.min(
     props.pagination.current ?? innerCurrent.value,
@@ -74,7 +86,7 @@ function change(page: number, size: number) {
       :total="total"
       :layout="layout"
       :page-sizes="(pagination.pageSizeOptions ?? [10, 20, 50, 100]).map(Number)"
-      :pager-count="pagination.showLessItems ? 5 : 7"
+      :pager-count="pagerCount"
       :size="pagination.size"
       :disabled="pagination.disabled"
       :hide-on-single-page="pagination.hideOnSinglePage"
@@ -105,7 +117,7 @@ function change(page: number, size: number) {
       :total="total"
       :layout="layout"
       :page-sizes="(pagination.pageSizeOptions ?? [10, 20, 50, 100]).map(Number)"
-      :pager-count="pagination.showLessItems ? 5 : 7"
+      :pager-count="pagerCount"
       :size="pagination.size"
       :disabled="pagination.disabled"
       :hide-on-single-page="pagination.hideOnSinglePage"

@@ -35,6 +35,8 @@ export interface TablePaginationConfig {
   size?: 'default' | 'small'
   simple?: boolean
   showLessItems?: boolean
+  /** Numeric page buttons including first/last; odd integer from 5 to 21. Overrides showLessItems. */
+  pagerCount?: number
   responsive?: boolean
   itemRender?: (item: {
     page: number

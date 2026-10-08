@@ -177,6 +177,9 @@ export interface VTableGuildPaginationLocale {
   next_5: string
   prev_3: string
   next_3: string
+  /** Generic jump label template; {count} is replaced with the page distance. */
+  prev_pages?: string
+  next_pages?: string
   navigation: string
   page_size: string
 }

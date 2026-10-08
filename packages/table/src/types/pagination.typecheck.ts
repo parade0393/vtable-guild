@@ -7,6 +7,8 @@ interface Row {
 
 const _pagination: TablePaginationConfig = {
   current: 1,
+  pagerCount: 9,
+  locale: { prev_pages: 'Back {count} pages', next_pages: 'Forward {count} pages' },
   pageSizeOptions: ['10', 20],
   position: ['topCenter', 'bottomRight', 'none'],
   showQuickJumper: { goButton: true },
@@ -32,3 +34,6 @@ export const paginationProps: VTablePublicProps<Row> = {
 
 // @ts-expect-error Pagination requires an object to opt in.
 export const invalidPagination: VTablePublicProps<Row>['pagination'] = true
+
+// @ts-expect-error pagerCount must be numeric.
+export const invalidPagerCount: TablePaginationConfig['pagerCount'] = '9'

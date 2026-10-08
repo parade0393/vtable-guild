@@ -42,4 +42,16 @@ describe('theme presets', () => {
     expect(resolveBuiltInLocale('antdv', 'zh-CN')?.pagination?.jump_to).toBe('跳至')
     expect(resolveBuiltInLocale('element-plus', 'en-US')?.pagination?.items_per_page).toBe('/page')
   })
+
+  it.each(['antdv', 'element-plus'] as const)(
+    'provides %s jump templates for configurable pager counts in both built-in locales',
+    (preset) => {
+      const english = resolveBuiltInLocale(preset, 'en-US')?.pagination
+      const chinese = resolveBuiltInLocale(preset, 'zh-CN')?.pagination
+      expect(english?.prev_pages?.replace('{count}', '7')).toBe('Previous 7 pages')
+      expect(english?.next_pages?.replace('{count}', '19')).toBe('Next 19 pages')
+      expect(chinese?.prev_pages?.replace('{count}', '7')).toBe('向前 7 页')
+      expect(chinese?.next_pages?.replace('{count}', '19')).toBe('向后 19 页')
+    },
+  )
 })

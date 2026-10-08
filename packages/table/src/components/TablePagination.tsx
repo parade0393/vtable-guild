@@ -11,11 +11,16 @@ import {
 } from 'vue'
 import {
   cnByCssMode,
+  devWarn,
   useTheme,
   VTABLE_GUILD_INJECTION_KEY,
   type VTableGuildPaginationLocale,
 } from '@vtable-guild/core'
-import { resolvePaginationThemePreset } from '@vtable-guild/theme'
+import {
+  paginationZhCN,
+  resolveBuiltInLocale,
+  resolvePaginationThemePreset,
+} from '@vtable-guild/theme'
 import type {
   PaginationItemType,
   TablePaginationConfig,
@@ -75,7 +80,29 @@ export default defineComponent({
   setup(props, { emit }) {
     const context = inject(VTABLE_GUILD_INJECTION_KEY, null)
     const elementPlus = computed(() => context?.themePreset === 'element-plus')
-    const pagerCount = computed(() => (props.config.showLessItems ? 5 : 7))
+    const configuredPagerCount = computed(() => {
+      const count = props.config.pagerCount
+      if (count === undefined) return undefined
+      if (
+        typeof count === 'number' &&
+        Number.isInteger(count) &&
+        count >= 5 &&
+        count <= 21 &&
+        count % 2 === 1
+      )
+        return count
+      devWarn(
+        'vtable-pagination-pager-count',
+        '[VTable] pagination.pagerCount must be an odd integer from 5 to 21. Falling back to showLessItems.',
+      )
+      return undefined
+    })
+    const pagerCount = computed(
+      () => configuredPagerCount.value ?? (props.config.showLessItems ? 5 : 7),
+    )
+    const useElementWindow = computed(
+      () => elementPlus.value || configuredPagerCount.value !== undefined,
+    )
     const theme = computed(() => resolvePaginationThemePreset(context?.themePreset))
     const { slots: styles } = useTheme('pagination', theme, {
       get size() {
@@ -144,6 +171,15 @@ export default defineComponent({
         (type === 'prev' && props.state.current <= 1) ||
         (type === 'next' && props.state.current >= pages.value)
       const labels = props.locale
+      const jumpDistance = pagerCount.value - 2
+      const jumpLabel = (direction: 'prev' | 'next') => {
+        if (jumpDistance === 3) return direction === 'prev' ? labels.prev_3 : labels.next_3
+        if (jumpDistance === 5) return direction === 'prev' ? labels.prev_5 : labels.next_5
+        const key = direction === 'prev' ? 'prev_pages' : 'next_pages'
+        const fallback =
+          resolveBuiltInLocale(context?.themePreset, context?.locale)?.pagination ?? paginationZhCN
+        return (labels[key] ?? fallback[key]!).replace(/\{count\}/g, String(jumpDistance))
+      }
       const label = isPage
         ? `${labels.page} ${page}`
         : type === 'prev'
@@ -151,12 +187,8 @@ export default defineComponent({
           : type === 'next'
             ? labels.next_page
             : type === 'jump-prev'
-              ? p.showLessItems
-                ? labels.prev_3
-                : labels.prev_5
-              : p.showLessItems
-                ? labels.next_3
-                : labels.next_5
+              ? jumpLabel('prev')
+              : jumpLabel('next')
       const content: VNodeChild = isPage ? (
         page
       ) : type.startsWith('jump') ? (
@@ -291,7 +323,7 @@ export default defineComponent({
               <span>{pages.value}</span>
             </span>
           ) : (
-            (elementPlus.value
+            (useElementWindow.value
               ? elementPlusPaginationItems(current, pages.value, pagerCount.value)
               : paginationItems(current, pages.value, !!p.showLessItems)
             ).map(({ page, type }) => item(page, type))

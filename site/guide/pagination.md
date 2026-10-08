@@ -55,6 +55,7 @@
 | `showTotal`                                  | `(total, [start, end]) => VNodeChild`             | 范围从 1 开始；空数据范围为 `[0, 0]`                              |
 | `size`                                       | `'default' \| 'small'`                            | 未传时跟随表格尺寸                                                |
 | `simple` / `showLessItems`                   | `boolean` / `false`                               | 简洁输入模式 / 缩小页码窗口                                       |
+| `pagerCount`                                 | `number`                                          | 5–21 的奇数整数；显式指定页码数量，优先于 `showLessItems`         |
 | `responsive`                                 | `boolean` / `false`                               | 未指定尺寸时，小于 576px 使用紧凑尺寸                             |
 | `itemRender`                                 | `({ page, type, originalElement }) => VNodeChild` | type 为 `page / prev / next / jump-prev / jump-next`              |
 | `position`                                   | `TablePaginationPosition[]` / `['bottomRight']`   | 顶部或底部的 Left / Center / Right；`['none']` 隐藏控件但保留分页 |
@@ -66,6 +67,18 @@
 
 位置支持 `topLeft`、`topCenter`、`topRight`、`bottomLeft`、`bottomCenter`、`bottomRight` 和 `none`。每个区域最多一个分页器，使用数组中首个匹配项。
 
+### 页码数量
+
+`pagerCount` 包含首尾数字页，不包含省略号和上一页 / 下一页按钮；总页数不足时全部显示。两套预设显式指定时都使用 Element Plus 的页码算法，省略号前后跳 `pagerCount - 2` 页。
+
+```vue
+<VTable :pagination="{ pagerCount: 9 }" />
+```
+
+`pagerCount` 优先于 `showLessItems`。未指定时，两套预设保留各自已有的默认 / 紧凑排列及 5 / 3 页跳转。仅接受 5–21 的奇数整数，非法值在开发环境告警并回退到未指定时的行为。`simple` 模式不显示页码列表，因此忽略这两个配置。动态修改页码窗口不改变当前页、每页条数或数据切片，也不触发分页事件。
+
+Element Plus 原生 `pager-count` 的合法值校验仅在开发环境告警，非法值仍会参与页码计算，因此在其 Playground 中可能看到范围外的值生效。VTable Guild 会在所有环境将非法值回退到未指定时的规则，并在开发环境告警。
+
 ## 高级配置与主题
 
 <Demo src="pagination/advanced">
@@ -76,12 +89,14 @@
 
 使用 `theme.pagination.slots` / `variants` 和 `--vtg-pagination-*` tokens 定制，两套预设均支持。全局语言包可包含可选的 `pagination` 分组，也可以使用 `localeOverrides.pagination`；实例 `pagination.locale` 最后覆盖。旧语言包无需新增字段。
 
+省略号跳转文案可通过可选语言字段 `prev_pages` / `next_pages` 定制，模板中的 `{count}` 替换为实际跳距，例如 `prev_pages: '向前 {count} 页'`。跳距为 3 / 5 页时继续使用既有的 `prev_3` / `next_3`、`prev_5` / `next_5` 字段。按钮的 title 与 aria-label 使用同一文案。
+
 ### Element Plus 预设
 
 分页配置与事件继续使用上述 Ant 风格 API，两套预设的默认显隐规则和页大小选项一致。切换到 `element-plus` 后，分页视觉与交互跟随 Element Plus：
 
 - 页码相邻无间隙，当前页加粗且无边框；总数、页大小选择、页码和跳页依次排列。
-- 默认使用原生 7 页窗口，`showLessItems: true` 对应 5 页窗口；省略号分别前后跳 5 / 3 页。
+- 未指定 `pagerCount` 时使用原生 7 页窗口，`showLessItems: true` 对应 5 页窗口；省略号分别前后跳 5 / 3 页。
 - 快捷跳页输入显示当前页，Enter 或失焦提交并恢复有效页码，小数取整数部分；配置 Go 按钮时仍由按钮或 Enter 提交。
 - 中文跳页文案为“前往”，英文不显示输入后的 `Page`；实例语言覆盖继续生效。
 - 默认分页按钮为 32px，`size: 'small'` 为 24px / 12px 字号；未指定分页尺寸时，表格 `small` 对应紧凑分页，`middle` / `large` 对应默认分页。

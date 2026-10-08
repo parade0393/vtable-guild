@@ -1,5 +1,5 @@
-import { mount, type VueWrapper } from '@vue/test-utils'
-import { nextTick, h, cloneVNode, isVNode, ref } from 'vue'
+import { mount, type DOMWrapper, type VueWrapper } from '@vue/test-utils'
+import { nextTick, h, cloneVNode, isVNode, reactive, ref } from 'vue'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createVTableGuild, VTABLE_GUILD_INJECTION_KEY } from '@vtable-guild/core'
 import { paginationEnUS, elementPlusPaginationEnUS } from '@vtable-guild/theme'
@@ -7,10 +7,12 @@ import TablePagination, { paginationItems, elementPlusPaginationItems } from './
 import VTable from './VTable.vue'
 import { SELECTION_ALL } from '../constants'
 import type { TablePaginationConfig, TableProps } from '../types'
+import { resetDevWarnedForTest } from '../../../core/src/utils/devWarn'
 
 const wrappers: VueWrapper[] = []
 afterEach(() => {
   vi.restoreAllMocks()
+  resetDevWarnedForTest()
   wrappers.splice(0).forEach((w) => w.unmount())
   document.body.innerHTML = ''
 })
@@ -40,12 +42,128 @@ function pager(
       state: { current: 3, pageSize: 10, total: 200 },
       locale: themePreset === 'element-plus' ? elementPlusPaginationEnUS : paginationEnUS,
     },
-    global: { plugins: [createVTableGuild({ themePreset })] },
+    global: { plugins: [createVTableGuild({ themePreset, locale: 'en-US' })] },
   })
   wrappers.push(w)
   return w
 }
+function numericPages(w: VueWrapper | DOMWrapper<Element>) {
+  return w.findAll('button[title]').flatMap((button) => {
+    const title = button.attributes('title') ?? ''
+    return /^\d+$/.test(title) ? [Number(title)] : []
+  })
+}
+
+const pagerCountWindows = [
+  {
+    count: 5,
+    first: [1, 2, 3, 4, 50],
+    middle: [1, 24, 25, 26, 50],
+    last: [1, 47, 48, 49, 50],
+  },
+  {
+    count: 7,
+    first: [1, 2, 3, 4, 5, 6, 50],
+    middle: [1, 23, 24, 25, 26, 27, 50],
+    last: [1, 45, 46, 47, 48, 49, 50],
+  },
+  {
+    count: 9,
+    first: [1, 2, 3, 4, 5, 6, 7, 8, 50],
+    middle: [1, 22, 23, 24, 25, 26, 27, 28, 50],
+    last: [1, 43, 44, 45, 46, 47, 48, 49, 50],
+  },
+  {
+    count: 21,
+    first: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 50],
+    middle: [1, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 50],
+    last: [1, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50],
+  },
+]
+
 describe('table pagination integration', () => {
+  it.each(['antdv', 'element-plus'] as const)(
+    'updates %s pager windows reactively without changing rows or emitting pagination events',
+    async (themePreset) => {
+      const onChange = vi.fn()
+      const onShowSizeChange = vi.fn()
+      const pagination = reactive({
+        defaultCurrent: 3,
+        pageSize: 1,
+        position: ['topLeft', 'bottomRight'] as TablePaginationConfig['position'],
+        showLessItems: true,
+        pagerCount: 9,
+        onChange,
+        onShowSizeChange,
+      })
+      const w = mount(VTable<(typeof rows)[number]>, {
+        props: {
+          columns: [{ key: 'name', dataIndex: 'name', title: 'Name' }],
+          dataSource: rows,
+          rowKey: 'key',
+          pagination,
+        },
+        global: { plugins: [createVTableGuild({ themePreset, locale: 'en-US' })] },
+      })
+      wrappers.push(w)
+      const assertWindow = (expected: number[]) => {
+        expect(w.findAll('nav')).toHaveLength(2)
+        for (const nav of w.findAll('nav')) expect(numericPages(nav)).toEqual(expected)
+        expect(w.findAll('[aria-current="page"]').map((node) => node.text())).toEqual(['3', '3'])
+        expect(w.findAll('tbody tr').map((row) => row.text())).toEqual(['Row 3'])
+        expect(onChange).not.toHaveBeenCalled()
+        expect(onShowSizeChange).not.toHaveBeenCalled()
+        expect(w.emitted('change')).toBeUndefined()
+      }
+      assertWindow([1, 2, 3, 4, 5, 6, 7, 8, 35])
+      pagination.pagerCount = 5
+      await nextTick()
+      assertWindow([1, 2, 3, 4, 35])
+      pagination.showLessItems = false
+      await nextTick()
+      assertWindow([1, 2, 3, 4, 35])
+      await w.setProps({ pagination: { ...pagination, pagerCount: 21 } })
+      assertWindow([...Array.from({ length: 20 }, (_, index) => index + 1), 35])
+      await w.setProps({ pagination: { ...pagination, pagerCount: undefined } })
+      assertWindow(themePreset === 'antdv' ? [1, 2, 3, 4, 5, 35] : [1, 2, 3, 4, 5, 6, 35])
+      await w.setProps({
+        pagination: { ...pagination, pagerCount: undefined, showLessItems: true },
+      })
+      assertWindow([1, 2, 3, 4, 35])
+    },
+  )
+
+  describe.each(['antdv', 'element-plus'] as const)('%s pagerCount locales', (themePreset) => {
+    it.each([
+      { locale: 'en-US', previous: 'Previous 7 pages', next: 'Next 7 pages' },
+      { locale: 'zh-CN', previous: '向前 7 页', next: '向后 7 页' },
+    ])(
+      'keeps $locale jump titles and destinations consistent',
+      async ({ locale, previous, next }) => {
+        const onChange = vi.fn()
+        const w = mount(VTable<(typeof rows)[number]>, {
+          props: {
+            columns: [{ key: 'name', dataIndex: 'name', title: 'Name' }],
+            dataSource: rows,
+            rowKey: 'key',
+            pagination: { defaultCurrent: 18, pageSize: 1, pagerCount: 9, onChange },
+          },
+          global: { plugins: [createVTableGuild({ themePreset, locale })] },
+        })
+        wrappers.push(w)
+        expect(w.get(`[aria-label="${previous}"]`).attributes('title')).toBe(previous)
+        expect(w.get(`[aria-label="${next}"]`).attributes('title')).toBe(next)
+        await w.get(`[aria-label="${previous}"]`).trigger('click')
+        expect(onChange).toHaveBeenLastCalledWith(11, 1)
+        expect(w.findAll('tbody tr')[0]!.text()).toBe('Row 11')
+        await w.get(`[aria-label="${next}"]`).trigger('click')
+        expect(onChange).toHaveBeenLastCalledWith(18, 1)
+        expect(w.findAll('tbody tr')[0]!.text()).toBe('Row 18')
+        expect(w.emitted('change')).toHaveLength(2)
+      },
+    )
+  })
+
   it('keeps legacy sort events free of pagination and preserves unpaginated scroll', async () => {
     const w = table({ columns: [{ key: 'name', dataIndex: 'name', title: 'Name', sorter: true }] })
     const body = w
@@ -391,6 +509,153 @@ describe('table pagination integration', () => {
   })
 })
 describe('pagination controls', () => {
+  describe.each(['antdv', 'element-plus'] as const)('%s pagerCount', (themePreset) => {
+    it('preserves the original default and compact windows when pagerCount is omitted', async () => {
+      const w = pager({}, themePreset)
+      await w.setProps({ state: { current: 1, pageSize: 10, total: 200 } })
+      expect(numericPages(w)).toEqual(
+        themePreset === 'antdv' ? [1, 2, 3, 4, 5, 20] : [1, 2, 3, 4, 5, 6, 20],
+      )
+      await w.setProps({ config: { showLessItems: true } })
+      expect(numericPages(w)).toEqual(themePreset === 'antdv' ? [1, 2, 3, 20] : [1, 2, 3, 4, 20])
+      await w.setProps({ config: { showLessItems: false } })
+      expect(numericPages(w)).toEqual(
+        themePreset === 'antdv' ? [1, 2, 3, 4, 5, 20] : [1, 2, 3, 4, 5, 6, 20],
+      )
+      expect(w.emitted('change')).toBeUndefined()
+    })
+    it.each(pagerCountWindows)(
+      'uses $count numeric page buttons at the first, middle and last pages',
+      async ({ count, first, middle, last }) => {
+        const w = pager({ pagerCount: count, showLessItems: true }, themePreset)
+        for (const [current, expected] of [
+          [1, first],
+          [25, middle],
+          [50, last],
+        ] as const) {
+          await w.setProps({ state: { current, pageSize: 10, total: 500 } })
+          expect(numericPages(w)).toEqual(expected)
+          expect(w.get('[aria-current="page"]').text()).toBe(String(current))
+        }
+        await w.setProps({ state: { current: 2, pageSize: 10, total: 40 } })
+        expect(numericPages(w)).toEqual([1, 2, 3, 4])
+        expect(w.find('[aria-label^="Previous "][aria-label$=" pages"]').exists()).toBe(false)
+        expect(w.find('[aria-label^="Next "][aria-label$=" pages"]').exists()).toBe(false)
+      },
+    )
+
+    it.each([0, 4, 6, 22, -1, 5.5, NaN, Infinity, '9'])(
+      'falls back to the original preset window for invalid pagerCount %s and warns only once',
+      async (invalidCount) => {
+        resetDevWarnedForTest()
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+        const config = { pagerCount: invalidCount as number }
+        const w = pager(config, themePreset)
+        expect(numericPages(w)).toEqual(
+          themePreset === 'antdv' ? [1, 2, 3, 4, 5, 20] : [1, 2, 3, 4, 5, 6, 20],
+        )
+        expect(warn).toHaveBeenCalledExactlyOnceWith(
+          expect.stringContaining('pagination.pagerCount must be an odd integer from 5 to 21'),
+        )
+        await w.setProps({ config: { ...config, showLessItems: true } })
+        expect(numericPages(w)).toEqual([1, 2, 3, 4, 20])
+        expect(warn).toHaveBeenCalledOnce()
+        expect(w.emitted('change')).toBeUndefined()
+      },
+    )
+
+    it('respects legacy jump labels for 3/5 pages and custom templates for other counts', async () => {
+      const w = pager({ pagerCount: 5 }, themePreset)
+      await w.setProps({
+        state: { current: 25, pageSize: 10, total: 500 },
+        locale: {
+          ...paginationEnUS,
+          prev_3: 'Back three',
+          next_3: 'Forward three',
+          prev_5: 'Back five',
+          next_5: 'Forward five',
+          prev_pages: 'Back {count} / {count}',
+          next_pages: 'Forward {count}',
+        },
+      })
+      const checkJump = async (label: string, target: number) => {
+        const control = w.get(`[aria-label="${label}"]`)
+        expect(control.attributes('title')).toBe(label)
+        await control.trigger('click')
+        expect(w.emitted('change')!.at(-1)).toEqual([target])
+      }
+      await checkJump('Back three', 22)
+      await checkJump('Forward three', 28)
+      await w.setProps({ config: { pagerCount: 7 } })
+      await checkJump('Back five', 20)
+      await checkJump('Forward five', 30)
+      await w.setProps({ config: { pagerCount: 9 } })
+      await checkJump('Back 7 / 7', 18)
+      await checkJump('Forward 7', 32)
+      await w.setProps({ config: { pagerCount: 21 } })
+      await checkJump('Back 19 / 19', 6)
+      await checkJump('Forward 19', 44)
+    })
+
+    it('uses built-in templates when a complete legacy locale omits the optional templates', async () => {
+      const w = pager({ pagerCount: 9 }, themePreset)
+      const { prev_pages: _prevPages, next_pages: _nextPages, ...legacyLocale } = paginationEnUS
+      await w.setProps({
+        state: { current: 25, pageSize: 10, total: 500 },
+        locale: legacyLocale,
+      })
+      const previous = w.get('[aria-label="Previous 7 pages"]')
+      const next = w.get('[aria-label="Next 7 pages"]')
+      expect(previous.attributes('title')).toBe('Previous 7 pages')
+      expect(next.attributes('title')).toBe('Next 7 pages')
+      await previous.trigger('click')
+      await next.trigger('click')
+      expect(w.emitted('change')).toEqual([[18], [32]])
+    })
+
+    it('ignores pagerCount and showLessItems in simple mode', async () => {
+      const w = pager({ simple: true, pagerCount: 5, showLessItems: true }, themePreset)
+      const initial = w.html()
+      await w.setProps({ config: { simple: true, pagerCount: 21, showLessItems: false } })
+      expect(w.html()).toBe(initial)
+      await w.setProps({ config: { simple: true } })
+      expect(w.html()).toBe(initial)
+      expect(w.findAll('button')).toHaveLength(2)
+      expect(w.get('input').element.value).toBe('3')
+      expect(w.emitted('change')).toBeUndefined()
+    })
+  })
+
+  it('keeps every supported window bounded, ordered and free of duplicate or unmarked gaps', () => {
+    for (let count = 5; count <= 21; count += 2) {
+      for (const pages of [1, count - 1, count, count + 1, count + 2, 50, 1000000]) {
+        const currents =
+          pages <= 50
+            ? Array.from({ length: pages }, (_, index) => index + 1)
+            : [1, 2, 25, 50000, pages - 1, pages]
+        for (const current of currents) {
+          const items = elementPlusPaginationItems(current, pages, count)
+          const numeric = items.filter((item) => item.type === 'page').map((item) => item.page)
+          expect(numeric).toEqual([...new Set(numeric)].sort((a, b) => a - b))
+          expect(numeric).toContain(current)
+          expect(numeric[0]).toBe(1)
+          expect(numeric.at(-1)).toBe(pages)
+          expect(numeric).toHaveLength(Math.min(pages, count))
+          expect(items.length).toBeLessThanOrEqual(count + 2)
+          for (let index = 1; index < items.length; index++) {
+            const previous = items[index - 1]!
+            const item = items[index]!
+            if (previous.type === 'page' && item.type === 'page')
+              expect(item.page).toBe(previous.page + 1)
+            if (item.type === 'jump-prev') expect(item.page).toBe(Math.max(1, current - count + 2))
+            if (item.type === 'jump-next')
+              expect(item.page).toBe(Math.min(pages, current + count - 2))
+          }
+        }
+      }
+    }
+  })
+
   it('matches Element Plus page windows at the first, middle and last pages', async () => {
     const pages = (current: number, count = 7) =>
       elementPlusPaginationItems(current, 20, count).map(({ page, type }) =>

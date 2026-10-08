@@ -127,6 +127,8 @@ export const paginationZhCN: VTableGuildPaginationLocale = {
   next_5: '向后 5 页',
   prev_3: '向前 3 页',
   next_3: '向后 3 页',
+  prev_pages: '向前 {count} 页',
+  next_pages: '向后 {count} 页',
   navigation: '分页',
   page_size: '每页条数',
 }
@@ -142,6 +144,8 @@ export const paginationEnUS: VTableGuildPaginationLocale = {
   next_5: 'Next 5 pages',
   prev_3: 'Previous 3 pages',
   next_3: 'Next 3 pages',
+  prev_pages: 'Previous {count} pages',
+  next_pages: 'Next {count} pages',
   navigation: 'Pagination',
   page_size: 'Page size',
 }

@@ -28,6 +28,9 @@ const nativeLabel = computed(() =>
 )
 const simple = ref(false)
 const virtual = ref(false)
+const showLessItems = ref(true)
+const pagerCount = ref<number>()
+const pagerCountOptions = Array.from({ length: 9 }, (_, i) => 5 + i * 2)
 const current = ref(1)
 const pageSize = ref(10)
 const data = Array.from({ length: 230 }, (_, i) => ({
@@ -72,7 +75,8 @@ const pagination = computed<TablePaginationConfig>(() => ({
     current.value = page
     pageSize.value = size
   },
-  showLessItems: true,
+  showLessItems: showLessItems.value,
+  pagerCount: pagerCount.value,
 }))
 const lastAction = ref('—')
 const antPagination = computed<AntPaginationConfig>(() => ({
@@ -82,6 +86,7 @@ const antPagination = computed<AntPaginationConfig>(() => ({
   showSizeChanger: true,
   showQuickJumper: true,
   responsive: true,
+  showLessItems: showLessItems.value,
   showTotal: (total, range) => `${range[0]}–${range[1]} / ${total}`,
   onChange: pagination.value.onChange,
 }))
@@ -191,7 +196,20 @@ const advancedPagination = computed<AntPaginationConfig>(() => ({
         <div class="play-toolbar">
           <label><input v-model="simple" type="checkbox" /> Simple</label>
           <label><input v-model="virtual" type="checkbox" /> Virtual（VTable Guild）</label>
+          <label><input v-model="showLessItems" type="checkbox" /> showLessItems</label>
+          <label>
+            pagerCount
+            <select v-model="pagerCount">
+              <option :value="undefined">未指定 / 跟随预设</option>
+              <option v-for="count in pagerCountOptions" :key="count" :value="count">
+                {{ count }}
+              </option>
+            </select>
+          </label>
         </div>
+        <p v-if="pagerCount !== undefined" class="play-inline-note">
+          pagerCount 优先于 showLessItems，数字页码数量包含首尾页。Simple 模式不显示页码列表。
+        </p>
         <p class="play-inline-note">
           表头复选框仅选择当页；选择菜单支持全选所有、反选当页和清空所有。翻页后保留已选记录。
         </p>
@@ -222,6 +240,12 @@ const advancedPagination = computed<AntPaginationConfig>(() => ({
               selection
               @selection-change="antSelectedCount = $event"
             />
+            <p
+              v-if="playground.preset.value === 'antdv' && pagerCount !== undefined"
+              class="play-inline-note"
+            >
+              Ant Design Vue 原生分页不支持 pagerCount，左侧仍使用原生 showLessItems 配置。
+            </p>
             <p role="status" aria-live="polite">已选 {{ antSelectedCount }} 条</p>
           </article>
           <article class="play-panel play-panel--accent">

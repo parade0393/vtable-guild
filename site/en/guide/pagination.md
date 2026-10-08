@@ -52,6 +52,7 @@ The remote demo enables `preserveSelectedRowKeys` and displays the selected coun
 | `showTotal`                                 | `(total, [start, end]) => VNodeChild`             | One-based range; empty range is `[0, 0]`                                 |
 | `size`                                      | `'default' \| 'small'`                            | Follows table size when omitted                                          |
 | `simple`, `showLessItems`                   | `boolean` / false                                 | Input pager / smaller page window                                        |
+| `pagerCount`                                | `number`                                          | Odd integer 5–21; overrides `showLessItems`                              |
 | `responsive`                                | `boolean` / false                                 | Compact size below 576px unless size is explicit                         |
 | `itemRender`                                | `({ page, type, originalElement }) => VNodeChild` | Types: page, prev, next, jump-prev, jump-next                            |
 | `position`                                  | `TablePaginationPosition[]`                       | Default `['bottomRight']`; top/bottom Left/Center/Right or none          |
@@ -61,6 +62,18 @@ The remote demo enables `preserveSelectedRowKeys` and displays the selected coun
 | `'onUpdate:current'`, `'onUpdate:pageSize'` | `(value: number) => void`                         | Controlled state update notifications                                    |
 
 Only the first matching position in each top/bottom region is used. `position: ['none']` hides controls but retains slicing; `pagination: false` disables both.
+
+### Page window
+
+`pagerCount` includes the first and last numbered pages, excluding ellipses and previous/next buttons. All pages appear when the total page count is smaller. When explicitly set, both presets use the Element Plus page-window algorithm, and ellipses jump `pagerCount - 2` pages.
+
+```vue
+<VTable :pagination="{ pagerCount: 9 }" />
+```
+
+`pagerCount` takes precedence over `showLessItems`. When omitted, each preset retains its existing default/compact window and 5/3-page jumps. Only odd integers from 5 through 21 are accepted; invalid values warn during development and fall back to the omitted-value behavior. `simple` has no numbered page list and ignores both options. Changing the page window does not change the current page, page size or data slice, and emits no pagination events.
+
+Element Plus's native `pager-count` validation only warns during development; invalid values still participate in page-window calculations, so values outside the documented range may appear to work in its Playground. VTable Guild falls back to the omitted-value behavior in all environments and warns during development.
 
 <Demo src="pagination/advanced">
 
@@ -83,8 +96,10 @@ Only the first matching position in each top/bottom region is used. `position: [
 
 Both presets use `theme.pagination` slots/variants and `--vtg-pagination-*` tokens: size, size-sm, gap, margin, radius, input-width, border, bg, active-bg, active-color, active-border, popup-z and popup-shadow. Semantic colors follow dark mode. Style generation supports prebuilt CSS and Tailwind 3/4 with custom class prefixes.
 
-The `element-plus` preset retains the same Ant-style configuration, callbacks, visibility defaults and page-size options. It uses contiguous, borderless page buttons with a bold active page; the order is total, sizes, pages, jumper. Its page window follows Element Plus (7, or 5 with `showLessItems`), with 5/3-page jumps. The quick-jump input shows the current page, truncates decimals on submission, and restores the effective page after Enter or blur; an explicit Go button retains the existing submission rules. Chinese uses “前往”; English omits the trailing “Page”. Default buttons are 32px; small buttons are 24px with 12px text. Without an explicit pagination size, small tables use small pagination, while middle/large tables use default pagination. `simple`, Go buttons and `itemRender` remain supported extensions.
+The `element-plus` preset retains the same Ant-style configuration, callbacks, visibility defaults and page-size options. It uses contiguous, borderless page buttons with a bold active page; the order is total, sizes, pages, jumper. With `pagerCount` omitted, its page window follows Element Plus (7, or 5 with `showLessItems`), with 5/3-page jumps. The quick-jump input shows the current page, truncates decimals on submission, and restores the effective page after Enter or blur; an explicit Go button retains the existing submission rules. Chinese uses “前往”; English omits the trailing “Page”. Default buttons are 32px; small buttons are 24px with 12px text. Without an explicit pagination size, small tables use small pagination, while middle/large tables use default pagination. `simple`, Go buttons and `itemRender` remain supported extensions.
 
 Existing locale packs remain valid. Add an optional global `pagination` group or `localeOverrides.pagination`; table `pagination.locale` takes final precedence. Locale keys include items_per_page, jump_to, jump_to_confirm, page, prev_page, next_page, prev_3/next_3, prev_5/next_5, navigation and page_size.
+
+Optional `prev_pages` / `next_pages` locale templates use `{count}` for the actual ellipsis jump distance, for example `prev_pages: 'Previous {count} pages'`. Jumps of 3 or 5 pages continue to use the existing `prev_3` / `next_3` and `prev_5` / `next_5` keys. Each jump button uses the same text for its title and aria-label.
 
 Ant internal `selectComponentClass`, `selectPrefixCls` and `prefixCls` are unsupported. Use the existing theme system, `classPrefix` and table `getPopupContainer`. A standalone Pagination component is not exported.
