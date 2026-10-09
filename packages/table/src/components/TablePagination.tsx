@@ -2,11 +2,15 @@ import {
   cloneVNode,
   computed,
   defineComponent,
+  Fragment,
   inject,
   isVNode,
   ref,
+  Text,
   watch,
   type PropType,
+  type SlotsType,
+  type VNode,
   type VNodeChild,
 } from 'vue'
 import {
@@ -23,10 +27,23 @@ import {
 } from '@vtable-guild/theme'
 import type {
   PaginationItemType,
+  TablePaginationBuiltinLayoutItem,
   TablePaginationConfig,
+  TablePaginationLayoutItem,
+  TablePaginationSlotProps,
   TablePaginationState,
 } from '../types/pagination'
+import { resolvePaginationLayout } from '../utils/paginationLayout'
+import { ensureValidVNode } from '../utils/vnode'
 import PaginationSizeSelect from './PaginationSizeSelect'
+
+function hasPaginationContent(content: VNodeChild): boolean {
+  if (Array.isArray(content)) return content.some(hasPaginationContent)
+  if (typeof content === 'string') return content.trim().length > 0
+  if (isVNode(content) && (content.type === Fragment || content.type === Text))
+    return hasPaginationContent(content.children as VNodeChild)
+  return ensureValidVNode(content) !== null
+}
 
 /** Bounded page window, even for millions of pages. */
 export function paginationItems(
@@ -72,14 +89,27 @@ export default defineComponent({
     state: { type: Object as PropType<TablePaginationState>, required: true },
     locale: { type: Object as PropType<VTableGuildPaginationLocale>, required: true },
     align: { type: String as PropType<'left' | 'center' | 'right'>, default: 'right' },
+    position: {
+      type: String as PropType<TablePaginationSlotProps['position']>,
+      default: 'bottomRight',
+    },
     tableSize: String as PropType<'large' | 'middle' | 'small'>,
     narrow: Boolean,
     getPopupContainer: Function as PropType<(trigger: HTMLElement) => HTMLElement>,
   },
   emits: { change: (_page: number, _pageSize?: number) => true },
-  setup(props, { emit }) {
+  slots: Object as SlotsType<{
+    paginationItem?: (props: TablePaginationSlotProps) => VNodeChild
+  }>,
+  setup(props, { emit, slots }) {
     const context = inject(VTABLE_GUILD_INJECTION_KEY, null)
     const elementPlus = computed(() => context?.themePreset === 'element-plus')
+    const layout = computed(() => {
+      const resolved = resolvePaginationLayout(props.config.layout, context?.themePreset ?? 'antdv')
+      for (const message of resolved.warnings)
+        devWarn(`vtable-pagination-layout:${message}`, `[VTable] ${message}`)
+      return resolved
+    })
     const configuredPagerCount = computed(() => {
       const count = props.config.pagerCount
       if (count === undefined) return undefined
@@ -276,20 +306,18 @@ export default defineComponent({
       const p = props.config
       const { current, pageSize, total } = props.state
       if (p.hideOnSinglePage && pages.value <= 1) return null
+      const resolvedLayout = layout.value
+      const hasPager = resolvedLayout.regions.some((region) => region.items.includes('pager'))
+      const range: [number, number] =
+        total === 0 ? [0, 0] : [(current - 1) * pageSize + 1, Math.min(current * pageSize, total)]
       const go = typeof p.showQuickJumper === 'object' ? p.showQuickJumper.goButton : undefined
       const withGo = go !== undefined && go !== false && go !== null
-      const totalControl =
-        !p.simple && p.showTotal ? (
-          <span class={styles.total()}>
-            {p.showTotal(
-              total,
-              total === 0
-                ? [0, 0]
-                : [(current - 1) * pageSize + 1, Math.min(current * pageSize, total)],
-            )}
-          </span>
-        ) : null
-      const pageControl = (
+      const renderTotal = () => {
+        if (p.simple || !p.showTotal) return null
+        const content = p.showTotal(total, [...range])
+        return hasPaginationContent(content) ? <span class={styles.total()}>{content}</span> : null
+      }
+      const renderPager = () => (
         <>
           {p.simple ? (
             <span class={styles.simpleControls()} title={`${current}/${pages.value}`}>
@@ -330,7 +358,7 @@ export default defineComponent({
           )}
         </>
       )
-      const sizeControl =
+      const renderSizes = () =>
         !p.simple && (p.showSizeChanger ?? total > (p.totalBoundaryShowSizeChanger ?? 50)) ? (
           <PaginationSizeSelect
             value={pageSize}
@@ -347,8 +375,16 @@ export default defineComponent({
             onChange={(size) => emit('change', current, size)}
           />
         ) : null
-      const jumpControl =
-        p.showQuickJumper && (!p.simple || withGo) ? (
+      const renderJumper = () => {
+        if (!p.showQuickJumper || (p.simple && !withGo)) return null
+        if (p.simple && !hasPager) {
+          devWarn(
+            'vtable-pagination-layout-simple-jumper',
+            '[VTable] pagination.layout must include "pager" to use the simple mode Go button. Skipping "jumper".',
+          )
+          return null
+        }
+        return (
           <span class={styles.controls()}>
             {!p.simple && (
               <>
@@ -410,18 +446,89 @@ export default defineComponent({
                 </button>
               ))}
           </span>
-        ) : null
+        )
+      }
+      const renderers: Record<TablePaginationBuiltinLayoutItem, () => VNode | null> = {
+        total: renderTotal,
+        sizes: renderSizes,
+        prev: () => item(current - 1, 'prev'),
+        pager: renderPager,
+        next: () => item(current + 1, 'next'),
+        jumper: renderJumper,
+      }
+      function renderRegion(
+        name: TablePaginationSlotProps['region'],
+        items: TablePaginationLayoutItem[],
+      ): VNode[] {
+        const content: VNode[] = []
+        let navigation: VNode[] = []
+        let navigationKey = ''
+        const flushNavigation = () => {
+          if (!navigation.length) return
+          content.push(
+            <span key={`pages:${navigationKey}`} class={styles.pages()}>
+              {navigation}
+            </span>,
+          )
+          navigation = []
+        }
+        for (const entry of items) {
+          if (typeof entry !== 'string') {
+            if (!slots.paginationItem) {
+              devWarn(
+                'vtable-pagination-layout-missing-slot',
+                '[VTable] pagination.layout uses a custom item but #paginationItem is not provided. Skipping custom items.',
+              )
+              continue
+            }
+            const customContent = slots.paginationItem({
+              name: entry.slot,
+              current,
+              pageSize,
+              total,
+              pageCount: pages.value,
+              range: [...range],
+              disabled: !!p.disabled,
+              position: props.position,
+              region: name,
+            })
+            if (!hasPaginationContent(customContent)) continue
+            flushNavigation()
+            content.push(
+              <div key={`slot:${entry.slot}`} class={styles.extension()}>
+                {customContent}
+              </div>,
+            )
+            continue
+          }
+          const rendered = renderers[entry]()
+          if (!rendered) continue
+          const node = cloneVNode(rendered, { key: entry })
+          // Keep each contiguous navigation group on the preset's page gap.
+          if (entry === 'prev' || entry === 'pager' || entry === 'next') {
+            if (!navigation.length) navigationKey = entry
+            navigation.push(node)
+          } else {
+            flushNavigation()
+            content.push(node)
+          }
+        }
+        flushNavigation()
+        return content
+      }
+      const content = resolvedLayout.regions.flatMap(({ name, items }) => {
+        const children = renderRegion(name, items)
+        if (!children.length || name === 'inline') return children
+        return (
+          <div key={name} class={name === 'left' ? styles.left() : styles.right()}>
+            {children}
+          </div>
+        )
+      })
+      if (!content.length) return null
       return (
         <nav aria-label={props.locale.navigation} class={styles.root()} style={p.style}>
-          {totalControl}
-          {elementPlus.value && sizeControl}
-          <span class={styles.pages()}>
-            {item(current - 1, 'prev')}
-            {pageControl}
-            {item(current + 1, 'next')}
-          </span>
-          {!elementPlus.value && sizeControl}
-          {jumpControl}
+          {resolvedLayout.mode === 'split' ? <div class={styles.layout()}>{content}</div> : content}
         </nav>
       )
     }

@@ -245,17 +245,18 @@ function handleChange(filters, sorter, extra) {
 
 ## Slots
 
-| Slot                   | 参数类型                                                                                        | 说明                   |
-| ---------------------- | ----------------------------------------------------------------------------------------------- | ---------------------- |
-| `bodyCell`             | [`TableBodyCellSlotProps<TRecord>`](/guide/type-reference#tablebodycellslotprops)               | 自定义单元格内容。     |
-| `headerCell`           | [`TableHeaderCellSlotProps<TRecord>`](/guide/type-reference#tableheadercellslotprops)           | 自定义表头单元格内容。 |
-| `empty`                | `()`                                                                                            | 自定义空状态。         |
-| `loading`              | `()`                                                                                            | 自定义加载态。         |
-| `customFilterDropdown` | [`CustomFilterDropdownSlotProps<TRecord>`](/guide/type-reference#customfilterdropdownslotprops) | 表级自定义筛选面板。   |
-| `customFilterIcon`     | `{ column, filtered }`                                                                          | 表级自定义筛选图标。   |
-| `title`                | [`TableDataSlotProps<TRecord>`](/guide/type-reference#tabledataslotprops)                       | 自定义标题区域。       |
-| `footer`               | [`TableDataSlotProps<TRecord>`](/guide/type-reference#tabledataslotprops)                       | 自定义页脚区域。       |
-| `summary`              | `()`                                                                                            | 自定义摘要区域。       |
+| Slot                   | 参数类型                                                                                        | 说明                                                              |
+| ---------------------- | ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `bodyCell`             | [`TableBodyCellSlotProps<TRecord>`](/guide/type-reference#tablebodycellslotprops)               | 自定义单元格内容。                                                |
+| `headerCell`           | [`TableHeaderCellSlotProps<TRecord>`](/guide/type-reference#tableheadercellslotprops)           | 自定义表头单元格内容。                                            |
+| `empty`                | `()`                                                                                            | 自定义空状态。                                                    |
+| `loading`              | `()`                                                                                            | 自定义加载态。                                                    |
+| `customFilterDropdown` | [`CustomFilterDropdownSlotProps<TRecord>`](/guide/type-reference#customfilterdropdownslotprops) | 表级自定义筛选面板。                                              |
+| `customFilterIcon`     | `{ column, filtered }`                                                                          | 表级自定义筛选图标。                                              |
+| `title`                | [`TableDataSlotProps<TRecord>`](/guide/type-reference#tabledataslotprops)                       | 自定义标题区域。                                                  |
+| `footer`               | [`TableDataSlotProps<TRecord>`](/guide/type-reference#tabledataslotprops)                       | 自定义页脚区域。                                                  |
+| `summary`              | `()`                                                                                            | 自定义摘要区域。                                                  |
+| `paginationItem`       | [`TablePaginationSlotProps`](/guide/pagination#分页内容插槽)                                    | 在 `pagination.layout` 的 `{ slot: '名称' }` 处渲染分页业务内容。 |
 
 > 这里列的是 Vue slots。若要通过 class 覆盖结构样式，请查看 [ui Slot 参考](/guide/ui-slots-reference)。
 

@@ -250,19 +250,22 @@ function handleChange(filters, sorter, extra) {
 
 ## Slots
 
-| Slot                   | Payload type                                                                                    | Description                      |
-| ---------------------- | ----------------------------------------------------------------------------------------------- | -------------------------------- |
-| `bodyCell`             | [`TableBodyCellSlotProps<TRecord>`](/guide/type-reference#tablebodycellslotprops)               | Custom cell content.             |
-| `headerCell`           | [`TableHeaderCellSlotProps<TRecord>`](/guide/type-reference#tableheadercellslotprops)           | Custom header cell content.      |
-| `empty`                | `()`                                                                                            | Custom empty state.              |
-| `loading`              | `()`                                                                                            | Custom loading state.            |
-| `customFilterDropdown` | [`CustomFilterDropdownSlotProps<TRecord>`](/guide/type-reference#customfilterdropdownslotprops) | Table-level custom filter panel. |
-| `customFilterIcon`     | `{ column, filtered }`                                                                          | Table-level custom filter icon.  |
-| `title`                | [`TableDataSlotProps<TRecord>`](/guide/type-reference#tabledataslotprops)                       | Custom title area.               |
-| `footer`               | [`TableDataSlotProps<TRecord>`](/guide/type-reference#tabledataslotprops)                       | Custom footer area.              |
-| `summary`              | `()`                                                                                            | Custom summary area.             |
+| Slot                   | Payload type                                                                                    | Description                                           |
+| ---------------------- | ----------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| `bodyCell`             | [`TableBodyCellSlotProps<TRecord>`](/guide/type-reference#tablebodycellslotprops)               | Custom cell content.                                  |
+| `headerCell`           | [`TableHeaderCellSlotProps<TRecord>`](/guide/type-reference#tableheadercellslotprops)           | Custom header cell content.                           |
+| `empty`                | `()`                                                                                            | Custom empty state.                                   |
+| `loading`              | `()`                                                                                            | Custom loading state.                                 |
+| `customFilterDropdown` | [`CustomFilterDropdownSlotProps<TRecord>`](/guide/type-reference#customfilterdropdownslotprops) | Table-level custom filter panel.                      |
+| `customFilterIcon`     | `{ column, filtered }`                                                                          | Table-level custom filter icon.                       |
+| `title`                | [`TableDataSlotProps<TRecord>`](/guide/type-reference#tabledataslotprops)                       | Custom title area.                                    |
+| `footer`               | [`TableDataSlotProps<TRecord>`](/guide/type-reference#tabledataslotprops)                       | Custom footer area.                                   |
+| `summary`              | `()`                                                                                            | Custom summary area.                                  |
+| `paginationItem`       | [`TablePaginationSlotProps`](/en/guide/pagination#pagination-slot-context)                      | Content at `{ slot: 'name' }` in `pagination.layout`. |
 
 > These are Vue slots. To restyle structure via classes, see the [ui slot reference](/guide/ui-slots-reference) (Chinese).
+
+`paginationItem` receives the extension `name`, effective pagination state, `pageCount`, `range`, `disabled`, `position` and `region`. Keep selection and request functions in the parent; bind `disabled` to application buttons as needed. Extensions share the pagination row's visibility, including empty-data and single-page hiding. See [composable layouts and content slots](/en/guide/pagination#composable-layouts-and-content-slots).
 
 ## VTableSummary
 

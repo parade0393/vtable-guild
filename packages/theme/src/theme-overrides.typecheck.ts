@@ -1,5 +1,6 @@
 import { createVTableGuild, type ThemeOverrideConfig } from '@vtable-guild/core'
 import type { TableThemeConfig } from './table'
+import type { PaginationThemeConfig } from './pagination'
 
 const tableOverride = {
   slots: {
@@ -34,6 +35,19 @@ const tableOverride = {
 createVTableGuild({
   theme: {
     table: tableOverride,
+    pagination: {
+      slots: {
+        layout: 'gap-4',
+        left: 'flex-1',
+        right: 'gap-2',
+        extension: 'text-sm',
+      },
+      variants: {
+        size: {
+          small: { layout: 'gap-2', extension: 'text-xs' },
+        },
+      },
+    } satisfies ThemeOverrideConfig<PaginationThemeConfig>,
   },
 })
 

@@ -16,6 +16,7 @@ import {
 import RemoteDemo from '../../../site/demos/pagination/remote.vue'
 import ControlledDemo from '../../../site/demos/pagination/controlled.vue'
 import AdvancedDemo from '../../../site/demos/pagination/advanced.vue'
+import LayoutDemo from '../../../site/demos/pagination/layout.vue'
 import { PLAYGROUND_CONTEXT_KEY } from '../playgroundContext'
 import ElementPaginationReference from '../components/ElementPaginationReference.vue'
 const playground = inject(PLAYGROUND_CONTEXT_KEY)!
@@ -169,6 +170,21 @@ const advancedPagination = computed<AntPaginationConfig>(() => ({
   itemRender: ({ type, originalElement }) =>
     type === 'prev' ? h('span', '‹') : type === 'next' ? h('span', '›') : originalElement,
 }))
+
+const nativeLayoutMode = ref<'inline' | 'split'>('split')
+const nativeLayoutSelectedCount = ref(0)
+const nativeLayout = computed(() =>
+  nativeLayoutMode.value === 'inline'
+    ? 'sizes, prev, pager, next, jumper, total, slot'
+    : 'slot, total, ->, sizes, prev, pager, next, jumper',
+)
+const nativeLayoutPagination: TablePaginationConfig = {
+  defaultPageSize: 5,
+  pageSizeOptions: [5, 10, 20],
+  pagerCount: 5,
+  showSizeChanger: true,
+  showQuickJumper: true,
+}
 </script>
 
 <template>
@@ -180,7 +196,7 @@ const advancedPagination = computed<AntPaginationConfig>(() => ({
           <h1>分页功能对照</h1>
           <p class="play-summary">
             左侧随预设切换对应 UI 库的原生表格与分页，右侧为 VTable
-            Guild。对照基础分页、受控状态、远程数据与高级配置。
+            Guild。对照基础分页、受控状态、远程数据与高级配置，并验证布局和业务插槽。
           </p>
         </div>
       </section>
@@ -412,6 +428,68 @@ const advancedPagination = computed<AntPaginationConfig>(() => ({
             <AdvancedDemo />
           </article>
         </div>
+      </section>
+
+      <section class="play-case">
+        <header class="play-case__header">
+          <div>
+            <p class="play-case__index">05</p>
+            <h2>可组合布局 / 内容插槽</h2>
+          </div>
+          <p class="play-case__desc">{{ presetLabel }}：重排、左右分区、业务刷新与窄容器换行。</p>
+        </header>
+        <article class="play-panel play-panel--accent">
+          <div class="play-panel__head">
+            <div>
+              <span class="play-badge play-badge--accent">VTable Guild</span>
+              <h3>{{ presetLabel }}</h3>
+            </div>
+            <p>统一 layout / 多个命名扩展点</p>
+          </div>
+          <LayoutDemo />
+          <p class="play-inline-note">
+            数组布局使用 position 整体对齐；左右分区占满分页行，position 只决定顶部或底部。
+            空数据、隐藏分页和空布局会连同业务内容一起隐藏。
+          </p>
+        </article>
+        <article v-if="playground.preset.value === 'element-plus'" class="play-panel">
+          <div class="play-panel__head">
+            <div>
+              <span class="play-badge">reference</span>
+              <h3>Element Plus 原生布局</h3>
+            </div>
+            <p>字符串 layout / 单个默认 slot</p>
+          </div>
+          <div class="play-toolbar">
+            <label>
+              原生布局
+              <select v-model="nativeLayoutMode">
+                <option value="inline">单组重排</option>
+                <option value="split">左右分区</option>
+              </select>
+            </label>
+            <code>{{ nativeLayout }}</code>
+          </div>
+          <ElementPaginationReference
+            :columns="compactColumns"
+            :data="controlledData"
+            :pagination="nativeLayoutPagination"
+            :native-layout="nativeLayout"
+            selection
+            @selection-change="nativeLayoutSelectedCount = $event"
+          >
+            <template #pagination>
+              <span>已选 {{ nativeLayoutSelectedCount }} 条</span>
+            </template>
+          </ElementPaginationReference>
+          <p class="play-inline-note">
+            此处按 Element Plus 原生语法对照顺序、左右分区和一个 slot。 上方 selection / refresh
+            多个命名扩展点由 VTable Guild 提供。
+          </p>
+        </article>
+        <p v-else class="play-inline-note">
+          Ant Design Vue 原生分页没有 layout；上方布局与业务插槽使用 VTable Guild 的统一 API。
+        </p>
       </section>
     </main>
   </ConfigProvider>

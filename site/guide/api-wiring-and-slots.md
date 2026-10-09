@@ -51,6 +51,31 @@
 - customHeaderCell，给表头单元格补充属性。
 - headerCell / bodyCell，替换单元格内部内容，同时保留表格内部交互能力。
 - summary，在表体后追加摘要区域。
+- paginationItem，在分页布局指定的位置显示选择数量、刷新按钮等业务内容。
+
+## 分页行中的业务内容
+
+用 `pagination.layout` 安排 `{ slot: '名称' }`，再通过 `#paginationItem` 的 `name` 区分内容。选择状态继续由父组件维护：
+
+```vue
+<VTable
+  :columns="columns"
+  :data-source="dataSource"
+  :row-selection="rowSelection"
+  :pagination="{
+    layout: {
+      left: [{ slot: 'selection' }],
+      right: ['prev', 'pager', 'next'],
+    },
+  }"
+>
+  <template #paginationItem="{ name }">
+    <span v-if="name === 'selection'">已选 {{ selectedRowKeys.length }} 条</span>
+  </template>
+</VTable>
+```
+
+插槽同时接收 `current`、`pageSize`、`total`、`pageCount`、`range`、`disabled`、`position` 和 `region`，类型为 `TablePaginationSlotProps`。业务按钮自行绑定禁用状态并调用加载函数。分页隐藏时扩展内容也隐藏；需要在空数据时保留的操作放在 `title`、`footer` 或外部工具栏。完整示例见[分页布局与内容插槽](/guide/pagination#可组合布局与内容插槽)。
 
 ## 什么时候该用 ui，什么时候该用 slot
 
@@ -70,3 +95,4 @@
 - [三层主题覆盖](/guide/theme-overrides)
 - [标题、页脚与摘要行](/guide/title-footer-summary)
 - [编辑](/guide/editing)
+- [分页](/guide/pagination)

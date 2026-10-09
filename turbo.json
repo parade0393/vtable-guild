@@ -5,6 +5,16 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**", ".vitepress/dist/**"]
     },
+    "@vtable-guild/table#build": {
+      // table consumes these peers' emitted types; peerDependencies are not ^build edges.
+      "dependsOn": [
+        "^build",
+        "@vtable-guild/core#build",
+        "@vtable-guild/icons#build",
+        "@vtable-guild/theme#build"
+      ],
+      "outputs": ["dist/**", ".vitepress/dist/**"]
+    },
     "@vtable-guild/vtable-guild#build": {
       "dependsOn": ["^build"],
       "inputs": [

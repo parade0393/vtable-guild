@@ -48,7 +48,11 @@ import {
 } from '@vtable-guild/theme'
 import { useColumns, useSorter, useFilter, useSelection } from '../composables'
 import { usePagination } from '../composables/usePagination'
-import type { TablePaginationConfig, TablePaginationState } from '../types/pagination'
+import type {
+  TablePaginationConfig,
+  TablePaginationSlotProps,
+  TablePaginationState,
+} from '../types/pagination'
 import TablePagination from './TablePagination'
 import { applyColumnOrder, filterVisibleColumns } from '../composables/useColumnDisplay'
 import { getEllipsisConfig } from '../utils/cell'
@@ -367,6 +371,7 @@ export default defineComponent({
     }
     title: { data: Record<string, unknown>[] }
     footer: { data: Record<string, unknown>[] }
+    paginationItem: TablePaginationSlotProps
     summary: void
   }>,
   setup(props, { slots, emit }) {
@@ -575,7 +580,10 @@ export default defineComponent({
     function renderPagination(area: 'top' | 'bottom') {
       if (!pagination.enabled.value || pagination.state.value.total === 0) return null
       const positions = pagination.config.value.position ?? ['bottomRight']
-      const position = positions.find((position) => position.startsWith(area))
+      const position = positions.find(
+        (position): position is TablePaginationSlotProps['position'] =>
+          position !== 'none' && position.startsWith(area),
+      )
       if (!position) return null
       const align = position.slice(area.length).toLowerCase() as 'left' | 'center' | 'right'
       return (
@@ -585,10 +593,12 @@ export default defineComponent({
           state={pagination.state.value}
           locale={paginationLocale.value}
           align={align}
+          position={position}
           tableSize={props.size}
           narrow={matchedResponsiveBreakpoints.value.has('xs')}
           getPopupContainer={props.getPopupContainer}
           onChange={pagination.change}
+          v-slots={slots.paginationItem ? { paginationItem: slots.paginationItem } : undefined}
         />
       )
     }

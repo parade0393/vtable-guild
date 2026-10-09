@@ -18,6 +18,7 @@ const props = defineProps<{
   data: Row[]
   columns: { key: string; dataIndex: string; title: string; width?: number }[]
   pagination: TablePaginationConfig
+  nativeLayout?: string
   height?: number
   selection?: boolean
 }>()
@@ -84,7 +85,7 @@ function change(page: number, size: number) {
       :current-page="current"
       :page-size="pageSize"
       :total="total"
-      :layout="layout"
+      :layout="nativeLayout ?? layout"
       :page-sizes="(pagination.pageSizeOptions ?? [10, 20, 50, 100]).map(Number)"
       :pager-count="pagerCount"
       :size="pagination.size"
@@ -94,8 +95,11 @@ function change(page: number, size: number) {
       @update:current-page="innerCurrent = $event"
       @update:page-size="innerSize = $event"
       @change="change"
-      ><span class="el-pagination__total"><TotalText /></span
-    ></ElPagination>
+    >
+      <slot name="pagination" :current="current" :page-size="pageSize" :total="total">
+        <span class="el-pagination__total"><TotalText /></span>
+      </slot>
+    </ElPagination>
     <ElTable
       :data="rows"
       row-key="key"
@@ -115,7 +119,7 @@ function change(page: number, size: number) {
       :current-page="current"
       :page-size="pageSize"
       :total="total"
-      :layout="layout"
+      :layout="nativeLayout ?? layout"
       :page-sizes="(pagination.pageSizeOptions ?? [10, 20, 50, 100]).map(Number)"
       :pager-count="pagerCount"
       :size="pagination.size"
@@ -125,8 +129,11 @@ function change(page: number, size: number) {
       @update:current-page="innerCurrent = $event"
       @update:page-size="innerSize = $event"
       @change="change"
-      ><span class="el-pagination__total"><TotalText /></span
-    ></ElPagination>
+    >
+      <slot name="pagination" :current="current" :page-size="pageSize" :total="total">
+        <span class="el-pagination__total"><TotalText /></span>
+      </slot>
+    </ElPagination>
     <p v-if="pagination.simple" class="play-inline-note">
       Element Plus 无 simple 模式，此处显示原生页码列表。
     </p>

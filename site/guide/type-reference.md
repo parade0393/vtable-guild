@@ -345,6 +345,7 @@ interface TableSlotsDecl<TRecord> {
   title?: (props: TableDataSlotProps<TRecord>) => VNodeChild
   footer?: (props: TableDataSlotProps<TRecord>) => VNodeChild
   summary?: () => VNodeChild
+  paginationItem?: (props: TablePaginationSlotProps) => VNodeChild
 }
 ```
 
@@ -500,3 +501,7 @@ import type { TableSlots, TableThemeConfig } from '@vtable-guild/vtable-guild'
 ## TablePaginationConfig / TablePaginationState
 
 公开导出 `TablePaginationConfig`、`TablePaginationState`、`TablePaginationPosition`、`PaginationItemType`。状态为 `{ current: number; pageSize: number; total: number }`。[配置参考](/guide/pagination)。
+
+`TablePaginationConfig.layout` 使用 `TablePaginationLayout`，接受只读有序数组或 `{ left?, right? }` 区域对象。数组项 `TablePaginationLayoutItem` 为内置 `TablePaginationBuiltinLayoutItem`（`total` / `sizes` / `prev` / `pager` / `next` / `jumper`）或 `{ readonly slot: string }`。这些类型均从公共包导出。
+
+`TablePaginationSlotProps` 为 `#paginationItem` 提供只读的分页状态及 `name`、`pageCount`、`range`、`disabled`、`position`、`region`，与行记录类型无关。字段说明和示例见[分页内容插槽](/guide/pagination#分页内容插槽)。

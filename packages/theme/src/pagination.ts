@@ -3,6 +3,11 @@ import type { ThemeConfig, ThemePresetName, VTableGuildPaginationLocale } from '
 export const paginationTheme = {
   slots: {
     root: 'flex shrink-0 flex-wrap items-center gap-[var(--vtg-pagination-gap)] py-[var(--vtg-pagination-margin)] text-[length:var(--vtg-table-font-size)] text-[color:var(--color-on-surface)]',
+    layout: 'flex w-full min-w-0 flex-wrap items-center gap-[var(--vtg-pagination-gap)]',
+    left: 'flex min-w-0 max-w-full flex-wrap items-center gap-[var(--vtg-pagination-gap)]',
+    right:
+      'ml-auto flex min-w-0 max-w-full flex-wrap items-center justify-end gap-[var(--vtg-pagination-gap)]',
+    extension: 'min-w-0 max-w-full break-words',
     pages: 'flex items-center gap-[var(--vtg-pagination-gap)]',
     item: 'inline-flex box-border shrink-0 items-center justify-center h-[var(--vtg-pagination-size)] min-w-[var(--vtg-pagination-size)] px-1 border border-[color:var(--vtg-pagination-border)] rounded-[var(--vtg-pagination-radius)] bg-[color:var(--vtg-pagination-bg)] text-inherit cursor-pointer transition-colors [&:not([aria-disabled=true]):hover]:text-[color:var(--vtg-pagination-hover-color)] [&:not([aria-disabled=true]):hover]:bg-[color:var(--vtg-pagination-hover-bg)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-primary)] aria-disabled:cursor-not-allowed aria-disabled:text-[color:var(--color-text-disabled)] aria-disabled:border-[color:var(--vtg-pagination-border)] aria-disabled:bg-[color:var(--vtg-pagination-bg)] disabled:cursor-not-allowed disabled:text-[color:var(--color-text-disabled)] disabled:border-[color:var(--vtg-pagination-border)] disabled:bg-[color:var(--vtg-pagination-bg)]',
     active:

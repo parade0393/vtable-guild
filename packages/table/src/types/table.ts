@@ -24,7 +24,11 @@ import type {
 } from './column'
 import type { SelectionSentinel } from '../constants'
 import type { TableSlots } from '@vtable-guild/theme'
-import type { TablePaginationConfig, TablePaginationState } from './pagination'
+import type {
+  TablePaginationConfig,
+  TablePaginationSlotProps,
+  TablePaginationState,
+} from './pagination'
 
 // ---- 展开行类型 ----
 
@@ -157,6 +161,7 @@ export interface TableSlotsDecl<TRecord extends object = Record<string, any>> {
   customFilterIcon?: (props: { column: ColumnType<TRecord>; filtered: boolean }) => VNodeChild
   title?: (props: TableDataSlotProps<TRecord>) => VNodeChild
   footer?: (props: TableDataSlotProps<TRecord>) => VNodeChild
+  paginationItem?: (props: TablePaginationSlotProps) => VNodeChild
   summary?: () => VNodeChild
 }
 

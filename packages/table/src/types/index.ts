@@ -28,6 +28,10 @@ export type {
   TablePaginationConfig,
   TablePaginationState,
   TablePaginationPosition,
+  TablePaginationBuiltinLayoutItem,
+  TablePaginationLayoutItem,
+  TablePaginationLayout,
+  TablePaginationSlotProps,
   PaginationItemType,
 } from './pagination'
 export type { ColumnGroupType as TableColumnGroupType } from './column'
