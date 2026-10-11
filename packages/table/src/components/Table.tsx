@@ -443,6 +443,9 @@ export default defineComponent({
       get localeOverrides() {
         return globalContext?.localeOverrides ?? {}
       },
+      get compatClass() {
+        return globalContext?.compatClass
+      },
     } as VTableGuildContext)
 
     const defaultTheme = computed(

@@ -238,7 +238,11 @@ export default defineComponent({
     return () => {
       if (props.dataSource.length === 0) {
         return (
-          <table data-vtg-table="" class={props.tableClass} style={props.tableStyle}>
+          <table
+            data-vtg-table=""
+            class={cn(props.tableClass, tableContext.compatClass?.('body'))}
+            style={props.tableStyle}
+          >
             <ColGroup columns={props.columns} />
             <ColumnWidthRow />
             <tbody class={props.tbodyClass}>
@@ -255,6 +259,7 @@ export default defineComponent({
       return (
         <VirtualList
           ref={virtualListRef}
+          holderClass={tableContext.compatClass?.('body')}
           data={props.dataSource}
           height={props.height}
           itemHeight={props.itemHeight}

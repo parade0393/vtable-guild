@@ -315,6 +315,7 @@ export default defineComponent({
         fixedClass.value,
         lastColumnDividerFix.value,
         isExpandHeader ? tableContext.compatClass?.('row-expand-icon-cell') : '',
+        shouldApplyHeaderEllipsis.value ? tableContext.compatClass?.('cell-ellipsis') : '',
       )
     })
 

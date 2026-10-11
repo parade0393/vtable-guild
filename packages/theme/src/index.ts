@@ -72,4 +72,5 @@ export type { ScrollbarSlots, ScrollbarThemeConfig } from './scrollbar'
 
 // ---------- 兼容类名 ----------
 export { antdvTableCompatClasses } from './compat/antdv-table'
+export { antdvPaginationCompatClasses } from './compat/antdv-pagination'
 export type { CompatClassConfig } from './compat/antdv-table'

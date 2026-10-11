@@ -76,6 +76,9 @@ app.use(
 变体类（`ant-table-small`、`ant-table-bordered`）以及状态类
 （`ant-table-row-selected`、`ant-table-cell-fix-left-last`、`ant-table-row-level-{n}` 等）。
 
+启用分页时也会输出 `ant-table-pagination`、对应的对齐类以及 `ant-pagination-*` 结构和状态类。
+表头启用省略时输出 `ant-table-cell-ellipsis`，虚拟表体也保留 `ant-table-body`。
+
 ### 与 ant-design-vue 共存时会串味吗
 
 一般不会。ant-design-vue 4.x 默认通过 cssinjs 给每条规则的选择器注入 hash 类，实际产出形如：

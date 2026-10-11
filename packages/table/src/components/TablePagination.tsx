@@ -21,6 +21,7 @@ import {
   type VTableGuildPaginationLocale,
 } from '@vtable-guild/core'
 import {
+  antdvPaginationCompatClasses,
   paginationZhCN,
   resolveBuiltInLocale,
   resolvePaginationThemePreset,
@@ -134,34 +135,41 @@ export default defineComponent({
       () => elementPlus.value || configuredPagerCount.value !== undefined,
     )
     const theme = computed(() => resolvePaginationThemePreset(context?.themePreset))
-    const { slots: styles } = useTheme('pagination', theme, {
-      get size() {
-        return (
-          props.config.size ??
-          (elementPlus.value && !(props.config.responsive && props.narrow)
-            ? props.tableSize === 'small'
-              ? 'small'
-              : 'default'
-            : props.tableSize === 'small' ||
-                props.tableSize === 'middle' ||
-                (props.config.responsive && props.narrow)
-              ? 'small'
-              : 'default')
-        )
+    const compatClass =
+      context?.compatClass === true ? (suffix: string) => `ant-pagination-${suffix}` : undefined
+    const { slots: styles } = useTheme(
+      'pagination',
+      theme,
+      {
+        get size() {
+          return (
+            props.config.size ??
+            (elementPlus.value && !(props.config.responsive && props.narrow)
+              ? props.tableSize === 'small'
+                ? 'small'
+                : 'default'
+              : props.tableSize === 'small' ||
+                  props.tableSize === 'middle' ||
+                  (props.config.responsive && props.narrow)
+                ? 'small'
+                : 'default')
+          )
+        },
+        get align() {
+          return props.align
+        },
+        get simple() {
+          return !!props.config.simple
+        },
+        get disabled() {
+          return !!props.config.disabled
+        },
+        get class() {
+          return props.config.class
+        },
       },
-      get align() {
-        return props.align
-      },
-      get simple() {
-        return !!props.config.simple
-      },
-      get disabled() {
-        return !!props.config.disabled
-      },
-      get class() {
-        return props.config.class
-      },
-    })
+      { compatClasses: antdvPaginationCompatClasses },
+    )
     const pages = computed(() => Math.max(1, Math.ceil(props.state.total / props.state.pageSize)))
     const input = ref('')
     const inputTouched = ref(false)
@@ -193,7 +201,12 @@ export default defineComponent({
       inputTouched.value = false
       simpleInput.value = String(props.state.current)
     }
-    function item(page: number, type: PaginationItemType) {
+    function item(
+      page: number,
+      type: PaginationItemType,
+      previousType?: PaginationItemType,
+      nextType?: PaginationItemType,
+    ) {
       const p = props.config
       const isPage = type === 'page'
       const disabled =
@@ -249,13 +262,28 @@ export default defineComponent({
           <path d={type === 'prev' ? 'M10 3 5 8l5 5' : 'm6 3 5 5-5 5'} />
         </svg>
       )
-      const itemClass = cnByCssMode(
+      const utilityClass = cnByCssMode(
         context?.cssMode ?? 'prebuilt',
         context?.classPrefix ?? 'vtg',
         styles.item(),
         type.startsWith('jump') && styles.jump(),
         isPage && page === props.state.current && styles.active(),
       )
+      // Keep semantic compat classes outside the utility merge / prefix pipeline.
+      const compatClasses = compatClass
+        ? [
+            isPage ? compatClass('item') : compatClass(type),
+            isPage && compatClass(`item-${page}`),
+            isPage && page === props.state.current && compatClass('item-active'),
+            isPage && previousType === 'jump-prev' && compatClass('item-after-jump-prev'),
+            isPage && nextType === 'jump-next' && compatClass('item-before-jump-next'),
+            !isPage && compatClass('item-link'),
+            type.startsWith('jump') && compatClass(`${type}-custom-icon`),
+            type.startsWith('jump') && compatClass('item-container'),
+            disabled && (type === 'prev' || type === 'next') && compatClass('disabled'),
+          ]
+        : []
+      const itemClass = [...compatClasses, utilityClass].filter(Boolean).join(' ')
       const original = (
         <button
           type="button"
@@ -354,7 +382,9 @@ export default defineComponent({
             (useElementWindow.value
               ? elementPlusPaginationItems(current, pages.value, pagerCount.value)
               : paginationItems(current, pages.value, !!p.showLessItems)
-            ).map(({ page, type }) => item(page, type))
+            ).map(({ page, type }, index, items) =>
+              item(page, type, items[index - 1]?.type, items[index + 1]?.type),
+            )
           )}
         </>
       )
@@ -385,7 +415,14 @@ export default defineComponent({
           return null
         }
         return (
-          <span class={styles.controls()}>
+          <span
+            class={[
+              styles.controls(),
+              p.simple
+                ? compatClass?.('simple-pager')
+                : [compatClass?.('options'), compatClass?.('options-quick-jumper')],
+            ]}
+          >
             {!p.simple && (
               <>
                 <span>{props.locale.jump_to}</span>
@@ -438,7 +475,10 @@ export default defineComponent({
               ) : (
                 <button
                   type="button"
-                  class={styles.go()}
+                  class={[
+                    styles.go(),
+                    !p.simple && go === true && compatClass?.('options-quick-jumper-button'),
+                  ]}
                   disabled={p.disabled}
                   onClick={() => jump(!!p.simple)}
                 >

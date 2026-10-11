@@ -23,7 +23,7 @@ const baseColumns: ColumnsType<DemoRow> = [
 
 function mountTable(
   extraProps: Partial<TableProps<DemoRow>> = {},
-  options: { compatClass?: boolean } = {},
+  options: { compatClass?: boolean; themePreset?: 'antdv' | 'element-plus' } = {},
 ) {
   return mount(VTable<DemoRow>, {
     props: {
@@ -33,7 +33,9 @@ function mountTable(
       ...extraProps,
     },
     global: {
-      plugins: [createVTableGuild({ compatClass: options.compatClass })],
+      plugins: [
+        createVTableGuild({ compatClass: options.compatClass, themePreset: options.themePreset }),
+      ],
     },
   })
 }
@@ -84,6 +86,86 @@ describe('antdv compat class', () => {
 
     expect(wrapper.get('tbody td').classes()).toContain('ant-table-cell-ellipsis')
   })
+
+  it.each(['antdv', 'element-plus'] as const)(
+    'marks only headers that actually apply ellipsis in the %s preset',
+    async (themePreset) => {
+      const wrapper = mountTable(
+        {
+          headerEllipsis: true,
+          columns: [
+            { title: 'Name', key: 'name', dataIndex: 'name', ellipsis: { showTitle: false } },
+            { title: 'Age', key: 'age', dataIndex: 'age' },
+          ],
+        },
+        { compatClass: true, themePreset },
+      )
+
+      const headers = wrapper.findAll('thead th')
+      expect(headers[0].classes()).toContain('ant-table-cell-ellipsis')
+      expect(headers[1].classes()).not.toContain('ant-table-cell-ellipsis')
+
+      await wrapper.setProps({ headerEllipsis: false })
+      expect(wrapper.get('thead th').classes()).not.toContain('ant-table-cell-ellipsis')
+      expect(wrapper.get('tbody td').classes()).toContain('ant-table-cell-ellipsis')
+      wrapper.unmount()
+    },
+  )
+
+  it.each(['antdv', 'element-plus'] as const)(
+    'keeps header ellipsis compatibility classes disabled by default in the %s preset',
+    (themePreset) => {
+      const wrapper = mountTable(
+        {
+          headerEllipsis: true,
+          columns: [{ title: 'Name', key: 'name', dataIndex: 'name', ellipsis: true }],
+        },
+        { themePreset },
+      )
+
+      expect(wrapper.html()).not.toContain('ant-')
+      wrapper.unmount()
+    },
+  )
+
+  it.each(['antdv', 'element-plus'] as const)(
+    'marks the virtual scroll holder and its empty body in the %s preset',
+    async (themePreset) => {
+      const wrapper = mountTable(
+        { virtual: true, scroll: { y: 240 } },
+        { compatClass: true, themePreset },
+      )
+
+      const body = wrapper.get('.ant-table-body')
+      expect(body.classes()).toContain('vtg-virtual-list-holder')
+      expect((body.element as HTMLElement).style.maxHeight).toBe('240px')
+      expect(wrapper.get('.vtg-virtual-list').classes()).not.toContain('ant-table-body')
+      expect(wrapper.findAll('.ant-table-body')).toHaveLength(1)
+
+      await wrapper.setProps({ dataSource: [] })
+      const emptyBody = wrapper.get('.ant-table-body')
+      expect(emptyBody.element.tagName).toBe('TABLE')
+      expect(emptyBody.get('tbody tr').classes()).toContain('ant-table-placeholder')
+      expect(wrapper.findAll('.ant-table-body')).toHaveLength(1)
+
+      await wrapper.setProps({ dataSource })
+      expect(wrapper.get('.ant-table-body').classes()).toContain('vtg-virtual-list-holder')
+      wrapper.unmount()
+    },
+  )
+
+  it.each(['antdv', 'element-plus'] as const)(
+    'keeps virtual body compatibility classes disabled by default in the %s preset',
+    async (themePreset) => {
+      const wrapper = mountTable({ virtual: true, scroll: { y: 240 } }, { themePreset })
+
+      expect(wrapper.get('.vtg-virtual-list-holder')).toBeTruthy()
+      expect(wrapper.html()).not.toContain('ant-')
+      await wrapper.setProps({ dataSource: [] })
+      expect(wrapper.html()).not.toContain('ant-')
+      wrapper.unmount()
+    },
+  )
 
   it('marks fixed columns and their boundary position', () => {
     const wrapper = mountTable(

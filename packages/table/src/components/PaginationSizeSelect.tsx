@@ -34,6 +34,7 @@ export default defineComponent({
   emits: { change: (_value: number) => true },
   setup(props, { emit }) {
     const context = inject(VTABLE_GUILD_INJECTION_KEY, null)
+    const compatClassEnabled = context?.compatClass === true
     const id = useId()
     const trigger = ref<HTMLButtonElement | null>(null)
     const popup = ref<HTMLUListElement | null>(null)
@@ -151,12 +152,15 @@ export default defineComponent({
         <button
           ref={trigger}
           type="button"
-          class={cnByCssMode(
-            context?.cssMode ?? 'prebuilt',
-            context?.classPrefix ?? 'vtg',
-            props.theme.item(),
-            props.theme.select(),
-          )}
+          class={[
+            cnByCssMode(
+              context?.cssMode ?? 'prebuilt',
+              context?.classPrefix ?? 'vtg',
+              props.theme.item(),
+              props.theme.select(),
+            ),
+            compatClassEnabled && 'ant-pagination-options ant-pagination-options-size-changer',
+          ]}
           disabled={props.disabled}
           aria-label={props.label}
           aria-haspopup="listbox"

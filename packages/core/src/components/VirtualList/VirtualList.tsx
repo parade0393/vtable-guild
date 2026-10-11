@@ -49,6 +49,7 @@ export interface ListRef {
 
 export interface ListProps {
   prefixCls?: string
+  holderClass?: string
   data?: any[]
   height?: number
   itemHeight?: number
@@ -137,6 +138,7 @@ export default defineComponent({
   name: 'VirtualList',
   props: {
     prefixCls: { type: String, default: 'vtg-virtual-list' },
+    holderClass: String,
     data: { type: Array as PropType<any[]> },
     height: Number,
     itemHeight: Number,
@@ -639,7 +641,7 @@ export default defineComponent({
           createVNode(
             Component,
             {
-              class: `${props.prefixCls}-holder`,
+              class: [`${props.prefixCls}-holder`, props.holderClass],
               style: componentStyle,
               ref: (el: any) => {
                 componentRef.value = el?.$el ?? el
