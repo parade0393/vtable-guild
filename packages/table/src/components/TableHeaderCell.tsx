@@ -323,7 +323,9 @@ export default defineComponent({
 
       if (leafColumn.value) {
         const resizedWidth =
-          tableContext.columnWidths?.[String(getColumnKey(leafColumn.value) ?? props.cell.colStart)]
+          tableContext.columnWidths?.[
+            String(getColumnKey(leafColumn.value) ?? props.cell.leafIndex)
+          ]
         const width = resizedWidth ?? leafColumn.value.width
         if (width) {
           base.width = typeof width === 'number' ? `${width}px` : width
@@ -337,6 +339,9 @@ export default defineComponent({
         ...base,
         ...(fixed ?? {}),
         ...(style ?? {}),
+        ...(leafColumn.value
+          ? tableContext.columnLayout?.columnStyle(props.cell.leafIndex, mergedColSpan.value)
+          : {}),
       }
     })
 
@@ -791,7 +796,7 @@ export default defineComponent({
           {hasFilters.value && filterDropdownContent}
 
           {leafColumn.value?.resizable && (
-            <ResizeHandle column={leafColumn.value} colIndex={props.cell.colStart} />
+            <ResizeHandle column={leafColumn.value} colIndex={props.cell.leafIndex} />
           )}
         </th>
       )

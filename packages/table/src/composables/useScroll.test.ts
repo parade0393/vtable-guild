@@ -34,6 +34,28 @@ function createScrollElement({ scrollLeft = 0, scrollWidth = 0, clientWidth = 0 
 }
 
 describe('useScroll', () => {
+  it('uses the shared fractional layout widths for fixed offsets and synchronizes summary', () => {
+    const columns: ColumnType<Record<string, unknown>>[] = [
+      { key: 'a', fixed: 'left', width: '50%' },
+      { key: 'b', fixed: 'left', minWidth: 100 },
+      { key: 'c', fixed: 'right', width: 'auto' },
+      { key: 'd', fixed: 'right', width: 10 },
+    ]
+    const widths = reactive([160.25, 100.5, 120.75, 80.125])
+    const summary = createScrollElement()
+    const scroll = useScroll({
+      displayColumns: () => columns,
+      layoutWidths: () => widths,
+      syncElements: () => [summary],
+    })
+    expect(scroll.fixedOffsets.value.get('b')?.left).toBe(160.25)
+    expect(scroll.fixedOffsets.value.get('c')?.right).toBe(80.125)
+    widths[0] = 180.5
+    expect(scroll.fixedOffsets.value.get('b')?.left).toBe(180.5)
+    scroll.syncHorizontalScroll(20.5, 100)
+    expect(summary.scrollLeft).toBe(20.5)
+  })
+
   it('computes fixed offsets for left and right fixed columns', () => {
     const columns: ColumnType<Record<string, unknown>>[] = [
       { key: 'name', width: 120, fixed: 'left' },

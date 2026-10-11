@@ -1,6 +1,7 @@
 import { computed, nextTick, watch, ref, type ComputedRef, type Ref } from 'vue'
 import type { ColumnType, Key } from '../types'
 import { getColumnKey } from './useSorter'
+import { resolveDeclaredColumnWidth } from '../utils/columnWidth'
 
 function getColKey(col: ColumnType<Record<string, unknown>>, index: number): Key {
   return getColumnKey(col) ?? index
@@ -44,6 +45,8 @@ export interface UseScrollReturn {
 export function useScroll(options: {
   displayColumns: () => ColumnType<Record<string, unknown>>[]
   columnWidths?: Record<string, number>
+  layoutWidths?: () => readonly number[] | undefined
+  syncElements?: () => HTMLElement[]
 }): UseScrollReturn {
   const headerWrapRef = ref<HTMLElement | null>(null)
   const bodyWrapRef = ref<HTMLElement | null>(null)
@@ -66,6 +69,7 @@ export function useScroll(options: {
     if (headerWrapRef.value) {
       headerWrapRef.value.scrollLeft = nextScrollLeft
     }
+    for (const element of options.syncElements?.() ?? []) element.scrollLeft = nextScrollLeft
   }
 
   /**
@@ -103,13 +107,8 @@ export function useScroll(options: {
       const col = columns[i]
       if (col.fixed !== 'left') continue
       const key = getColKey(col, i)
-      const resized = options.columnWidths?.[String(key)]
       const w =
-        typeof resized === 'number'
-          ? resized
-          : typeof col.width === 'number'
-            ? col.width
-            : parseInt(String(col.width) || '0', 10)
+        options.layoutWidths?.()?.[i] ?? resolveDeclaredColumnWidth(col, i, options.columnWidths)
       map.set(key, {
         left: leftOffset,
         isLastLeft: i === lastLeftIndex,
@@ -130,13 +129,8 @@ export function useScroll(options: {
       const col = columns[i]
       if (col.fixed !== 'right') continue
       const key = getColKey(col, i)
-      const resized = options.columnWidths?.[String(key)]
       const w =
-        typeof resized === 'number'
-          ? resized
-          : typeof col.width === 'number'
-            ? col.width
-            : parseInt(String(col.width) || '0', 10)
+        options.layoutWidths?.()?.[i] ?? resolveDeclaredColumnWidth(col, i, options.columnWidths)
       map.set(key, {
         right: rightOffset,
         isFirstRight: i === firstRightIndex,

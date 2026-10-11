@@ -58,9 +58,11 @@ import { applyColumnOrder, filterVisibleColumns } from '../composables/useColumn
 import { getEllipsisConfig } from '../utils/cell'
 import { getRootCompatClass } from '../utils/compat'
 import { resolveRowKey } from '../utils/rowKey'
+import { normalizeMinWidth } from '../utils/columnWidth'
 import { useScroll, type ScrollConfig } from '../composables/useScroll'
 import { useAutoHeight } from '../composables/useAutoHeight'
 import { useColumnMetrics } from '../composables/useColumnMetrics'
+import { useColumnLayout } from '../composables/useColumnLayout'
 import { resolveFixedColumnRanges } from '../composables/useColumnWindow'
 import { useExpand } from '../composables/useExpand'
 import { useResize } from '../composables/useResize'
@@ -77,6 +79,7 @@ import TableBody from './TableBody'
 import VirtualTableBody from './VirtualTableBody'
 import TableLoading from './TableLoading'
 import ColGroup from './ColGroup'
+import ColumnWidthRow from './ColumnWidthRow'
 import type {
   Breakpoint,
   ColumnsType,
@@ -782,6 +785,7 @@ export default defineComponent({
       startResize: resizeStartResize,
       isResizing: resizeIsResizing,
     } = useResize({
+      columns: () => displayColumns.value,
       onResizeColumn(column, width) {
         emit('resizeColumn', column, width)
       },
@@ -795,9 +799,12 @@ export default defineComponent({
       handleBodyScroll,
       fixedOffsets,
       syncHorizontalScroll,
+      updateScrollState,
     } = useScroll({
       displayColumns: () => displayColumns.value,
       columnWidths: resizeColumnWidths,
+      layoutWidths: () => columnLayout.metrics.value?.widths,
+      syncElements: () => (summaryWrapRef.value ? [summaryWrapRef.value] : []),
     })
 
     const rootCompatClass = computed(() =>
@@ -815,11 +822,14 @@ export default defineComponent({
 
     const autoScrollY = computed(() => props.scroll?.y === 'auto')
 
-    // scroll.y: 'auto' 时即使 showHeader: false 也进分离表体路径（表体仍需
-    // 可滚动视口），只是没有表头块可扣减；数字 scroll.y 维持原有门控不变。
+    // 无表头的约束布局仍需进入分离/虚拟表体；无显式下限保留原有路径。
     const hasStickyHeader = computed(
       () =>
-        autoScrollY.value || (props.showHeader !== false && (!!props.scroll?.y || !!props.sticky)),
+        autoScrollY.value ||
+        ((props.showHeader !== false ||
+          displayColumns.value.some((c) => normalizeMinWidth(c.minWidth) !== undefined)) &&
+          !!props.scroll?.y) ||
+        (props.showHeader !== false && !!props.sticky),
     )
 
     const hasFixedColumns = computed(() =>
@@ -829,6 +839,7 @@ export default defineComponent({
     const hasHorizontalScroll = computed(
       () =>
         props.scroll?.x !== undefined ||
+        columnLayout.overflow.value ||
         Boolean((props.expandable as Expandable<Record<string, unknown>> | undefined)?.fixed),
     )
 
@@ -860,6 +871,24 @@ export default defineComponent({
     // 业务侧不再需要自己监听 resize 并读取表头高度（issue #38 的诉求）。
     const wrapperRef = ref<HTMLElement | null>(null)
     const summaryWrapRef = ref<HTMLElement | null>(null)
+    const layoutRootRef = ref<HTMLElement | null>(null)
+    const columnLayout = useColumnLayout({
+      columns: () => displayColumns.value,
+      columnWidths: resizeColumnWidths,
+      layout: () => resolvedTableLayout.value,
+      split: () => hasStickyHeader.value,
+      root: () => layoutRootRef.value,
+      viewport: () =>
+        layoutRootRef.value?.contains(bodyWrapRef.value)
+          ? bodyWrapRef.value
+          : (headerWrapRef.value ?? layoutRootRef.value),
+      scrollX: () => props.scroll?.x,
+      onMeasure: () => {
+        // VirtualList owns its horizontal offset; an old scrollbar element may
+        // still be referenced after switching modes and must not reset it.
+        if (!virtualEnabled.value) updateScrollState()
+      },
+    })
 
     const { bodyHeight: autoBodyHeight } = useAutoHeight({
       enabled: () => autoScrollY.value,
@@ -918,8 +947,17 @@ export default defineComponent({
     const tableClass = computed(
       () => cn(themeSlots.table(), groupedHeaderThemeClasses.value.table) ?? '',
     )
-    const thClass = computed(() => cn(themeSlots.th(), groupedHeaderThemeClasses.value.th) ?? '')
-    const tdClass = computed(() => cn(themeSlots.td(), groupedHeaderThemeClasses.value.td) ?? '')
+    const widthLayoutCellClass = computed(() =>
+      columnLayout.enabled.value ? themeSlots.widthLayoutCell() : undefined,
+    )
+    const thClass = computed(
+      () =>
+        cn(themeSlots.th(), groupedHeaderThemeClasses.value.th, widthLayoutCellClass.value) ?? '',
+    )
+    const tdClass = computed(
+      () =>
+        cn(themeSlots.td(), groupedHeaderThemeClasses.value.td, widthLayoutCellClass.value) ?? '',
+    )
 
     watch(
       [virtualEnabled, hasPotentialBodySpan],
@@ -1026,18 +1064,19 @@ export default defineComponent({
       { immediate: true },
     )
 
-    const { metrics: columnMetrics } = useColumnMetrics({
-      enabled: () => virtualColumnEnabled.value,
+    const { metrics: legacyColumnMetrics } = useColumnMetrics({
+      enabled: () => virtualColumnEnabled.value && !columnLayout.enabled.value,
       headerEl: () => headerWrapRef.value,
       columns: () => displayColumns.value,
       columnWidths: resizeColumnWidths,
       hasHeader: () => props.showHeader !== false,
     })
+    const columnMetrics = computed(() => columnLayout.metrics.value ?? legacyColumnMetrics.value)
 
     watch(
       [virtualColumnEnabled, columnMetrics],
       ([enabled, metrics]) => {
-        if (!enabled || metrics || props.showHeader !== false) return
+        if (!enabled || metrics || props.showHeader !== false || columnLayout.enabled.value) return
         devWarn(
           'vtable-virtual-column-no-header',
           '[VTable] showHeader 为 false 时没有表头可供实测列宽，' +
@@ -1108,6 +1147,9 @@ export default defineComponent({
     // 保证稳定引用 + 内部懒读取 computed）。消费方调用具体字段才建立细粒度依赖，
     // 避免任一 variant 变化让整表所有单元格样式 computed 失效。
     const subThemeSlots: SubThemeSlots = {
+      widthConstraintCell: themeSlots.widthConstraintCell,
+      widthConstraintInner: themeSlots.widthConstraintInner,
+      widthLayoutCell: themeSlots.widthLayoutCell,
       thSortable: themeSlots.thSortable,
       thSorted: themeSlots.thSorted,
       tdSorted: themeSlots.tdSorted,
@@ -1195,6 +1237,7 @@ export default defineComponent({
     const summaryFixed = ref<boolean | 'top' | 'bottom' | false>(false)
 
     provide<TableContext>(TABLE_CONTEXT_KEY, {
+      columnLayout,
       bodyCell: slots.bodyCell,
       headerCell: slots.headerCell,
       empty: slots.empty,
@@ -1306,6 +1349,7 @@ export default defineComponent({
         // 列宽由 colgroup/首行单元格在 fixed 布局下分配，不足时自然横向溢出。
         tableStyle.width = '100%'
       }
+      Object.assign(tableStyle, columnLayout.tableStyle.value)
 
       const loadingValue = props.loading
       const loadingActive =
@@ -1351,8 +1395,9 @@ export default defineComponent({
                   effectiveClassPrefix.value,
                 )}
               >
-                <table class={tableClass.value} style={tableStyle}>
+                <table data-vtg-table="" class={tableClass.value} style={tableStyle}>
                   <ColGroup columns={displayColumns.value} />
+                  <ColumnWidthRow />
                   <TableHeader
                     rows={headerRows.value}
                     theadClass={themeSlots.thead()}
@@ -1400,8 +1445,9 @@ export default defineComponent({
             viewStyle={scrollbarViewStyle}
             onScroll={handleBodyScroll}
           >
-            <table class={tableClass.value} style={tableStyle}>
+            <table data-vtg-table="" class={tableClass.value} style={tableStyle}>
               <ColGroup columns={displayColumns.value} />
+              <ColumnWidthRow />
               <TableBody
                 dataSource={displayData.value}
                 columns={displayColumns.value}
@@ -1448,8 +1494,9 @@ export default defineComponent({
                   effectiveClassPrefix.value,
                 )}
               >
-                <table class={tableClass.value} style={tableStyle}>
+                <table data-vtg-table="" class={tableClass.value} style={tableStyle}>
                   <ColGroup columns={displayColumns.value} />
+                  <ColumnWidthRow />
                   <tfoot class={themeSlots.summary()}>{summaryContent}</tfoot>
                 </table>
               </div>
@@ -1458,6 +1505,7 @@ export default defineComponent({
 
         return (
           <div
+            ref={layoutRootRef}
             class={cn(
               themeSlots.root(),
               autoScrollY.value && themeSlots.rootAutoHeight(),
@@ -1494,8 +1542,9 @@ export default defineComponent({
       // ---- Single-table mode ----
       const tableContent = (
         <>
-          <table class={tableClass.value} style={tableStyle}>
+          <table data-vtg-table="" class={tableClass.value} style={tableStyle}>
             <ColGroup columns={displayColumns.value} />
+            <ColumnWidthRow />
             {props.showHeader !== false && (
               <TableHeader
                 rows={headerRows.value}
@@ -1522,7 +1571,7 @@ export default defineComponent({
       )
 
       return (
-        <div class={cn(themeSlots.root(), rootCompatClass.value)}>
+        <div ref={layoutRootRef} class={cn(themeSlots.root(), rootCompatClass.value)}>
           {renderPagination('top')}
           {titleContent && <div class={themeSlots.title()}>{titleContent}</div>}
           <Scrollbar

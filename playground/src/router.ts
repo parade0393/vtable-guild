@@ -53,6 +53,11 @@ export const router = createRouter({
       component: () => import('./pages/AutoHeightPage.vue'),
     },
     {
+      path: '/min-width',
+      name: 'min-width',
+      component: () => import('./pages/MinWidthPage.vue'),
+    },
+    {
       path: '/tree',
       name: 'tree',
       component: () => import('./pages/TreePage.vue'),

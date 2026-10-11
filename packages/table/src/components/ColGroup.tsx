@@ -25,12 +25,14 @@ export default defineComponent({
            */
           const resized = tableContext.columnWidths?.[String(getColumnKey(col) ?? i)]
           const w = resized ?? col.width
-          const style = w
-            ? {
-                width: typeof w === 'number' ? `${w}px` : w,
-                minWidth: typeof w === 'number' ? `${w}px` : w,
-              }
-            : undefined
+          const style = tableContext.columnLayout?.enabled.value
+            ? tableContext.columnLayout.columnStyle(i)
+            : w
+              ? {
+                  width: typeof w === 'number' ? `${w}px` : w,
+                  minWidth: typeof w === 'number' ? `${w}px` : w,
+                }
+              : undefined
           const compatClass = tableContext.compatClass
             ? col.key === '__vtg_selection__'
               ? tableContext.compatClass('selection-col')

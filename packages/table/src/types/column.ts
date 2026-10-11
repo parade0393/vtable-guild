@@ -88,6 +88,7 @@ export interface ColumnType<TRecord extends object = Record<string, any>> {
   key?: Key
   title?: ColumnTitle<TRecord>
   dataIndex?: DataIndex
+  /** 列的目标宽度；最终布局宽度仍受 minWidth 和可用空间/内容约束。数字按 CSS px 处理。 */
   width?: number | string
   align?: AlignType
   /**
@@ -110,10 +111,15 @@ export interface ColumnType<TRecord extends object = Record<string, any>> {
   /** 是否可拖拽调整列宽 */
   resizable?: boolean
 
-  /** 最小列宽（拖拽调整时），默认 50 */
+  /**
+   * 叶子列的最小布局/拖拽宽度（有限且非负的 CSS px，0 有效）。
+   * 同时约束 auto、fixed 和其他列被拖拽时的布局，与 resizable 无关。
+   * 未设置时不额外增加布局下限，仅拖拽交互使用默认 50px 下限。
+   * 分组表头由子列决定宽度；无效值按未设置处理。
+   */
   minWidth?: number
 
-  /** 最大列宽（拖拽调整时） */
+  /** 拖拽目标的最大宽度，不限制普通布局；与 minWidth 冲突时下限优先。 */
   maxWidth?: number
 
   /**

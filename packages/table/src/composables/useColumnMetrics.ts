@@ -9,6 +9,17 @@ export interface ColumnMetrics {
   total: number
 }
 
+/** Read one complete leaf-track row, retaining fractional CSS pixels on every engine. */
+export function measureColumnTracks(table: HTMLTableElement, count: number): ColumnMetrics | null {
+  const row = [...table.children].find((child) => child.hasAttribute('data-vtg-width-row'))
+  const cells = row?.querySelectorAll<HTMLElement>('[data-vtg-track]')
+  if (cells?.length !== count) return null
+  const widths = Array.from(cells, (cell) => cell.getBoundingClientRect().width)
+  if (widths.some((width) => !Number.isFinite(width) || width < 0)) return null
+  const total = widths.reduce((sum, width) => sum + width, 0)
+  return total > 0 ? { widths, total } : null
+}
+
 export interface UseColumnMetricsOptions {
   /** 关闭时不测量、不注册 observer，`metrics` 恒为 null。 */
   enabled: () => boolean
@@ -73,12 +84,12 @@ function metricsFromDeclaredWidths(
  *
  * **为什么量表头而不是要求用户声明数字列宽**：表头始终渲染全部 N 列，
  * 它本身就是浏览器算好的精确列宽结果，直接读即可，不必复刻一套
- * `width / minWidth / auto / 百分比 → renderWidth` 的解析（vxe-table 必须自己算，
+ * `width / auto / 百分比 → renderWidth` 的解析（vxe-table 必须自己算，
  * 是因为它表头表体都窗口化，没有一份完整布局可参照）。因此我们天然支持
  * `auto`、百分比，以及 `table-layout: fixed` 下浏览器对余量的分配。
  *
- * **不会震荡**：表头布局不依赖表体，所以「量表头 → 改表体」不构成反馈环。
- * 这是整个方案能成立的关键。
+ * 该路径仅用于没有显式下限的既有表格。约束布局由 useColumnLayout 分配 fixed
+ * 像素，或调用 measureColumnTracks 读取包含当前表体内容的独立 auto 参照。
  */
 export function useColumnMetrics(options: UseColumnMetricsOptions): UseColumnMetricsReturn {
   const metrics = shallowRef<ColumnMetrics | null>(null)

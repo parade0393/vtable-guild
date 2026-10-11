@@ -33,7 +33,12 @@ export default defineComponent({
       const alignClass = props.align
         ? (tableContext.vtgClass?.(TABLE_ALIGN_CLASSES[props.align]) ?? '')
         : ''
-      return cn(sub?.summaryCell() ?? '', alignClass, fixedClass.value)
+      return cn(
+        sub?.summaryCell() ?? '',
+        alignClass,
+        fixedClass.value,
+        tableContext.columnLayout?.enabled.value && sub?.widthLayoutCell(),
+      )
     })
 
     const cellStyle = computed(() => {
@@ -44,7 +49,11 @@ export default defineComponent({
       if (col?.width) {
         base.width = typeof col.width === 'number' ? `${col.width}px` : String(col.width)
       }
-      return { ...base, ...(fixedStyle.value ?? {}) }
+      return {
+        ...base,
+        ...(fixedStyle.value ?? {}),
+        ...tableContext.columnLayout?.columnStyle(props.index, props.colSpan),
+      }
     })
 
     return () => {
@@ -52,7 +61,13 @@ export default defineComponent({
       const rowSpan = props.rowSpan !== 1 ? props.rowSpan : undefined
 
       return (
-        <td class={cellClass.value} style={cellStyle.value} colspan={colSpan} rowspan={rowSpan}>
+        <td
+          data-vtg-col={props.index}
+          class={cellClass.value}
+          style={cellStyle.value}
+          colspan={colSpan}
+          rowspan={rowSpan}
+        >
           {slots.default?.()}
         </td>
       )

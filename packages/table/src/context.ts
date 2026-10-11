@@ -22,6 +22,7 @@ import type { FlattenRow } from './composables/useTreeData'
 import type { SelectionState } from './composables/useSelection'
 import type { RowDragBindings, RowDragDropTarget } from './composables/useRowDragSort'
 import type { SummaryFixed } from './components/VTableSummary'
+import type { ColumnLayout } from './composables/useColumnLayout'
 
 /**
  * 子组件主题 slot class 映射。
@@ -31,6 +32,9 @@ import type { SummaryFixed } from './components/VTableSummary'
  * 中调用具体字段才建立细粒度依赖，避免任一 variant 变化让全表失效。
  */
 export interface SubThemeSlots {
+  widthConstraintCell: () => string
+  widthConstraintInner: () => string
+  widthLayoutCell: () => string
   thSortable: () => string
   thSorted: () => string
   tdSorted: () => string
@@ -122,6 +126,7 @@ export interface SubThemeSlots {
  * 所有后代组件（TableCell、TableHeaderCell 等）通过 inject 获取。
  */
 export interface TableContext {
+  columnLayout?: ColumnLayout
   /**
    * 用户定义的 bodyCell slot 函数。
    * 来自 Table.vue 的 useSlots().bodyCell。

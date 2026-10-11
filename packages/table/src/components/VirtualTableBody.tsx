@@ -7,6 +7,7 @@ import TableCell from './TableCell'
 import TableEmpty from './TableEmpty'
 import ExpandedRowTr from './ExpandedRowTr'
 import ColGroup from './ColGroup'
+import ColumnWidthRow from './ColumnWidthRow'
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 import type { ColumnMetrics } from '../composables/useColumnMetrics'
 import { resolveFixedColumnRanges, useColumnWindow } from '../composables/useColumnWindow'
@@ -104,7 +105,7 @@ export default defineComponent({
      * 列变窄后余量仍在表上，内容宽不能跟着列宽之和一起掉。
      */
     const scrollWidth = computed(() => {
-      const measured = props.virtualColumn ? props.columnMetrics?.total : undefined
+      const measured = props.columnMetrics?.total
       if (measured && measured > 0) return measured
       const declared = sumDeclaredColumnWidths(props.columns, tableContext.columnWidths)
       const tablePx = parseStylePxWidth(props.tableStyle?.width)
@@ -237,8 +238,9 @@ export default defineComponent({
     return () => {
       if (props.dataSource.length === 0) {
         return (
-          <table class={props.tableClass} style={props.tableStyle}>
+          <table data-vtg-table="" class={props.tableClass} style={props.tableStyle}>
             <ColGroup columns={props.columns} />
+            <ColumnWidthRow />
             <tbody class={props.tbodyClass}>
               <TableEmpty
                 colSpan={props.columns.length || 1}
@@ -321,10 +323,11 @@ export default defineComponent({
                 : undefined
 
               const plan = cellPlan.value
-              const widths = columnWindowActive.value ? windowWidths.value : null
+              const widths = props.columnMetrics?.widths
 
               return (
                 <table
+                  data-vtg-table=""
                   class={props.tableClass}
                   style={{
                     ...props.tableStyle,
@@ -358,6 +361,7 @@ export default defineComponent({
                     }
                   >
                     <TableRow
+                      data-vtg-virtual-row=""
                       key={key}
                       rowClass={
                         cn(

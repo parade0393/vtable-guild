@@ -133,12 +133,16 @@ customRender: ({ text, index }) =>
 
 ### Fixed columns and resizing
 
-| Field       | Type                        | Default | Description                                  |
-| ----------- | --------------------------- | ------- | -------------------------------------------- |
-| `fixed`     | `'left' \| 'right' \| true` | -       | Fixed side; `true` equals `'left'`.          |
-| `resizable` | `boolean`                   | `false` | Whether the column width is drag-adjustable. |
-| `minWidth`  | `number`                    | `50`    | Minimum width while resizing.                |
-| `maxWidth`  | `number`                    | -       | Maximum width while resizing.                |
+| Field       | Type                        | Default | Description                                                                                                                                                    |
+| ----------- | --------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `fixed`     | `'left' \| 'right' \| true` | -       | Fixed side; `true` equals `'left'`.                                                                                                                            |
+| `resizable` | `boolean`                   | `false` | Whether the column width is drag-adjustable.                                                                                                                   |
+| `minWidth`  | `number`                    | -       | Leaf-column minimum in auto/fixed layouts and resizing, in finite nonnegative CSS pixels. Unset values add no layout minimum; resizing alone defaults to 50px. |
+| `maxWidth`  | `number`                    | -       | Maximum resize target only; `minWidth` wins if the two conflict.                                                                                               |
+
+`width` is a target and cannot override a valid `minWidth`, including explicit `0`. Negative or non-finite minimums are treated as unset. All visible leaf columns retain their minimums while another column is resized, regardless of `resizable`. If their total minimum exceeds the container, the table scrolls horizontally even without `scroll.x`. Group-header widths follow their children. Updating or removing a minimum recalculates the layout.
+
+Resizing starts from the measured cell width and emits `(column, width)` on release after a valid move. The event reports the constrained target; auto-layout content can make the rendered column wider. The component does not mutate the supplied column configuration. Existing minimums may now cause wider columns or earlier horizontal overflow.
 
 ### Sorting
 

@@ -42,6 +42,9 @@ export const elementPlusTableTheme = {
     ].join(' '),
     thead: '',
     tbody: '',
+    widthConstraintCell: 'h-0 border-0 p-0 text-[0px] leading-none',
+    widthConstraintInner: 'block h-0 overflow-hidden',
+    widthLayoutCell: 'box-border',
     tr: 'group/row transition-colors',
     groupedHeaderTable: 'border border-[color:var(--vtg-table-border-color)]',
     groupedHeaderTh: [

@@ -178,6 +178,7 @@ export default defineComponent({
           {}),
         ...((resolvedCell.value.renderCellProps?.style as Record<string, string> | undefined) ??
           {}),
+        ...tableContext.columnLayout?.columnStyle(props.colIndex, resolvedCell.value.colSpan || 1),
       }
     })
 
@@ -207,6 +208,7 @@ export default defineComponent({
       return {
         ...cellStyle.value,
         ...((extraStyle as Record<string, string> | undefined) ?? {}),
+        ...tableContext.columnLayout?.columnStyle(props.colIndex, resolvedCell.value.colSpan || 1),
       }
     }
 
@@ -301,6 +303,7 @@ export default defineComponent({
             {...omitCellProps(selectionCellProps)}
             class={cellSelClass}
             style={mergeSelectionCellStyle(selectionCellProps?.style)}
+            data-vtg-col={props.colIndex}
             colspan={colSpan}
             rowspan={rowSpan}
             onMouseenter={onCellEnter}
@@ -347,6 +350,7 @@ export default defineComponent({
             <td
               class={expandCellClass}
               style={cellStyle.value}
+              data-vtg-col={props.colIndex}
               colspan={colSpan}
               rowspan={rowSpan}
               onMouseenter={onCellEnter}
@@ -370,6 +374,7 @@ export default defineComponent({
           <td
             class={expandCellClass}
             style={cellStyle.value}
+            data-vtg-col={props.colIndex}
             colspan={colSpan}
             rowspan={rowSpan}
             onMouseenter={onCellEnter}
@@ -450,6 +455,7 @@ export default defineComponent({
           {...bodyDomProps.value}
           class={cn(cellClass.value, treeAppendClass)}
           style={cellStyle.value}
+          data-vtg-col={props.colIndex}
           colspan={colSpan}
           rowspan={rowSpan}
           onMouseenter={chainEnter(bodyDomProps.value.onMouseenter)}
