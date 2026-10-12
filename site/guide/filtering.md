@@ -62,6 +62,7 @@ const dataSource: UserRow[] = [
 - 同一列里选中多个值时，是 OR 关系。
 - 不同列之间是 AND 关系。
 - change 事件会返回当前所有列的 filters 快照，适合做查询条件同步。
+- 树形数据上只对顶层记录求值：`onFilter` 不递归 `children`，父节点命中会带上全部子节点，父节点不命中则整棵子树被移除，详见[树形表格](/guide/tree-table#已知限制)。
 
 ## 自定义筛选面板
 

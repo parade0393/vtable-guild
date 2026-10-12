@@ -68,7 +68,7 @@ const columns = [
 
 - 多级表头依赖相对稳定的列结构，建议提供清晰的 width。
 - 单元格合并更适合静态报表和明确分组结构。
-- 开启 virtual 后，不适合再做跨行合并，因为虚拟滚动只渲染可视区域行节点。
+- 开启 `virtual` 后不支持跨行合并：虚拟表体只渲染可视区的行节点，合并会错位。此时列上存在 `customCell` / `customRender` 会触发 dev 告警，`virtualColumn` 也会被忽略，详见[虚拟滚动](/guide/virtualization#关键边界)。
 
 ## 使用建议
 

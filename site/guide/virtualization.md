@@ -38,6 +38,7 @@ description: vtable-guild 内置纵向/横向虚拟滚动：10 万行数据只�
 
 - 只写 `virtual`，不写 `scroll.y`，不会真正启用虚拟滚动
 - `rowKey` 需要保持稳定，否则滚动窗口复用时容易出现状态错位
+- **不支持表体单元格合并**：虚拟表体只渲染可视区的行节点，跨行合并会错位。开启 `virtual` 后列上存在 `customCell` / `customRender`（可能返回 `rowSpan` / `colSpan`）时，dev 构建会告警，`virtualColumn` 也会因此被忽略，详见[多级表头与单元格合并](/guide/grouped-and-merged-cells#使用边界)
 - 虚拟滚动提升的是渲染性能，不会替代服务端分页、慢查询优化或大对象计算优化
 
 ## 定高快路径 `rowHeight`

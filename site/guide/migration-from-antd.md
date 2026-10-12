@@ -40,6 +40,15 @@ vtable-guild 的设计方向是兼容高频表格使用方式，而不是逐项�
 - `column.ellipsis` 接受 `boolean` 或 `{ showTitle?: boolean }`
 - `size` 三档命名为 `small` / `middle` / `large`
 
+### 2. 不要假设 antdv 的 props 都存在
+
+只实现了 [API Reference](/guide/api-reference) 列出的 props。下面这些 ant-design-vue Table 上存在的字段当前没有实现，传了也不生效：
+
+- `expandIconColumnIndex`：指定展开图标放在第几列。当前树形展开图标固定渲染在第一个数据列
+- `sticky.offsetScroll` / `sticky.getContainer`：类型里声明了但没有接线，传了不生效；同一个 `sticky` 对象里的 `offsetHeader` / `offsetSummary` 是有效的
+
+判断某个 API 能不能用，以 API Reference 和[完整 Agent API 参考](https://github.com/parade0393/vtable-guild/blob/master/docs/AGENT_API.md)为准，不要按 antdv 的经验补写。
+
 ## 常见映射
 
 | ant-design-vue                                          | vtable-guild                                                        |
