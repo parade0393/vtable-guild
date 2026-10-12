@@ -190,11 +190,13 @@ export default defineConfig({
       lang: 'zh' | 'en'
     }
 
-    const collect = (dir: string): string[] => {
+    const collect = (dir: string, recursive = true): string[] => {
       try {
         return readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
           e.isDirectory()
-            ? collect(join(dir, e.name))
+            ? recursive
+              ? collect(join(dir, e.name))
+              : []
             : e.name.endsWith('.md')
               ? [join(dir, e.name)]
               : [],
@@ -231,29 +233,46 @@ export default defineConfig({
         }
       })
 
-      // 移除 <Demo src="xxx"> 组件标签（VitePress 自定义组件，agent 无法解析）
-      // 但保留对应的 demo 文件引用（已经被上面的 <<< 展开）
-      body = body.replace(/<Demo\s+src="[^"]+"\s*\/?>(\s*<\/Demo>)?/g, '')
+      // 移除 <Demo ...> / </Demo> 组件标签（VitePress 自定义组件，agent 无法解析）
+      // 但保留对应的 demo 文件引用（已经被上面的 <<< 展开）。
+      // 属性顺序与数量不固定（src 后可能跟 :min-height 等），闭合标签也常与开标签分行，
+      // 所以开标签、闭合标签分别整块移除。
+      body = body.replace(/<Demo\b[^>]*\/?>/g, '').replace(/<\/Demo>/g, '')
 
       return body
     }
 
-    const sources: Array<{ dir: string; urlPrefix: string; lang: 'zh' | 'en' }> = [
+    const sources: Array<{
+      dir: string
+      urlPrefix: string
+      lang: 'zh' | 'en'
+      /** 是否递归子目录。英文站根只收 index.md，不能把 en/guide 再收一遍 */
+      recursive?: boolean
+      /** frontmatter 无 title、正文无标题时使用的条目名（layout: home 的页面） */
+      title?: string
+    }> = [
       { dir: join(siteRoot, 'guide'), urlPrefix: 'guide', lang: 'zh' },
       { dir: join(siteRoot, 'comparison'), urlPrefix: 'comparison', lang: 'zh' },
+      {
+        dir: join(siteRoot, 'en'),
+        urlPrefix: 'en',
+        lang: 'en',
+        recursive: false,
+        title: 'vtable-guild',
+      },
       { dir: join(siteRoot, 'en', 'guide'), urlPrefix: 'en/guide', lang: 'en' },
     ]
     const pages: DocPage[] = []
 
-    for (const { dir, urlPrefix, lang } of sources) {
-      for (const file of collect(dir)) {
+    for (const { dir, urlPrefix, lang, recursive, title } of sources) {
+      for (const file of collect(dir, recursive)) {
         const raw = readFileSync(file, 'utf8')
         const { meta, body } = parseFrontmatter(raw)
         const rel = file.slice(dir.length + 1).replace(/\.md$/, '')
         const url = urlPrefix + (rel === 'index' ? '' : `/${rel}`)
         pages.push({
           url: `${siteUrl}/${url}`,
-          title: titleFrom(meta, body, rel),
+          title: title ?? titleFrom(meta, body, rel),
           description: meta.description || '',
           body: expandDemoSyntax(body),
           lang,
