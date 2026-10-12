@@ -19,6 +19,39 @@ provide(PLAYGROUND_CONTEXT_KEY, {
   antLocale: currentAntdvLocale,
 })
 
+const navGroups = [
+  {
+    label: '功能',
+    items: [
+      { to: '/basic', label: '基础' },
+      { to: '/filter', label: '筛选' },
+      { to: '/selection', label: '选择' },
+      { to: '/sort', label: '排序' },
+      { to: '/pagination', label: '分页' },
+      { to: '/drag-sort', label: '行拖拽' },
+      { to: '/advanced', label: '高级' },
+    ],
+  },
+  {
+    label: '进阶',
+    items: [
+      { to: '/virtual', label: '虚拟滚动' },
+      { to: '/tree', label: '树形' },
+      { to: '/auto-height', label: '自动高度' },
+      { to: '/min-width', label: '最小列宽' },
+      { to: '/perf', label: '性能' },
+    ],
+  },
+  {
+    label: '实验',
+    items: [
+      { to: '/prebuilt', label: 'prebuilt' },
+      { to: '/antdv-full', label: 'antdv 一比一' },
+      { to: '/agent-demo', label: 'Agent Demo' },
+    ],
+  },
+]
+
 watch(currentPreset, syncDocumentPresetAttr, { immediate: true })
 watch(
   currentLocale,
@@ -39,57 +72,66 @@ onBeforeUnmount(() => {
 <template>
   <div class="play-shell">
     <header class="play-nav">
-      <div>
-        <p class="play-nav__eyebrow">Playground pages</p>
-        <h1>功能矩阵路由实验场</h1>
+      <div class="play-brand">
+        <span class="play-brand__mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+            <rect x="3.25" y="4.25" width="17.5" height="15.5" rx="3.25" />
+            <path d="M3.25 9.5h17.5" />
+            <path d="M9.75 9.5v10.25" />
+          </svg>
+        </span>
+        <span class="play-brand__text">
+          <span class="play-nav__eyebrow">
+            <i class="play-nav__eyebrow-rule" aria-hidden="true" />
+            Playground pages
+          </span>
+          <h1 class="play-brand__title">功能矩阵 · 路由实验场</h1>
+          <span class="play-brand__meta"
+            >Vue 3 Table · ant-design-vue / element-plus 双预设对照</span
+          >
+        </span>
       </div>
-      <nav class="play-tabs" aria-label="Feature routes">
-        <RouterLink class="play-tab" active-class="is-active" to="/basic">基础</RouterLink>
-        <RouterLink class="play-tab" active-class="is-active" to="/filter">筛选</RouterLink>
-        <RouterLink class="play-tab" active-class="is-active" to="/selection">选择</RouterLink>
-        <RouterLink class="play-tab" active-class="is-active" to="/sort">排序</RouterLink>
-        <RouterLink class="play-tab" active-class="is-active" to="/pagination">分页</RouterLink>
-        <RouterLink class="play-tab" active-class="is-active" to="/drag-sort">行拖拽</RouterLink>
-        <RouterLink class="play-tab" active-class="is-active" to="/advanced">高级</RouterLink>
-        <RouterLink class="play-tab" active-class="is-active" to="/virtual">虚拟</RouterLink>
-        <RouterLink class="play-tab" active-class="is-active" to="/min-width">最小列宽</RouterLink>
-        <RouterLink class="play-tab" active-class="is-active" to="/auto-height"
-          >自动高度</RouterLink
-        >
-        <RouterLink class="play-tab" active-class="is-active" to="/tree">树形</RouterLink>
-        <RouterLink class="play-tab" active-class="is-active" to="/perf">性能</RouterLink>
-        <RouterLink class="play-tab" active-class="is-active" to="/prebuilt">prebuilt</RouterLink>
-        <RouterLink class="play-tab" active-class="is-active" to="/antdv-full"
-          >antdv一比一</RouterLink
-        >
-        <RouterLink class="play-tab" active-class="is-active" to="/agent-demo"
-          >Agent Demo</RouterLink
-        >
-      </nav>
+
       <div class="play-nav__controls">
-        <div class="play-tabs" role="tablist" aria-label="Preset switch">
+        <div class="play-seg" role="tablist" aria-label="Preset switch">
+          <span class="play-seg__caption">Preset</span>
           <button
             type="button"
-            class="play-tab"
+            class="play-seg__btn"
             :class="{ 'is-active': currentPreset === 'antdv' }"
             @click="currentPreset = 'antdv'"
           >
+            <i class="play-seg__dot play-seg__dot--antdv" aria-hidden="true" />
             ant-design-vue
           </button>
           <button
             type="button"
-            class="play-tab play-tab--element"
+            class="play-seg__btn"
             :class="{ 'is-active': currentPreset === 'element-plus' }"
             @click="currentPreset = 'element-plus'"
           >
+            <i class="play-seg__dot play-seg__dot--element" aria-hidden="true" />
             element-plus
           </button>
         </div>
-        <div class="play-locale-switch" role="group" aria-label="Locale switch">
-          <span class="play-locale-switch__label">Locale</span>
+        <div class="play-seg play-seg--locale" role="group" aria-label="Locale switch">
+          <svg
+            class="play-seg__globe"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="8.5" />
+            <path d="M3.5 12h17" />
+            <path
+              d="M12 3.5c2.4 2.3 3.6 5.2 3.6 8.5S14.4 18.2 12 20.5c-2.4-2.3-3.6-5.2-3.6-8.5S9.6 5.8 12 3.5Z"
+            />
+          </svg>
           <button
             type="button"
-            class="play-locale-pill"
+            class="play-seg__btn"
             :class="{ 'is-active': currentLocale === 'zh-CN' }"
             @click="currentLocale = 'zh-CN'"
           >
@@ -97,7 +139,7 @@ onBeforeUnmount(() => {
           </button>
           <button
             type="button"
-            class="play-locale-pill"
+            class="play-seg__btn"
             :class="{ 'is-active': currentLocale === 'en-US' }"
             @click="currentLocale = 'en-US'"
           >
@@ -105,6 +147,23 @@ onBeforeUnmount(() => {
           </button>
         </div>
       </div>
+
+      <nav class="play-tabs" aria-label="Feature routes">
+        <div v-for="group in navGroups" :key="group.label" class="play-tabs__group">
+          <span class="play-tabs__label">{{ group.label }}</span>
+          <div class="play-tabs__row">
+            <RouterLink
+              v-for="item in group.items"
+              :key="item.to"
+              class="play-tab"
+              active-class="is-active"
+              :to="item.to"
+            >
+              {{ item.label }}
+            </RouterLink>
+          </div>
+        </div>
+      </nav>
     </header>
 
     <VTableGuildConfigProvider :locale="currentLocale">
@@ -136,118 +195,284 @@ onBeforeUnmount(() => {
 }
 
 .play-nav {
+  position: sticky;
+  top: 14px;
+  z-index: 30;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(320px, auto) minmax(320px, auto);
-  gap: 24px;
-  align-items: end;
-  margin-bottom: 18px;
-  padding: 22px 24px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'brand controls'
+    'nav nav';
+  gap: 12px 28px;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 15px 22px 13px;
   border: 1px solid var(--play-line);
-  border-radius: 28px;
-  background: linear-gradient(145deg, rgb(255 252 246 / 96%), rgb(247 241 230 / 90%));
-  box-shadow: 0 18px 55px rgb(42 36 28 / 8%);
+  border-radius: 24px;
+  background: linear-gradient(145deg, rgb(255 253 249 / 96%), rgb(246 240 229 / 94%));
+  box-shadow: 0 16px 44px rgb(42 36 28 / 9%);
+}
+
+.play-brand {
+  grid-area: brand;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.play-brand__mark {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  background: linear-gradient(150deg, #cb6a3c 0%, #a0492a 58%, #7f3619 100%);
+  box-shadow:
+    0 7px 16px rgb(140 62 30 / 26%),
+    inset 0 1px 0 rgb(255 255 255 / 30%);
+  color: #fff5ec;
+}
+
+.play-brand__mark svg {
+  width: 22px;
+  height: 22px;
+}
+
+.play-brand__text {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
 }
 
 .play-nav__eyebrow {
-  margin: 0 0 8px;
-  font-size: 0.78rem;
-  letter-spacing: 0.16em;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--play-accent);
 }
 
-.play-nav h1 {
-  margin: 0;
-  font-family: 'Iowan Old Style', 'Palatino Linotype', serif;
-  font-size: clamp(1.8rem, 2.4vw, 2.6rem);
-  line-height: 1;
-  letter-spacing: -0.03em;
+.play-nav__eyebrow-rule {
+  width: 20px;
+  height: 1px;
+  background: currentcolor;
+  opacity: 0.55;
 }
 
-.play-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+.play-brand__title {
+  margin: 0;
+  font-family: 'Iowan Old Style', 'Palatino Linotype', serif;
+  font-size: clamp(1.15rem, 1.5vw, 1.5rem);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.play-brand__meta {
+  overflow: hidden;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--play-muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .play-nav__controls {
-  display: grid;
-  gap: 14px;
-  justify-items: end;
-}
-
-.play-locale-switch {
+  grid-area: controls;
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  justify-content: flex-end;
   gap: 10px;
 }
 
-.play-locale-switch__label {
-  font-size: 0.78rem;
+.play-seg {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border: 1px solid var(--play-line);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 45%);
+  box-shadow: inset 0 1px 2px rgb(42 36 28 / 5%);
+}
+
+.play-seg__caption {
+  padding: 0 6px 0 10px;
+  font-size: 0.64rem;
+  font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--play-muted);
 }
 
+.play-seg__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  border-radius: 999px;
+  padding: 7px 13px;
+  background: transparent;
+  color: var(--play-muted);
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.25;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 0.16s ease,
+    color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.play-seg__btn:hover {
+  background: rgb(255 255 255 / 66%);
+  color: var(--play-ink);
+}
+
+.play-seg__btn.is-active {
+  background: var(--play-panel-strong);
+  color: var(--play-ink);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgb(42 36 28 / 14%);
+}
+
+.play-seg__dot {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  opacity: 0.4;
+  transition:
+    opacity 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.play-seg__dot--antdv {
+  background: #1677ff;
+}
+
+.play-seg__dot--element {
+  background: #409eff;
+}
+
+.play-seg__btn.is-active .play-seg__dot {
+  opacity: 1;
+}
+
+.play-seg__btn.is-active .play-seg__dot--antdv {
+  box-shadow: 0 0 0 3px rgb(22 119 255 / 16%);
+}
+
+.play-seg__btn.is-active .play-seg__dot--element {
+  box-shadow: 0 0 0 3px rgb(64 158 255 / 20%);
+}
+
+.play-seg--locale {
+  padding-left: 11px;
+}
+
+.play-seg__globe {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  color: var(--play-muted);
+}
+
+.play-seg--locale .play-seg__btn.is-active {
+  background: var(--play-accent-soft);
+  color: var(--play-accent);
+  box-shadow: none;
+}
+
+.play-tabs {
+  grid-area: nav;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 16px;
+  padding-top: 11px;
+  border-top: 1px solid var(--play-line);
+}
+
+.play-tabs__group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.play-tabs__group + .play-tabs__group {
+  position: relative;
+  padding-left: 16px;
+}
+
+.play-tabs__group + .play-tabs__group::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  translate: 0 -50%;
+  width: 1px;
+  height: 16px;
+  background: var(--play-line);
+}
+
+.play-tabs__label {
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--play-muted);
+  opacity: 0.75;
+}
+
+.play-tabs__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
 .play-tab {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  border: 1px solid rgb(39 45 39 / 16%);
+  border: 1px solid transparent;
   border-radius: 999px;
-  padding: 11px 16px;
-  background: rgb(255 255 255 / 54%);
-  color: var(--play-ink);
-  font-size: 0.92rem;
-  cursor: pointer;
+  padding: 6px 12px;
+  background: transparent;
+  color: var(--play-muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
   text-decoration: none;
+  cursor: pointer;
   transition:
-    transform 0.18s ease,
-    background-color 0.18s ease,
-    color 0.18s ease,
-    border-color 0.18s ease;
+    background-color 0.16s ease,
+    color 0.16s ease,
+    border-color 0.16s ease;
 }
 
 .play-tab:hover {
-  transform: translateY(-1px);
+  border-color: var(--play-line);
+  background: rgb(255 255 255 / 72%);
+  color: var(--play-ink);
 }
 
 .play-tab.is-active {
-  background: #1677ff;
-  border-color: #1677ff;
-  color: #ffffff;
+  border-color: transparent;
+  background: var(--play-ink);
+  color: #fffdf7;
+  box-shadow: 0 2px 8px rgb(29 36 30 / 18%);
 }
 
-.play-tab--element.is-active {
-  background: #409eff;
-  border-color: #409eff;
-}
-
-.play-locale-pill {
-  border: 1px solid rgb(39 45 39 / 16%);
-  border-radius: 999px;
-  padding: 9px 14px;
-  background: rgb(255 255 255 / 60%);
-  color: var(--play-ink);
-  font-size: 0.84rem;
-  cursor: pointer;
-  transition:
-    transform 0.18s ease,
-    background-color 0.18s ease,
-    border-color 0.18s ease,
-    color 0.18s ease;
-}
-
-.play-locale-pill:hover {
-  transform: translateY(-1px);
-}
-
-.play-locale-pill.is-active {
-  border-color: rgb(186 91 50 / 36%);
-  background: var(--play-accent-soft);
-  color: var(--play-accent);
+.play-tab:focus-visible,
+.play-seg__btn:focus-visible {
+  outline: 2px solid var(--play-accent);
+  outline-offset: 2px;
 }
 
 .play-page {
@@ -572,6 +797,21 @@ onBeforeUnmount(() => {
   margin-top: 14px;
 }
 
+@media (width <= 1180px) {
+  .play-nav {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'brand'
+      'controls'
+      'nav';
+    justify-items: start;
+  }
+
+  .play-nav__controls {
+    flex-wrap: wrap;
+  }
+}
+
 @media (width <= 1080px) {
   .play-nav,
   .play-compare-grid,
@@ -579,10 +819,6 @@ onBeforeUnmount(() => {
   .play-case__header,
   .play-hero {
     grid-template-columns: 1fr;
-  }
-
-  .play-nav__controls {
-    justify-items: start;
   }
 
   .play-panel__head {
@@ -597,6 +833,15 @@ onBeforeUnmount(() => {
 @media (width <= 720px) {
   .play-shell {
     padding: 16px;
+  }
+
+  .play-nav {
+    top: 8px;
+  }
+
+  .play-nav__eyebrow-rule,
+  .play-seg__caption {
+    display: none;
   }
 
   .play-nav,
