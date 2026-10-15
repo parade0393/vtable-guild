@@ -1,13 +1,27 @@
-import { computed, h, reactive, ref, type ComputedRef, type Ref, type VNodeChild } from 'vue'
+import { computed, h, proxyRefs, ref, type VNode } from 'vue'
 import type { TableColumnType } from 'ant-design-vue'
 import type { ColumnType } from '@vtable-guild/vtable-guild'
 
 export type FilterValue = string | number | boolean
 
+/**
+ * 筛选项。value 用 FilterValue，和 vtable 的 ColumnFilterItem 对齐。
+ */
 export interface FilterOption {
   text: string
   value: FilterValue
   children?: FilterOption[]
+}
+
+/**
+ * element-plus 的 `filters` prop 只接受 `{ text: string; value: string }[]`，
+ * 比 vtable 的 ColumnFilterItem 窄。演示数据里的筛选值本来就全是字符串，
+ * 所以喂给 element-plus 的列表用这个收窄类型声明（仍可赋给 ColumnFilterItem）。
+ */
+export interface TextFilterOption {
+  text: string
+  value: string
+  children?: TextFilterOption[]
 }
 
 export interface DemoRow {
@@ -25,17 +39,27 @@ export interface DemoRow {
 
 export interface DropdownLikeProps {
   selectedKeys: FilterValue[]
-  setSelectedKeys: (keys: FilterValue[]) => void
-  confirm: (options?: { closeDropdown?: boolean }) => void
+  /**
+   * setSelectedKeys / confirm 用方法语法而不是属性语法声明：
+   * ant-design-vue 的形参是 `Key[]` / `{ closeDropdown: boolean }`，
+   * vtable 的形参是 `FilterValue[]` / `{ closeDropdown?: boolean }`，
+   * 两组类型互不为子类型。方法语法走双变参数检查，两边都能赋值，运行时不受影响。
+   */
+  setSelectedKeys(keys: FilterValue[]): void
+  confirm(options?: { closeDropdown?: boolean }): void
   clearFilters?: (options?: { confirm?: boolean; closeDropdown?: boolean }) => void
   close: () => void
 }
 
+/**
+ * `proxyRefs()` 只解包顶层 ref / computed，读取时拿到的就是值本身，
+ * 所以这里直接描述「解包后」的类型：模板里 `state.antControlledColumns` 是数组。
+ */
 export interface FilterMatrixState {
-  controlledTeamFilter: Ref<FilterValue[]>
-  referenceDropdownOpen: Ref<boolean>
-  vtableDropdownOpen: Ref<boolean>
-  forcedHighlight: Ref<boolean>
+  controlledTeamFilter: FilterValue[]
+  referenceDropdownOpen: boolean
+  vtableDropdownOpen: boolean
+  forcedHighlight: boolean
   setControlledTeam: (values: FilterValue[]) => void
   openBothDropdowns: () => void
   closeBothDropdowns: () => void
@@ -50,7 +74,7 @@ export interface FilterMatrixState {
   onElementControlledFilterChange: (filters: Record<string, FilterValue[]>) => void
   antMultiColumns: TableColumnType<DemoRow>[]
   antSingleColumns: TableColumnType<DemoRow>[]
-  antControlledColumns: ComputedRef<TableColumnType<DemoRow>[]>
+  antControlledColumns: TableColumnType<DemoRow>[]
   antDefaultResetColumns: TableColumnType<DemoRow>[]
   antSearchColumns: TableColumnType<DemoRow>[]
   antTreeColumns: TableColumnType<DemoRow>[]
@@ -59,11 +83,11 @@ export interface FilterMatrixState {
   antColumnIconColumns: TableColumnType<DemoRow>[]
   antTableDropdownApproxColumns: TableColumnType<DemoRow>[]
   antColumnDropdownColumns: TableColumnType<DemoRow>[]
-  antControlledOpenColumns: ComputedRef<TableColumnType<DemoRow>[]>
-  antFilteredOverrideColumns: ComputedRef<TableColumnType<DemoRow>[]>
+  antControlledOpenColumns: TableColumnType<DemoRow>[]
+  antFilteredOverrideColumns: TableColumnType<DemoRow>[]
   vtableMultiColumns: ColumnType<DemoRow>[]
   vtableSingleColumns: ColumnType<DemoRow>[]
-  vtableControlledColumns: ComputedRef<ColumnType<DemoRow>[]>
+  vtableControlledColumns: ColumnType<DemoRow>[]
   vtableDefaultResetColumns: ColumnType<DemoRow>[]
   vtableSearchColumns: ColumnType<DemoRow>[]
   vtableTreeColumns: ColumnType<DemoRow>[]
@@ -72,8 +96,8 @@ export interface FilterMatrixState {
   vtableColumnIconColumns: ColumnType<DemoRow>[]
   vtableTableDropdownColumns: ColumnType<DemoRow>[]
   vtableColumnDropdownColumns: ColumnType<DemoRow>[]
-  vtableControlledOpenColumns: ComputedRef<ColumnType<DemoRow>[]>
-  vtableFilteredOverrideColumns: ComputedRef<ColumnType<DemoRow>[]>
+  vtableControlledOpenColumns: ColumnType<DemoRow>[]
+  vtableFilteredOverrideColumns: ColumnType<DemoRow>[]
 }
 
 export const dataSource: DemoRow[] = [
@@ -201,7 +225,7 @@ export const ellipsisDemoColumns: ColumnType<DemoRow>[] = [
   },
 ]
 
-export const cityFilters: FilterOption[] = [
+export const cityFilters: TextFilterOption[] = [
   { text: 'New York', value: 'New York' },
   { text: 'Chicago', value: 'Chicago' },
   { text: 'London', value: 'London' },
@@ -210,20 +234,20 @@ export const cityFilters: FilterOption[] = [
   { text: 'Tokyo', value: 'Tokyo' },
 ]
 
-export const statusFilters: FilterOption[] = [
+export const statusFilters: TextFilterOption[] = [
   { text: 'Active', value: 'Active' },
   { text: 'Paused', value: 'Paused' },
   { text: 'Draft', value: 'Draft' },
 ]
 
-export const teamFilters: FilterOption[] = [
+export const teamFilters: TextFilterOption[] = [
   { text: 'Platform', value: 'Platform' },
   { text: 'Commerce', value: 'Commerce' },
   { text: 'Design Systems', value: 'Design Systems' },
   { text: 'Operations', value: 'Operations' },
 ]
 
-export const roleFilters: FilterOption[] = [
+export const roleFilters: TextFilterOption[] = [
   { text: 'Frontend Engineer', value: 'Frontend Engineer' },
   { text: 'Product Analyst', value: 'Product Analyst' },
   { text: 'Visual Designer', value: 'Visual Designer' },
@@ -234,7 +258,7 @@ export const roleFilters: FilterOption[] = [
   { text: 'Data Analyst', value: 'Data Analyst' },
 ]
 
-export const regionTreeFilters: FilterOption[] = [
+export const regionTreeFilters: TextFilterOption[] = [
   {
     text: 'North America',
     value: 'North America',
@@ -291,7 +315,7 @@ export function toggleKeys(keys: FilterValue[], value: FilterValue, multiple: bo
   return [...keys, value]
 }
 
-export function renderIconChip(label: string, filtered: boolean): VNodeChild {
+export function renderIconChip(label: string, filtered: boolean): VNode {
   return h(
     'span',
     {
@@ -393,28 +417,32 @@ function createAntFilterColumn(
     key: string
   },
 ): TableColumnType<DemoRow> {
-  const field = options.dataIndex
+  // 先解构出必填字段，剩下的用 rest 展开：`...options` 覆盖的是同一批键，
+  // 直接写成 `{ title: ..., ...options }` 会触发 TS2783「键被重复指定」。
+  // 结果对象与展开顺序完全一致，运行时行为不变。
+  const { title, dataIndex: field, key, ...rest } = options
   return {
-    title: options.title,
+    title,
     dataIndex: field,
-    key: options.key,
+    key,
     width: 210,
     sorter: compareText(field),
-    ...options,
+    ...rest,
   }
 }
 
 function createVTableFilterColumn(
   options: Partial<ColumnType<DemoRow>> & { title: string; dataIndex: keyof DemoRow; key: string },
 ): ColumnType<DemoRow> {
-  const field = options.dataIndex
+  // 同 createAntFilterColumn：解构必填字段后用 rest 展开，避开 TS2783。
+  const { title, dataIndex: field, key, ...rest } = options
   return {
-    title: options.title,
+    title,
     dataIndex: field,
-    key: options.key,
+    key,
     width: 210,
     sorter: compareText(field),
-    ...options,
+    ...rest,
   }
 }
 
@@ -779,7 +807,11 @@ export function useFilterMatrixState(): FilterMatrixState {
     ),
   )
 
-  return reactive({
+  // proxyRefs 而不是 reactive：reactive() 的返回值类型 UnwrapNestedRefs 会一路
+  // 展开列配置里自引用的 VNodeChild 联合，撞上 TS 实例化深度上限报 TS2589；
+  // proxyRefs 只做一层浅解包，类型正好就是 FilterMatrixState。
+  // 本对象的 ref / computed 全在顶层、没有嵌套 ref，两者运行时行为一致。
+  return proxyRefs({
     controlledTeamFilter,
     referenceDropdownOpen,
     vtableDropdownOpen,

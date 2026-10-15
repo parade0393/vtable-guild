@@ -21,8 +21,8 @@ function buildRows(count: number): Row[] {
     rows[i] = {
       key: i,
       name: `成员 ${i + 1}`,
-      team: TEAMS[i % TEAMS.length],
-      city: CITIES[i % CITIES.length],
+      team: TEAMS[i % TEAMS.length]!,
+      city: CITIES[i % CITIES.length]!,
       score: 40 + ((i * 17) % 60),
       updatedAt: `2026-0${(i % 9) + 1}-${String((i % 28) + 1).padStart(2, '0')}`,
     }

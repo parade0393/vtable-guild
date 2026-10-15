@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { ConfigProvider as AConfigProvider, Table as ATable } from 'ant-design-vue'
+import type { Locale } from 'ant-design-vue/es/locale'
 import { VTable } from '@vtable-guild/vtable-guild'
 import type { ColumnsType } from '@vtable-guild/vtable-guild'
+import type { ColumnsType as AntdvColumnsType } from 'ant-design-vue/es/table'
 import {
   dataSource,
   ellipsisDemoColumns,
@@ -11,8 +13,15 @@ import {
 } from '../filterMatrixShared'
 
 defineProps<{
-  locale: Record<string, unknown>
+  locale: Locale
 }>()
+
+// 同一份列配置要同时喂给原生 ATable 和 VTable。vtable 的 ColumnsType 比 antdv 宽
+// （多一个 ColumnSentinel 成员，customRender 的返回类型也更宽），直接传给 ATable 会报
+// TS2322；这里收窄成 antdv 自己的列类型，数组引用不变，运行时不产生额外开销。
+function toAntdvColumns(columns: ColumnsType<DemoRow>): AntdvColumnsType<DemoRow> {
+  return columns as AntdvColumnsType<DemoRow>
+}
 
 const demoSize = ref<'small' | 'middle' | 'large'>('middle')
 const hoverable = ref(true)
@@ -78,7 +87,7 @@ const compactRows = computed(() => dataSource.slice(0, 4))
               <p>原生 loading</p>
             </div>
             <ATable
-              :columns="baseColumns"
+              :columns="toAntdvColumns(baseColumns)"
               :data-source="compactRows"
               :loading="true"
               :pagination="false"
@@ -123,7 +132,7 @@ const compactRows = computed(() => dataSource.slice(0, 4))
               <p>原生 loading 参照</p>
             </div>
             <ATable
-              :columns="baseColumns"
+              :columns="toAntdvColumns(baseColumns)"
               :data-source="compactRows"
               :loading="true"
               :pagination="false"
@@ -170,7 +179,12 @@ const compactRows = computed(() => dataSource.slice(0, 4))
               </div>
               <p>空数据原生表现</p>
             </div>
-            <ATable :columns="baseColumns" :data-source="[]" :pagination="false" row-key="key" />
+            <ATable
+              :columns="toAntdvColumns(baseColumns)"
+              :data-source="[]"
+              :pagination="false"
+              row-key="key"
+            />
           </article>
 
           <article class="play-panel play-panel--accent">
@@ -206,7 +220,12 @@ const compactRows = computed(() => dataSource.slice(0, 4))
               </div>
               <p>空数据原生表现</p>
             </div>
-            <ATable :columns="baseColumns" :data-source="[]" :pagination="false" row-key="key" />
+            <ATable
+              :columns="toAntdvColumns(baseColumns)"
+              :data-source="[]"
+              :pagination="false"
+              row-key="key"
+            />
           </article>
 
           <article class="play-panel play-panel--accent">
@@ -251,7 +270,7 @@ const compactRows = computed(() => dataSource.slice(0, 4))
             <ATable
               bordered
               striped
-              :columns="baseColumns"
+              :columns="toAntdvColumns(baseColumns)"
               :data-source="compactRows"
               :pagination="false"
               row-key="key"
@@ -304,7 +323,7 @@ const compactRows = computed(() => dataSource.slice(0, 4))
             </div>
             <ATable
               :size="demoSize"
-              :columns="baseColumns"
+              :columns="toAntdvColumns(baseColumns)"
               :data-source="compactRows"
               :pagination="false"
               row-key="key"
@@ -399,7 +418,7 @@ const compactRows = computed(() => dataSource.slice(0, 4))
               <p>native ellipsis</p>
             </div>
             <ATable
-              :columns="ellipsisDemoColumns"
+              :columns="toAntdvColumns(ellipsisDemoColumns)"
               :data-source="ellipsisDemoRows"
               :pagination="false"
               row-key="key"

@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "test": "vitest run --config ../vitest.config.ts --project playground --passWithNoTests"
+    "test": "vitest run --config ../vitest.config.ts --project playground --passWithNoTests",
+    "type-check": "vue-tsc --noEmit -p tsconfig.json",
+    "type-check:root": "vue-tsc --noEmit -p ../tsconfig.node.json"
   },
   "dependencies": {
     "@ant-design/icons-vue": "^7.0.1",

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ConfigProvider as AConfigProvider, Table as ATable } from 'ant-design-vue'
+import type { Locale } from 'ant-design-vue/es/locale'
 import { VTable } from '@vtable-guild/vtable-guild'
 import {
   dataSource,
@@ -10,7 +11,7 @@ import {
 } from '../filterMatrixShared'
 
 defineProps<{
-  locale: Record<string, unknown>
+  locale: Locale
 }>()
 
 const state = useFilterMatrixState()

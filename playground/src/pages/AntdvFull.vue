@@ -1174,8 +1174,8 @@ const summaryFixedColumns: ColumnsType<SummaryFixedRecord> = [
 
 const summaryFixedData: SummaryFixedRecord[] = Array.from({ length: 20 }, (_, i) => ({
   key: String(i + 1),
-  name: ['John Brown', 'Jim Green', 'Joe Black', 'Jim Red'][i % 4],
-  amount: [10, 100, 10, 75][i % 4],
+  name: ['John Brown', 'Jim Green', 'Joe Black', 'Jim Red'][i % 4]!,
+  amount: [10, 100, 10, 75][i % 4]!,
   address: `London Park no. ${i}`,
   description: `Description ${i}`,
 }))

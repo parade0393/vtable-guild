@@ -1,5 +1,9 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  // 所有 test 任务都靠根 vitest.config.ts 的 alias 把 @vtable-guild/* 指到各包 src，
+  // 并共享根 tests/setup.ts。这两个文件不在任何包的 $TURBO_DEFAULT$ 里
+  //（Turbo 默认只收包内 git 跟踪文件），不声明的话改它们不会让任何 test 缓存失效。
+  "globalDependencies": ["vitest.config.ts", "tests/**"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
@@ -42,6 +46,47 @@
     "test": {
       "outputs": ["coverage/**"]
     },
+    // 根 vitest.config.ts 的 alias 让这些包的测试直接读**其他包的源码**
+    //（@vtable-guild/core → packages/core/src/index.ts 等），所以必须把跨包源码
+    // 声明成 inputs，否则改上游包不会让下游的 test 缓存失效、可能复用旧结果。
+    // 哪些 project 真的读到了哪些兄弟包，是按根 vitest.config.ts 的 projects 定义
+    // 逐个跟 import 图确认过的；没有测试文件的 project
+    //（icons / vtable-guild / playground / perf，均 passWithNoTests）不读任何兄弟包，
+    // 不需要额外 inputs。
+    "@vtable-guild/table#test": {
+      // 测试直接 import @vtable-guild/core 与 @vtable-guild/theme，
+      // 并经 table/src 的组件链（FilterDropdown / TableHeaderCell / preset-config 等）
+      // 间接读到 @vtable-guild/icons 源码。
+      "inputs": ["$TURBO_DEFAULT$", "../core/src/**", "../icons/src/**", "../theme/src/**"],
+      "outputs": ["coverage/**"]
+    },
+    "@vtable-guild/theme#test": {
+      // theme 目前对 core 只有 import type（esbuild 会擦掉），但 theme 把 core 列为
+      // devDependency、随时可能改成 runtime 引用；按「宁可多失效也不少失效」保留，
+      // 代价只是改 core 时多跑一个只有 1 个测试文件的 project。
+      "inputs": ["$TURBO_DEFAULT$", "../core/src/**"],
+      "outputs": ["coverage/**"]
+    },
+    "@vtable-guild/site#test": {
+      // demos 的测试 import @vtable-guild/vtable-guild，alias 指向
+      // packages/vtable-guild/src/index.ts，它再转出 table / core / icons / theme 源码。
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "../packages/core/src/**",
+        "../packages/icons/src/**",
+        "../packages/theme/src/**",
+        "../packages/table/src/**",
+        "../packages/vtable-guild/src/**"
+      ],
+      "outputs": ["coverage/**"]
+    },
+    "@vtable-guild/play#test": {
+      // play 的测试不 import 任何 @vtable-guild/* 包，但 play/src/utils/share.ts 用
+      // import.meta.glob('../../../site/demos/**/*.vue', { query: '?raw' }) 把文档站
+      // demo 源码内联成字符串，测试断言了内容，所以 site/demos 也是真实输入。
+      "inputs": ["$TURBO_DEFAULT$", "../site/demos/**"],
+      "outputs": ["coverage/**"]
+    },
     "bench": {
       "cache": false
     },
@@ -50,6 +95,12 @@
     // 拆成每包一个 lint 脚本既要重复配置又会漏掉它们，所以 `pnpm lint` 在根级直跑。
     "type-check": {
       "dependsOn": ["^type-check"]
+    },
+    // 根目录不是 workspace 包，没有自己的 turbo 任务；tsconfig.node.json 覆盖的
+    // 根工具配置（vitest.config.ts / eslint.config.ts）由 playground 的
+    // type-check 通过 dependsOn 挂上来一起跑，从而进入 CI 类型检查。
+    "type-check:root": {
+      "cache": false
     },
     "@vtable-guild/site#type-check": {
       // 各个包之间靠 TS project references 互相检查，^type-check 就够了。
@@ -64,6 +115,17 @@
       // 同 site：性能对照页也是通过 workspace 依赖消费构建产物的，
       // 冷启动时必须先有 dist/index.d.ts。
       "dependsOn": ["^build"]
+    },
+    "@vtable-guild/playground#type-check": {
+      // 同 site：playground 通过 workspace 依赖 @vtable-guild/vtable-guild 的
+      // 构建产物做类型检查，冷启动时必须先有 dist/index.d.ts。
+      "dependsOn": [
+        "^build",
+        // 根目录不是 workspace 包，没有自己的 turbo 任务，但 vitest.config.ts /
+        // eslint.config.ts 由 tsconfig.node.json 覆盖，必须纳入 CI 类型检查，
+        // 所以挂到 playground 的 type-check 上一起跑。
+        "@vtable-guild/playground#type-check:root"
+      ]
     }
   }
 }

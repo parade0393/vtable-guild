@@ -27,8 +27,8 @@ const allRows: PerfRow[] = (() => {
       name: `User ${i + 1}`,
       age: 18 + (scramble % 60),
       score: scramble % 1000,
-      status: STATUSES[scramble % STATUSES.length],
-      city: CITIES[scramble % CITIES.length],
+      status: STATUSES[scramble % STATUSES.length]!,
+      city: CITIES[scramble % CITIES.length]!,
       address: `Block ${(i % 12) + 1} · Building ${(i % 99) + 1} · ${CITIES[scramble % CITIES.length]}`,
     }
   }
