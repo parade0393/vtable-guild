@@ -33,6 +33,36 @@ vtable-guild 的设计方向是兼容高频表格使用方式，而不是逐项�
 - `change` 事件签名为 `(filters, sorter, extra)`，启用分页后从 `extra.pagination` 读取分页状态；新增 `extra.action === 'paginate'`。
 - resizeColumn 事件参数顺序为 (column, width)，而 ant-design-vue 文档里的顺序是 (width, column)。
 
+用公开事件类型声明迁移后的处理函数，参数会按顺序获得类型推断：
+
+```ts
+import type { VTableEventProps } from '@vtable-guild/vtable-guild'
+
+interface UserRow {
+  key: string
+  name: string
+}
+
+const handleChange: NonNullable<VTableEventProps<UserRow>['onChange']> = (
+  _filters,
+  _sorter,
+  extra,
+) => {
+  if (extra.action === 'paginate' && extra.pagination) {
+    console.log(extra.pagination.current, extra.pagination.pageSize)
+  }
+}
+
+const handleResizeColumn: NonNullable<VTableEventProps<UserRow>['onResizeColumn']> = (
+  column,
+  width,
+) => {
+  column.width = width
+}
+```
+
+如果只关心分页，使用 `pagination.onChange(page: number, pageSize: number): void`，完整示例见 [分页](/guide/pagination)。
+
 下列以前需要调整、现在已与 ant-design-vue 完全对齐，可直接迁移：
 
 - `column.fixed: true` 等同 `'left'`
@@ -170,3 +200,31 @@ app.use(
 - 页面已经围绕旧表格写了大量 CSS 选择器（可先开启[兼容类名](#保留旧的覆盖-css-兼容类名)过渡）。
 
 这类页面不是不能迁移，而是更适合先通过 [API Reference](/guide/api-reference) 和功能页确认具体边界。
+
+## Type Declarations
+
+迁移涉及的完整事件、分页、列和插件声明。声明引用的类型以及其他 props 见 [类型参考](/guide/type-reference)。
+
+::: details Type Declarations
+
+<<< @/.vitepress/type-declarations/table.ts#VTableEventProps
+
+<<< @/.vitepress/type-declarations/table.ts#TableChangeExtra
+
+<<< @/.vitepress/type-declarations/table.ts#TableFiltersInfo
+
+<<< @/.vitepress/type-declarations/table.ts#VTableSorterResult
+
+<<< @/.vitepress/type-declarations/table.ts#TablePaginationConfig
+
+<<< @/.vitepress/type-declarations/table.ts#TablePaginationState
+
+<<< @/.vitepress/type-declarations/table.ts#ColumnType
+
+<<< @/.vitepress/type-declarations/table.ts#TableSticky
+
+<<< @/.vitepress/type-declarations/config.ts#createVTableGuild
+
+<<< @/.vitepress/type-declarations/config.ts#VTableGuildOptions
+
+:::

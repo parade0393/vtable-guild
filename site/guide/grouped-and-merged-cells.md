@@ -17,7 +17,16 @@
 多级表头通过 children 形成层级结构。
 
 ```ts
-const columns = [
+import type { TableColumnsType } from '@vtable-guild/vtable-guild'
+
+interface ProfileRow {
+  key: string
+  name: string
+  age: number
+  region: string
+}
+
+const columns: TableColumnsType<ProfileRow> = [
   { title: '姓名', dataIndex: 'name', key: 'name', width: 160 },
   {
     title: '画像信息',
@@ -38,7 +47,16 @@ const columns = [
 - customRender 返回带 props 的 RenderedCell。
 
 ```ts
-const columns = [
+import type { TableColumnsType } from '@vtable-guild/vtable-guild'
+
+interface ReportRow {
+  key: string
+  group: string
+  name: string
+  score: number
+}
+
+const columns: TableColumnsType<ReportRow> = [
   {
     title: '组别',
     dataIndex: 'group',
@@ -64,6 +82,8 @@ const columns = [
 ]
 ```
 
+给 `columns` 标注 `TableColumnsType<ReportRow>` 后，`customCell` 的 `record`、`index` 和 `customRender` 的上下文会自动推导。`customRender` 的 `record` 是 `ReportRow`，`text` / `value` 是 `unknown`；需要作为文本输出时使用 `String(text)`，不要用 `any` 绕过检查。
+
 ## 使用边界
 
 - 多级表头依赖相对稳定的列结构，建议提供清晰的 width。
@@ -88,3 +108,25 @@ const columns = [
 
 - [标题与摘要行](/guide/title-footer-summary)
 - [固定列](/guide/fixed-columns)
+
+## Type Declarations
+
+`TableColumnsType<TRecord>` 是 `ColumnsType<TRecord>` 的别名，包含叶子列、分组列和列哨兵。以下声明覆盖分组、渲染上下文及合并返回值。列配置为相关字段节选；`MergedColumnFields` 是文档辅助接口，不是包导出，完整声明见[类型参考](/guide/type-reference)。
+
+::: details 查看类型声明
+
+<<< @/.vitepress/type-declarations/table.ts#ColumnsType
+
+<<< @/.vitepress/type-declarations/features.ts#MergedColumnFields
+
+<<< @/.vitepress/type-declarations/table.ts#ColumnGroupType
+
+<<< @/.vitepress/type-declarations/table.ts#CustomRenderContext
+
+<<< @/.vitepress/type-declarations/table.ts#GetComponentProps
+
+<<< @/.vitepress/type-declarations/table.ts#RenderedCell
+
+<<< @/.vitepress/type-declarations/table.ts#CellAdditionalProps
+
+:::

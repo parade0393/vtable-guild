@@ -35,6 +35,10 @@ const columns: TableColumnsType<UserRow> = [
   { title: '状态', dataIndex: 'status', key: 'status', width: 140 },
   { title: '地址', dataIndex: 'address', key: 'address', width: 220, fixed: 'right' },
 ]
+
+const dataSource: UserRow[] = [
+  { key: '1', name: 'Ada', age: 28, status: 'Active', address: 'Shanghai' },
+]
 </script>
 
 <template>
@@ -64,3 +68,19 @@ const columns: TableColumnsType<UserRow> = [
 
 - [列宽拖拽](/guide/column-resize)
 - [虚拟滚动](/guide/virtualization)
+
+## Type Declarations
+
+固定列使用 `ColumnType<TRecord>['fixed']`，滚动和粘性配置属于 `TableProps<TRecord>`。props / 列配置为相关字段节选；`FixedColumnFields` 和 `ScrollFields` 是文档辅助接口，不是包导出，完整声明见[类型参考](/guide/type-reference)。
+
+::: details 查看类型声明
+
+<<< @/.vitepress/type-declarations/features.ts#FixedColumnFields
+
+<<< @/.vitepress/type-declarations/table.ts#TableLayout
+
+<<< @/.vitepress/type-declarations/table.ts#TableSticky
+
+<<< @/.vitepress/type-declarations/features.ts#ScrollFields
+
+:::

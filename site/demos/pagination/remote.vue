@@ -3,8 +3,9 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import {
   VTable,
   type RowSelection,
-  type TableChangeExtra,
+  type TableColumnsType,
   type TablePaginationConfig,
+  type VTableEventProps,
 } from '@vtable-guild/vtable-guild'
 type Row = { key: number; name: string }
 const current = ref(1)
@@ -23,7 +24,7 @@ const rowSelection: RowSelection<Row> = {
   },
 }
 let requestId = 0
-const columns = [{ key: 'name', dataIndex: 'name', title: 'Name' }]
+const columns: TableColumnsType<Row> = [{ key: 'name', dataIndex: 'name', title: 'Name' }]
 const pagination = computed<TablePaginationConfig>(() => ({
   current: current.value,
   pageSize: pageSize.value,
@@ -63,7 +64,7 @@ watch(
 onBeforeUnmount(() => {
   requestId++
 })
-function handleChange(_filters: unknown, _sorter: unknown, extra: TableChangeExtra<Row>) {
+const handleChange: NonNullable<VTableEventProps<Row>['onChange']> = (_filters, _sorter, extra) => {
   if (extra.action !== 'paginate' || !extra.pagination) return
   current.value = extra.pagination.current
   pageSize.value = extra.pagination.pageSize

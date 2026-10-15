@@ -15,14 +15,47 @@
 ## 基础示例
 
 ```vue
-<VTable
-  row-key="key"
-  :columns="columns"
-  :data-source="treeData"
-  children-column-name="children"
-  :indent-size="20"
-/>
+<script setup lang="ts">
+import { ref } from 'vue'
+import {
+  VTable,
+  type Key,
+  type TableColumnsType,
+  type TableProps,
+} from '@vtable-guild/vtable-guild'
+
+interface OrgNode {
+  key: string
+  name: string
+  children?: OrgNode[]
+}
+
+const columns: TableColumnsType<OrgNode> = [{ title: '部门', key: 'name', dataIndex: 'name' }]
+const treeData: OrgNode[] = [
+  { key: 'team', name: '产品团队', children: [{ key: 'design', name: '设计组' }] },
+]
+const expandedRowKeys = ref<Key[]>(['team'])
+const handleExpandedRowsChange: NonNullable<TableProps<OrgNode>['onExpandedRowsChange']> = (
+  keys,
+) => {
+  expandedRowKeys.value = keys
+}
+</script>
+
+<template>
+  <VTable
+    row-key="key"
+    :columns="columns"
+    :data-source="treeData"
+    children-column-name="children"
+    :indent-size="20"
+    :expanded-row-keys="expandedRowKeys"
+    @expanded-rows-change="handleExpandedRowsChange"
+  />
+</template>
 ```
+
+`TableProps<OrgNode>` 中的 `onExpand` 签名为 `(expanded: boolean, record: OrgNode) => void`，`onExpandedRowsChange` 接收 `Key[]`。在单独声明回调时使用 `NonNullable<TableProps<OrgNode>['onExpandedRowsChange']>`，可以保留接口类型并去掉可选属性的 `undefined`。
 
 ## 常用控制项
 
@@ -54,3 +87,17 @@
 
 - [行选择](/guide/selection)
 - [展开行](/guide/expandable-rows)
+
+## Type Declarations
+
+树形配置直接属于 `TableProps<TRecord>`，父子选择属于 `RowSelection<TRecord>`。记录中的子节点字段由业务类型声明，默认字段名是 `children`。props 为相关字段节选；`TreeFields` 是文档辅助接口，不是包导出，完整声明见[类型参考](/guide/type-reference)。
+
+::: details 查看类型声明
+
+<<< @/.vitepress/type-declarations/table.ts#Key
+
+<<< @/.vitepress/type-declarations/features.ts#TreeFields
+
+<<< @/.vitepress/type-declarations/table.ts#RowSelection
+
+:::

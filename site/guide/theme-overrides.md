@@ -196,4 +196,36 @@ app.use(createVTableGuild({ cssMode: 'tailwind4' }))
 
 ## 分页主题
 
-通过 `theme.pagination` 覆盖分页 slots（`root`、`pages`、`item`、`active`、`controls`、`input`、`select`、`popup`、`option`、`optionActive`、`total`、`icon`）及 `size` / `align` variants。实例可用 `pagination.class` / `style`。[分页示例](/guide/pagination)。
+通过 `theme.pagination` 覆盖分页 slots 和 `size` / `align` / `simple` / `disabled` variants。完整 slot 联合类型见页末 `PaginationSlots`。实例可用 `pagination.class: string` / `style: CSSProperties`。[分页示例](/guide/pagination)。
+
+## Type Declarations
+
+下列包含覆盖类型的完整字段与映射规则。主题常量来自公开包；`typeof` 保留只读配置、具体 slot 和 variant key。完整 Table slot 名见 [ui Slot 参考](/guide/ui-slots-reference#type-declarations)，语言类型见 [类型参考](/guide/type-reference#vtableguildlocale)。
+
+::: details Type Declarations
+
+<<< @/.vitepress/type-declarations/config.ts#createVTableGuild
+
+<<< @/.vitepress/type-declarations/config.ts#VTableGuildOptions
+
+<<< @/.vitepress/type-declarations/config.ts#ThemeConfig
+
+<<< @/.vitepress/type-declarations/config.ts#ThemeOverrideConfig
+
+<<< @/.vitepress/type-declarations/config.ts#VTableGuildThemeOverridesMap
+
+<<< @/.vitepress/type-declarations/config.ts#VTableGuildThemeOverrides
+
+<<< @/.vitepress/type-declarations/config.ts#SlotProps
+
+<<< @/.vitepress/type-declarations/config.ts#TableThemeConfig
+
+<<< @/.vitepress/type-declarations/config.ts#TableVariantProps
+
+<<< @/.vitepress/type-declarations/config.ts#ComponentThemeTypes
+
+<<< @/.vitepress/type-declarations/config.ts#PaginationThemeConfig
+
+<<< @/.vitepress/type-declarations/config.ts#PaginationSlots
+
+:::

@@ -23,9 +23,32 @@
 
 ```vue
 <script setup lang="ts">
-import { VTable, VTableSummary } from '@vtable-guild/vtable-guild'
+import {
+  VTable,
+  VTableSummary,
+  type TableColumnsType,
+  type TableProps,
+} from '@vtable-guild/vtable-guild'
+
+interface ScoreRow {
+  key: string
+  name: string
+  score: number
+}
+
+const columns: TableColumnsType<ScoreRow> = [
+  { title: '姓名', key: 'name', dataIndex: 'name' },
+  { title: '分数', key: 'score', dataIndex: 'score', align: 'right' },
+]
+const dataSource: ScoreRow[] = [
+  { key: '1', name: 'Ada', score: 95 },
+  { key: '2', name: 'Grace', score: 92 },
+]
 
 const totalScore = dataSource.reduce((sum, row) => sum + row.score, 0)
+const title: NonNullable<TableProps<ScoreRow>['title']> = (data) =>
+  `部门绩效总览 · ${data.length} 人`
+const footer: NonNullable<TableProps<ScoreRow>['footer']> = () => '数据更新时间：今天 09:30'
 </script>
 
 <template>
@@ -33,8 +56,8 @@ const totalScore = dataSource.reduce((sum, row) => sum + row.score, 0)
     row-key="key"
     :columns="columns"
     :data-source="dataSource"
-    :title="() => '部门绩效总览'"
-    :footer="() => '数据更新时间：今天 09:30'"
+    :title="title"
+    :footer="footer"
   >
     <template #summary>
       <VTableSummary>
@@ -47,6 +70,8 @@ const totalScore = dataSource.reduce((sum, row) => sum + row.score, 0)
   </VTable>
 </template>
 ```
+
+`title` / `footer` 的函数签名都是 `(data: TRecord[]) => VNodeChild`；分页开启时接收当前页展示数据。对应的 `#title` / `#footer` 插槽接收 `{ data: TRecord[] }`，而 `#summary` 不提供参数。`VNodeChild` 是 Vue 的可渲染内容类型。
 
 ## 什么时候用哪一个
 
@@ -67,3 +92,21 @@ const totalScore = dataSource.reduce((sum, row) => sum + row.score, 0)
 
 - [多级表头与单元格合并](/guide/grouped-and-merged-cells)
 - [自定义行与插槽](/guide/api-wiring-and-slots)
+
+## Type Declarations
+
+`title` / `footer` 的函数声明属于 `TableProps<TRecord>`，插槽参数使用 `TableDataSlotProps<TRecord>`。props 为相关字段节选；`TitleFooterFields`、`VTableSummaryProps` 和 `VTableSummaryCellProps` 是文档辅助接口，不是包导出。`VTableSummary.Row` 没有自定义 props，完整声明见[类型参考](/guide/type-reference)。
+
+::: details 查看类型声明
+
+<<< @/.vitepress/type-declarations/features.ts#TitleFooterFields
+
+<<< @/.vitepress/type-declarations/table.ts#TableDataSlotProps
+
+<<< @/.vitepress/type-declarations/table.ts#SummaryFixed
+
+<<< @/.vitepress/type-declarations/config.ts#VTableSummaryProps
+
+<<< @/.vitepress/type-declarations/config.ts#VTableSummaryCellProps
+
+:::

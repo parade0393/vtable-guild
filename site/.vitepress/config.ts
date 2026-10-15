@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { defineConfig } from 'vitepress'
+import { expandCodeSnippets } from './utils/expandCodeSnippets'
 
 // 导航 / 侧边栏与 locale 相关，分别挂在各 locale 的 themeConfig 下；
 // sitemap/head/构建选项与 locale 无关，留在顶层。
@@ -220,18 +221,9 @@ export default defineConfig({
     const titleFrom = (meta: Record<string, string>, body: string, file: string) =>
       meta.title || /^#\s+(.+)$/m.exec(body)?.[1]?.trim() || file
 
-    // 展开 VitePress 的 <<< @/demos/xxx.vue 与 <Demo src="xxx"> 语法
+    // 展开示例和类型声明，供 llms-full.txt 使用。
     const expandDemoSyntax = (body: string): string => {
-      // 展开 <<< @/demos/xxx.vue
-      body = body.replace(/<<<\s+@\/demos\/([^\s]+)/g, (_, demoPath) => {
-        const fullPath = join(siteRoot, 'demos', demoPath)
-        try {
-          const demoContent = readFileSync(fullPath, 'utf8')
-          return `\`\`\`vue\n// @/demos/${demoPath}\n${demoContent.trim()}\n\`\`\``
-        } catch {
-          return `<!-- demo not found: @/demos/${demoPath} -->`
-        }
-      })
+      body = expandCodeSnippets(body, siteRoot)
 
       // 移除 <Demo ...> / </Demo> 组件标签（VitePress 自定义组件，agent 无法解析）
       // 但保留对应的 demo 文件引用（已经被上面的 <<< 展开）。

@@ -136,25 +136,18 @@ app.mount('#app')
 
 ## 常用全局配置
 
-`createVTableGuild` 常见配置包括：
+`createVTableGuild(options?: VTableGuildOptions): Plugin` 接收可选配置，返回用于 `app.use()` 的 Vue 插件。下表所有配置字段均可选，完整声明见页末；依赖类型见 [类型参考](/guide/type-reference#主题与插件类型)。
 
-- `themePreset`
-  切换 `antdv` 或 `element-plus`
-- `cssMode`
-  选择 `prebuilt`、`tailwind3` 或 `tailwind4` 样式模式
-- `classPrefix`
-  预编译模式下的内部 utility class 前缀，默认 `vtg`
-- `theme`
-  全局主题覆盖
-- `locale`
-  当前语言标识
-- `locales`
-  自定义语言包注册表
-- `localeOverrides`
-  当前语言包的局部覆盖
-- `compatClass`
-  是否额外输出 `ant-table-*` 兼容类名，默认 `false`；用于让 antdv 时期的覆盖 CSS 继续生效，
-  详见[从 ant-design-vue 迁移](./migration-from-antd#保留旧的覆盖-css-兼容类名)
+| 字段              | 类型                             | 默认值       | 说明                                                                                         |
+| ----------------- | -------------------------------- | ------------ | -------------------------------------------------------------------------------------------- |
+| `themePreset`     | `ThemePresetName`                | `'antdv'`    | 选择 `'antdv'` 或 `'element-plus'` 预设                                                      |
+| `cssMode`         | `VTableGuildCssMode`             | `'prebuilt'` | 选择样式入口模式                                                                             |
+| `classPrefix`     | `string`                         | `'vtg'`      | 预编译模式下内部 utility 前缀                                                                |
+| `theme`           | `VTableGuildThemeOverrides`      | `{}`         | 全局主题覆盖                                                                                 |
+| `locale`          | `LocaleName`（`string`）         | `'zh-CN'`    | 当前语言标识                                                                                 |
+| `locales`         | `LocaleRegistry`                 | `{}`         | 自定义语言包注册表                                                                           |
+| `localeOverrides` | `DeepPartial<VTableGuildLocale>` | `{}`         | 当前语言包局部覆盖                                                                           |
+| `compatClass`     | `boolean`                        | `false`      | 额外输出兼容类名；安装时读取，见 [迁移说明](./migration-from-antd#保留旧的覆盖-css-兼容类名) |
 
 示例：
 
@@ -205,3 +198,21 @@ app.use(
 - [ui Slot 参考](/guide/ui-slots-reference)
 - [Table CSS 变量参考](/guide/theme-tokens)
 - [预设与语言](/guide/presets-and-locales)
+
+## Type Declarations
+
+本页的插件与样式模式声明。主题和语言的完整依赖类型见 [类型参考](/guide/type-reference#主题与插件类型)。
+
+::: details Type Declarations
+
+<<< @/.vitepress/type-declarations/config.ts#createVTableGuild
+
+<<< @/.vitepress/type-declarations/config.ts#VTableGuildOptions
+
+<<< @/.vitepress/type-declarations/config.ts#ThemePresetName
+
+<<< @/.vitepress/type-declarations/config.ts#VTableGuildCssMode
+
+<<< @/.vitepress/type-declarations/config.ts#SlotProps
+
+:::

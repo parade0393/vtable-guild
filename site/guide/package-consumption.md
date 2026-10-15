@@ -124,3 +124,27 @@ Tailwind 4 模式下，库内部 class 保持无前缀，所以用户可以传�
 ## CSS 入口
 
 当前支持的 CSS 入口是 `css/style`、`css/tailwind3` 和 `css/tailwind4`，分别对应 `prebuilt`、`tailwind3` 和 `tailwind4`。
+
+## Type Declarations
+
+插件参数及实例 class 回调的完整类型。`ui` 使用 `SlotProps<TableThemeConfig>`；所有主题 slot 见 [ui Slot 参考](/guide/ui-slots-reference#type-declarations)，其他依赖见 [类型参考](/guide/type-reference)。
+
+::: details Type Declarations
+
+<<< @/.vitepress/type-declarations/config.ts#createVTableGuild
+
+<<< @/.vitepress/type-declarations/config.ts#VTableGuildOptions
+
+<<< @/.vitepress/type-declarations/config.ts#VTableGuildCssMode
+
+<<< @/.vitepress/type-declarations/config.ts#SlotProps
+
+<<< @/.vitepress/type-declarations/config.ts#TableThemeConfig
+
+<<< @/.vitepress/type-declarations/table.ts#RowClassName
+
+<<< @/.vitepress/type-declarations/table.ts#GetComponentProps
+
+<<< @/.vitepress/type-declarations/table.ts#CellAdditionalProps
+
+:::

@@ -20,6 +20,15 @@
 字段决定，需要恢复显示时把 `visible` 改回来（或删掉这个字段）即可。
 
 ```ts
+import type { TableColumnsType } from '@vtable-guild/vtable-guild'
+
+interface UserRow {
+  key: string
+  name: string
+  age: number
+  status: string
+}
+
 const columns: TableColumnsType<UserRow> = [
   { title: '姓名', dataIndex: 'name', key: 'name', width: 180 },
   // 用户在「列设置」里取消勾选了这一列
@@ -37,7 +46,7 @@ const columns: TableColumnsType<UserRow> = [
 
 ## 列顺序 columnOrder
 
-`columnOrder` 是一个 key 数组，表达列的显示顺序：
+`columnOrder` 的类型是 `Key[]`，其中 `Key = string | number`，表达列的显示顺序：
 
 ```vue
 <template>
@@ -69,3 +78,19 @@ const columns: TableColumnsType<UserRow> = [
 - [列宽拖拽](/guide/column-resize)
 - [固定列](/guide/fixed-columns)
 - [API 参考](/guide/api-reference)
+
+## Type Declarations
+
+`visible` 和 `responsive` 属于列配置，`columnOrder` 属于表格配置。props / 列配置为相关字段节选；`DisplayColumnFields` 和 `ColumnOrderFields` 是文档辅助接口，不是包导出，完整声明见[类型参考](/guide/type-reference)。
+
+::: details 查看类型声明
+
+<<< @/.vitepress/type-declarations/table.ts#Key
+
+<<< @/.vitepress/type-declarations/table.ts#Breakpoint
+
+<<< @/.vitepress/type-declarations/features.ts#DisplayColumnFields
+
+<<< @/.vitepress/type-declarations/features.ts#ColumnOrderFields
+
+:::

@@ -17,7 +17,7 @@
 ## 你可以怎么开启排序
 
 - sorter: true，使用默认比较规则。数字按数值排序，其他值按字符串比较。
-- sorter: (a, b) => number，使用自定义比较函数。
+- `sorter: (a: TRecord, b: TRecord) => number`，使用自定义比较函数；`TRecord` 是行数据类型。
 - sorter: { multiple: number }，启用多列排序并指定优先级。
 - defaultSortOrder，在首次渲染时设置默认排序方向。
 - sortOrder，进入受控模式，由外部状态决定当前排序方向。
@@ -62,7 +62,7 @@ const dataSource: ScoreRow[] = [
 
 ```ts
 import { computed, ref } from 'vue'
-import type { SortOrder, TableColumnsType } from '@vtable-guild/vtable-guild'
+import type { SortOrder, TableColumnsType, VTableEventProps } from '@vtable-guild/vtable-guild'
 
 const scoreOrder = ref<SortOrder>('ascend')
 
@@ -76,16 +76,30 @@ const columns = computed<TableColumnsType<ScoreRow>>(() => [
     sortOrder: scoreOrder.value,
   },
 ])
+
+const handleChange: NonNullable<VTableEventProps<ScoreRow>['onChange']> = (_filters, sorter) => {
+  const results = Array.isArray(sorter) ? sorter : [sorter]
+  scoreOrder.value = results.find((result) => result.columnKey === 'score')?.order ?? null
+}
 ```
 
-在这种模式下，点击表头后会通过 change 返回新的 sorter 结果，是否更新 sortOrder 由你自己决定。
+沿用上面的 `ScoreRow`，再给表格绑定 `@change="handleChange"`。`VTableEventProps<ScoreRow>['onChange']` 提供完整事件参数类型，`NonNullable` 去掉可选事件属性的 `undefined`。单列结果是对象，多列结果是数组，读取前用 `Array.isArray` 收窄。在受控模式下，是否更新 `sortOrder` 由你自己决定。
 
 ## 多列排序
 
 当多个字段都需要参与排序时，使用 multiple 指定优先级。数值越大，优先级越高。
 
 ```ts
-const columns = [
+import type { TableColumnsType } from '@vtable-guild/vtable-guild'
+
+interface TeamScoreRow {
+  key: string
+  age: number
+  team: string
+  score: number
+}
+
+const columns: TableColumnsType<TeamScoreRow> = [
   { title: '年龄', dataIndex: 'age', key: 'age', sorter: { multiple: 1 } },
   { title: '团队', dataIndex: 'team', key: 'team', sorter: { multiple: 2 } },
   { title: '分数', dataIndex: 'score', key: 'score', sorter: { multiple: 3 } },
@@ -103,3 +117,31 @@ const columns = [
 - [筛选](/guide/filtering)
 - [API Reference](/guide/api-reference)
 - [类型参考](/guide/type-reference)
+
+## Type Declarations
+
+`TRecord` 表示业务行类型。以下声明覆盖列排序配置和 `change` 事件。列配置为相关字段节选；`SortingColumnFields` 是文档辅助接口，不是包导出，完整声明和导入方式见[类型参考](/guide/type-reference)。
+
+::: details 查看类型声明
+
+<<< @/.vitepress/type-declarations/table.ts#SortOrder
+
+<<< @/.vitepress/type-declarations/table.ts#SorterFn
+
+<<< @/.vitepress/type-declarations/table.ts#ColumnSorterObject
+
+<<< @/.vitepress/type-declarations/table.ts#ColumnSorter
+
+<<< @/.vitepress/type-declarations/features.ts#SortingColumnFields
+
+<<< @/.vitepress/type-declarations/table.ts#SorterResultLike
+
+<<< @/.vitepress/type-declarations/table.ts#VTableSorterResult
+
+<<< @/.vitepress/type-declarations/table.ts#TableFiltersInfo
+
+<<< @/.vitepress/type-declarations/table.ts#TableChangeExtra
+
+<<< @/.vitepress/type-declarations/table.ts#VTableEventProps
+
+:::

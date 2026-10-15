@@ -33,10 +33,11 @@ const columns: TableColumnsType<TaskRow> = [
 ]
 
 const dataSource = ref<TaskRow[]>([
-  /* ... */
+  { key: '1', task: '整理类型文档', owner: 'Ada' },
+  { key: '2', task: '检查示例', owner: 'Grace' },
 ])
 
-function handleRowDragEnd(newData: TaskRow[], info: RowDragSortInfo) {
+function handleRowDragEnd(newData: TaskRow[], _info: RowDragSortInfo) {
   dataSource.value = newData
 }
 </script>
@@ -54,8 +55,8 @@ function handleRowDragEnd(newData: TaskRow[], info: RowDragSortInfo) {
 
 `rowDragEnd` 的参数：
 
-- `newData`：拖拽完成后的全量数据数组（基于当前 `dataSource` 搬移拖拽行得出）。
-- `info`：`{ draggedKey, targetKey, orderedKeys }`，分别为拖拽行 key、放置目标行 key、
+- `newData: TRecord[]`：拖拽完成后的全量数据数组（基于当前 `dataSource` 搬移拖拽行得出）。
+- `info: RowDragSortInfo`：`{ draggedKey: Key, targetKey: Key, orderedKeys: Key[] }`，分别为拖拽行 key、放置目标行 key、
   以及与 `newData` 对应的全量 key 顺序（树形数据按数据顺序递归包含子节点）。
 
 ## 关键行为
@@ -100,3 +101,19 @@ function handleRowDragEnd(newData: TaskRow[], info: RowDragSortInfo) {
 - [排序](/guide/sorting)
 - [ui Slot 参考](/guide/ui-slots-reference)
 - [API 参考](/guide/api-reference)
+
+## Type Declarations
+
+`rowDraggable` 属于 `TableProps<TRecord>`，`rowDragEnd` 返回 `TRecord[]` 和 `RowDragSortInfo`。props 为相关字段节选；`RowDragFields` 是文档辅助接口，不是包导出，完整声明见[类型参考](/guide/type-reference)。
+
+::: details 查看类型声明
+
+<<< @/.vitepress/type-declarations/table.ts#Key
+
+<<< @/.vitepress/type-declarations/table.ts#RowDragSortInfo
+
+<<< @/.vitepress/type-declarations/table.ts#VTableEventProps
+
+<<< @/.vitepress/type-declarations/features.ts#RowDragFields
+
+:::

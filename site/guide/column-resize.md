@@ -18,7 +18,8 @@
 
 ```vue
 <script setup lang="ts">
-import { VTable, type TableColumnsType } from '@vtable-guild/vtable-guild'
+import { shallowRef } from 'vue'
+import { VTable, type ColumnType, type VTableEventProps } from '@vtable-guild/vtable-guild'
 
 interface UserRow {
   key: string
@@ -27,11 +28,17 @@ interface UserRow {
   status: string
 }
 
-const columns: TableColumnsType<UserRow> = [
+const columns = shallowRef<ColumnType<UserRow>[]>([
   { title: '姓名', dataIndex: 'name', key: 'name', width: 180, resizable: true, minWidth: 120 },
   { title: '年龄', dataIndex: 'age', key: 'age', width: 96, resizable: true, maxWidth: 180 },
   { title: '状态', dataIndex: 'status', key: 'status', width: 140, resizable: true },
-]
+])
+
+const dataSource: UserRow[] = [{ key: '1', name: 'Ada', age: 28, status: 'Active' }]
+
+const handleResize: NonNullable<VTableEventProps<UserRow>['onResizeColumn']> = (column, width) => {
+  columns.value = columns.value.map((item) => (item.key === column.key ? { ...item, width } : item))
+}
 </script>
 
 <template>
@@ -44,12 +51,14 @@ const columns: TableColumnsType<UserRow> = [
 </template>
 ```
 
+本例只有叶子列，使用 `ColumnType<UserRow>[]` 可以直接按 key 回写宽度。列配置用 `shallowRef` 保存并整体替换数组，避免对渲染函数等复杂配置做深层响应式解包。`TableColumnsType<UserRow>` 还包含分组列和哨兵，使用它时需要先区分列的种类。事件的精确签名是 `(column: ColumnType<UserRow>, width: number) => void`。
+
 ## 关键行为
 
 - 只有 `resizable: true` 的列会显示拖拽手柄
 - 拖拽优先从表头单元格的实际渲染宽度开始，包括数字 `width`，避免余量分配或最小宽度使实际列宽大于声明值时出现起点跳变
 - 拖拽过程中会实时更新列宽
-- 有效拖拽结束时会触发 `resizeColumn` 事件，参数顺序为 `(column, width)`；其中 `width` 是受约束后的像素目标，可回写到列配置，组件不会直接修改用户传入的 `columns`
+- 有效拖拽结束时会触发 `resizeColumn` 事件，参数顺序为 `(column: ColumnType<TRecord>, width: number)`；其中 `width` 是受约束后的像素目标，可回写到列配置，组件不会直接修改用户传入的 `columns`
 - auto 布局中，内容可能把列撑得比拖拽目标更宽；事件值不承诺等于最终实测宽度
 - 未配置有效 `minWidth` 时，仅拖拽交互使用 `50px` 默认下限，普通布局不新增默认下限
 
@@ -58,7 +67,16 @@ const columns: TableColumnsType<UserRow> = [
 叶子列的 `minWidth` 是有限、非负的 CSS 像素数值，显式 `0` 有效。负数、`NaN`、`Infinity` 按未配置处理，并在开发环境提示。宽度按可见单元格的布局轨道计算，包含 padding 和 border；内容可能使它更宽。
 
 ```ts
-const columns = [
+import type { TableColumnsType } from '@vtable-guild/vtable-guild'
+
+interface WidthRow {
+  key: string
+  a: string
+  b: string
+  c: string
+}
+
+const columns: TableColumnsType<WidthRow> = [
   { title: 'A', key: 'a', dataIndex: 'a', minWidth: 160, resizable: true },
   { title: 'B', key: 'b', dataIndex: 'b', width: 60, minWidth: 100 },
   { title: 'C', key: 'c', dataIndex: 'c', minWidth: 240, resizable: true },
@@ -91,3 +109,15 @@ auto 配合固定表头、固定合计行或虚拟行时，会按表头和当前
 
 - [固定列](/guide/fixed-columns)
 - [功能对比总览](/comparison/)
+
+## Type Declarations
+
+宽度、上下限和拖拽开关属于列配置，`resizeColumn` 的签名由 `VTableEventProps<TRecord>` 声明。列配置为相关字段节选；`ResizableColumnFields` 是文档辅助接口，不是包导出，完整声明见[类型参考](/guide/type-reference)。
+
+::: details 查看类型声明
+
+<<< @/.vitepress/type-declarations/features.ts#ResizableColumnFields
+
+<<< @/.vitepress/type-declarations/table.ts#VTableEventProps
+
+:::

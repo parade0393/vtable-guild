@@ -172,3 +172,15 @@ ant-design-vue Table、antdv-next、el-table-v2 与 vxe-table 放在**同一批�
 
 - [固定列](/guide/fixed-columns)
 - [功能对比总览](/comparison/)
+
+## Type Declarations
+
+`virtual`、`virtualColumn`、`rowHeight`、`scroll` 和 `rowKey` 都属于 `TableProps<TRecord>`。props 为相关字段节选；`VirtualizationFields` 是文档辅助接口，不是包导出，完整声明和导入方式见[类型参考](/guide/type-reference)。
+
+::: details 查看类型声明
+
+<<< @/.vitepress/type-declarations/table.ts#Key
+
+<<< @/.vitepress/type-declarations/features.ts#VirtualizationFields
+
+:::

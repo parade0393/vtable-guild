@@ -180,3 +180,27 @@ const dataSource: UserRow[] = [
 - To estimate migration cost: read [migrating from ant-design-vue](/guide/migration-from-antd) (Chinese)
 - To unify the visual system: [three-layer theme overrides](/guide/theme-overrides) and [Table CSS variables](/guide/theme-tokens) (Chinese)
 - To inspect the full API: the [English API Reference](/en/guide/api-reference)
+
+## Type Declarations
+
+These are the complete plugin and column declarations used on this page. Referenced types and component props are available in the [type reference](/guide/type-reference) (Chinese).
+
+::: details Type Declarations
+
+<<< @/.vitepress/type-declarations/config.ts#createVTableGuild
+
+<<< @/.vitepress/type-declarations/config.ts#VTableGuildOptions
+
+<<< @/.vitepress/type-declarations/config.ts#VTableGuildCssMode
+
+<<< @/.vitepress/type-declarations/config.ts#ThemePresetName
+
+<<< @/.vitepress/type-declarations/table.ts#TableColumnsType
+
+<<< @/.vitepress/type-declarations/table.ts#ColumnsType
+
+<<< @/.vitepress/type-declarations/table.ts#ColumnType
+
+<<< @/.vitepress/type-declarations/table.ts#ColumnGroupType
+
+:::
