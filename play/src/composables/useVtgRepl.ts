@@ -1,4 +1,13 @@
-import { computed, effectScope, ref, shallowRef, watch, watchEffect, type ComputedRef } from 'vue'
+import {
+  computed,
+  effectScope,
+  onScopeDispose,
+  ref,
+  shallowRef,
+  watch,
+  watchEffect,
+  type ComputedRef,
+} from 'vue'
 import {
   mergeImportMap,
   useStore,
@@ -10,6 +19,8 @@ import {
   LATEST,
   MIN_SUPPORTED_VTG_VERSION,
   MIN_SUPPORTED_VUE_VERSION,
+  VERSION_LOAD_TIMEOUT,
+  VERSION_REQUEST_TIMEOUT,
   VTG_PKG,
   type ThemePreset,
   type VersionSelection,
@@ -21,13 +32,14 @@ import { NEW_SFC, WELCOME_SFC } from '@/templates'
 
 const STORAGE_KEY = 'vtg-play-settings'
 
-/**
- * 版本列表最长等多久。
- *
- * 正常情况下几百毫秒就回来了；但 Playground 不能因为一次慢请求就一直停在 Loading 上，
- * 所以到点先用兜底版本把编辑器开起来，列表真回来后再切过去（切换走的和手动改下拉是同一条路）。
- */
-const VERSION_LOAD_TIMEOUT = 3000
+export interface UseVtgReplOptions {
+  /**
+   * 版本列表请求的超时（毫秒），默认 VERSION_REQUEST_TIMEOUT。
+   *
+   * 暴露出来只为了测试：要把超时压到比启动兜底更短，才能单独走到「拉取失败」那条分支。
+   */
+  versionRequestTimeout?: number
+}
 
 interface PersistedSettings {
   cdn?: CdnSource
@@ -45,8 +57,9 @@ function loadSettings(): PersistedSettings {
   }
 }
 
-export function useVtgRepl() {
+export function useVtgRepl(options: UseVtgReplOptions = {}) {
   const saved = loadSettings()
+  const versionRequestTimeout = options.versionRequestTimeout ?? VERSION_REQUEST_TIMEOUT
 
   // 存过的值可能已经不再是合法选项（比如 dev 下选过 'local'，或者以后某个源被移除），
   // 校验一遍，避免用户被卡在一个永远加载不出来的状态里。
@@ -156,9 +169,28 @@ export function useVtgRepl() {
   const storeScope = effectScope()
   const store = shallowRef<ReplStore | null>(null)
 
-  function createStore() {
-    if (store.value) return
+  /**
+   * 启动兜底计时器。
+   *
+   * 从设置起一直有效，直到编辑器真正开起来（createStore）或 composable 被卸载才清。
+   * 早先它在 loadVersions 的第一行就被清掉，于是版本请求一旦挂住就永远等不到它——
+   * 那 3 秒等于没写。
+   */
+  let bootTimer: ReturnType<typeof setTimeout> | undefined
+
+  function clearBootTimer() {
+    if (bootTimer === undefined) return
     clearTimeout(bootTimer)
+    bootTimer = undefined
+  }
+
+  function createStore() {
+    // 先清兜底：编辑器要开起来了，兜底不再需要（兜底路径自己进来时它已经触发完）
+    clearBootTimer()
+
+    // 兜底路径和「版本列表回来了」都会走到这里。store 已经建过就直接返回：
+    // useStore 会挂一串 watch、按 import map 拉产物，建两遍等于把编辑器启动两遍。
+    if (store.value) return
 
     // 只能消费一次：读到 ?demo= 的同时会把它从地址栏抹掉
     const incomingDemo = takeDemoSourceFromUrl()
@@ -201,16 +233,39 @@ export function useVtgRepl() {
     }
   })
 
-  // 请求慢到离谱时不等它：先把编辑器开起来，版本稍后自己切过去
-  const bootTimer = setTimeout(createStore, VERSION_LOAD_TIMEOUT)
+  // 请求慢到离谱时不等它：先把编辑器开起来，版本稍后自己切过去。
+  // 这里只负责「设置」——清它的时机在 createStore（编辑器开起来）和卸载收尾里，
+  // 不能因为 loadVersions 跑起来了就提前清，那正是兜底失效的原因
+  bootTimer = setTimeout(createStore, VERSION_LOAD_TIMEOUT)
+
+  /**
+   * 版本请求的取消句柄。
+   *
+   * 卸载时掐掉在途请求；切换 CDN 重拉时掐掉上一次的——否则慢源迟到的响应会把新源的结果覆盖掉。
+   */
+  let versionController: AbortController | null = null
 
   async function loadVersions() {
-    clearTimeout(bootTimer)
+    versionController?.abort()
+    const controller = new AbortController()
+    versionController = controller
+
     versionError.value = ''
     const [vtg, vue] = await Promise.allSettled([
-      fetchVersions(VTG_PKG, { minVersion: MIN_SUPPORTED_VTG_VERSION }),
-      fetchVersions('vue', { minVersion: MIN_SUPPORTED_VUE_VERSION }),
+      fetchVersions(VTG_PKG, {
+        minVersion: MIN_SUPPORTED_VTG_VERSION,
+        signal: controller.signal,
+        timeout: versionRequestTimeout,
+      }),
+      fetchVersions('vue', {
+        minVersion: MIN_SUPPORTED_VUE_VERSION,
+        signal: controller.signal,
+        timeout: versionRequestTimeout,
+      }),
     ])
+
+    // 请求期间被卸载、或被新一轮重拉取代：结果已经没有意义，别再往状态里写
+    if (controller.signal.aborted) return
 
     const vtgList = vtg.status === 'fulfilled' ? vtg.value : null
     const latestVtg = vtgList?.[0]
@@ -233,8 +288,16 @@ export function useVtgRepl() {
       vueSelection.value = resolveStaleSelection(vueSelection.value, vue.value)
     }
 
+    // 列表落地（或确认拉不到）后才真正开编辑器；兜底计时器已经先开过时这里是空操作
     createStore()
   }
+
+  // 卸载（或所在 effectScope 被停掉）时收尾：timer 和在途请求都不能留着去写已经卸载的 ref
+  onScopeDispose(() => {
+    clearBootTimer()
+    versionController?.abort()
+    versionController = null
+  })
 
   void loadVersions()
 
