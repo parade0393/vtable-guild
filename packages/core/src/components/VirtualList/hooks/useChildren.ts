@@ -17,25 +17,28 @@ export default function useChildren(
   endIndex: Ref<number>,
   scrollWidth: Ref<number>,
   offsetX: Ref<number>,
-  setNodeRef: (item: any, ele: HTMLElement | null) => void,
+  // index 一并传给 setNodeRef：useHeights 要靠它拿绝对下标去求行 key，
+  // 否则每次测量都要对整表做一次 indexOf。
+  setNodeRef: (item: any, ele: HTMLElement | null, index?: number) => void,
   renderFunc: (
     item: any,
     index: number,
     props: { style: CSSProperties; offsetX: number },
   ) => VNode[] | undefined,
-  { getKey }: { getKey: (item: any) => Key },
+  { getKey }: { getKey: (item: any, index?: number) => Key },
 ) {
   return computed(() => {
     return list.value.slice(startIndex.value, endIndex.value + 1).map((item, index) => {
-      const node = renderFunc(item, startIndex.value + index, {
+      const absoluteIndex = startIndex.value + index
+      const node = renderFunc(item, absoluteIndex, {
         style: { width: `${scrollWidth.value}px` },
         offsetX: offsetX.value,
       })
-      const key = getKey(item)
+      const key = getKey(item, absoluteIndex)
 
       return createVNode(
         Item,
-        { key, setRef: (ele: HTMLElement | null) => setNodeRef(item, ele) },
+        { key, setRef: (ele: HTMLElement | null) => setNodeRef(item, ele, absoluteIndex) },
         // `renderFunc` 返回的已经是 VNode[]，这里**不能再包一层数组**。
         // 包成 [[VNode]] 之后 Vue 的 normalizeSlotValue 会把内层数组转成 Fragment，
         // Item 的 cloneVNode(child, { ref }) 于是把 ref 挂到 Fragment 上——

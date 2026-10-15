@@ -111,8 +111,6 @@ export function useSelection<TRecord extends Record<string, unknown>>(
     return rowSelection()?.selectedRowKeys !== undefined
   }
 
-  const isTreeSelectionEnabled = computed(() => rowSelection()?.checkStrictly === false)
-
   /**
    * 没配 `rowSelection` 时不建任何节点。
    *
@@ -124,12 +122,23 @@ export function useSelection<TRecord extends Record<string, unknown>>(
    */
   const allNodes = computed(() => {
     if (!rowSelection()) return []
-    return isTreeSelectionEnabled.value ||
-      (options.paginate?.() &&
-        data().some((record) => Array.isArray(record[childrenColumnName?.() ?? 'children'])))
+    const childColumnName = childrenColumnName?.() ?? 'children'
+    // 只要数据真的是树形（任一记录有非空 children 数组）就必须完整建索引，
+    // 与是否分页、checkStrictly 无关：否则子孙行不在 nodeMap 里，
+    // 选子行 onChange 的 selectedRows 为空、全选漏掉子孙、反选只翻根记录。
+    // checkStrictly 只决定父子联动（normalizeTreeSelection / toggleSubtree /
+    // getSelectionState 的 indeterminate），不该决定节点索引的完整性。
+    // 检测用早退的 some()，纯平铺数据下只是 O(n) 属性读取，不额外分配数组或 Map；
+    // 空 children 数组没有子孙可选，仍算平铺，走共享冻结空数组的 strict 展平，
+    // 不为每行多分一个 childrenKeys。
+    const hasTreeShape = data().some((record) => {
+      const children = record[childColumnName]
+      return Array.isArray(children) && children.length > 0
+    })
+    return hasTreeShape
       ? flattenSelectionNodes({
           data: data(),
-          childrenColumnName: childrenColumnName?.() ?? 'children',
+          childrenColumnName: childColumnName,
           getRowKey,
         })
       : flattenStrictSelectionNodes({

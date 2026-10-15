@@ -42,8 +42,14 @@ export default function useMobileTouchMove(
           if (isHorizontal) offsetX *= SMOOTH_PTG
           else offsetY *= SMOOTH_PTG
 
-          const offset = Math.floor(isHorizontal ? offsetX : offsetY)
-          if (!callback(isHorizontal, offset, true) || Math.abs(offset) <= 0.1) {
+          // 判停必须用**未取整**的浮点幅值。
+          //
+          // 衰减中的负偏移取整后会锁在 -1（Math.floor(-0.05) === -1），
+          // |offset| 于是永远 > 0.1，惯性永远不会自己结束——每 16ms 空转一次
+          // 回调直到组件卸载。先按浮点判停，再取整传给回调。
+          const raw = isHorizontal ? offsetX : offsetY
+          const offset = Math.floor(raw)
+          if (!callback(isHorizontal, offset, true) || Math.abs(raw) <= 0.1) {
             if (intervalId) clearInterval(intervalId)
           }
         }, 16)

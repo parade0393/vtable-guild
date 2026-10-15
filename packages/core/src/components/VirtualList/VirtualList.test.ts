@@ -257,6 +257,95 @@ describe('VirtualList', () => {
     expect(fixed.visibleRows).toEqual(measured.visibleRows)
   })
 
+  // 回归：itemKey 曾无条件执行 `dataSource.indexOf(item)`。位置表重建会逐行调一次
+  // itemKey，于是每次重建都是 O(n²)——实测 1 万行约 50ms、4 万行约 1.5s。
+  // VirtualList 现在把绝对下标一并传给 itemKey。
+  it('passes the absolute index to itemKey instead of scanning the data', async () => {
+    installResizeObserverMock()
+    const data = Array.from({ length: 300 }, (_, key) => ({ key }))
+    const seen: Array<{ item: unknown; index: number | undefined }> = []
+    const indexOfSpy = vi.spyOn(Array.prototype, 'indexOf')
+
+    const wrapper = mount(VirtualList, {
+      props: {
+        data,
+        height: 120,
+        itemHeight: 20,
+        itemKey: (item: { key: number }, index?: number) => {
+          seen.push({ item, index })
+          return item.key
+        },
+      },
+      slots: {
+        default: ({ index }: { index: number }) => h('div', { class: 'row' }, String(index)),
+      },
+      attachTo: document.body,
+    })
+
+    await flushVirtualList()
+    // 换一份新数据，逼出一次整表位置表重建
+    await wrapper.setProps({ data: data.map((item) => ({ ...item })) })
+    await flushVirtualList()
+    // scrollTo 走 useScrollTo，那里也有三段逐行 getKey 的循环 + 一次 findIndex
+    const beforeScrollTo = seen.length
+    await (wrapper.vm as unknown as ListRef).scrollTo({ key: 150, align: 'top' })
+    await flushVirtualList()
+    // 确认这条路径真的被走到，否则上面的 fullScans 判据是空口无凭
+    expect(seen.length).toBeGreaterThan(beforeScrollTo)
+
+    const withIndex = seen.filter((call) => call.index !== undefined)
+    // 每一条调用路径都必须给出下标；旧实现一个都不给（全靠 indexOf 兜）
+    expect(withIndex.length).toBeGreaterThan(0)
+    // 而且下标必须指向正确的那一行，否则行 key 会静默错位
+    for (const call of withIndex) {
+      const index = call.index as number
+      expect(index).toBeGreaterThanOrEqual(0)
+      expect(index).toBeLessThan(data.length)
+      expect(data[index].key).toBe((call.item as { key: number }).key)
+    }
+
+    // 判据：整轮挂载 + 一次重建下来，没有一次 indexOf 是扫这份 300 行的数据
+    const fullScans = indexOfSpy.mock.calls.filter(
+      (_call, at) => (indexOfSpy.mock.instances[at] as unknown[])?.length === data.length,
+    ).length
+    expect(fullScans).toBe(0)
+
+    wrapper.unmount()
+  })
+
+  // 回归：range watcher 的依赖里没有 itemHeight，定高模式关闭测量后单改行高
+  // 不会触发窗口重算——总高度停在旧值，要等滚动才被纠正。
+  it('recomputes the window when itemHeight changes', async () => {
+    installResizeObserverMock()
+    const data = Array.from({ length: 100 }, (_, key) => ({ key }))
+
+    const wrapper = mount(VirtualList, {
+      props: { data, height: 120, itemHeight: 20, itemKey: 'key' },
+      slots: {
+        default: ({ index }: { index: number }) => h('div', { class: 'row' }, String(index)),
+      },
+      attachTo: document.body,
+    })
+    await flushVirtualList()
+
+    const fillerHeight = () =>
+      parseFloat(
+        (wrapper.find('.vtg-virtual-list-holder').element.firstElementChild as HTMLElement).style
+          .height,
+      )
+
+    // 100 行 × 20px
+    expect(fillerHeight()).toBe(2000)
+
+    await wrapper.setProps({ itemHeight: 40 })
+    await flushVirtualList()
+
+    // 不滚动也要立刻纠正到 100 × 40
+    expect(fillerHeight()).toBe(4000)
+
+    wrapper.unmount()
+  })
+
   it('disconnects holder resize observer on unmount', async () => {
     const observers = installResizeObserverMock()
     const data = Array.from({ length: 5 }, (_, key) => ({ key }))

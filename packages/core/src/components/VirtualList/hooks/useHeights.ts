@@ -39,12 +39,12 @@ function measureHeight(el: HTMLElement): number {
  *   不再每次滚动重建整表前缀和。代价是行高必须真的等于声明值（调用方负责校验）。
  */
 export default function useHeights(
-  getKey: (item: any) => Key,
+  getKey: (item: any, index?: number) => Key,
   onItemAdd?: (item: any) => void,
   onItemRemove?: (item: any) => void,
   disabled?: () => boolean,
 ): [
-  setInstanceRef: (item: any, instance: HTMLElement | null) => void,
+  setInstanceRef: (item: any, instance: HTMLElement | null, index?: number) => void,
   collectHeight: (sync?: boolean) => void,
   heights: CacheMap,
   updatedMark: ReturnType<typeof ref<number>>,
@@ -110,9 +110,9 @@ export default function useHeights(
     }
   }
 
-  function setInstanceRef(item: any, instance: HTMLElement | null) {
+  function setInstanceRef(item: any, instance: HTMLElement | null, index?: number) {
     if (isDisabled()) return
-    const key = getKey(item)
+    const key = getKey(item, index)
     const origin = instanceRef.value.get(key)
     if (origin === instance) return
 
