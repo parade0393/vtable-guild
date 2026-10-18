@@ -274,7 +274,6 @@ export type PaginationThemeConfig = typeof paginationTheme
 // #endregion PaginationThemeConfig
 
 // #region VTableGuildThemeOverridesMap
-// @vtable-guild/theme 增强后的内置映射；业务可继续增强 @vtable-guild/core 的同名接口。
 export interface VTableGuildThemeOverridesMap {
   table: ThemeOverrideConfig<TableThemeConfig>
   button: ThemeOverrideConfig<ButtonThemeConfig>
