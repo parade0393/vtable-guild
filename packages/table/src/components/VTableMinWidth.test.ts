@@ -197,4 +197,90 @@ describe.each(['antdv', 'element-plus'] as const)('minWidth rendering / %s', (th
       wrapper.unmount()
     }
   })
+
+  // 回归：hasStickyHeader（现 constrainedBody）曾把 showHeader 也算进「是否进入
+  // 分离表体」的判定，于是 showHeader: false + 数字 scroll.y + 无 minWidth 时
+  // 虚拟化被静默关闭，表体退回全量渲染。1 万行实测 DOM 节点 277 → 40217。
+  it('keeps the virtual body when the header is hidden and no column has minWidth', () => {
+    const rows = Array.from({ length: 500 }, (_, key) => ({
+      key,
+      a: `a${key}`,
+      b: `b${key}`,
+      c: `c${key}`,
+    }))
+    const bareColumns = columns.map(({ minWidth: _minWidth, ...rest }) => rest)
+
+    const wrapper = mount(VTable, {
+      props: {
+        columns: bareColumns,
+        dataSource: rows,
+        scroll: { y: 200 },
+        virtual: true,
+        pagination: false,
+        showHeader: false,
+        rowHeight: 40,
+      },
+      global: { plugins: [createVTableGuild({ themePreset })] },
+    })
+    try {
+      // 表体行数远小于数据行数 —— 虚拟化真的在窗口化。
+      expect(wrapper.findAll('tbody tr').length).toBeLessThan(30)
+      expect(wrapper.find('tr[data-vtg-virtual-row]').exists()).toBe(true)
+      expect(wrapper.find('.vtg-virtual-list-holder').exists()).toBe(true)
+      // 表头确实没有渲染
+      expect(wrapper.find('thead').exists()).toBe(false)
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('still windows the virtual body when a hidden header is paired with minWidth', () => {
+    const rows = Array.from({ length: 500 }, (_, key) => ({
+      key,
+      a: `a${key}`,
+      b: `b${key}`,
+      c: `c${key}`,
+    }))
+
+    const wrapper = mount(VTable, {
+      props: {
+        columns,
+        dataSource: rows,
+        scroll: { y: 200 },
+        virtual: true,
+        pagination: false,
+        showHeader: false,
+        rowHeight: 40,
+      },
+      global: { plugins: [createVTableGuild({ themePreset })] },
+    })
+    try {
+      expect(wrapper.findAll('tbody tr').length).toBeLessThan(30)
+      expect(wrapper.find('thead').exists()).toBe(false)
+    } finally {
+      wrapper.unmount()
+    }
+  })
+
+  it('keeps sticky gated on a visible header', () => {
+    // sticky 是与 showHeader 唯一相关的项：没有表头就无从粘附，仍走单表模式。
+    const wrapper = mount(VTable, {
+      props: {
+        columns: columns.map(({ minWidth: _minWidth, ...rest }) => rest),
+        dataSource,
+        tableLayout: 'auto',
+        sticky: true,
+        showHeader: false,
+        pagination: false,
+      },
+      global: { plugins: [createVTableGuild({ themePreset })] },
+    })
+    try {
+      expect(wrapper.find('.vtg-virtual-list-holder').exists()).toBe(false)
+      expect(wrapper.find('thead').exists()).toBe(false)
+      expect(wrapper.findAll('table[data-vtg-table]').length).toBe(1)
+    } finally {
+      wrapper.unmount()
+    }
+  })
 })

@@ -58,7 +58,6 @@ import { applyColumnOrder, filterVisibleColumns } from '../composables/useColumn
 import { getEllipsisConfig } from '../utils/cell'
 import { getRootCompatClass } from '../utils/compat'
 import { resolveRowKey } from '../utils/rowKey'
-import { normalizeMinWidth } from '../utils/columnWidth'
 import { useScroll, type ScrollConfig } from '../composables/useScroll'
 import { useAutoHeight } from '../composables/useAutoHeight'
 import { useColumnMetrics } from '../composables/useColumnMetrics'
@@ -825,14 +824,18 @@ export default defineComponent({
 
     const autoScrollY = computed(() => props.scroll?.y === 'auto')
 
-    // 无表头的约束布局仍需进入分离/虚拟表体；无显式下限保留原有路径。
-    const hasStickyHeader = computed(
-      () =>
-        autoScrollY.value ||
-        ((props.showHeader !== false ||
-          displayColumns.value.some((c) => normalizeMinWidth(c.minWidth) !== undefined)) &&
-          !!props.scroll?.y) ||
-        (props.showHeader !== false && !!props.sticky),
+    /**
+     * 是否进入「表头/表体分离」的约束布局（双表模式 + 受高度约束的表体）。
+     *
+     * 这个判定**只取决于滚动约束，与 `showHeader` 无关**。表头不渲染时表体依然
+     * 必须走分离表体，否则 `virtual: true` 会被静默降级成普通表体、全量渲染
+     * （实测 1 万行下 DOM 节点从 277 涨到 40217）。是否渲染表头交给渲染分支
+     * 自己判断，不在这里用表头反推表体形态。
+     *
+     * `sticky` 是唯一与 showHeader 相关的项：没有表头就无从粘附。
+     */
+    const constrainedBody = computed(
+      () => !!props.scroll?.y || (props.showHeader !== false && !!props.sticky),
     )
 
     const hasFixedColumns = computed(() =>
@@ -879,7 +882,7 @@ export default defineComponent({
       columns: () => displayColumns.value,
       columnWidths: resizeColumnWidths,
       layout: () => resolvedTableLayout.value,
-      split: () => hasStickyHeader.value,
+      split: () => constrainedBody.value,
       root: () => layoutRootRef.value,
       viewport: () =>
         layoutRootRef.value?.contains(bodyWrapRef.value)
@@ -1380,7 +1383,7 @@ export default defineComponent({
         ))
 
       // ---- Dual-table mode (scroll.y set) ----
-      if (hasStickyHeader.value) {
+      if (constrainedBody.value) {
         const headerTable =
           props.showHeader !== false ? (
             <div

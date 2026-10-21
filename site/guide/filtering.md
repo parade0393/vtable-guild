@@ -64,6 +64,21 @@ const dataSource: UserRow[] = [
 - change 事件会返回当前所有列的 filters 快照，适合做查询条件同步。
 - 树形数据上只对顶层记录求值：`onFilter` 不递归 `children`，父节点命中会带上全部子节点，父节点不命中则整棵子树被移除，详见[树形表格](/guide/tree-table#已知限制)。
 
+单独声明事件处理函数时，可以从公开的事件接口取得签名，参数会自动获得类型：
+
+```ts
+import { ref } from 'vue'
+import type { TableFiltersInfo, VTableEventProps } from '@vtable-guild/vtable-guild'
+
+// 沿用上面的 UserRow；给表格绑定 @change="handleChange"。
+const activeFilters = ref<TableFiltersInfo>({})
+const handleChange: NonNullable<VTableEventProps<UserRow>['onChange']> = (filters) => {
+  activeFilters.value = filters
+}
+```
+
+`filters` 是以列 key 为键的 `TableFiltersInfo`；每个值是 `(string | number | boolean)[] | null`，`null` 表示该列没有筛选值。`onFilter` 的第一个参数则是单个 `string | number | boolean` 值，第二个参数保留 `UserRow` 类型。
+
 ## 自定义筛选面板
 
 如果默认筛选面板不够用，可以选择两种扩展方式：
@@ -75,6 +90,8 @@ const dataSource: UserRow[] = [
 
 - filterSearch，为筛选项增加搜索能力。
 - filterMode: 'tree'，把筛选项渲染成树形结构。
+
+自定义面板的参数使用 `CustomFilterDropdownSlotProps<UserRow>`：`setSelectedKeys` 接收筛选值数组，`confirm` 和 `clearFilters` 的可选参数分别控制确认与关闭行为。完整签名见页末声明。
 
 ## 什么时候用受控模式
 
@@ -89,3 +106,23 @@ const dataSource: UserRow[] = [
 - [排序](/guide/sorting)
 - [API Reference](/guide/api-reference)
 - [类型参考](/guide/type-reference)
+
+## Type Declarations
+
+筛选值支持 `string | number | boolean`。以下声明包含列配置、自定义面板与表格事件。列配置为相关字段节选；`FilteringColumnFields` 是文档辅助接口，不是包导出，完整声明见[类型参考](/guide/type-reference)。
+
+::: details 查看类型声明
+
+<<< @/.vitepress/type-declarations/table.ts#ColumnFilterItem
+
+<<< @/.vitepress/type-declarations/features.ts#FilteringColumnFields
+
+<<< @/.vitepress/type-declarations/table.ts#CustomFilterDropdownSlotProps
+
+<<< @/.vitepress/type-declarations/table.ts#TableFiltersInfo
+
+<<< @/.vitepress/type-declarations/table.ts#TableChangeExtra
+
+<<< @/.vitepress/type-declarations/table.ts#VTableEventProps
+
+:::

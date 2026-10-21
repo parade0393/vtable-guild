@@ -20,6 +20,13 @@ import {
 
 const state = useFilterMatrixState()
 
+// element-plus 的 filtered-value 只收 string[]，而受控筛选值是 FilterValue[]
+// （string | number | boolean，为对齐 vtable 的 ColumnFilterItem）。
+// 演示数据里 team 的筛选值全是字符串，这里做窄化断言，运行时的传值不变。
+function toElFilteredValue(values: FilterValue[]): string[] {
+  return values as string[]
+}
+
 const parentContext = inject<VTableGuildContext | null>(VTABLE_GUILD_INJECTION_KEY, null)
 provide(
   VTABLE_GUILD_INJECTION_KEY,
@@ -240,7 +247,7 @@ provide(
               column-key="team"
               :filters="teamFilters"
               :filter-method="(value: FilterValue, row: DemoRow) => matchField('team')(value, row)"
-              :filtered-value="state.controlledTeamFilter"
+              :filtered-value="toElFilteredValue(state.controlledTeamFilter)"
             />
             <ElTableColumn prop="score" label="Score" width="110" align="right" sortable />
             <ElTableColumn prop="address" label="Address" show-overflow-tooltip />

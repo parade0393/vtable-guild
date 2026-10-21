@@ -17,31 +17,65 @@
 ## 常见入口
 
 ```vue
-<VTable
-  row-key="key"
-  :columns="columns"
-  :data-source="dataSource"
-  :row-class-name="rowClassName"
-  :custom-row="customRow"
-  :custom-header-row="customHeaderRow"
->
-  <template #headerCell="{ title, column }">
-    <span v-if="column.key === 'score'">{{ title }} 指标</span>
-    <template v-else>{{ title }}</template>
-  </template>
+<script setup lang="ts">
+import { ref } from 'vue'
+import { VTable, type TableColumnsType, type TableProps } from '@vtable-guild/vtable-guild'
 
-  <template #bodyCell="{ text, column }">
-    <span v-if="column.key === 'status'" class="badge">{{ text }}</span>
-    <template v-else>{{ text }}</template>
-  </template>
+interface ReportRow {
+  key: string
+  status: 'active' | 'paused'
+  score: number
+}
 
-  <template #summary>
-    <tr>
-      <td colspan="2">汇总信息</td>
-    </tr>
-  </template>
-</VTable>
+const columns: TableColumnsType<ReportRow> = [
+  { title: '状态', key: 'status', dataIndex: 'status' },
+  { title: '分数', key: 'score', dataIndex: 'score' },
+]
+const dataSource: ReportRow[] = [{ key: '1', status: 'active', score: 95 }]
+const clickedRowKey = ref('')
+const rowClassName: NonNullable<TableProps<ReportRow>['rowClassName']> = (record) =>
+  record.status === 'paused' ? 'paused-row' : ''
+const customRow: NonNullable<TableProps<ReportRow>['customRow']> = (record) => ({
+  onClick: () => {
+    clickedRowKey.value = record.key
+  },
+})
+const customHeaderRow: NonNullable<TableProps<ReportRow>['customHeaderRow']> = (
+  _columns,
+  index,
+) => ({ 'data-header-row': index ?? 0 })
+</script>
+
+<template>
+  <VTable
+    row-key="key"
+    :columns="columns"
+    :data-source="dataSource"
+    :row-class-name="rowClassName"
+    :custom-row="customRow"
+    :custom-header-row="customHeaderRow"
+  >
+    <template #headerCell="{ title, column }">
+      <span v-if="column.key === 'score'">{{ title }} 指标</span>
+      <template v-else>{{ title }}</template>
+    </template>
+
+    <template #bodyCell="{ text, column }">
+      <span v-if="column.key === 'status'" class="badge">{{ text }}</span>
+      <template v-else>{{ text }}</template>
+    </template>
+
+    <template #summary>
+      <tr>
+        <td colspan="2">汇总信息</td>
+      </tr>
+    </template>
+  </VTable>
+  <p>最近点击：{{ clickedRowKey }}</p>
+</template>
 ```
+
+单独声明回调时可使用 `TableProps<ReportRow>` 对应属性的类型；列回调则使用 `ColumnType<ReportRow>`。`headerCell` 和 `bodyCell` 由 `TableSlotsDecl<ReportRow>` 声明，`record` 会保持业务行类型。`bodyCell.text` 是 `unknown`，需要具体类型时先收窄，或者读取已知类型的 `record` 字段。
 
 ## 每个入口适合做什么
 
@@ -96,3 +130,31 @@
 - [标题、页脚与摘要行](/guide/title-footer-summary)
 - [编辑](/guide/editing)
 - [分页](/guide/pagination)
+
+## Type Declarations
+
+表级回调属于 `TableProps<TRecord>`，列级回调属于 `ColumnType<TRecord>`；所有 Vue 插槽由 `TableSlotsDecl<TRecord>` 统一声明。`CellAdditionalProps` 描述属性与鼠标事件的返回值。props / 列配置为相关字段节选；`CustomStructureFields` 和 `MergedColumnFields` 是文档辅助接口，不是包导出，完整声明见[类型参考](/guide/type-reference)，分页插槽完整上下文见[分页](/guide/pagination#type-declarations)。
+
+::: details 查看类型声明
+
+<<< @/.vitepress/type-declarations/features.ts#CustomStructureFields
+
+<<< @/.vitepress/type-declarations/features.ts#MergedColumnFields
+
+<<< @/.vitepress/type-declarations/table.ts#RowClassName
+
+<<< @/.vitepress/type-declarations/table.ts#GetComponentProps
+
+<<< @/.vitepress/type-declarations/table.ts#CellAdditionalProps
+
+<<< @/.vitepress/type-declarations/table.ts#TableSlotsDecl
+
+<<< @/.vitepress/type-declarations/table.ts#TableBodyCellSlotProps
+
+<<< @/.vitepress/type-declarations/table.ts#TableHeaderCellSlotProps
+
+<<< @/.vitepress/type-declarations/table.ts#TableDataSlotProps
+
+<<< @/.vitepress/type-declarations/table.ts#CustomFilterDropdownSlotProps
+
+:::

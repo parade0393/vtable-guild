@@ -401,6 +401,11 @@ const checkedRowKeys = ref<Key[]>(['1', '3'])
 const radioRowKey = ref<Key>('2')
 const lastSelectInfo = ref('（尚未选择）')
 
+/** radio 的单个 key 收窄成 RowSelection 要求的 Key[]，传值本身不变。 */
+function toRadioSelection(keys: Key | Key[]): Key[] {
+  return keys as Key[]
+}
+
 const checkboxSelection = computed(() => ({
   selectedRowKeys: checkedRowKeys.value,
   onChange: (keys: Key[]) => {
@@ -414,7 +419,9 @@ const checkboxSelection = computed(() => ({
 
 const radioSelection = computed(() => ({
   type: 'radio' as const,
-  selectedRowKeys: radioRowKey.value,
+  // radio 模式下 selectedRowKeys 只传单个 key，useSelection 内部会 new Set(...) 归一，
+  // 与 RowSelection 声明的 Key[] 不一致；这里做窄化断言，运行时的传值不变。
+  selectedRowKeys: toRadioSelection(radioRowKey.value),
   onChange: (keys: Key[]) => {
     radioRowKey.value = keys[0] ?? ''
     lastSelectInfo.value = `radio: ${String(keys[0])}`

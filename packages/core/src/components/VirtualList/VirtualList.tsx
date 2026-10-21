@@ -54,7 +54,7 @@ export interface ListProps {
   height?: number
   itemHeight?: number
   fullHeight?: boolean
-  itemKey: Key | ((item: any) => Key)
+  itemKey: Key | ((item: any, index?: number) => Key)
   component?: string
   virtual?: boolean
   direction?: ScrollBarDirectionType
@@ -144,7 +144,7 @@ export default defineComponent({
     itemHeight: Number,
     fullHeight: { type: Boolean, default: true },
     itemKey: {
-      type: [String, Number, Function] as PropType<Key | ((item: any) => Key)>,
+      type: [String, Number, Function] as PropType<Key | ((item: any, index?: number) => Key)>,
       required: true,
     },
     component: { type: String, default: 'div' },
@@ -175,9 +175,21 @@ export default defineComponent({
       },
     )
 
-    const getKey = (item: any): Key => {
+    /**
+     * 取某一项的行 key。
+     *
+     * 第二个参数是该项在 `mergedData` 里的绝对下标。**位置表重建与渲染这两条
+     * 热路径上的调用方都必须传**：`prefixHeights.sync` 会对每一行调一次
+     * `getKey`，若这里退回 `dataSource.indexOf(item)`，一次重建就是 O(n²)
+     * （实测 1 万行约 14ms、4 万行约 225ms，且随行数平方增长；传下标后
+     * 同样规模降到 1~3ms）。
+     *
+     * 下标是可选的，只为兼容不关心下调的既有调用形式；真有调用方漏传时，
+     * 代价由该调用方自己承担（见 VirtualTableBody 的兜底）。
+     */
+    const getKey = (item: any, index?: number): Key => {
       const _itemKey = itemKeyProp
-      if (typeof _itemKey === 'function') return _itemKey(item)
+      if (typeof _itemKey === 'function') return _itemKey(item, index)
       return item?.[_itemKey]
     }
 
@@ -227,13 +239,23 @@ export default defineComponent({
     const end = ref(0)
     const fillerOffset = ref<number | undefined>(undefined)
 
+    /**
+     * 把目标滚动位置钳到 [0, maxScrollTop]。
+     *
+     * 与 syncScrollTop 共用同一套边界，供「这一步到底有没有真的滚动」判定使用
+     * （贴边时的惯性要及时收手，见下面的 touch 回调）。
+     */
+    function clampScrollTop(value: number): number {
+      const maxScrollHeight = scrollHeight.value - props.height!
+      return Math.max(0, Math.min(value, maxScrollHeight || 0))
+    }
+
     function syncScrollTop(newTop: number | ((prev: number) => number)) {
       let value: number
       if (typeof newTop === 'function') value = newTop(offsetTop.value)
       else value = newTop
 
-      const maxScrollHeight = scrollHeight.value - props.height!
-      const alignedTop = Math.max(0, Math.min(value, maxScrollHeight || 0))
+      const alignedTop = clampScrollTop(value)
 
       if (componentRef.value) componentRef.value.scrollTop = alignedTop
       offsetTop.value = alignedTop
@@ -247,15 +269,26 @@ export default defineComponent({
 
     // Calculate visible range
     watch(
-      [inVirtual, useVirtual, offsetTop, mergedData, heightUpdatedMark, () => props.height],
-      ([, , , nextData, nextMark], prev) => {
+      [
+        inVirtual,
+        useVirtual,
+        offsetTop,
+        mergedData,
+        heightUpdatedMark,
+        () => props.height,
+        () => props.itemHeight,
+      ],
+      ([, , , nextData, nextMark, , nextItemHeight], prev) => {
         // 先判断这次是被什么触发的，据此决定位置表要不要失效。
         // 只有 offsetTop 变（即纯滚动）时，位置表完全复用。
         if (!prev) {
           prefixHeights.markAllDirty()
         } else {
-          const [, , , prevData, prevMark] = prev
+          const [, , , prevData, prevMark, , prevItemHeight] = prev
           if (nextData !== prevData) prefixHeights.markAllDirty()
+          // 声明行高变了：未实测的行改用新值，已实测的仍以 DOM 实测为准，
+          // 两种混在一起，位置表必须整表重建才能保持一致。
+          else if (nextItemHeight !== prevItemHeight) prefixHeights.markAllDirty()
           // 高度实测变化只可能发生在已渲染的行上，因此 [0, start) 的前缀仍然有效。
           else if (nextMark !== prevMark) prefixHeights.markDirtyFrom(start.value)
         }
@@ -304,7 +337,7 @@ export default defineComponent({
         }
 
         const data = toRaw(mergedData.value)
-        prefixHeights.sync(dataLen, (index) => heights.get(getKey(data[index])), itemH!)
+        prefixHeights.sync(dataLen, (index) => heights.get(getKey(data[index], index)), itemH!)
         const range = readVisibleRange(prefixHeights, dataLen, offsetTop.value, height!)
 
         scrollHeight.value = range.scrollHeight
@@ -324,7 +357,7 @@ export default defineComponent({
         const startItem = mergedData.value[start.value]
 
         if (startItem && prevCacheHeight === undefined) {
-          if (getKey(startItem) === recordKey) {
+          if (getKey(startItem, start.value) === recordKey) {
             const diffHeight = heights.get(recordKey)! - props.itemHeight!
             syncScrollTop((ori) => ori + diffHeight)
           }
@@ -455,17 +488,23 @@ export default defineComponent({
     )
 
     // Touch handling
-    useMobileTouchMove(inVirtual, componentRef, (isHorizontal, offset) => {
+    // smoothOffset 为 true 表示这是惯性帧而非手指实时拖动：惯性帧在已经贴边
+    // （滚动位置不会再变）时返回 false，让 useMobileTouchMove 及时收手，
+    // 而不是继续空转到幅值衰减到 0.1 以下。手指实时拖动仍恒返回 true，
+    // 保持既有的 preventDefault 行为不变。
+    useMobileTouchMove(inVirtual, componentRef, (isHorizontal, offset, smoothOffset) => {
       if (isHorizontal) {
         const aligned = keepInHorizontalRange(
           isRTL.value ? offsetLeft.value - offset : offsetLeft.value + offset,
         )
+        const moved = aligned !== offsetLeft.value
         offsetLeft.value = aligned
         triggerScroll({ x: isRTL.value ? -aligned : aligned })
-        return true
+        return smoothOffset ? moved : true
       } else {
+        const moved = clampScrollTop(offsetTop.value + offset) !== offsetTop.value
         syncScrollTop((top) => top + offset)
-        return true
+        return smoothOffset ? moved : true
       }
     })
 

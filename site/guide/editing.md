@@ -28,6 +28,8 @@ vtable-guild 通过 `bodyCell` 插槽支持单元格编辑和整行编辑。表�
 
 示例使用原生 `input` 和 `select`，因此可以同时运行在文档站和源码 Playground。实际项目里可原位替换成 `a-input`、`el-input`、Select、DatePicker 或已有的表单字段组件，表格不限制编辑器类型。
 
+示例将列标注为 `TableColumnsType<MemberRow>`，`#bodyCell` 的上下文对应 `TableBodyCellSlotProps<MemberRow>`。其中 `record` 是 `MemberRow`，`text` 是 `unknown`，`column.dataIndex` 是 `DataIndex | undefined`；示例中的 `isEditableField` 会先检查字段名，再读取或写入草稿。草稿类型属于业务代码，表格的公开插槽类型见页末声明。
+
 ## 实现原则
 
 - 始终设置 `row-key="key"`，并按稳定行键保存编辑状态，不要使用渲染时的行索引。
@@ -55,3 +57,21 @@ vtable-guild 通过 `bodyCell` 插槽支持单元格编辑和整行编辑。表�
 - [自定义行与插槽](/guide/api-wiring-and-slots)
 - [虚拟滚动](/guide/virtualization)
 - [API Reference](/guide/api-reference)
+
+## Type Declarations
+
+编辑使用公开的 `bodyCell` 插槽及列字段路径类型，`TRecord` 表示业务行类型。列配置为相关字段节选；`MergedColumnFields` 是文档辅助接口，不是包导出，完整列配置和插槽声明见[类型参考](/guide/type-reference)。
+
+::: details 查看类型声明
+
+<<< @/.vitepress/type-declarations/table.ts#Key
+
+<<< @/.vitepress/type-declarations/table.ts#DataIndex
+
+<<< @/.vitepress/type-declarations/features.ts#MergedColumnFields
+
+<<< @/.vitepress/type-declarations/table.ts#TableBodyCellSlotProps
+
+<<< @/.vitepress/type-declarations/table.ts#TableSlotsDecl
+
+:::

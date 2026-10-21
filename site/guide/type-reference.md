@@ -1,19 +1,43 @@
 # 类型参考
 
-这一页只整理公开 TypeScript 类型：查“该导入哪个类型”和“类型之间是什么关系”。组件行为、默认值和事件语义请看 [API Reference](/guide/api-reference)。
+这一页提供站点已介绍 API 的完整 TypeScript 声明。组件行为、默认值和事件语义请看 [API Reference](/guide/api-reference)。声明与功能页共用同一份手工维护文件，并参与类型检查。
 
-所有类型都推荐从 `@vtable-guild/vtable-guild` 导入。
+所有公开类型推荐从 `@vtable-guild/vtable-guild` 导入。声明中的 `CSSProperties`、`VNodeChild`、`VNode`、`Plugin`、`InjectionKey` 来自 Vue；主题配置使用公开主题常量的 `typeof` 保留源码的只读属性与字面量。标为“文档辅助”的接口仅用于说明组件 props，不是包导出。
 
 ```ts
 import type {
-  TableColumnType,
   TableColumnsType,
-  RowSelection,
-  Expandable,
+  VTableEventProps,
+  TablePaginationConfig,
 } from '@vtable-guild/vtable-guild'
+
+interface UserRow {
+  key: string
+  name: string
+  age: number
+}
+
+const columns: TableColumnsType<UserRow> = [
+  { title: 'Name', key: 'name', dataIndex: 'name' },
+  { title: 'Age', key: 'age', dataIndex: 'age' },
+]
+
+const pagination: TablePaginationConfig = {
+  onChange: (page, pageSize) => console.log(page, pageSize),
+}
+
+const handleChange: NonNullable<VTableEventProps<UserRow>['onChange']> = (
+  _filters,
+  _sorter,
+  extra,
+) => {
+  if (extra.action === 'paginate' && extra.pagination) {
+    console.log(extra.pagination.current, extra.pagination.pageSize)
+  }
+}
 ```
 
-如果你正在对齐 ant-design-vue 的列类型命名，优先使用 `TableColumnType` 和 `TableColumnsType`。它们分别等价于 `ColumnType` 和 `ColumnsType`。
+如果你正在对齐 ant-design-vue 的列类型命名，优先使用 `TableColumnType` 和 `TableColumnsType`。它们分别等价于 `ColumnType` 和 `ColumnsType`。各声明引用的其他类型可在本页按名称查找。
 
 ## 表格核心类型
 
@@ -21,260 +45,183 @@ import type {
 
 行、列和内部状态使用的唯一标识。
 
-```ts
-type Key = string | number
-```
+<<< @/.vitepress/type-declarations/table.ts#Key
 
 ### DataIndex
 
 列读取行数据时使用的字段路径。
 
-```ts
-type DataIndex = string | number | Array<string | number>
-```
+<<< @/.vitepress/type-declarations/table.ts#DataIndex
 
 ### AlignType
 
 列内容对齐方式。
 
-```ts
-type AlignType = 'left' | 'center' | 'right'
-```
+<<< @/.vitepress/type-declarations/table.ts#AlignType
 
 ### Breakpoint
 
 响应式列使用的断点类型。当前公开类型名是 `Breakpoint`，没有 `Breakpoints` 复数类型。
 
-```ts
-type Breakpoint = 'xxxl' | 'xxl' | 'xl' | 'lg' | 'md' | 'sm' | 'xs'
-```
+<<< @/.vitepress/type-declarations/table.ts#Breakpoint
 
 ### SortOrder
 
 排序方向。`null` 表示无排序状态。
 
-```ts
-type SortOrder = 'ascend' | 'descend' | null
-```
+<<< @/.vitepress/type-declarations/table.ts#SortOrder
 
 ### ColumnSorter
 
-列排序器类型。业务代码里通常直接写在 `ColumnType<T>['sorter']` 上。
+列排序器类型，比较函数返回数字；对象形态支持多列排序优先级。
 
-```ts
-type SorterFn<TRecord> = (a: TRecord, b: TRecord) => number
+<<< @/.vitepress/type-declarations/table.ts#SorterFn
 
-type ColumnSorter<TRecord> =
-  | boolean
-  | SorterFn<TRecord>
-  | {
-      compare?: SorterFn<TRecord>
-      multiple?: number
-    }
-```
+<<< @/.vitepress/type-declarations/table.ts#ColumnSorterObject
+
+<<< @/.vitepress/type-declarations/table.ts#ColumnSorter
 
 ### ColumnFilterItem
 
 列筛选项，支持树形结构。
 
-```ts
-interface ColumnFilterItem {
-  text: string
-  value: string | number | boolean
-  children?: ColumnFilterItem[]
-}
-```
+<<< @/.vitepress/type-declarations/table.ts#ColumnFilterItem
 
 ### ColumnType
 
-叶子列配置。它承载数据读取、渲染、排序、筛选、固定列、列宽拖拽和响应式可见性等能力。
+叶子列配置。完整声明包括渲染、排序、筛选、固定列、列宽拖拽与响应式可见性。
 
-```ts
-const nameColumn: TableColumnType<UserRow> = {
-  title: 'Name',
-  dataIndex: 'name',
-  key: 'name',
-  sorter: true,
-}
-```
-
-多数业务场景优先使用 [`TableColumnsType`](#columnstype)，因为它同时支持列组和占位常量。
+<<< @/.vitepress/type-declarations/table.ts#ColumnType
 
 ### ColumnGroupType
 
-列组配置。`children` 内继续放叶子列或列组。
+列组配置，`children` 继续放叶子列或列组。
 
-```ts
-const grouped: ColumnGroupType<UserRow> = {
-  title: 'Profile',
-  children: [
-    { title: 'Name', dataIndex: 'name', key: 'name' },
-    { title: 'Age', dataIndex: 'age', key: 'age' },
-  ],
-}
-```
+<<< @/.vitepress/type-declarations/table.ts#ColumnGroupType
 
 ### ColumnsType
 
-`columns` prop 的推荐类型。
+`columns` prop 的推荐类型，同时支持列组与列占位常量。
 
-```ts
-type ColumnsType<TRecord> = Array<ColumnType<TRecord> | ColumnGroupType<TRecord> | ColumnSentinel>
-```
-
-```ts
-const columns: TableColumnsType<UserRow> = [
-  { title: 'Name', dataIndex: 'name', key: 'name' },
-  { title: 'Age', dataIndex: 'age', key: 'age', responsive: ['md', 'lg', 'xl'] },
-]
-```
+<<< @/.vitepress/type-declarations/table.ts#ColumnsType
 
 ### TableColumnType 和 TableColumnsType
 
-兼容命名别名：
+与 ant-design-vue 命名兼容的别名，保留原类型的泛型默认值。
 
-```ts
-type TableColumnType<TRecord> = ColumnType<TRecord>
-type TableColumnGroupType<TRecord> = ColumnGroupType<TRecord>
-type TableColumnsType<TRecord> = ColumnsType<TRecord>
-```
+<<< @/.vitepress/type-declarations/table.ts#TableColumnType
+
+<<< @/.vitepress/type-declarations/table.ts#TableColumnGroupType
+
+<<< @/.vitepress/type-declarations/table.ts#TableColumnsType
+
+### TableLayout
+
+<<< @/.vitepress/type-declarations/table.ts#TableLayout
+
+### TableSticky
+
+`sticky` 对象的完整声明；`offsetScroll` 与 `getContainer` 已声明但尚未接线，行为边界见 [API Reference](/guide/api-reference)。
+
+<<< @/.vitepress/type-declarations/table.ts#TableSticky
+
+### RowClassName
+
+<<< @/.vitepress/type-declarations/table.ts#RowClassName
+
+### TransformCellText
+
+<<< @/.vitepress/type-declarations/table.ts#TransformCellText
 
 ## 渲染与结构类型
 
 ### CellAdditionalProps
 
-用于 `customCell`、`customHeaderCell`、`customRow` 和 `customHeaderRow` 返回额外属性。
+`customCell`、`customHeaderCell`、`customRow` 和 `customHeaderRow` 返回的额外 DOM 属性。索引签名允许 `data-*`、`aria-*` 等属性。
 
-```ts
-interface CellAdditionalProps {
-  class?: string
-  className?: string
-  style?: CSSProperties
-  colSpan?: number
-  rowSpan?: number
-  /** colSpan / rowSpan 的小写别名，与原生属性写法一致，两种都接受 */
-  colspan?: number
-  rowspan?: number
-  onClick?: (event: MouseEvent) => void
-  onMouseenter?: (event: MouseEvent) => void
-  onMouseleave?: (event: MouseEvent) => void
-  [key: string]: unknown
-}
-```
-
-索引签名允许挂任意额外属性（`data-*`、`aria-*` 等），它们会直接落到对应的 DOM 元素上。
+<<< @/.vitepress/type-declarations/table.ts#CellAdditionalProps
 
 ### RenderedCell
 
-`customRender` 或选择列 `renderCell` 可返回的对象形态。
+`customRender` 或选择列 `renderCell` 返回的对象形态。
 
-```ts
-interface RenderedCell {
-  props?: CellAdditionalProps
-  children?: VNodeChild
-}
-```
+<<< @/.vitepress/type-declarations/table.ts#RenderedCell
 
 ### CustomRenderContext
 
 `column.customRender` 的参数类型。
 
-```ts
-interface CustomRenderContext<TRecord> {
-  text: unknown
-  value: unknown
-  record: TRecord
-  index: number
-  renderIndex: number
-  column: ColumnType<TRecord>
-}
-```
+<<< @/.vitepress/type-declarations/table.ts#CustomRenderContext
+
+### GetComponentProps
+
+额外单元格或行属性的回调类型，注意 `index` 可选。
+
+<<< @/.vitepress/type-declarations/table.ts#GetComponentProps
+
+### ColumnTitleProps
+
+函数式列标题参数。
+
+<<< @/.vitepress/type-declarations/table.ts#ColumnTitleProps
+
+### ColumnTitle
+
+<<< @/.vitepress/type-declarations/table.ts#ColumnTitle
 
 ## 交互类型
 
 ### RowSelection
 
-`rowSelection` prop 的类型，用于多选、单选、受控选择和选择列渲染。
+多选、单选、受控选择与选择列渲染配置。
 
-```ts
-const rowSelection: RowSelection<UserRow> = {
-  selectedRowKeys,
-  onChange: (keys, rows) => {
-    selectedRowKeys = keys
-  },
-}
-```
+<<< @/.vitepress/type-declarations/table.ts#RowSelection
 
 ### RowSelectionType
 
-```ts
-type RowSelectionType = 'checkbox' | 'radio'
-```
+<<< @/.vitepress/type-declarations/table.ts#RowSelectionType
 
 ### SelectionItem
 
 自定义批量选择菜单项。
 
-```ts
-interface SelectionItem {
-  key: string
-  text: string | VNodeChild
-  onSelect?: (changeableRowKeys: Key[]) => void
-}
-```
+<<< @/.vitepress/type-declarations/table.ts#SelectionItem
 
 ### Expandable
 
-`expandable` prop 的类型，用于展开行。
+展开行与树形展开配置。
 
-```ts
-const expandable: Expandable<UserRow> = {
-  expandedRowRender: (record) => record.description,
-}
-```
+<<< @/.vitepress/type-declarations/table.ts#Expandable
 
 ### TableFiltersInfo
 
-`change` 事件里的 filters 参数。
+`change` 事件的 filters 参数，清空筛选后对应值可以为 `null`。
 
-```ts
-type TableFiltersInfo = Record<string, (string | number | boolean)[] | null>
-```
+<<< @/.vitepress/type-declarations/table.ts#TableFiltersInfo
+
+### SorterResultLike
+
+单列排序结果。多列排序时事件返回该类型的数组。
+
+<<< @/.vitepress/type-declarations/table.ts#SorterResultLike
 
 ### VTableSorterResult
 
-`change` 事件里的 sorter 参数。
+`change` 事件的 sorter 参数。
 
-```ts
-type VTableSorterResult<TRecord> = SorterResultLike<TRecord> | Array<SorterResultLike<TRecord>>
-```
+<<< @/.vitepress/type-declarations/table.ts#VTableSorterResult
 
 ### TableChangeExtra
 
-`change` 事件里的 extra 参数。
+`change` 事件的 extra 参数；启用分页后从可选的 `pagination` 读取分页状态。
 
-```ts
-interface TableChangeExtra<TRecord> {
-  action: 'sort' | 'filter' | 'select' | 'paginate'
-  pagination?: TablePaginationState
-  currentDataSource: TRecord[]
-}
-```
+<<< @/.vitepress/type-declarations/table.ts#TableChangeExtra
 
 ### RowDragSortInfo
 
-`rowDragEnd` 事件的 info 参数，见[行拖拽排序](/guide/row-drag-sort)。
+`rowDragEnd` 事件的 info 参数，见 [行拖拽排序](/guide/row-drag-sort)。
 
-```ts
-interface RowDragSortInfo {
-  /** 拖拽行的 key */
-  draggedKey: Key
-  /** 放置目标行的 key */
-  targetKey: Key
-  /** 拖拽完成后的全量行 key 顺序（对应事件的 newData；树形数据按数据顺序递归包含子节点） */
-  orderedKeys: Key[]
-}
-```
+<<< @/.vitepress/type-declarations/table.ts#RowDragSortInfo
 
 ## Slot 类型
 
@@ -282,136 +229,89 @@ interface RowDragSortInfo {
 
 `bodyCell` slot 参数。
 
-```ts
-interface TableBodyCellSlotProps<TRecord> {
-  text: unknown
-  record: TRecord
-  index: number
-  column: ColumnType<TRecord>
-}
-```
+<<< @/.vitepress/type-declarations/table.ts#TableBodyCellSlotProps
 
 ### TableHeaderCellSlotProps
 
 `headerCell` slot 参数。
 
-```ts
-interface TableHeaderCellSlotProps<TRecord> {
-  title: VNodeChild | undefined
-  column: ColumnType<TRecord> | ColumnGroupType<TRecord>
-  index: number
-}
-```
+<<< @/.vitepress/type-declarations/table.ts#TableHeaderCellSlotProps
 
 ### CustomFilterDropdownSlotProps
 
-`customFilterDropdown` slot 参数。
+`customFilterDropdown` slot 参数，包括筛选状态与确认、重置、关闭函数。
 
-```ts
-interface CustomFilterDropdownSlotProps<TRecord> {
-  column: ColumnType<TRecord>
-  selectedKeys: (string | number | boolean)[]
-  setSelectedKeys: (keys: (string | number | boolean)[]) => void
-  confirm: (options?: { closeDropdown?: boolean }) => void
-  clearFilters: (options?: { confirm?: boolean; closeDropdown?: boolean }) => void
-  filters: ColumnFilterItem[]
-  visible: boolean
-  close: () => void
-}
-```
+<<< @/.vitepress/type-declarations/table.ts#CustomFilterDropdownSlotProps
 
 ### TableDataSlotProps
 
 `title` 和 `footer` slot 参数。
 
-```ts
-interface TableDataSlotProps<TRecord> {
-  data: TRecord[]
-}
-```
+<<< @/.vitepress/type-declarations/table.ts#TableDataSlotProps
 
 ### TableSlotsDecl
 
-`VTable` 的 slot 声明类型，适合需要包装表格组件时使用。
+`VTable` 的完整 slot 声明，适合包装表格组件时使用。
 
-```ts
-interface TableSlotsDecl<TRecord> {
-  bodyCell?: (props: TableBodyCellSlotProps<TRecord>) => VNodeChild
-  headerCell?: (props: TableHeaderCellSlotProps<TRecord>) => VNodeChild
-  empty?: () => VNodeChild
-  loading?: () => VNodeChild
-  customFilterDropdown?: (props: CustomFilterDropdownSlotProps<TRecord>) => VNodeChild
-  customFilterIcon?: (props: { column: ColumnType<TRecord>; filtered: boolean }) => VNodeChild
-  title?: (props: TableDataSlotProps<TRecord>) => VNodeChild
-  footer?: (props: TableDataSlotProps<TRecord>) => VNodeChild
-  summary?: () => VNodeChild
-  paginationItem?: (props: TablePaginationSlotProps) => VNodeChild
-}
-```
+<<< @/.vitepress/type-declarations/table.ts#TableSlotsDecl
 
 ## 常量类型
 
 ### SelectionSentinel
 
-`rowSelection.selections` 可用的默认批量选择常量类型。
+`rowSelection.selections` 使用的默认批量选择常量类型。
 
-```ts
-import { SELECTION_ALL, SELECTION_INVERT, SELECTION_NONE } from '@vtable-guild/vtable-guild'
-```
+<<< @/.vitepress/type-declarations/table.ts#SelectionSentinel
 
 ### ColumnSentinel
 
-`columns` 顶层可用的列占位常量类型。
+`columns` 顶层可用的列占位常量类型。`ExpandColumnSentinel` 对应 `EXPAND_COLUMN`，`SelectionColumnSentinel` 对应 `SELECTION_COLUMN`。
 
-```ts
-import { EXPAND_COLUMN, SELECTION_COLUMN } from '@vtable-guild/vtable-guild'
+<<< @/.vitepress/type-declarations/table.ts#ExpandColumnSentinel
 
-const columns: TableColumnsType<UserRow> = [
-  { title: 'Name', dataIndex: 'name', key: 'name' },
-  EXPAND_COLUMN,
-  SELECTION_COLUMN,
-]
-```
+<<< @/.vitepress/type-declarations/table.ts#SelectionColumnSentinel
 
-`ExpandColumnSentinel` 对应 `EXPAND_COLUMN`，`SelectionColumnSentinel` 对应 `SELECTION_COLUMN`。
+<<< @/.vitepress/type-declarations/table.ts#ColumnSentinel
 
 ## 组件与事件类型
 
 ### TableProps
 
-`VTable` props 的完整类型。封装二次组件时优先使用这个类型。
+`VTable` props 的完整类型，封装二次组件时优先使用。
 
-```ts
-type MyTableProps<TRecord extends object> = TableProps<TRecord>
-```
+<<< @/.vitepress/type-declarations/table.ts#TableProps
 
 ### VTableEventProps
 
-`change`、`resizeColumn` 与 `rowDragEnd` 事件 props 类型。
+`change`、`resizeColumn` 与 `rowDragEnd` 的完整事件 props 类型。仅监听分页时也要接收三个参数，或改用 `TablePaginationConfig['onChange']`。
 
-```ts
-interface VTableEventProps<TRecord> {
-  onChange?: (filters, sorter, extra) => void
-  onResizeColumn?: (column: ColumnType<TRecord>, width: number) => void
-  onRowDragEnd?: (newData: TRecord[], info: RowDragSortInfo) => void
-}
-```
+<<< @/.vitepress/type-declarations/table.ts#VTableEventProps
 
 ### VTablePublicProps
 
-`TableProps<TRecord>` 与 `VTableEventProps<TRecord>` 的组合类型。
+`TableProps<TRecord>` 与 `VTableEventProps<TRecord>` 的组合。
+
+<<< @/.vitepress/type-declarations/table.ts#VTablePublicProps
 
 ### VTableComponent
 
 泛型化后的 `VTable` 组件类型。
 
+<<< @/.vitepress/type-declarations/table.ts#VTableComponent
+
 ### SummaryFixed
 
 `VTableSummary` 的 fixed 类型。
 
-```ts
-type SummaryFixed = boolean | 'top' | 'bottom'
-```
+<<< @/.vitepress/type-declarations/table.ts#SummaryFixed
+
+### 摘要组件 props
+
+以下接口为文档辅助类型，不是包导出。`VTableSummaryRow` 没有业务 props，三个摘要组件都提供无参数的默认内容 slot。
+
+<<< @/.vitepress/type-declarations/config.ts#VTableSummaryProps
+
+<<< @/.vitepress/type-declarations/config.ts#VTableSummaryCellProps
 
 ## 主题与插件类型
 
@@ -419,78 +319,129 @@ type SummaryFixed = boolean | 'top' | 'bottom'
 
 内置主题预设名。
 
-```ts
-type ThemePresetName = 'antdv' | 'element-plus'
-```
+<<< @/.vitepress/type-declarations/config.ts#ThemePresetName
 
 ### VTableGuildOptions
 
-`createVTableGuild()` 的配置类型。
+`createVTableGuild()` 的完整配置。
 
-```ts
-interface VTableGuildOptions {
-  themePreset?: ThemePresetName
-  cssMode?: VTableGuildCssMode
-  classPrefix?: string
-  theme?: VTableGuildThemeOverrides
-  locale?: LocaleName
-  locales?: LocaleRegistry
-  localeOverrides?: DeepPartial<VTableGuildLocale>
-  /** 兼容类名开关，默认关闭。安装时读取一次，不支持运行时切换 */
-  compatClass?: boolean
-}
-```
+<<< @/.vitepress/type-declarations/config.ts#VTableGuildOptions
 
-`cssMode` 与 `classPrefix` 的取值和使用场景见 [安装与使用](/guide/installation)，
-`compatClass` 见 [从 ant-design-vue 迁移](/guide/migration-from-antd#保留旧的覆盖-css-兼容类名)。
+`cssMode` 与 `classPrefix` 的使用场景见 [安装与使用](/guide/installation)，`compatClass` 见 [从 ant-design-vue 迁移](/guide/migration-from-antd#保留旧的覆盖-css-兼容类名)。
+
+### createVTableGuild
+
+配置可省略，返回 Vue `Plugin`。
+
+<<< @/.vitepress/type-declarations/config.ts#createVTableGuild
 
 ### VTableGuildCssMode
 
-样式模式，需要与实际引入的 CSS 入口一致。
+样式模式须与实际 CSS 入口一致。
 
-```ts
-type VTableGuildCssMode = 'prebuilt' | 'tailwind3' | 'tailwind4'
-```
+<<< @/.vitepress/type-declarations/config.ts#VTableGuildCssMode
 
 ### LocaleName
 
-语言标识类型。内置语言目前由 preset 提供，业务也可以注册自己的语言标识。
+业务可以注册自己的语言标识。
 
-```ts
-type LocaleName = string
-```
+<<< @/.vitepress/type-declarations/config.ts#LocaleName
+
+<<< @/.vitepress/type-declarations/config.ts#BuiltInLocaleName
 
 ### LocaleRegistry
 
-语言包注册表。
+语言包注册表；注册完整语言包使用 `locales`，局部覆盖使用 `localeOverrides`。
 
-```ts
-type LocaleRegistry = Record<LocaleName, VTableGuildLocale>
-```
+<<< @/.vitepress/type-declarations/config.ts#LocaleRegistry
+
+### VTableGuildLocale
+
+<<< @/.vitepress/type-declarations/config.ts#VTableGuildLocale
+
+<<< @/.vitepress/type-declarations/config.ts#VTableGuildTableLocale
+
+<<< @/.vitepress/type-declarations/config.ts#VTableGuildTableHeaderLocale
+
+<<< @/.vitepress/type-declarations/config.ts#VTableGuildTableFilterDropdownLocale
+
+<<< @/.vitepress/type-declarations/config.ts#VTableGuildTableEmptyLocale
+
+<<< @/.vitepress/type-declarations/config.ts#VTableGuildTableLoadingLocale
+
+<<< @/.vitepress/type-declarations/config.ts#VTableGuildTableSelectionLocale
+
+<<< @/.vitepress/type-declarations/config.ts#VTableGuildPaginationLocale
+
+<<< @/.vitepress/type-declarations/config.ts#PaginationLocaleConstants
+
+### DeepPartial
+
+<<< @/.vitepress/type-declarations/config.ts#DeepPartial
+
+### ThemeConfig
+
+传给主题系统的原始结构。
+
+<<< @/.vitepress/type-declarations/config.ts#ThemeConfig
+
+### SlotProps
+
+实例 `ui` 的类型，保留具体主题的 slot key。
+
+<<< @/.vitepress/type-declarations/config.ts#SlotProps
 
 ### ThemeOverrideConfig
 
-主题覆盖类型，用于保留 slot、variant 和 default variant 的补全。
+全局主题覆盖的完整映射类型，保留 slot 与 variant key，允许覆盖任意 class 字符串。声明块内 `Theme*` 辅助类型不是包导出。
 
-```ts
-import type { TableThemeConfig, ThemeOverrideConfig } from '@vtable-guild/vtable-guild'
-
-const tableTheme: ThemeOverrideConfig<TableThemeConfig> = {
-  slots: {
-    th: 'font-semibold',
-  },
-}
-```
+<<< @/.vitepress/type-declarations/config.ts#ThemeOverrideConfig
 
 ### TableSlots 和 TableThemeConfig
 
-Table 主题 slot 名和主题配置类型。完整 slot 行为见 [ui Slot 参考](/guide/ui-slots-reference)。
+`TableSlots` 是全部 Table 主题 slot 的联合类型，具体行为见 [ui Slot 参考](/guide/ui-slots-reference)。主题常量从 `@vtable-guild/vtable-guild` 导入，`typeof` 保留预设的字面量、只读属性和 variant 映射。
 
-```ts
-import type { TableSlots, TableThemeConfig } from '@vtable-guild/vtable-guild'
-```
+<<< @/.vitepress/type-declarations/config.ts#TableSlots
 
-同类主题类型还包括 `ButtonThemeConfig`、`CheckboxThemeConfig`、`RadioThemeConfig`、`InputThemeConfig`、`TooltipThemeConfig` 和 `ScrollbarThemeConfig`。
+<<< @/.vitepress/type-declarations/config.ts#TableVariantProps
+
+<<< @/.vitepress/type-declarations/config.ts#TableThemeConfig
+
+其他组件的公开主题类型：
+
+<<< @/.vitepress/type-declarations/config.ts#ComponentThemeTypes
+
+<<< @/.vitepress/type-declarations/config.ts#PaginationSlots
+
+<<< @/.vitepress/type-declarations/config.ts#PaginationThemeConfig
+
+### VTableGuildThemeOverrides
+
+`@vtable-guild/theme` 增强后的内置主题映射，业务可以通过 module augmentation 继续添加组件。
+
+<<< @/.vitepress/type-declarations/config.ts#VTableGuildThemeOverridesMap
+
+<<< @/.vitepress/type-declarations/config.ts#VTableGuildThemeOverrides
+
+### VTableGuildContext
+
+通过 provide / inject 传递的完整配置；一般业务直接使用插件或 Provider。
+
+<<< @/.vitepress/type-declarations/config.ts#VTableGuildContext
+
+<<< @/.vitepress/type-declarations/config.ts#VTABLE_GUILD_INJECTION_KEY
+
+### VTableGuildConfigProvider props
+
+以下为文档辅助接口，不是包导出。Provider 仅覆盖这些字段；`themePreset` 与 `compatClass` 从插件上下文继承，不能通过 Provider props 切换。
+
+<<< @/.vitepress/type-declarations/config.ts#VTableGuildConfigProviderProps
+
+### cn
+
+合并 class 并处理 Tailwind 冲突，结果可能为 `undefined`。`CnClassValue` 为说明参数结构的辅助类型，不是包导出。
+
+<<< @/.vitepress/type-declarations/config.ts#cn
 
 ## 相关页面
 
@@ -500,8 +451,20 @@ import type { TableSlots, TableThemeConfig } from '@vtable-guild/vtable-guild'
 
 ## TablePaginationConfig / TablePaginationState
 
-公开导出 `TablePaginationConfig`、`TablePaginationState`、`TablePaginationPosition`、`PaginationItemType`。状态为 `{ current: number; pageSize: number; total: number }`。[配置参考](/guide/pagination)。
+分页配置、状态、位置、布局与 slot 的完整声明。`pagination.onChange` 是两参数分页回调，与三参数表格 `change` 区别见 [分页](/guide/pagination)。
 
-`TablePaginationConfig.layout` 使用 `TablePaginationLayout`，接受只读有序数组或 `{ left?, right? }` 区域对象。数组项 `TablePaginationLayoutItem` 为内置 `TablePaginationBuiltinLayoutItem`（`total` / `sizes` / `prev` / `pager` / `next` / `jumper`）或 `{ readonly slot: string }`。这些类型均从公共包导出。
+<<< @/.vitepress/type-declarations/table.ts#TablePaginationConfig
 
-`TablePaginationSlotProps` 为 `#paginationItem` 提供只读的分页状态及 `name`、`pageCount`、`range`、`disabled`、`position`、`region`，与行记录类型无关。字段说明和示例见[分页内容插槽](/guide/pagination#分页内容插槽)。
+<<< @/.vitepress/type-declarations/table.ts#TablePaginationState
+
+<<< @/.vitepress/type-declarations/table.ts#TablePaginationPosition
+
+<<< @/.vitepress/type-declarations/table.ts#PaginationItemType
+
+<<< @/.vitepress/type-declarations/table.ts#TablePaginationBuiltinLayoutItem
+
+<<< @/.vitepress/type-declarations/table.ts#TablePaginationLayoutItem
+
+<<< @/.vitepress/type-declarations/table.ts#TablePaginationLayout
+
+<<< @/.vitepress/type-declarations/table.ts#TablePaginationSlotProps

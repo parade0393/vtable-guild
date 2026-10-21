@@ -66,12 +66,12 @@ function buildRows() {
       name: `User ${i + 1}`,
       age: 20 + (i % 40),
       score: 50 + (i % 50),
-      city: cities[i % cities.length],
-      region: regions[i % regions.length],
-      team: teams[i % teams.length],
-      manager: managers[i % managers.length],
-      office: `${offices[i % offices.length]} ${(i % 12) + 1}`,
-      level: levels[i % levels.length],
+      city: cities[i % cities.length]!,
+      region: regions[i % regions.length]!,
+      team: teams[i % teams.length]!,
+      manager: managers[i % managers.length]!,
+      office: `${offices[i % offices.length]!} ${(i % 12) + 1}`,
+      level: levels[i % levels.length]!,
       notes: buildNotes(i),
       description:
         i % 17 === 0

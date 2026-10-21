@@ -14,6 +14,16 @@
 
 </Demo>
 
+## 只使用分页回调
+
+只需要分页功能时，可以直接使用 `TablePaginationConfig.onChange`。参数为 `(page: number, pageSize: number)`，不需要处理表格的 filters 或 sorter。下面是完整的受控分页示例，通过 `NonNullable<TablePaginationConfig['onChange']>` 获得参数类型。
+
+<Demo src="pagination/callback">
+
+<<< @/demos/pagination/callback.vue
+
+</Demo>
+
 ## 受控分页
 
 `current`、`pageSize` 分别可控。未传时使用内部状态，`defaultCurrent` 和 `defaultPageSize` 只初始化一次。父组件需要在回调中接受新状态；组件不会修改配置对象。上下分页器共享同一状态。
@@ -100,31 +110,31 @@ const pagination: TablePaginationConfig = {
 
 ## 配置参考
 
-| 配置                                         | 类型 / 默认值                                     | 说明                                                                        |
-| -------------------------------------------- | ------------------------------------------------- | --------------------------------------------------------------------------- |
-| `current` / `defaultCurrent`                 | `number` / `1`                                    | 受控页码 / 初始页码                                                         |
-| `pageSize` / `defaultPageSize`               | `number` / `10`                                   | 受控页大小 / 初始页大小                                                     |
-| `total`                                      | `number`                                          | 正整数时指定总数，否则使用处理后根记录数                                    |
-| `disabled`                                   | `boolean` / `false`                               | 禁用分页交互，仍进行数据切片                                                |
-| `hideOnSinglePage`                           | `boolean` / `false`                               | 单页时隐藏控件；总数为 0 时不显示分页器                                     |
-| `showSizeChanger`                            | `boolean`                                         | 默认总数大于 50 时显示                                                      |
-| `totalBoundaryShowSizeChanger`               | `number` / `50`                                   | 自动显示页大小切换器的阈值                                                  |
-| `pageSizeOptions`                            | `(string \| number)[]` / `['10','20','50','100']` | 页大小选项；当前值不在其中时仍显示当前值                                    |
-| `buildOptionText`                            | `({ value }) => VNodeChild`                       | 自定义页大小选项                                                            |
-| `showQuickJumper`                            | `boolean \| { goButton?: VNodeChild }`            | Enter 或失焦提交；提供 Go 按钮时失焦不提交                                  |
-| `showTotal`                                  | `(total, [start, end]) => VNodeChild`             | 范围从 1 开始；空数据范围为 `[0, 0]`                                        |
-| `size`                                       | `'default' \| 'small'`                            | 未传时跟随表格尺寸                                                          |
-| `simple` / `showLessItems`                   | `boolean` / `false`                               | 简洁输入模式 / 缩小页码窗口                                                 |
-| `pagerCount`                                 | `number`                                          | 5–21 的奇数整数；显式指定页码数量，优先于 `showLessItems`                   |
-| `responsive`                                 | `boolean` / `false`                               | 未指定尺寸时，小于 576px 使用紧凑尺寸                                       |
-| `itemRender`                                 | `({ page, type, originalElement }) => VNodeChild` | type 为 `page / prev / next / jump-prev / jump-next`                        |
-| `position`                                   | `TablePaginationPosition[]` / `['bottomRight']`   | 顶部或底部的 Left / Center / Right；`['none']` 隐藏控件但保留分页           |
-| `layout`                                     | `TablePaginationLayout`                           | 有序数组或 `{ left, right }`；未传时保留预设默认布局，show 系列继续控制显隐 |
-| `locale`                                     | `Partial<VTableGuildPaginationLocale>`            | 分页文案覆盖                                                                |
-| `class` / `style`                            | `string` / `CSSProperties`                        | 分页区域样式                                                                |
-| `onChange`                                   | `(current, pageSize) => void`                     | 翻页、页大小改变、筛选重置时调用                                            |
-| `onShowSizeChange`                           | `(current, pageSize) => void`                     | 页大小改变时调用                                                            |
-| `'onUpdate:current'` / `'onUpdate:pageSize'` | `(value: number) => void`                         | 受控字段更新通知                                                            |
+| 配置                                         | 类型 / 默认值                                                                                   | 说明                                                                        |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `current` / `defaultCurrent`                 | `number` / `1`                                                                                  | 受控页码 / 初始页码                                                         |
+| `pageSize` / `defaultPageSize`               | `number` / `10`                                                                                 | 受控页大小 / 初始页大小                                                     |
+| `total`                                      | `number`                                                                                        | 正整数时指定总数，否则使用处理后根记录数                                    |
+| `disabled`                                   | `boolean` / `false`                                                                             | 禁用分页交互，仍进行数据切片                                                |
+| `hideOnSinglePage`                           | `boolean` / `false`                                                                             | 单页时隐藏控件；总数为 0 时不显示分页器                                     |
+| `showSizeChanger`                            | `boolean`                                                                                       | 默认总数大于 50 时显示                                                      |
+| `totalBoundaryShowSizeChanger`               | `number` / `50`                                                                                 | 自动显示页大小切换器的阈值                                                  |
+| `pageSizeOptions`                            | `(string \| number)[]` / `['10','20','50','100']`                                               | 页大小选项；当前值不在其中时仍显示当前值                                    |
+| `buildOptionText`                            | `(option: { value: string \| number }) => VNodeChild`                                           | 自定义页大小选项                                                            |
+| `showQuickJumper`                            | `boolean \| { goButton?: VNodeChild }`                                                          | Enter 或失焦提交；提供 Go 按钮时失焦不提交                                  |
+| `showTotal`                                  | `(total: number, range: [number, number]) => VNodeChild`                                        | 范围从 1 开始；空数据范围为 `[0, 0]`                                        |
+| `size`                                       | `'default' \| 'small'`                                                                          | 未传时跟随表格尺寸                                                          |
+| `simple` / `showLessItems`                   | `boolean` / `false`                                                                             | 简洁输入模式 / 缩小页码窗口                                                 |
+| `pagerCount`                                 | `number`                                                                                        | 5–21 的奇数整数；显式指定页码数量，优先于 `showLessItems`                   |
+| `responsive`                                 | `boolean` / `false`                                                                             | 未指定尺寸时，小于 576px 使用紧凑尺寸                                       |
+| `itemRender`                                 | `(item: { page: number; type: PaginationItemType; originalElement: VNodeChild }) => VNodeChild` | type 为 `page / prev / next / jump-prev / jump-next`                        |
+| `position`                                   | `TablePaginationPosition[]` / `['bottomRight']`                                                 | 顶部或底部的 Left / Center / Right；`['none']` 隐藏控件但保留分页           |
+| `layout`                                     | `TablePaginationLayout`                                                                         | 有序数组或 `{ left, right }`；未传时保留预设默认布局，show 系列继续控制显隐 |
+| `locale`                                     | `Partial<VTableGuildPaginationLocale>`                                                          | 分页文案覆盖                                                                |
+| `class` / `style`                            | `string` / `CSSProperties`                                                                      | 分页区域样式                                                                |
+| `onChange`                                   | `(page: number, pageSize: number) => void`                                                      | 翻页、页大小改变、筛选重置时调用                                            |
+| `onShowSizeChange`                           | `(current: number, size: number) => void`                                                       | 页大小改变时调用                                                            |
+| `'onUpdate:current'` / `'onUpdate:pageSize'` | `(value: number) => void`                                                                       | 受控字段更新通知                                                            |
 
 位置支持 `topLeft`、`topCenter`、`topRight`、`bottomLeft`、`bottomCenter`、`bottomRight` 和 `none`。每个区域最多一个分页器，使用数组中首个匹配项。
 
@@ -170,13 +180,9 @@ Element Plus 原生 `pager-count` 的合法值校验仅在开发环境告警，�
 
 ## 事件与其他功能
 
-```ts
-function handleChange(filters, sorter, extra) {
-  if (extra.action === 'paginate' && extra.pagination) {
-    const { current, pageSize, total } = extra.pagination
-  }
-}
-```
+表格的 `change` 参数是 `(filters: TableFiltersInfo, sorter: VTableSorterResult<Row>, extra: TableChangeExtra<Row>)`，与上方分页专用回调不同。`extra.pagination?: TablePaginationState` 包含 `current`、`pageSize` 和 `total`。使用公开回调类型可自动推断全部参数：
+
+<<< @/.vitepress/type-declarations/examples.typecheck.ts#PaginationChangeExample
 
 - `change(filters, sorter, extra)` 参数顺序不变。开启分页时所有 action 附带 `extra.pagination`；未开启时不添加字段。新增 `'paginate'`，穷尽检查需补此分支。
 - 翻页及修改页大小各触发一次表格事件；筛选回到第 1 页，仅触发 `'filter'`。排序保留页码；页大小变化保留页码，必要时收敛到末页。
@@ -188,3 +194,39 @@ function handleChange(filters, sorter, extra) {
 - 开启分页后，分页／筛选／排序默认滚回表体顶部，保留横向位置。通过 `scroll.scrollToFirstRowOnChange: false` 关闭；未开启分页时默认保持既有滚动行为。
 
 从 Ant 迁移时，把原四参数回调的第一个参数改为从 `extra.pagination` 读取；显式传入分页对象以启用功能。
+
+## Type Declarations
+
+以下类型均从 `@vtable-guild/vtable-guild` 导入。`TRecord` 为业务行类型；`VNodeChild` 等 Vue 渲染类型从 `vue` 导入。声明依赖的列、排序与基础类型见[类型参考](/guide/type-reference)。
+
+::: details 查看类型声明
+
+<<< @/.vitepress/type-declarations/table.ts#TablePaginationConfig
+
+<<< @/.vitepress/type-declarations/table.ts#TablePaginationState
+
+<<< @/.vitepress/type-declarations/table.ts#TablePaginationPosition
+
+<<< @/.vitepress/type-declarations/table.ts#PaginationItemType
+
+<<< @/.vitepress/type-declarations/table.ts#TablePaginationBuiltinLayoutItem
+
+<<< @/.vitepress/type-declarations/table.ts#TablePaginationLayoutItem
+
+<<< @/.vitepress/type-declarations/table.ts#TablePaginationLayout
+
+<<< @/.vitepress/type-declarations/table.ts#TablePaginationSlotProps
+
+<<< @/.vitepress/type-declarations/table.ts#TableFiltersInfo
+
+<<< @/.vitepress/type-declarations/table.ts#SorterResultLike
+
+<<< @/.vitepress/type-declarations/table.ts#VTableSorterResult
+
+<<< @/.vitepress/type-declarations/table.ts#TableChangeExtra
+
+<<< @/.vitepress/type-declarations/table.ts#VTableEventProps
+
+<<< @/.vitepress/type-declarations/config.ts#VTableGuildPaginationLocale
+
+:::

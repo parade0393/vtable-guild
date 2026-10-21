@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { VTable } from '@vtable-guild/vtable-guild'
-import type { TableColumnsType, VTableSorterResult } from '@vtable-guild/vtable-guild'
+import type { TableColumnsType, VTableEventProps } from '@vtable-guild/vtable-guild'
 
 interface ScoreRow {
   key: string
@@ -43,7 +43,7 @@ const dataSource: ScoreRow[] = [
 
 const lastSorter = ref('（点击表头试试，按住 Shift 可叠加多列）')
 
-function handleChange(_filters: unknown, sorter: VTableSorterResult<ScoreRow>) {
+const handleChange: NonNullable<VTableEventProps<ScoreRow>['onChange']> = (_filters, sorter) => {
   const list = Array.isArray(sorter) ? sorter : [sorter]
   const active = list.filter((item) => item.order)
   lastSorter.value = active.length

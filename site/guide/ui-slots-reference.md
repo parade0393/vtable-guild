@@ -284,6 +284,14 @@ app.use(
 | -------------- | -------------- |
 | `resizeHandle` | 列宽拖拽手柄。 |
 
+### 列宽布局
+
+| Slot                   | 说明                             |
+| ---------------------- | -------------------------------- |
+| `widthConstraintCell`  | 用于约束列宽的单元格。           |
+| `widthConstraintInner` | 列宽约束单元格的内部元素。       |
+| `widthLayoutCell`      | 使用列宽布局时附加的单元格样式。 |
+
 ---
 
 ## Variant 列表
@@ -304,3 +312,23 @@ app.use(
 - [Table CSS 变量参考](/guide/theme-tokens)
 - [预设与语言](/guide/presets-and-locales)
 - [API Reference](/guide/api-reference)
+
+## Type Declarations
+
+`ui` 使用 `SlotProps<TableThemeConfig>`，值为可选 class 字符串。下列提供全部 Table 主题 slot 与 variant props；完整全局覆盖映射见 [类型参考](/guide/type-reference#themeoverrideconfig)。`cn()` 的辅助参数类型不是包导出。
+
+::: details Type Declarations
+
+<<< @/.vitepress/type-declarations/config.ts#TableSlots
+
+<<< @/.vitepress/type-declarations/config.ts#TableVariantProps
+
+<<< @/.vitepress/type-declarations/config.ts#TableThemeConfig
+
+<<< @/.vitepress/type-declarations/config.ts#SlotProps
+
+<<< @/.vitepress/type-declarations/config.ts#ThemeOverrideConfig
+
+<<< @/.vitepress/type-declarations/config.ts#cn
+
+:::

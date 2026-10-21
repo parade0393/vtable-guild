@@ -17,7 +17,7 @@ const VTable = Object.assign(_VTable, {
   EXPAND_COLUMN,
   SELECTION_COLUMN,
 } as const)
-const VTableSummary = _VTableSummary
+const VTableSummary: typeof _VTableSummary = _VTableSummary
 const VTableSummaryRow = _VTableSummaryRow
 const VTableSummaryCell = _VTableSummaryCell
 
@@ -41,6 +41,9 @@ export type {
   CellAdditionalProps,
   CustomRenderContext,
   RenderedCell,
+  GetComponentProps,
+  ColumnTitleProps,
+  ColumnTitle,
   ColumnType,
   ColumnType as TableColumnType,
   ColumnGroupType,
@@ -49,8 +52,13 @@ export type {
   ColumnsType as TableColumnsType,
   SortOrder,
   SorterFn,
+  ColumnSorterObject,
   ColumnSorter,
   ColumnFilterItem,
+  TableLayout,
+  TableSticky,
+  RowClassName,
+  TransformCellText,
   TableProps,
   TablePaginationConfig,
   TablePaginationState,
@@ -66,6 +74,7 @@ export type {
   TableSlotsDecl,
   CustomFilterDropdownSlotProps,
   TableFiltersInfo,
+  SorterResultLike,
   TableChangeExtra,
   RowDragSortInfo,
   VTableSorterResult,

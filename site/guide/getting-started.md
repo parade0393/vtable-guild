@@ -180,3 +180,27 @@ const dataSource: UserRow[] = [
 - 想评估替换成本，继续看 [从 ant-design-vue 迁移](/guide/migration-from-antd)
 - 想统一视觉体系，继续看 [三层主题覆盖](/guide/theme-overrides) 和 [Table CSS 变量参考](/guide/theme-tokens)
 - 想确认差异化能力，继续看 [功能对比总览](/comparison/)
+
+## Type Declarations
+
+以下为本页使用的插件和列配置声明。声明内引用的类型与完整组件 props 见 [类型参考](/guide/type-reference)。
+
+::: details Type Declarations
+
+<<< @/.vitepress/type-declarations/config.ts#createVTableGuild
+
+<<< @/.vitepress/type-declarations/config.ts#VTableGuildOptions
+
+<<< @/.vitepress/type-declarations/config.ts#VTableGuildCssMode
+
+<<< @/.vitepress/type-declarations/config.ts#ThemePresetName
+
+<<< @/.vitepress/type-declarations/table.ts#TableColumnsType
+
+<<< @/.vitepress/type-declarations/table.ts#ColumnsType
+
+<<< @/.vitepress/type-declarations/table.ts#ColumnType
+
+<<< @/.vitepress/type-declarations/table.ts#ColumnGroupType
+
+:::

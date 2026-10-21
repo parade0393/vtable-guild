@@ -2,13 +2,15 @@
 import { computed, ref } from 'vue'
 import {
   VTable,
-  type TableChangeExtra,
+  type TableColumnsType,
   type TablePaginationConfig,
+  type VTableEventProps,
 } from '@vtable-guild/vtable-guild'
 const current = ref(1)
 const pageSize = ref(5)
 const data = Array.from({ length: 47 }, (_, i) => ({ key: i + 1, name: `Record ${i + 1}` }))
-const columns = [{ key: 'name', dataIndex: 'name', title: 'Name' }]
+type Row = (typeof data)[number]
+const columns: TableColumnsType<Row> = [{ key: 'name', dataIndex: 'name', title: 'Name' }]
 const pagination = computed<TablePaginationConfig>(() => ({
   current: current.value,
   pageSize: pageSize.value,
@@ -16,11 +18,10 @@ const pagination = computed<TablePaginationConfig>(() => ({
   pageSizeOptions: ['5', '10', '20'],
   position: ['topRight', 'bottomRight'],
 }))
-function handleChange(_filters: unknown, _sorter: unknown, extra: TableChangeExtra) {
-  if (extra.pagination) {
-    current.value = extra.pagination.current
-    pageSize.value = extra.pagination.pageSize
-  }
+const handleChange: NonNullable<VTableEventProps<Row>['onChange']> = (_filters, _sorter, extra) => {
+  if (extra.action !== 'paginate' || !extra.pagination) return
+  current.value = extra.pagination.current
+  pageSize.value = extra.pagination.pageSize
 }
 </script>
 

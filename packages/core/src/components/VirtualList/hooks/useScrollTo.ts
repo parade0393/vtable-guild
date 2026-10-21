@@ -11,7 +11,7 @@ export default function useScrollTo(
   data: Ref<any[]>,
   heights: CacheMap,
   itemHeight: ComputedRef<number | undefined>,
-  getKey: (item: any) => Key,
+  getKey: (item: any, index?: number) => Key,
   collectHeight: () => void,
   syncScrollTop: (top: number) => void,
   triggerFlash: () => void,
@@ -33,7 +33,7 @@ export default function useScrollTo(
     if (isFixed()) return data.value.length * (itemHeight.value ?? 0)
     let totalHeight = 0
     for (let i = 0; i < data.value.length; i += 1) {
-      const key = getKey(data.value[i])
+      const key = getKey(data.value[i], i)
       const cacheHeight = heights.get(key)
       totalHeight += cacheHeight === undefined ? (itemHeight.value ?? 0) : cacheHeight
     }
@@ -72,7 +72,7 @@ export default function useScrollTo(
           } else {
             let stackTop = 0
             for (let i = 0; i <= maxLen; i += 1) {
-              const key = getKey(data.value[i])
+              const key = getKey(data.value[i], i)
               itemTop = stackTop
               const cacheHeight = heights.get(key)
               itemBottom =
@@ -82,7 +82,7 @@ export default function useScrollTo(
 
             let leftHeight = mergedAlign === 'top' ? offset : height - offset
             for (let i = maxLen; i >= 0; i -= 1) {
-              const key = getKey(data.value[i])
+              const key = getKey(data.value[i], i)
               const cacheHeight = heights.get(key)
               if (cacheHeight === undefined) {
                 needCollectHeight = true
@@ -141,7 +141,7 @@ export default function useScrollTo(
       if ('index' in arg) {
         index = arg.index!
       } else {
-        index = data.value.findIndex((item) => getKey(item) === arg.key)
+        index = data.value.findIndex((item, at) => getKey(item, at) === arg.key)
       }
 
       const { offset = 0 } = arg

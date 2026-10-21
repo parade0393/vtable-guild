@@ -6,7 +6,7 @@ import type { GetSize, Key } from '../interface'
 
 export function useGetSize(
   mergedData: Ref<any[]>,
-  getKey: (item: any) => Key,
+  getKey: (item: any, index?: number) => Key,
   heights: CacheMap,
   itemHeight: ComputedRef<number | undefined>,
 ): GetSize {
@@ -27,7 +27,7 @@ export function useGetSize(
 
       for (let i = bottomList.length; i < dataLen; i += 1) {
         const item = mergedData.value[i]
-        const key = getKey(item)
+        const key = getKey(item, i)
         key2Index.set(key, i)
 
         const cacheHeight = heights.get(key) ?? itemHeight.value ?? 0

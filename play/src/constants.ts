@@ -27,6 +27,22 @@ export const MIN_SUPPORTED_VTG_VERSION = '2.4.0'
 /** 可选 Vue 版本下限（低于此版本没有测过） */
 export const MIN_SUPPORTED_VUE_VERSION = '3.5.0'
 
+/**
+ * 启动兜底：版本列表最长等多久（毫秒）。
+ *
+ * 正常情况下几百毫秒就回来了；但 Playground 不能因为一次慢请求就一直停在 Loading 上，
+ * 所以到点先用兜底版本把编辑器开起来，列表真回来后再切过去（切换走的和手动改下拉是同一条路）。
+ */
+export const VERSION_LOAD_TIMEOUT = 3000
+
+/**
+ * 单个版本源请求的超时（毫秒）；主源超时后备用源有独立的同等时限。
+ *
+ * 故意比 VERSION_LOAD_TIMEOUT 长：编辑器早就靠兜底开起来了，这个超时负责的是另一件事——
+ * 让「CDN 抽风、请求永远不返回」收敛成一个明确的拉取失败，而不是让 promise 一直挂着。
+ */
+export const VERSION_REQUEST_TIMEOUT = 10000
+
 export const REPO_URL = 'https://github.com/parade0393/vtable-guild'
 export const DOCS_URL = 'https://parade0393.github.io/vtable-guild/'
 

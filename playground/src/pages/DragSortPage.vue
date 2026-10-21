@@ -44,7 +44,7 @@ function moveColumn(key: Key, offset: -1 | 1) {
   const from = order.indexOf(key)
   const to = from + offset
   if (from < 0 || to < 0 || to >= order.length) return
-  ;[order[from], order[to]] = [order[to], order[from]]
+  ;[order[from]!, order[to]!] = [order[to]!, order[from]!]
   columnOrder.value = order
 }
 
@@ -115,7 +115,7 @@ function handlePinnedDragEnd(newData: DemoRow[], info: RowDragSortInfo) {
   pinnedDragData.value = newData
   const draggedIndex = newData.findIndex((row) => String(row.key) === String(info.draggedKey))
   if (draggedIndex >= 0) {
-    lastPinnedDrag.value = `${newData[draggedIndex].name} 现在在第 ${draggedIndex + 1} 行`
+    lastPinnedDrag.value = `${newData[draggedIndex]!.name} 现在在第 ${draggedIndex + 1} 行`
   }
 }
 </script>

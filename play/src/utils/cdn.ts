@@ -1,5 +1,5 @@
 import { compareVersions, gte, isStableVersion } from './semver'
-import { VTG_PKG } from '@/constants'
+import { VERSION_REQUEST_TIMEOUT, VTG_PKG } from '@/constants'
 
 export const CDN_SOURCES = [
   { value: 'jsdelivr', label: 'jsDelivr' },
@@ -48,36 +48,86 @@ interface RegistryPackageResponse {
   versions?: Record<string, unknown>
 }
 
-async function fetchJson<T>(url: string, signal?: AbortSignal): Promise<T> {
-  const response = await fetch(url, { signal })
-  if (!response.ok) throw new Error(`${response.status} ${response.statusText}`)
-  return (await response.json()) as T
+/**
+ * 把「调用方的取消」转接到另一个 controller 上，交出停止转接的函数。
+ *
+ * 已经 abort 过的 signal 不会再派发 abort 事件，所以要先单独判断一次，
+ * 否则调用方在请求发起前就取消时，转接永远接不上。
+ */
+function forwardAbort(source: AbortSignal | undefined, target: AbortController): () => void {
+  if (!source) return () => {}
+
+  const forward = () => target.abort(source.reason)
+  if (source.aborted) {
+    forward()
+  } else {
+    source.addEventListener('abort', forward, { once: true })
+  }
+  return () => source.removeEventListener('abort', forward)
+}
+
+/** 每个源独立计时；超时只取消当前请求，调用方的 signal 才取消整个拉取。 */
+async function fetchJson<T>(
+  url: string,
+  signal: AbortSignal | undefined,
+  timeout: number,
+): Promise<T> {
+  signal?.throwIfAborted()
+  const controller = new AbortController()
+  const stopForwarding = forwardAbort(signal, controller)
+  const timer = setTimeout(() => controller.abort(new Error('版本请求超时')), timeout)
+
+  // 即使底层 fetch 不响应 abort，也必须结束等待；计时覆盖响应体读取。
+  const cancelled = new Promise<never>((_, reject) => {
+    const fail = () => reject(controller.signal.reason ?? new Error('版本请求已取消'))
+    if (controller.signal.aborted) fail()
+    else controller.signal.addEventListener('abort', fail, { once: true })
+  })
+
+  try {
+    return await Promise.race([
+      (async () => {
+        const response = await fetch(url, { signal: controller.signal })
+        if (!response.ok) throw new Error(`${response.status} ${response.statusText}`)
+        return (await response.json()) as T
+      })(),
+      cancelled,
+    ])
+  } finally {
+    clearTimeout(timer)
+    stopForwarding()
+  }
 }
 
 /**
- * 取某个包已发布的版本号列表，按从新到旧排序。
- *
- * 优先用 jsDelivr 的 data API（响应最小）；它不可达时回退到 npmmirror 的
- * registry —— 后者在国内网络下通常还活着，正好是这个 Playground 的目标用户。
+ * 按从新到旧返回版本列表。jsDelivr 失败或超时后尝试 npmmirror；
+ * timeout 是每个源的上限（整次最多两倍），signal 取消时不再回退。
  */
 export async function fetchVersions(
   pkg: string,
-  options: { minVersion?: string; stableOnly?: boolean; signal?: AbortSignal } = {},
+  options: {
+    minVersion?: string
+    stableOnly?: boolean
+    signal?: AbortSignal
+    timeout?: number
+  } = {},
 ): Promise<string[]> {
-  const { minVersion, stableOnly = true, signal } = options
+  const { minVersion, stableOnly = true, signal, timeout = VERSION_REQUEST_TIMEOUT } = options
+  const jsdelivrBase = import.meta.env.VITE_VERSION_JSDELIVR_BASE_URL ?? 'https://data.jsdelivr.com'
+  const registryBase =
+    import.meta.env.VITE_VERSION_REGISTRY_BASE_URL ?? 'https://registry.npmmirror.com'
 
   let versions: string[]
   try {
     const data = await fetchJson<JsdelivrPackageResponse>(
-      `https://data.jsdelivr.com/v1/packages/npm/${pkg}`,
+      `${jsdelivrBase}/v1/packages/npm/${pkg}`,
       signal,
+      timeout,
     )
     versions = (data.versions ?? []).map((item) => item.version)
-  } catch {
-    const data = await fetchJson<RegistryPackageResponse>(
-      `https://registry.npmmirror.com/${pkg}`,
-      signal,
-    )
+  } catch (error) {
+    if (signal?.aborted) throw error
+    const data = await fetchJson<RegistryPackageResponse>(`${registryBase}/${pkg}`, signal, timeout)
     versions = Object.keys(data.versions ?? {})
   }
 

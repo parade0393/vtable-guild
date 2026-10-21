@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed, h, ref } from 'vue'
 import { ConfigProvider as AConfigProvider, Table as ATable } from 'ant-design-vue'
+import type { Locale } from 'ant-design-vue/es/locale'
 import { VTable, EXPAND_COLUMN, SELECTION_COLUMN } from '@vtable-guild/vtable-guild'
 import type { ColumnsType, Expandable, Key, RowSelection } from '@vtable-guild/vtable-guild'
 import { dataSource, type DemoRow } from '../filterMatrixShared'
 
 defineProps<{
-  locale: Record<string, unknown>
+  locale: Locale
 }>()
 
 // ---- Fixed columns ----
@@ -74,7 +75,9 @@ const controlledExpandable = computed<Expandable<DemoRow>>(() => ({
     ),
 }))
 
-const antExpandedRowRender = (record: DemoRow) => expandableContent(record)
+// antdv 的 expandedRowRender 收的是 { record, index, indent, expanded }，
+// 这里只用到 record，按对象形参解构即可（运行时收到的参数不变）。
+const antExpandedRowRender = ({ record }: { record: DemoRow }) => expandableContent(record)
 
 const antRowExpandable = (record: DemoRow) => record.status !== 'Draft'
 
@@ -379,7 +382,7 @@ const sentinelExpandable: Expandable<DemoRow> = {
     ),
 }
 
-const antSentinelExpandedRowRender = (record: DemoRow) =>
+const antSentinelExpandedRowRender = ({ record }: { record: DemoRow }) =>
   h(
     'p',
     { class: 'm-0 text-[12px] text-[color:var(--color-text-secondary)]' },

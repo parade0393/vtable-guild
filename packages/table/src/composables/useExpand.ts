@@ -89,19 +89,18 @@ export function useExpand(options: {
     const key = options.getRowKey(record, index)
     const expanded = !isExpanded(key)
 
+    // 先在旧状态上算出唯一的 nextKeys，状态与回调共用同一份：
+    // 旧实现先追加进 internalKeys，再从已更新的 expandedKeySet 上追加一次，
+    // 首次展开会收到 ['k0', 'k0'] 这种重复 key。
+    const currentKeys = isControlled.value ? (exp.expandedRowKeys ?? []) : internalKeys.value
+    const nextKeys = expanded ? [...currentKeys, key] : currentKeys.filter((k) => k !== key)
+
     if (!isControlled.value) {
-      if (expanded) {
-        internalKeys.value = [...internalKeys.value, key]
-      } else {
-        internalKeys.value = internalKeys.value.filter((k) => k !== key)
-      }
+      internalKeys.value = nextKeys
     }
 
     exp.onExpand?.(expanded, record)
-    const newKeys = expanded
-      ? [...expandedKeySet.value, key]
-      : [...expandedKeySet.value].filter((k) => k !== key)
-    exp.onExpandedRowsChange?.(newKeys)
+    exp.onExpandedRowsChange?.(nextKeys)
   }
 
   return {

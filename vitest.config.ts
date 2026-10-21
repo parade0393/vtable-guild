@@ -59,7 +59,6 @@ export default defineConfig({
           name: 'icons',
           root: resolve(rootDir, 'packages/icons'),
           include: ['src/**/*.test.ts'],
-          passWithNoTests: true,
         },
       },
       {
@@ -87,7 +86,6 @@ export default defineConfig({
           name: 'vtable-guild',
           root: resolve(rootDir, 'packages/vtable-guild'),
           include: ['src/**/*.test.ts'],
-          passWithNoTests: true,
         },
       },
       {
@@ -96,7 +94,6 @@ export default defineConfig({
           name: 'playground',
           root: resolve(rootDir, 'playground'),
           include: ['src/**/*.test.ts'],
-          passWithNoTests: true,
         },
       },
       {
@@ -105,7 +102,6 @@ export default defineConfig({
           name: 'site',
           root: resolve(rootDir, 'site'),
           include: ['**/*.test.ts'],
-          passWithNoTests: true,
         },
       },
       {
@@ -114,7 +110,6 @@ export default defineConfig({
           name: 'play',
           root: resolve(rootDir, 'play'),
           include: ['src/**/*.test.ts'],
-          passWithNoTests: true,
         },
         // play 自己的 tsconfig / vite.config 都配了 `@/`，测试里不补上就解析不了
         resolve: {
@@ -127,7 +122,6 @@ export default defineConfig({
           name: 'perf',
           root: resolve(rootDir, 'perf'),
           include: ['src/**/*.test.ts'],
-          passWithNoTests: true,
         },
       },
     ],

@@ -31,6 +31,8 @@ const expandable: Expandable<UserRow> = {
   expandRowByClick: true,
   expandedRowRender: (record) => `${record.name} 负责 ${record.role}，所在城市为 ${record.city}`,
 }
+
+const dataSource: UserRow[] = [{ key: '1', name: 'Ada', role: '产品设计', city: 'Shanghai' }]
 </script>
 
 <template>
@@ -42,12 +44,14 @@ const expandable: Expandable<UserRow> = {
 
 - `expandRowByClick`
   整行点击展开
-- `rowExpandable(record)`
+- `rowExpandable: (record: TRecord) => boolean`
   按业务条件决定哪些行可展开
-- `expandIcon(props)`
+- `expandIcon: NonNullable<Expandable<TRecord>['expandIcon']>`
   自定义展开图标
 - `showExpandColumn: false`
   隐藏独立展开列，只保留行点击展开
+
+`TRecord` 由 `Expandable<UserRow>` 中的 `UserRow` 指定；展开图标的参数对象包含 `expanded`、`record`、`expandable` 和 `onExpand`，完整字段与回调签名见页末声明。
 
 ## 什么时候用
 
@@ -65,3 +69,17 @@ const expandable: Expandable<UserRow> = {
 - [自定义行与插槽](/guide/api-wiring-and-slots)
 - [API Reference](/guide/api-reference)
 - [类型参考](/guide/type-reference)
+
+## Type Declarations
+
+以下声明包含展开状态、详情渲染、图标参数和展开回调。`VNodeChild` 是 Vue 的可渲染内容类型；其他依赖类型见[类型参考](/guide/type-reference)。
+
+::: details 查看类型声明
+
+<<< @/.vitepress/type-declarations/table.ts#Key
+
+<<< @/.vitepress/type-declarations/table.ts#Expandable
+
+<<< @/.vitepress/type-declarations/table.ts#RowClassName
+
+:::

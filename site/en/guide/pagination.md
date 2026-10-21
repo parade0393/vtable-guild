@@ -22,6 +22,16 @@ Control `current` and `pageSize` independently, or initialize internal state onc
 
 </Demo>
 
+## Pagination-only callback
+
+If you only need pagination, use `TablePaginationConfig.onChange`. Its arguments are `(page: number, pageSize: number)`; you do not need table filters or sorter parameters. The complete example below provides its callback type through `NonNullable<TablePaginationConfig['onChange']>`.
+
+<Demo src="pagination/callback">
+
+<<< @/demos/pagination/callback.vue
+
+</Demo>
+
 ## Remote data
 
 Pass one page plus `total`. If processed data length is below total and does not exceed pageSize, it is rendered without another slice. A length between pageSize and total warns and uses local slicing. A missing or invalid positive integer total falls back to the processed root count.
@@ -98,29 +108,29 @@ Import `TablePaginationBuiltinLayoutItem`, `TablePaginationLayoutItem`, `TablePa
 
 ## Configuration
 
-| Field                                       | Type / default                                    | Purpose                                                                                      |
-| ------------------------------------------- | ------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `current`, `defaultCurrent`                 | `number` / 1                                      | Controlled / initial page                                                                    |
-| `pageSize`, `defaultPageSize`               | `number` / 10                                     | Controlled / initial size                                                                    |
-| `total`                                     | `number`                                          | Positive explicit total, otherwise processed root count                                      |
-| `disabled`, `hideOnSinglePage`              | `boolean` / false                                 | Disable interaction / hide one-page controls; total zero hides the pager                     |
-| `showSizeChanger`                           | `boolean`                                         | Defaults to total > 50                                                                       |
-| `totalBoundaryShowSizeChanger`              | `number` / 50                                     | Threshold for automatic size changer                                                         |
-| `pageSizeOptions`                           | `(string \| number)[]`                            | Defaults to `['10','20','50','100']`; current size remains available                         |
-| `buildOptionText`                           | `({ value }) => VNodeChild`                       | Custom option content                                                                        |
-| `showQuickJumper`                           | `boolean \| { goButton?: VNodeChild }`            | Submit on Enter/blur; with a Go button, blur does not submit                                 |
-| `showTotal`                                 | `(total, [start, end]) => VNodeChild`             | One-based range; empty range is `[0, 0]`                                                     |
-| `size`                                      | `'default' \| 'small'`                            | Follows table size when omitted                                                              |
-| `simple`, `showLessItems`                   | `boolean` / false                                 | Input pager / smaller page window                                                            |
-| `pagerCount`                                | `number`                                          | Odd integer 5–21; overrides `showLessItems`                                                  |
-| `responsive`                                | `boolean` / false                                 | Compact size below 576px unless size is explicit                                             |
-| `itemRender`                                | `({ page, type, originalElement }) => VNodeChild` | Types: page, prev, next, jump-prev, jump-next                                                |
-| `position`                                  | `TablePaginationPosition[]`                       | Default `['bottomRight']`; top/bottom Left/Center/Right or none                              |
-| `layout`                                    | `TablePaginationLayout`                           | Ordered array or `{ left, right }`; omitted keeps preset defaults; show switches still apply |
-| `locale`, `class`, `style`                  | Partial pagination locale, string, CSSProperties  | Text and presentation overrides                                                              |
-| `onChange`                                  | `(current, pageSize) => void`                     | Navigation, size changes and filter resets                                                   |
-| `onShowSizeChange`                          | `(current, pageSize) => void`                     | Size changes                                                                                 |
-| `'onUpdate:current'`, `'onUpdate:pageSize'` | `(value: number) => void`                         | Controlled state update notifications                                                        |
+| Field                                       | Type / default                                                                                  | Purpose                                                                                      |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `current`, `defaultCurrent`                 | `number` / 1                                                                                    | Controlled / initial page                                                                    |
+| `pageSize`, `defaultPageSize`               | `number` / 10                                                                                   | Controlled / initial size                                                                    |
+| `total`                                     | `number`                                                                                        | Positive explicit total, otherwise processed root count                                      |
+| `disabled`, `hideOnSinglePage`              | `boolean` / false                                                                               | Disable interaction / hide one-page controls; total zero hides the pager                     |
+| `showSizeChanger`                           | `boolean`                                                                                       | Defaults to total > 50                                                                       |
+| `totalBoundaryShowSizeChanger`              | `number` / 50                                                                                   | Threshold for automatic size changer                                                         |
+| `pageSizeOptions`                           | `(string \| number)[]`                                                                          | Defaults to `['10','20','50','100']`; current size remains available                         |
+| `buildOptionText`                           | `(option: { value: string \| number }) => VNodeChild`                                           | Custom option content                                                                        |
+| `showQuickJumper`                           | `boolean \| { goButton?: VNodeChild }`                                                          | Submit on Enter/blur; with a Go button, blur does not submit                                 |
+| `showTotal`                                 | `(total: number, range: [number, number]) => VNodeChild`                                        | One-based range; empty range is `[0, 0]`                                                     |
+| `size`                                      | `'default' \| 'small'`                                                                          | Follows table size when omitted                                                              |
+| `simple`, `showLessItems`                   | `boolean` / false                                                                               | Input pager / smaller page window                                                            |
+| `pagerCount`                                | `number`                                                                                        | Odd integer 5–21; overrides `showLessItems`                                                  |
+| `responsive`                                | `boolean` / false                                                                               | Compact size below 576px unless size is explicit                                             |
+| `itemRender`                                | `(item: { page: number; type: PaginationItemType; originalElement: VNodeChild }) => VNodeChild` | Types: page, prev, next, jump-prev, jump-next                                                |
+| `position`                                  | `TablePaginationPosition[]`                                                                     | Default `['bottomRight']`; top/bottom Left/Center/Right or none                              |
+| `layout`                                    | `TablePaginationLayout`                                                                         | Ordered array or `{ left, right }`; omitted keeps preset defaults; show switches still apply |
+| `locale`, `class`, `style`                  | `Partial<VTableGuildPaginationLocale>`, `string`, `CSSProperties`                               | Text and presentation overrides                                                              |
+| `onChange`                                  | `(page: number, pageSize: number) => void`                                                      | Navigation, size changes and filter resets                                                   |
+| `onShowSizeChange`                          | `(current: number, size: number) => void`                                                       | Size changes                                                                                 |
+| `'onUpdate:current'`, `'onUpdate:pageSize'` | `(value: number) => void`                                                                       | Controlled state update notifications                                                        |
 
 Only the first matching position in each top/bottom region is used. `position: ['none']` hides controls but retains slicing; `pagination: false` disables both.
 
@@ -143,6 +153,10 @@ Element Plus's native `pager-count` validation only warns during development; in
 </Demo>
 
 ## Events, migration and integration
+
+The table `change` event receives `(filters: TableFiltersInfo, sorter: VTableSorterResult<Row>, extra: TableChangeExtra<Row>)`. These differ from the pagination-only callback above. Its optional `extra.pagination` contains `current`, `pageSize` and `total`. Use the public callback type to infer all three parameters:
+
+<<< @/.vitepress/type-declarations/examples.typecheck.ts#PaginationChangeExample
 
 - Keep `change(filters, sorter, extra)`. Enabled pagination adds `extra.pagination: { current, pageSize, total }`. Handle the new `extra.action === 'paginate'` in exhaustive switches.
 - Pagination and size changes emit one table event. Filtering requests page 1 with one `filter` event. Sorting retains the page. Size changes keep the page or clamp to the last page.
@@ -168,3 +182,39 @@ Existing locale packs remain valid. Add an optional global `pagination` group or
 Optional `prev_pages` / `next_pages` locale templates use `{count}` for the actual ellipsis jump distance, for example `prev_pages: 'Previous {count} pages'`. Jumps of 3 or 5 pages continue to use the existing `prev_3` / `next_3` and `prev_5` / `next_5` keys. Each jump button uses the same text for its title and aria-label.
 
 Ant internal `selectComponentClass`, `selectPrefixCls` and `prefixCls` are unsupported. Use the existing theme system, `classPrefix` and table `getPopupContainer`. A standalone Pagination component is not exported.
+
+## Type Declarations
+
+Import these types from `@vtable-guild/vtable-guild`. `TRecord` is the business row type; Vue rendering types such as `VNodeChild` come from `vue`. Column, sorter and other supporting declarations are indexed in the [type reference](/guide/type-reference) (Chinese).
+
+::: details Show type declarations
+
+<<< @/.vitepress/type-declarations/table.ts#TablePaginationConfig
+
+<<< @/.vitepress/type-declarations/table.ts#TablePaginationState
+
+<<< @/.vitepress/type-declarations/table.ts#TablePaginationPosition
+
+<<< @/.vitepress/type-declarations/table.ts#PaginationItemType
+
+<<< @/.vitepress/type-declarations/table.ts#TablePaginationBuiltinLayoutItem
+
+<<< @/.vitepress/type-declarations/table.ts#TablePaginationLayoutItem
+
+<<< @/.vitepress/type-declarations/table.ts#TablePaginationLayout
+
+<<< @/.vitepress/type-declarations/table.ts#TablePaginationSlotProps
+
+<<< @/.vitepress/type-declarations/table.ts#TableFiltersInfo
+
+<<< @/.vitepress/type-declarations/table.ts#SorterResultLike
+
+<<< @/.vitepress/type-declarations/table.ts#VTableSorterResult
+
+<<< @/.vitepress/type-declarations/table.ts#TableChangeExtra
+
+<<< @/.vitepress/type-declarations/table.ts#VTableEventProps
+
+<<< @/.vitepress/type-declarations/config.ts#VTableGuildPaginationLocale
+
+:::
