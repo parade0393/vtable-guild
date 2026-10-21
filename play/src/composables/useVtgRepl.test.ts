@@ -110,8 +110,8 @@ describe('useVtgRepl 的启动时序', () => {
     expect(replMocks.useStore).toHaveBeenCalledTimes(1)
     expect(api.store.value).not.toBeNull()
 
-    // 请求自己的超时随后到，把「永远挂着」收敛成一次明确的拉取失败
-    await vi.advanceTimersByTimeAsync(VERSION_REQUEST_TIMEOUT - VERSION_LOAD_TIMEOUT + 100)
+    // 主源超时后还要尝试备用源；两个源都超时才确认拉取失败。
+    await vi.advanceTimersByTimeAsync(2 * VERSION_REQUEST_TIMEOUT - VERSION_LOAD_TIMEOUT + 100)
     expect(api.versionError.value).toBe(VERSION_FETCH_ERROR)
 
     scope.stop()
@@ -172,8 +172,8 @@ describe('useVtgRepl 的启动时序', () => {
     try {
       const { api, scope } = mountRepl({ versionRequestTimeout: 100 })
 
-      // 100ms 超时先到，150ms 时已经确认拉不到
-      await vi.advanceTimersByTimeAsync(150)
+      // 两个源各等 100ms，250ms 时已经确认拉不到。
+      await vi.advanceTimersByTimeAsync(250)
       expect(api.versionError.value).toBe(VERSION_FETCH_ERROR)
       // 兜底计时器还没到点，编辑器已经靠「确认拉不到」这条路开起来了
       expect(replMocks.useStore).toHaveBeenCalledTimes(1)

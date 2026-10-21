@@ -34,7 +34,7 @@ const STORAGE_KEY = 'vtg-play-settings'
 
 export interface UseVtgReplOptions {
   /**
-   * 版本列表请求的超时（毫秒），默认 VERSION_REQUEST_TIMEOUT。
+   * 每个版本源请求的超时（毫秒），默认 VERSION_REQUEST_TIMEOUT。
    *
    * 暴露出来只为了测试：要把超时压到比启动兜底更短，才能单独走到「拉取失败」那条分支。
    */

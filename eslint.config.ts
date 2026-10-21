@@ -46,6 +46,15 @@ export default defineConfigWithVueTs(
   },
 
   {
+    // Postman mock handlers load as CommonJS and use require for Node built-ins.
+    name: 'postman/mocks',
+    files: ['postman/mocks/*.cjs'],
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
+    },
+  },
+
+  {
     // 文档站示例：文件名就是 <Demo src="sorting/basic"> 里的路径，
     // 它们通过 glob + <component :is> 渲染，从不作为全局组件名注册，
     // 为了迁就 lint 规则把路径写成 sorting/sorting-basic 只会让文档更难读。

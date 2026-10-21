@@ -305,6 +305,11 @@ export function useSelection<TRecord extends Record<string, unknown>>(
     return allNodes.value.filter((node) => !isDisabled(node.record))
   }
 
+  // 表头状态与全选操作共用范围：无分页时包含折叠后代，分页时限定可见页。
+  function getBulkSelectableNodes(allData = false): SelectionNode<TRecord>[] {
+    return options.paginate?.() && !allData ? getVisibleSelectableNodes() : getSelectableNodes()
+  }
+
   function getSelectionState(record: TRecord, index: number): SelectionState {
     const key = getRowKey(record, index)
     const checked = isSelected(key)
@@ -480,8 +485,7 @@ export function useSelection<TRecord extends Record<string, unknown>>(
     const sel = rowSelection()
     if (!sel) return
 
-    const selectableNodes =
-      options.paginate?.() && !allData ? getVisibleSelectableNodes() : getSelectableNodes()
+    const selectableNodes = getBulkSelectableNodes(allData)
     const nextKeys = new Set(selectedKeySet.value)
     const changeRows: TRecord[] = []
 
@@ -508,7 +512,7 @@ export function useSelection<TRecord extends Record<string, unknown>>(
   }
 
   const allCheckedState = computed<'all' | 'partial' | 'none'>(() => {
-    const selectableNodes = getVisibleSelectableNodes()
+    const selectableNodes = getBulkSelectableNodes()
     if (selectableNodes.length === 0) return 'none'
 
     const checkedCount = selectableNodes.filter((node) => selectedKeySet.value.has(node.key)).length

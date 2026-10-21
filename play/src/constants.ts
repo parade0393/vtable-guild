@@ -36,7 +36,7 @@ export const MIN_SUPPORTED_VUE_VERSION = '3.5.0'
 export const VERSION_LOAD_TIMEOUT = 3000
 
 /**
- * 单个版本列表请求的超时（毫秒）。
+ * 单个版本源请求的超时（毫秒）；主源超时后备用源有独立的同等时限。
  *
  * 故意比 VERSION_LOAD_TIMEOUT 长：编辑器早就靠兜底开起来了，这个超时负责的是另一件事——
  * 让「CDN 抽风、请求永远不返回」收敛成一个明确的拉取失败，而不是让 promise 一直挂着。

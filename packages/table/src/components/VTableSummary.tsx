@@ -28,7 +28,13 @@ const VTableSummary = defineComponent({
   },
 })
 
-export default Object.assign(VTableSummary, {
+// 保留 DefineComponent 的命名类型，避免声明生成时展开其构造签名和 Vue 内部泛型。
+const SummaryWithSubcomponents: typeof VTableSummary & {
+  Row: typeof VTableSummaryRow
+  Cell: typeof VTableSummaryCell
+} = Object.assign(VTableSummary, {
   Row: VTableSummaryRow,
   Cell: VTableSummaryCell,
 })
+
+export default SummaryWithSubcomponents

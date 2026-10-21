@@ -17,7 +17,7 @@ const VTable = Object.assign(_VTable, {
   EXPAND_COLUMN,
   SELECTION_COLUMN,
 } as const)
-const VTableSummary = _VTableSummary
+const VTableSummary: typeof _VTableSummary = _VTableSummary
 const VTableSummaryRow = _VTableSummaryRow
 const VTableSummaryCell = _VTableSummaryCell
 

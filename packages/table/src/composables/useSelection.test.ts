@@ -339,6 +339,55 @@ describe('useSelection', () => {
     expect(api.getChangeableRowKeys()).toEqual(['1', '2'])
   })
 
+  it('counts collapsed descendants in the unpaginated select-all state', () => {
+    const api = useSelection<TreeRow>({
+      rowSelection: () => ({}),
+      getRowKey: (record) => record.key,
+      data: () => treeData,
+      visibleData: () => treeData,
+    })
+
+    api.toggleRow(treeData[0], 0)
+    expect(api.allCheckedState.value).toBe('partial')
+
+    api.toggleAll(true)
+    expect(api.allCheckedState.value).toBe('all')
+    api.toggleRow(treeData[0], 0)
+    expect(Array.from(api.selectedKeySet.value)).toEqual(['child-1', 'child-2'])
+    expect(api.allCheckedState.value).toBe('partial')
+
+    api.toggleAll(false)
+    expect(Array.from(api.selectedKeySet.value)).toEqual([])
+    expect(api.allCheckedState.value).toBe('none')
+  })
+
+  it('ignores disabled descendants and off-page rows in the select-all state', () => {
+    const paginate = ref(false)
+    const visible = shallowRef<TreeRow[]>(treeData)
+    const api = useSelection<TreeRow>({
+      rowSelection: () => ({
+        getCheckboxProps: (record) => ({ disabled: record.key === 'child-2' }),
+      }),
+      getRowKey: (record) => record.key,
+      data: () => treeData,
+      visibleData: () => visible.value,
+      paginate: () => paginate.value,
+    })
+
+    api.toggleAll(true)
+    expect(Array.from(api.selectedKeySet.value)).toEqual(['parent', 'child-1'])
+    expect(api.allCheckedState.value).toBe('all')
+
+    paginate.value = true
+    visible.value = [treeData[0].children![0]]
+    api.toggleAll(false)
+    expect(Array.from(api.selectedKeySet.value)).toEqual(['parent'])
+    expect(api.allCheckedState.value).toBe('none')
+
+    api.toggleAll(true)
+    expect(api.allCheckedState.value).toBe('all')
+  })
+
   it('keeps checkStrictly:false tree linkage unchanged without pagination', () => {
     const selection: RowSelection<TreeRow> = { checkStrictly: false }
 

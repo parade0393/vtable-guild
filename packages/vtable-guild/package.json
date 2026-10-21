@@ -71,12 +71,13 @@
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "vite build && vite build --config vite.preset-cjs.config.ts && vite build --config vite.browser.config.ts && pnpm copy-css",
-    "build:analyze": "vite build --mode analyze && vite build --config vite.preset-cjs.config.ts && vite build --config vite.browser.config.ts && pnpm copy-css",
+    "build": "vite build && vite build --config vite.preset-cjs.config.ts && vite build --config vite.browser.config.ts && pnpm copy-css && pnpm test:types",
+    "build:analyze": "vite build --mode analyze && vite build --config vite.preset-cjs.config.ts && vite build --config vite.browser.config.ts && pnpm copy-css && pnpm test:types",
     "copy-css": "node ./scripts/copy-theme-css.mjs",
     "dev": "vite build --watch",
     "type-check": "vue-tsc --project ./tsconfig.build.json --noEmit",
     "test": "vitest run --config ../../vitest.config.ts --project vtable-guild --passWithNoTests",
+    "test:types": "tsc --noEmit -p ./tests/declarations/tsconfig.json",
     "prepare": "node ./scripts/copy-theme-css.mjs",
     "prepublishOnly": "node -e \"if(!require('fs').existsSync('dist'))throw new Error('dist not found, run pnpm build first')\""
   },
