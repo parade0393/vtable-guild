@@ -1,5 +1,13 @@
 # @vtable-guild/vtable-guild
 
+## 2.8.1
+
+### Patch Changes
+
+- [#51](https://github.com/parade0393/vtable-guild/pull/51) [`36f64e8`](https://github.com/parade0393/vtable-guild/commit/36f64e8a745a5ab1a14999b247003c4c88bb1657) Thanks [@parade0393](https://github.com/parade0393)! - - 修复无分页树形表格的表头全选状态，将折叠后代纳入统计，与全选操作保持一致。
+  - 修复 `VTableSummary` 的发布类型声明，保留 props 和 `Row` / `Cell` 子组件类型，并在构建后校验消费方类型声明。
+  - 修复重新生成 CSS 时样式入口短暂缺失的问题，避免运行中的 Playground 热更新失败。
+
 ## 2.8.0
 
 ### Minor Changes
