@@ -1,13 +1,16 @@
 import {
   cpSync,
   mkdirSync,
+  mkdtempSync,
   readdirSync,
   readFileSync,
+  renameSync,
   rmSync,
   statSync,
   writeFileSync,
 } from 'node:fs'
-import { resolve } from 'node:path'
+import { dirname, relative, resolve } from 'node:path'
+import { setTimeout } from 'node:timers/promises'
 
 const packageRoot = resolve(import.meta.dirname, '..')
 const sourceDir = resolve(packageRoot, '../theme/css')
@@ -278,8 +281,7 @@ async function buildTailwind3Utilities() {
   return postprocessTailwind3Utilities(result.css.trim())
 }
 
-async function writePrebuiltStyleCss(targetDir) {
-  const utilitiesCss = await buildTailwind3Utilities()
+function writePrebuiltStyleCss(targetDir, utilitiesCss) {
   const prebuiltCss = [
     '/* @vtable-guild/vtable-guild/css/style - Prebuilt complete CSS entry. */',
     readFileSync(resolve(targetDir, 'presets/antdv.css'), 'utf8').trim(),
@@ -343,50 +345,108 @@ function writeCssTypeDeclarations(targetDir) {
   }
 }
 
-for (const targetDir of [distTargetDir, packageTargetDir]) {
-  rmSync(targetDir, { force: true, recursive: true })
-  mkdirSync(targetDir, { recursive: true })
-  cpSync(sourceDir, targetDir, { recursive: true })
+function* listCssFiles(dir) {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const file = resolve(dir, entry.name)
+    if (entry.isDirectory()) yield* listCssFiles(file)
+    else yield file
+  }
 }
 
-// dist/css is used by local workspace links and legacy paths.
-// Relative paths resolve from packages/vtable-guild/dist/css/tokens.css —
-// `..` = packages/vtable-guild/dist, `../..` = packages/vtable-guild,
-// `../../..` = packages/.
-rewriteTokensSource(resolve(distTargetDir, 'tokens.css'), [
-  "@source '../index.d.ts';",
-  "@source '../index.mjs';",
-  "@source '../../../theme/dist';",
-  "@source '../../../core/dist';",
-  "@source '../../../table/dist';",
-  "@source '../../../icons/dist';",
-  "@source '../../src';",
-  "@source '../../../theme/src';",
-  "@source '../../../core/src';",
-  "@source '../../../table/src';",
-  "@source '../../../icons/src';",
-])
+async function replaceCssFile(stagedFile, targetFile) {
+  const stagedContent = readFileSync(stagedFile)
+  try {
+    if (stagedContent.equals(readFileSync(targetFile))) return
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error
+  }
 
-// css/ is the published css export target.
-// Relative paths resolve from packages/vtable-guild/css/tokens.css —
-// `..` = packages/vtable-guild, `../..` = packages/.
-rewriteTokensSource(resolve(packageTargetDir, 'tokens.css'), [
-  "@source '../dist';",
-  "@source '../../theme/dist';",
-  "@source '../../core/dist';",
-  "@source '../../table/dist';",
-  "@source '../../icons/dist';",
-  "@source '../src';",
-  "@source '../../theme/src';",
-  "@source '../../core/src';",
-  "@source '../../table/src';",
-  "@source '../../icons/src';",
-])
+  // Windows readers can briefly lock the destination against an atomic rename.
+  for (let attempt = 0; ; attempt++) {
+    try {
+      renameSync(stagedFile, targetFile)
+      return
+    } catch (error) {
+      if (!['EPERM', 'EACCES', 'EBUSY'].includes(error.code) || attempt >= 49) throw error
+      await setTimeout(Math.min((attempt + 1) * 10, 100))
+    }
+  }
+}
 
-await Promise.all([writePrebuiltStyleCss(distTargetDir), writePrebuiltStyleCss(packageTargetDir)])
+async function publishCss(stagingDir, targetDir) {
+  const publishedFiles = new Set()
+  for (const stagedFile of listCssFiles(stagingDir)) {
+    const targetFile = resolve(targetDir, relative(stagingDir, stagedFile))
+    mkdirSync(dirname(targetFile), { recursive: true })
+    await replaceCssFile(stagedFile, targetFile)
+    publishedFiles.add(targetFile)
+  }
 
-for (const targetDir of [distTargetDir, packageTargetDir]) {
-  writeTailwind3Css(targetDir)
-  writeTailwind4Css(targetDir)
-  writeCssTypeDeclarations(targetDir)
+  // Prune stale files only after every current export has been replaced.
+  for (const file of listCssFiles(targetDir)) {
+    if (!publishedFiles.has(file)) rmSync(file, { force: true })
+  }
+}
+
+const utilitiesCss = await buildTailwind3Utilities()
+const stagedTargets = []
+
+try {
+  for (const targetDir of [distTargetDir, packageTargetDir]) {
+    mkdirSync(dirname(targetDir), { recursive: true })
+    // Sibling staging directories preserve the final @source path depth.
+    const stagingDir = mkdtempSync(`${targetDir}.tmp-`)
+    stagedTargets.push({ stagingDir, targetDir })
+    cpSync(sourceDir, stagingDir, { recursive: true })
+  }
+
+  // dist/css is used by local workspace links and legacy paths.
+  // Relative paths resolve from packages/vtable-guild/dist/css/tokens.css —
+  // `..` = packages/vtable-guild/dist, `../..` = packages/vtable-guild,
+  // `../../..` = packages/.
+  rewriteTokensSource(resolve(stagedTargets[0].stagingDir, 'tokens.css'), [
+    "@source '../index.d.ts';",
+    "@source '../index.mjs';",
+    "@source '../../../theme/dist';",
+    "@source '../../../core/dist';",
+    "@source '../../../table/dist';",
+    "@source '../../../icons/dist';",
+    "@source '../../src';",
+    "@source '../../../theme/src';",
+    "@source '../../../core/src';",
+    "@source '../../../table/src';",
+    "@source '../../../icons/src';",
+  ])
+
+  // css/ is the published css export target.
+  // Relative paths resolve from packages/vtable-guild/css/tokens.css —
+  // `..` = packages/vtable-guild, `../..` = packages/.
+  rewriteTokensSource(resolve(stagedTargets[1].stagingDir, 'tokens.css'), [
+    "@source '../dist';",
+    "@source '../../theme/dist';",
+    "@source '../../core/dist';",
+    "@source '../../table/dist';",
+    "@source '../../icons/dist';",
+    "@source '../src';",
+    "@source '../../theme/src';",
+    "@source '../../core/src';",
+    "@source '../../table/src';",
+    "@source '../../icons/src';",
+  ])
+
+  for (const { stagingDir } of stagedTargets) {
+    writePrebuiltStyleCss(stagingDir, utilitiesCss)
+    writeTailwind3Css(stagingDir)
+    writeTailwind4Css(stagingDir)
+    writeCssTypeDeclarations(stagingDir)
+  }
+
+  // Keep existing exports readable while rebuilding, then replace complete files.
+  for (const { stagingDir, targetDir } of stagedTargets) {
+    await publishCss(stagingDir, targetDir)
+  }
+} finally {
+  for (const { stagingDir } of stagedTargets) {
+    rmSync(stagingDir, { force: true, recursive: true })
+  }
 }
