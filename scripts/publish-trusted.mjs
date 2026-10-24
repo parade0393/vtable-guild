@@ -91,7 +91,10 @@ if (viewResult.status === 0) {
   }
 }
 
-const publishArgs = ['publish', packageDir, '--access', 'public', '--tag', 'latest']
+// Prerelease versions (2.9.0-alpha.0) must not overwrite the latest dist-tag.
+const prerelease = packageJson.version.split('-')[1]
+const distTag = prerelease ? prerelease.split('.')[0] : 'latest'
+const publishArgs = ['publish', packageDir, '--access', 'public', '--tag', distTag]
 
 if (dryRun) {
   publishArgs.push('--dry-run')

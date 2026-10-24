@@ -16,6 +16,8 @@ import type {
   TableSticky,
 } from './types'
 import type { Expandable } from './types/table'
+import type { TableTooltipConfig } from './types/presentation'
+import type { VNodeChild } from 'vue'
 import type { TablePresetConfig } from './preset-config'
 import type { FixedOffset, ScrollEdgeState } from './composables/useScroll'
 import type { FlattenRow } from './composables/useTreeData'
@@ -43,6 +45,10 @@ export interface SubThemeSlots {
   sortAreaOuter: () => string
   sortAreaWrapper: () => string
   sortAreaTitle: () => string
+  headerHelp: () => string
+  cellContent: () => string
+  copyButton: () => string
+  cellStatus: () => string
   filterIconWrapper: () => string
   filterIcon: () => string
   filterDropdown: () => string
@@ -166,7 +172,8 @@ export interface TableContext {
   customFilterIcon?: Slots['customFilterIcon']
 
   /** 表级别 showSorterTooltip 配置 */
-  showSorterTooltip?: ComputedRef<boolean>
+  showSorterTooltip?: ComputedRef<boolean | TableTooltipConfig>
+  columnEmptyText?: ComputedRef<VNodeChild | false | undefined>
 
   /** 表级别 headerEllipsis 配置 */
   headerEllipsis?: ComputedRef<boolean>
@@ -296,6 +303,7 @@ export interface TableContext {
   // ---- 树形数据 ----
   /** 是否为树形数据 */
   isTreeData?: ComputedRef<boolean>
+  treeIndentColumnIndex?: ComputedRef<number>
   /** 扁平化后的树形行数据 */
   treeFlattenData?: ComputedRef<FlattenRow[]>
   /** 按 record 身份 O(1) 取可见行元信息（替代逐行 .find()） */

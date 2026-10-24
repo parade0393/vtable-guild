@@ -26,6 +26,7 @@ import FilterIcon from './FilterIcon'
 import FilterDropdown from './FilterDropdown'
 import SelectionCheckbox from './SelectionCheckbox'
 import SelectionDropdown from './SelectionDropdown'
+import { getColumnFilters } from '../utils/valueEnum'
 import ResizeHandle from './ResizeHandle'
 
 function getAriaSortValue(order: SortOrder): 'ascending' | 'descending' | undefined {
@@ -89,16 +90,19 @@ export default defineComponent({
 
     const isSortable = computed(() => !!leafColumn.value?.sorter)
 
+    const sorterTooltipConfig = computed(
+      () => leafColumn.value?.showSorterTooltip ?? tableContext.showSorterTooltip?.value ?? true,
+    )
     const showTooltip = computed(() => {
       if (!leafColumn.value || !isSortable.value) return false
-      return leafColumn.value.showSorterTooltip ?? tableContext.showSorterTooltip?.value ?? true
+      return sorterTooltipConfig.value !== false
     })
 
     const hasFilters = computed(() => {
       const column = leafColumn.value
       if (!column) return false
       return (
-        (column.filters?.length ?? 0) > 0 ||
+        getColumnFilters(column).length > 0 ||
         !!column.customFilterDropdown ||
         !!column.filterDropdown
       )
@@ -185,10 +189,10 @@ export default defineComponent({
       { immediate: true },
     )
 
-    function handleFilterConfirm(keys: (string | number | boolean)[]) {
+    function handleFilterConfirm(keys: (string | number | boolean)[], closeDropdown = true) {
       if (!leafColumn.value) return
       tableContext.confirmFilter?.(leafColumn.value, keys)
-      setDropdownVisible(false)
+      if (closeDropdown) setDropdownVisible(false)
     }
 
     function handleFilterReset() {
@@ -378,6 +382,19 @@ export default defineComponent({
     }
 
     const sortAreaHovered = ref(false)
+    let sorterHoverTimer: ReturnType<typeof setTimeout> | undefined
+    onBeforeUnmount(() => clearTimeout(sorterHoverTimer))
+    function setSorterHover(active: boolean) {
+      clearTimeout(sorterHoverTimer)
+      const config = sorterTooltipConfig.value
+      const delay =
+        typeof config === 'object' ? (active ? config.mouseEnterDelay : config.mouseLeaveDelay) : 0
+      if (delay && delay > 0)
+        sorterHoverTimer = setTimeout(() => {
+          sortAreaHovered.value = active
+        }, delay * 1000)
+      else sortAreaHovered.value = active
+    }
     const filterIconHovered = ref(false)
     const sorterTooltipOpen = computed(
       () => showTooltip.value && sortAreaHovered.value && !filterIconHovered.value,
@@ -390,7 +407,7 @@ export default defineComponent({
       }
 
       if (showTooltip.value) {
-        sortAreaHovered.value = true
+        setSorterHover(true)
       }
     }
 
@@ -401,7 +418,7 @@ export default defineComponent({
       }
 
       if (showTooltip.value) {
-        sortAreaHovered.value = false
+        setSorterHover(false)
       }
     }
 
@@ -592,6 +609,8 @@ export default defineComponent({
             : (tableLocale?.header.cancelSort ?? '取消排序')
 
       const column = leafColumn.value
+      const help = props.cell.column.tooltip
+      const helpConfig = typeof help === 'string' ? { title: help } : help
       const sortAreaWrapperClass = tableContext.subThemeSlots?.sortAreaWrapper()
       const sortAreaTitleClass = tableContext.subThemeSlots?.sortAreaTitle()
 
@@ -607,6 +626,35 @@ export default defineComponent({
             )}
           >
             {headerContent.value}
+            {helpConfig && (
+              <span
+                class={tableContext.subThemeSlots?.headerHelp()}
+                onClick={(event: MouseEvent) => event.stopPropagation()}
+                onMouseenter={() => {
+                  filterIconHovered.value = true
+                }}
+                onMouseleave={() => {
+                  filterIconHovered.value = false
+                }}
+              >
+                <Tooltip {...helpConfig} title={helpConfig.title}>
+                  <span>
+                    <svg
+                      width="1em"
+                      height="1em"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      stroke="currentColor"
+                      aria-hidden="true"
+                    >
+                      <circle cx="8" cy="8" r="6" />
+                      <path d="M6.2 5.7a1.8 1.8 0 1 1 3 1.3C8.4 7.6 8 8 8 9" />
+                      <path d="M8 11h.01" />
+                    </svg>
+                  </span>
+                </Tooltip>
+              </span>
+            )}
           </span>
           {isSortable.value && <SortButton sortOrder={sortOrder.value} />}
         </span>
@@ -615,7 +663,17 @@ export default defineComponent({
       const sortAreaOuterClass = tableContext.subThemeSlots?.sortAreaOuter()
       const sortArea = showTooltip.value ? (
         <span class={sortAreaOuterClass}>
-          <Tooltip block title={tooltipTitle} placement="top" open={sorterTooltipOpen.value}>
+          <Tooltip
+            block
+            placement="top"
+            {...(typeof sorterTooltipConfig.value === 'object' ? sorterTooltipConfig.value : {})}
+            title={
+              typeof sorterTooltipConfig.value === 'object'
+                ? (sorterTooltipConfig.value.title ?? tooltipTitle)
+                : tooltipTitle
+            }
+            open={Boolean(sorterTooltipOpen.value)}
+          >
             {sorterContent}
           </Tooltip>
         </span>
@@ -697,22 +755,19 @@ export default defineComponent({
           pendingSelectedKeys.value = [...keys]
         },
         confirm: (opts?: { closeDropdown?: boolean }) => {
-          handleFilterConfirm(pendingSelectedKeys.value)
-          if (opts?.closeDropdown === false) {
-            setDropdownVisible(true)
-          }
+          handleFilterConfirm(pendingSelectedKeys.value, opts?.closeDropdown !== false)
         },
         clearFilters: (opts?: { confirm?: boolean; closeDropdown?: boolean }) => {
-          tableContext.resetFilter?.(column)
-          pendingSelectedKeys.value = []
-          if (opts?.confirm) {
-            handleFilterConfirm([])
-          }
+          const values = column.filterResetToDefaultFilteredValue
+            ? [...(column.defaultFilteredValue ?? [])]
+            : []
+          pendingSelectedKeys.value = values
+          if (opts?.confirm !== false) tableContext.confirmFilter?.(column, values)
           if (opts?.closeDropdown !== false) {
             setDropdownVisible(false)
           }
         },
-        filters: column.filters ?? [],
+        filters: getColumnFilters(column),
         visible: filterDropdownVisible.value,
         close: () => setDropdownVisible(false),
       }
@@ -751,7 +806,7 @@ export default defineComponent({
 
           return (
             <FilterDropdown
-              filters={column.filters ?? []}
+              filters={getColumnFilters(column)}
               selectedKeys={filteredValue.value}
               multiple={column.filterMultiple !== false}
               anchorRect={getAnchorRect()}

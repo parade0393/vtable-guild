@@ -11,6 +11,8 @@
 ```ts
 import {
   VTable,
+  VTableToolbar,
+  VTableColumnSettings,
   VTableSummary,
   EXPAND_COLUMN,
   SELECTION_COLUMN,
@@ -19,6 +21,14 @@ import {
   type Expandable,
 } from '@vtable-guild/vtable-guild'
 ```
+
+## 工具栏与列设置
+
+`VTableToolbar` 是独立组件，放进 `VTable` 的 `#title` 即可组合使用。与表格共享 `v-model:columns`、`v-model:size`；默认开启刷新、密度和列设置，全屏通过 `options.fullScreen` 与 `fullscreenTarget` 启用。刷新仅发出 `reload`，数据请求与 `loading` 由业务管理。
+
+`#actions` 添加导出、新增等业务按钮；`#settings` 完全替换内置工具；`options: false` 只关闭内置工具，保留业务插槽。完整 props、事件、插槽和可运行导出示例见 [工具栏与业务扩展](/guide/toolbar)。
+
+只需要密度和列显隐时可单独使用 `VTableColumnSettings`，支持 `options.density` / `options.setting` 开关和 `#columnLabel`。重置只恢复初始列显隐。面板不提供列拖拽或固定列编辑，详见 [列显示与列顺序](/guide/column-display)。
 
 ## VTable Props
 
@@ -34,19 +44,28 @@ import {
 | `childrenColumnName` | `string`                                                         | `'children'` | 树形数据的子节点字段名。                                                   |
 | `indentSize`         | `number`                                                         | `15`         | 树形数据缩进宽度，单位 px。                                                |
 
+### 服务端计算与请求
+
+`manual?: boolean | TableManualConfig`，默认关闭。`true` 跳过本地排序、筛选和分页切片；对象形式分别设置 `sort`、`filter`、`pagination`。
+对应的表头状态、筛选控件和 `change(filters, sorter, extra)` 继续工作。`sorter: true` 本身仍表示本地默认排序，服务端排序应同时开启 `manual.sort`。
+远程分页显式传 `total`；`manual.pagination` 关闭本地切片，适合服务器已经返回当页记录的场景。
+
+可选的 [useTableRequest](/guide/remote-data) 返回数据、loading、error、受控 pagination、manual 和单入口 onChange，并提供 submit、reset、reload、cancel。
+仅需自行管理请求时，也可以直接传入数据和状态；`manual` 不会自动发起网络请求。
+
 ### 视觉与布局
 
-| Prop             | 类型                                                                      | 默认值    | 说明                                                  |
-| ---------------- | ------------------------------------------------------------------------- | --------- | ----------------------------------------------------- |
-| `size`           | `'small' \| 'middle' \| 'large'`                                          | `'large'` | 表格尺寸，与 ant-design-vue 命名对齐。                |
-| `loading`        | `boolean \| { spinning?: boolean; indicator?: VNodeChild; tip?: string }` | `false`   | 加载态；对象形式支持 `spinning`、`indicator`、`tip`。 |
-| `bordered`       | `boolean`                                                                 | `false`   | 显示边框。                                            |
-| `striped`        | `boolean`                                                                 | `false`   | 开启斑马纹。                                          |
-| `hoverable`      | `boolean`                                                                 | `true`    | 开启行 hover 高亮。                                   |
-| `tableLayout`    | `'auto' \| 'fixed'`                                                       | -         | 表格布局模式。                                        |
-| `showHeader`     | `boolean`                                                                 | `true`    | 是否显示表头。                                        |
-| `headerEllipsis` | `boolean`                                                                 | `false`   | 让开启了 `column.ellipsis` 的列表头也单行省略。       |
-| `class`          | `string`                                                                  | -         | 根节点额外 class。                                    |
+| Prop             | 类型                                                                                                                 | 默认值    | 说明                                            |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------- | --------- | ----------------------------------------------- |
+| `size`           | `'small' \| 'middle' \| 'large'`                                                                                     | `'large'` | 表格尺寸，与 ant-design-vue 命名对齐。          |
+| `loading`        | `boolean \| { spinning?: boolean; indicator?: VNodeChild; tip?: string; delay?: number; wrapperClassName?: string }` | `false`   | 加载态，可延迟显示并为包装层设置 class。        |
+| `bordered`       | `boolean`                                                                                                            | `false`   | 显示边框。                                      |
+| `striped`        | `boolean`                                                                                                            | `false`   | 开启斑马纹。                                    |
+| `hoverable`      | `boolean`                                                                                                            | `true`    | 开启行 hover 高亮。                             |
+| `tableLayout`    | `'auto' \| 'fixed'`                                                                                                  | -         | 表格布局模式。                                  |
+| `showHeader`     | `boolean`                                                                                                            | `true`    | 是否显示表头。                                  |
+| `headerEllipsis` | `boolean`                                                                                                            | `false`   | 让开启了 `column.ellipsis` 的列表头也单行省略。 |
+| `class`          | `string`                                                                                                             | -         | 根节点额外 class。                              |
 
 ### 滚动与定位
 
@@ -81,7 +100,7 @@ import {
 | `onExpand`               | `(expanded: boolean, record: TRecord) => void`                | -       | 树形数据展开/折叠回调。                                                |
 | `onExpandedRowsChange`   | `(expandedKeys: Key[]) => void`                               | -       | 树形数据展开 key 变化回调。                                            |
 | `transformCellText`      | `TransformCellText<TRecord>`                                  | -       | 统一转换单元格文本；`opt` 包含 `text`、`column`、`record` 和 `index`。 |
-| `showSorterTooltip`      | `boolean`                                                     | `true`  | 表级控制是否显示排序 tooltip，可被列级 `showSorterTooltip` 覆盖。      |
+| `showSorterTooltip`      | `boolean \| TableTooltipConfig`                               | `true`  | 表级排序提示配置，可被列级覆盖。                                       |
 | `sortDirections`         | [`SortOrder[]`](/guide/type-reference#sortorder)              | -       | 表级排序方向列表，作为列级 `sortDirections` 的默认值。                 |
 
 ### 自定义结构
@@ -93,6 +112,19 @@ import {
 | `customHeaderRow` | `(columns: (ColumnType<TRecord> \| ColumnGroupType<TRecord>)[], index?: number) => CellAdditionalProps` | -      | 为 header row 注入属性、事件和样式。 |
 | `title`           | `(data: TRecord[]) => VNodeChild`                                                                       | -      | 表格标题区域渲染函数。               |
 | `footer`          | `(data: TRecord[]) => VNodeChild`                                                                       | -      | 表格页脚区域渲染函数。               |
+
+## 单元格展示增强
+
+`columnEmptyText?: VNodeChild | false` 默认为 `false`，只替换 `null` / `undefined`，保留 `0`、`false` 与空字符串。
+`loading` 对象额外支持 `delay?: number`（毫秒）与 `wrapperClassName?: string`；延迟期间关闭加载会取消展示。
+
+列级 `copyable?: ColumnCopyable<TRecord>` 支持开关或 `{ text, onCopy, onError }`；`text` 可为字符串或返回字符串 / Promise 的上下文回调。
+列级 `tooltip?: string | TableTooltipConfig` 提供表头说明；表级与列级 `showSorterTooltip` 支持 boolean 或同一配置对象。
+配置项包括 `title`、`placement`、`mouseEnterDelay`、`mouseLeaveDelay`、`color`、`arrow` 和 `class`。
+
+列级 `valueEnum?: ColumnValueEnum` 支持对象或 Map，值为文本或 `{ text, status }`，status 可为 success、warning、error、processing、default。
+`filters: true` 从枚举生成筛选项；`filters: false` 关闭，`onFilter: false` 显式跳过本地过滤，`onFilter: true` 使用等值匹配。
+详见[单元格展示](/guide/cell-display)。
 
 ## Column 行为
 
@@ -140,28 +172,28 @@ import {
 | `sortOrder`         | [`SortOrder`](/guide/type-reference#sortorder)                | -                       | 受控排序方向。                                         |
 | `defaultSortOrder`  | [`SortOrder`](/guide/type-reference#sortorder)                | -                       | 非受控默认排序方向，仅首次渲染生效。                   |
 | `sortDirections`    | `SortOrder[]`                                                 | `['ascend', 'descend']` | 当前列可用排序方向。                                   |
-| `showSorterTooltip` | `boolean`                                                     | 继承表级配置            | 列级别控制是否显示排序 tooltip。                       |
+| `showSorterTooltip` | `boolean \| TableTooltipConfig`                               | 继承表级配置            | 列级排序提示开关与配置。                               |
 
 表级 `sortDirections` 和 `showSorterTooltip` 可作为默认值；列级配置优先。
 
 ### 筛选
 
-| 字段                                | 类型                                                                            | 默认值   | 说明                                        |
-| ----------------------------------- | ------------------------------------------------------------------------------- | -------- | ------------------------------------------- |
-| `filters`                           | [`ColumnFilterItem[]`](/guide/type-reference#columnfilteritem)                  | -        | 筛选菜单项；传入后表头显示筛选图标。        |
-| `onFilter`                          | `(value: string \| number \| boolean, record: TRecord) => boolean`              | -        | 筛选函数，返回 `true` 表示该行匹配。        |
-| `filterMultiple`                    | `boolean`                                                                       | `true`   | 是否支持多选筛选。                          |
-| `filteredValue`                     | `Array<string \| number \| boolean> \| null`                                    | -        | 受控筛选值。                                |
-| `defaultFilteredValue`              | `Array<string \| number \| boolean>`                                            | -        | 非受控默认筛选值。                          |
-| `customFilterDropdown`              | `boolean`                                                                       | `false`  | 使用表级 `customFilterDropdown` slot。      |
-| `filterSearch`                      | `boolean \| ((input: string, filter: ColumnFilterItem) => boolean)`             | `false`  | 筛选项搜索。                                |
-| `filterMode`                        | `'menu' \| 'tree'`                                                              | `'menu'` | 筛选项展示模式。                            |
-| `filterResetToDefaultFilteredValue` | `boolean`                                                                       | `false`  | 重置时恢复到默认筛选值。                    |
-| `filterDropdownOpen`                | `boolean`                                                                       | -        | 受控筛选下拉可见性。                        |
-| `onFilterDropdownOpenChange`        | `(visible: boolean) => void`                                                    | -        | 筛选下拉可见性变化回调。                    |
-| `filtered`                          | `boolean`                                                                       | -        | 外部控制筛选图标高亮状态，不改变筛选逻辑。  |
-| `filterIcon`                        | `(opt: { filtered: boolean }) => VNodeChild`                                    | -        | 自定义筛选图标。                            |
-| `filterDropdown`                    | `VNodeChild \| ((props: CustomFilterDropdownSlotProps<TRecord>) => VNodeChild)` | -        | 列级别自定义筛选面板，优先级高于表级 slot。 |
+| 字段                                | 类型                                                                            | 默认值   | 说明                                                   |
+| ----------------------------------- | ------------------------------------------------------------------------------- | -------- | ------------------------------------------------------ |
+| `filters`                           | `ColumnFilterItem[] \| boolean`                                                 | -        | true 从 valueEnum 生成项，false 关闭，或传自定义数组。 |
+| `onFilter`                          | `boolean \| ((value: string \| number \| boolean, record: TRecord) => boolean)` | -        | 自定义比较，true 等值比较，false 跳过本地过滤。        |
+| `filterMultiple`                    | `boolean`                                                                       | `true`   | 是否支持多选筛选。                                     |
+| `filteredValue`                     | `Array<string \| number \| boolean> \| null`                                    | -        | 受控筛选值。                                           |
+| `defaultFilteredValue`              | `Array<string \| number \| boolean>`                                            | -        | 非受控默认筛选值。                                     |
+| `customFilterDropdown`              | `boolean`                                                                       | `false`  | 使用表级 `customFilterDropdown` slot。                 |
+| `filterSearch`                      | `boolean \| ((input: string, filter: ColumnFilterItem) => boolean)`             | `false`  | 筛选项搜索。                                           |
+| `filterMode`                        | `'menu' \| 'tree'`                                                              | `'menu'` | 筛选项展示模式。                                       |
+| `filterResetToDefaultFilteredValue` | `boolean`                                                                       | `false`  | 重置时恢复到默认筛选值。                               |
+| `filterDropdownOpen`                | `boolean`                                                                       | -        | 受控筛选下拉可见性。                                   |
+| `onFilterDropdownOpenChange`        | `(visible: boolean) => void`                                                    | -        | 筛选下拉可见性变化回调。                               |
+| `filtered`                          | `boolean`                                                                       | -        | 外部控制筛选图标高亮状态，不改变筛选逻辑。             |
+| `filterIcon`                        | `(opt: { filtered: boolean }) => VNodeChild`                                    | -        | 自定义筛选图标。                                       |
+| `filterDropdown`                    | `VNodeChild \| ((props: CustomFilterDropdownSlotProps<TRecord>) => VNodeChild)` | -        | 列级别自定义筛选面板，优先级高于表级 slot。            |
 
 ### 多级表头
 

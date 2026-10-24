@@ -16,6 +16,8 @@ Import components, constants and types from `@vtable-guild/vtable-guild`:
 ```ts
 import {
   VTable,
+  VTableToolbar,
+  VTableColumnSettings,
   VTableSummary,
   EXPAND_COLUMN,
   SELECTION_COLUMN,
@@ -24,6 +26,14 @@ import {
   type Expandable,
 } from '@vtable-guild/vtable-guild'
 ```
+
+## Toolbar and column settings
+
+Compose the standalone `VTableToolbar` in `VTable`'s `#title` slot and share `v-model:columns` and `v-model:size` with the table. Reload, density and column settings are enabled by default. Full screen requires `options.fullScreen` and an explicit `fullscreenTarget`. Reload only emits an event; the application manages requests and `loading`.
+
+Use `#actions` to add export or create buttons and `#settings` to replace the built-in tools. `options: false` keeps these business slots available. See [toolbar and business extensions](/guide/toolbar) (Chinese) for complete props, events, slot types and a working CSV export example.
+
+Use standalone `VTableColumnSettings` for density and column visibility, with `options.density`, `options.setting` and `#columnLabel`. Reset restores initial visibility only. The panel does not edit column order or fixed positioning. See [column display and order](/guide/column-display) (Chinese).
 
 ## VTable Props
 

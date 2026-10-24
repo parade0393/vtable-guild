@@ -24,6 +24,8 @@ export type {
 } from './column'
 
 export type { ColumnType as TableColumnType } from './column'
+export type * from './presentation'
+export type * from './request'
 export type {
   TablePaginationConfig,
   TablePaginationState,

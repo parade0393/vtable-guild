@@ -36,7 +36,9 @@ If you only need pagination, use `TablePaginationConfig.onChange`. Its arguments
 
 Pass one page plus `total`. If processed data length is below total and does not exceed pageSize, it is rendered without another slice. A length between pageSize and total warns and uses local slicing. A missing or invalid positive integer total falls back to the processed root count.
 
-The component does not fetch data. Keep total during loading and reject stale responses with request IDs or AbortController. For server sorting use `sorter: true`; for server filtering omit local `onFilter`. Handle the corresponding table action in your request code.
+Manage requests in your application, or use the optional [useTableRequest helper](/guide/remote-data). Keep total during loading and reject stale responses with request IDs or AbortController.
+
+`sorter: true` still sorts locally by default. For server sorting also pass `:manual="{ sort: true }"`. Enable `manual.filter` to preserve filter state and controls while skipping local filtering. `manual.pagination` skips pagination slicing and uses the explicit total; `manual: true` enables all three. The request helper returns a ready-to-bind `manual` object with all three enabled.
 
 The remote demo enables `preserveSelectedRowKeys` and displays the selected count and record names across pages. Select a row, select another on a different page, then return to verify the first selection. “Select all data” only affects loaded records and never fetches other pages.
 

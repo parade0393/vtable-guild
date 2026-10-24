@@ -9,6 +9,23 @@
 
 :where(:root),
 [data-vtg-preset='antdv'] {
+  --vtg-column-settings-width: 224px;
+  --vtg-toolbar-title-font-size: 16px;
+  --vtg-toolbar-title-font-weight: 500;
+  --vtg-toolbar-search-width: 240px;
+  --vtg-toolbar-search-height: 32px;
+  --vtg-toolbar-search-font-size: 14px;
+  --vtg-selection-alert-radius: 6px;
+  --vtg-selection-alert-bg: rgb(0 0 0 / 2%);
+  --vtg-selection-alert-padding-inline: 24px;
+  --vtg-selection-alert-padding-block: 8px;
+  --vtg-cell-success: #52c41a;
+  --vtg-cell-warning: #faad14;
+  --vtg-cell-error: #ff4d4f;
+  --vtg-column-settings-radius: 8px;
+  --vtg-column-settings-icon-size: 16px;
+  --vtg-column-settings-z: 1050;
+  --vtg-column-settings-shadow: var(--vtg-pagination-popup-shadow);
   --vtg-pagination-size: 32px;
   --vtg-pagination-size-sm: 24px;
   --vtg-pagination-gap: 8px;
@@ -218,4 +235,7 @@
   --vtg-table-empty-border-color: #434343;
   --vtg-table-empty-shadow-color: #303030;
   --vtg-table-empty-content-color: #262626;
+
+  /* 批量提示条中性底 — 暗色翻转为 2% 白 */
+  --vtg-selection-alert-bg: rgb(255 255 255 / 2%);
 }

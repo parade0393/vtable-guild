@@ -55,6 +55,7 @@ app.use(
 - 空态文案
 - 加载态文案
 - 行选择菜单文案
+- 分页、密度、列设置和工具栏文案
 
 ## 注册和覆盖语言包
 
@@ -119,19 +120,27 @@ Provider 支持 `theme`、`cssMode`、`classPrefix`、`locale`、`locales` 和 `
 
 语言包提供可选 `pagination` 分组，旧语言包无需修改。内置中英文；可用 `localeOverrides.pagination` 全局覆盖，或 `pagination.locale` 实例覆盖（最高优先级）。完整字段见 `VTableGuildPaginationLocale`；`prev_pages` / `next_pages` 是可选的跳转文案模板，`{count}` 会替换为跳转页数。
 
-当前 `DeepPartial` 对可选的 `pagination` 分组保留完整语言包类型。全局只改部分分页文案时，展开内置语言包后覆盖即可通过类型检查；实例 `pagination.locale` 使用 `Partial<VTableGuildPaginationLocale>`，可以直接传少量字段。
+`localeOverrides` 支持深层局部覆盖，包括可选的 `pagination`、`columnSettings` 和 `toolbar` 分组，可以直接传少量字段。实例 `pagination.locale` 也支持局部覆盖。
 
 ```ts
-import { createVTableGuild, paginationZhCN } from '@vtable-guild/vtable-guild'
+import { createVTableGuild } from '@vtable-guild/vtable-guild'
 
 app.use(
   createVTableGuild({
     localeOverrides: {
-      pagination: { ...paginationZhCN, items_per_page: '条记录 / 页' },
+      pagination: { items_per_page: '条记录 / 页' },
+      columnSettings: { reset: '恢复默认列' },
+      toolbar: { reload: '重新加载' },
     },
   }),
 )
 ```
+
+## 工具栏与列设置语言
+
+`columnSettings` 和 `toolbar` 也是可选语言分组，旧语言包无需补齐。内置中英文默认文案，跟随插件或 Provider 的 `locale`；使用 `localeOverrides.columnSettings` / `localeOverrides.toolbar` 覆盖全局文案。
+
+`VTableToolbar.locale` 覆盖工具栏的刷新、全屏等文案，`columnSettings.locale` 覆盖内部列设置文案；单独使用 `VTableColumnSettings` 时直接传 `locale`。实例覆盖优先于全局配置。组件用法见 [工具栏与业务扩展](/guide/toolbar) 和 [列显示与列顺序](/guide/column-display)。
 
 ## Type Declarations
 
@@ -174,6 +183,10 @@ app.use(
 <<< @/.vitepress/type-declarations/config.ts#VTableGuildTableSelectionLocale
 
 <<< @/.vitepress/type-declarations/config.ts#VTableGuildPaginationLocale
+
+<<< @/.vitepress/type-declarations/config.ts#VTableGuildColumnSettingsLocale
+
+<<< @/.vitepress/type-declarations/config.ts#VTableGuildToolbarLocale
 
 <<< @/.vitepress/type-declarations/config.ts#PaginationLocaleConstants
 

@@ -1,6 +1,19 @@
 // packages/theme/src/presets/index.ts
 
 import type { BuiltInLocaleName, ThemePreset } from './types'
+import { toolbarTheme, elementPlusToolbarTheme, toolbarZhCN, toolbarEnUS } from '../toolbar'
+import {
+  selectionAlertTheme,
+  elementPlusSelectionAlertTheme,
+  selectionAlertZhCN,
+  selectionAlertEnUS,
+} from '../selection-alert'
+import {
+  columnSettingsTheme,
+  elementPlusColumnSettingsTheme,
+  columnSettingsZhCN,
+  columnSettingsEnUS,
+} from '../column-settings'
 import {
   paginationTheme,
   paginationZhCN,
@@ -52,10 +65,25 @@ const presetMap: Record<ThemePresetName, ThemePreset> = {
     tooltip: antdvTooltipTheme,
     scrollbar: antdvScrollbarTheme,
     pagination: paginationTheme,
+    columnSettings: columnSettingsTheme,
+    toolbar: toolbarTheme,
+    selectionAlert: selectionAlertTheme,
     tableLocale: antdvTableLocale,
     locales: {
-      'zh-CN': { table: antdvTableLocale, pagination: paginationZhCN },
-      'en-US': { table: antdvTableEnUSLocale, pagination: paginationEnUS },
+      'zh-CN': {
+        table: antdvTableLocale,
+        pagination: paginationZhCN,
+        columnSettings: columnSettingsZhCN,
+        toolbar: toolbarZhCN,
+        selectionAlert: selectionAlertZhCN,
+      },
+      'en-US': {
+        table: antdvTableEnUSLocale,
+        pagination: paginationEnUS,
+        columnSettings: columnSettingsEnUS,
+        toolbar: toolbarEnUS,
+        selectionAlert: selectionAlertEnUS,
+      },
     },
   },
   'element-plus': {
@@ -67,10 +95,25 @@ const presetMap: Record<ThemePresetName, ThemePreset> = {
     tooltip: elementPlusTooltipTheme,
     scrollbar: elementPlusScrollbarTheme,
     pagination: elementPlusPaginationTheme,
+    columnSettings: elementPlusColumnSettingsTheme,
+    toolbar: elementPlusToolbarTheme,
+    selectionAlert: elementPlusSelectionAlertTheme,
     tableLocale: elementPlusTableLocale,
     locales: {
-      'zh-CN': { table: elementPlusTableLocale, pagination: elementPlusPaginationZhCN },
-      'en-US': { table: elementPlusTableEnUSLocale, pagination: elementPlusPaginationEnUS },
+      'zh-CN': {
+        table: elementPlusTableLocale,
+        pagination: elementPlusPaginationZhCN,
+        columnSettings: columnSettingsZhCN,
+        toolbar: toolbarZhCN,
+        selectionAlert: selectionAlertZhCN,
+      },
+      'en-US': {
+        table: elementPlusTableEnUSLocale,
+        pagination: elementPlusPaginationEnUS,
+        columnSettings: columnSettingsEnUS,
+        toolbar: toolbarEnUS,
+        selectionAlert: selectionAlertEnUS,
+      },
     },
   },
 }

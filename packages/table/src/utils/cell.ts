@@ -6,6 +6,8 @@ import type {
   TableBodyCellSlotProps,
 } from '../types'
 import { ensureValidVNode } from './vnode'
+import { resolveValueEnum } from './valueEnum'
+import type { ColumnValueStatus } from '../types/presentation'
 
 export interface ResolvedBodyCell {
   content: VNodeChild
@@ -14,6 +16,8 @@ export interface ResolvedBodyCell {
   renderCellProps?: CellAdditionalProps
   colSpan: number
   rowSpan: number
+  copyText?: string
+  status?: ColumnValueStatus
 }
 
 function resolveTooltipText(value: unknown): string | undefined {
@@ -64,6 +68,7 @@ export function resolveBodyCell<TRecord extends Record<string, unknown>>(options
   record: TRecord
   rowIndex: number
   column: ColumnType<TRecord>
+  columnEmptyText?: VNodeChild | false
   bodyCell?: ((props: TableBodyCellSlotProps<TRecord>) => VNodeChild) | undefined
   transformCellText?:
     | ((options: {
@@ -86,10 +91,20 @@ export function resolveBodyCell<TRecord extends Record<string, unknown>>(options
       })
     : text
 
-  let content = (transformedText ?? '') as VNodeChild
+  const enumValue = resolveValueEnum(column.valueEnum, transformedText)
+  const defaultText = enumValue
+    ? enumValue.text
+    : typeof transformedText === 'boolean'
+      ? String(transformedText)
+      : transformedText
+  let content = (defaultText ??
+    (options.columnEmptyText === false ? '' : options.columnEmptyText) ??
+    '') as VNodeChild
   let renderCellProps: CellAdditionalProps | undefined
+  let customContent = false
 
   if (column.customRender) {
+    customContent = true
     const rendered = column.customRender({
       text: transformedText,
       value: transformedText,
@@ -113,6 +128,7 @@ export function resolveBodyCell<TRecord extends Record<string, unknown>>(options
       column,
     })
     if (ensureValidVNode(slotContent) !== null) {
+      customContent = true
       content = slotContent
     }
   }
@@ -122,7 +138,9 @@ export function resolveBodyCell<TRecord extends Record<string, unknown>>(options
 
   return {
     content,
-    tooltipText: resolveTooltipText(transformedText),
+    tooltipText: resolveTooltipText(defaultText),
+    copyText: resolveTooltipText(transformedText),
+    status: customContent ? undefined : enumValue?.status,
     customCellProps,
     renderCellProps,
     colSpan: colSpan ?? 1,

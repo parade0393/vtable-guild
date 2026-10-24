@@ -22,6 +22,9 @@ export interface ThemePreset {
   tooltip?: ThemeConfig
   scrollbar?: ThemeConfig
   pagination?: ThemeConfig
+  columnSettings?: ThemeConfig
+  toolbar?: ThemeConfig
+  selectionAlert?: ThemeConfig
   tableLocale: VTableGuildTableLocale
   locales: Record<BuiltInLocaleName, VTableGuildLocale>
 }

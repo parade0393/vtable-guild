@@ -133,6 +133,9 @@ function asDataSlotProps(slotProps: TableDataSlotProps<Record<string, unknown>>)
     <template v-if="$slots.footer" #footer="slotProps">
       <slot name="footer" v-bind="asDataSlotProps(slotProps)" />
     </template>
+    <template v-if="$slots.expandColumnTitle" #expandColumnTitle>
+      <slot name="expandColumnTitle" />
+    </template>
     <template v-if="$slots.paginationItem" #paginationItem="slotProps">
       <slot name="paginationItem" v-bind="slotProps" />
     </template>

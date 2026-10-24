@@ -16,6 +16,7 @@ import {
 import SelectionCheckbox from './SelectionCheckbox'
 import SelectionRadio from './SelectionRadio'
 import ExpandIcon from './ExpandIcon'
+import TableCopyButton from './TableCopyButton'
 
 export default defineComponent({
   name: 'TableCell',
@@ -54,6 +55,7 @@ export default defineComponent({
           column: props.column,
           bodyCell: tableContext.bodyCell,
           transformCellText: tableContext.transformCellText,
+          columnEmptyText: tableContext.columnEmptyText?.value,
         }),
     )
 
@@ -189,6 +191,8 @@ export default defineComponent({
 
     const isTreeIndentColumn = computed(() => {
       if (!tableContext.isTreeData?.value) return false
+      if (tableContext.treeIndentColumnIndex)
+        return props.colIndex === tableContext.treeIndentColumnIndex.value
 
       return props.column.key !== '__vtg_selection__' &&
         props.column.key !== '__vtg_expand__' &&
@@ -426,6 +430,16 @@ export default defineComponent({
       const treeAppendClass = showTreeIndent
         ? (tableContext.compatClass?.('cell-with-append') ?? '')
         : ''
+      const displayContent = resolvedCell.value.status ? (
+        <span
+          class={tableContext.subThemeSlots?.cellStatus()}
+          data-status={resolvedCell.value.status}
+        >
+          {resolvedCell.value.content}
+        </span>
+      ) : (
+        resolvedCell.value.content
+      )
       const mainContent = ellipsisCfg.enabled ? (
         ellipsisCfg.showTitle ? (
           <Tooltip
@@ -440,14 +454,14 @@ export default defineComponent({
               onMouseenter={updateEllipsisTooltipState}
               onMouseleave={closeEllipsisTooltip}
             >
-              {resolvedCell.value.content}
+              {displayContent}
             </div>
           </Tooltip>
         ) : (
-          <div class={props.bodyCellEllipsisClass}>{resolvedCell.value.content}</div>
+          <div class={props.bodyCellEllipsisClass}>{displayContent}</div>
         )
       ) : (
-        resolvedCell.value.content
+        displayContent
       )
 
       return (
@@ -463,7 +477,19 @@ export default defineComponent({
         >
           {treeIndent}
           {treeExpandBtn}
-          {mainContent}
+          {props.column.copyable ? (
+            <span class={tableContext.subThemeSlots?.cellContent()}>
+              {mainContent}
+              <TableCopyButton
+                column={props.column}
+                record={props.record}
+                rowIndex={props.rowIndex}
+                defaultText={resolvedCell.value.copyText}
+              />
+            </span>
+          ) : (
+            mainContent
+          )}
         </td>
       )
     }

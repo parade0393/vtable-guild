@@ -23,6 +23,8 @@ import type {
   SortOrder,
 } from './column'
 import type { SelectionSentinel } from '../constants'
+import type { TableManualConfig } from './request'
+import type { TableTooltipConfig } from './presentation'
 import type { TableSlots } from '@vtable-guild/theme'
 import type {
   TablePaginationConfig,
@@ -67,6 +69,8 @@ export interface Expandable<TRecord extends object = Record<string, any>> {
   rowExpandable?: (record: TRecord) => boolean
   /** 是否显示展开列，默认 true */
   showExpandColumn?: boolean
+  expandIconColumnIndex?: number
+  columnTitle?: string | number
   /** 展开行 class */
   expandedRowClassName?: string | RowClassName<TRecord>
 }
@@ -163,6 +167,7 @@ export interface TableSlotsDecl<TRecord extends object = Record<string, any>> {
   footer?: (props: TableDataSlotProps<TRecord>) => VNodeChild
   paginationItem?: (props: TablePaginationSlotProps) => VNodeChild
   summary?: () => VNodeChild
+  expandColumnTitle?: () => VNodeChild
 }
 
 /**
@@ -171,6 +176,10 @@ export interface TableSlotsDecl<TRecord extends object = Record<string, any>> {
 export interface TableProps<TRecord extends object = Record<string, any>> {
   /** Explicitly opt in with an object; omitted or false preserves unpaginated behavior. */
   pagination?: false | TablePaginationConfig
+  /** Skip local processing while preserving UI state and change events. */
+  manual?: boolean | TableManualConfig
+  /** Default empty text for null/undefined. false preserves the original blank display. */
+  columnEmptyText?: VNodeChild | false
   /** 数据源 */
   dataSource: TRecord[]
   /** 列配置 */
@@ -189,7 +198,15 @@ export interface TableProps<TRecord extends object = Record<string, any>> {
    * - `boolean`：纯开关，使用预设的 loading 图标
    * - 对象形式 `{ spinning, indicator, tip }`：自定义指示器 / 提示文本（与 ant-design-vue 对齐）
    */
-  loading?: boolean | { spinning?: boolean; indicator?: VNodeChild; tip?: string }
+  loading?:
+    | boolean
+    | {
+        spinning?: boolean
+        indicator?: VNodeChild
+        tip?: string
+        delay?: number
+        wrapperClassName?: string
+      }
   /** 尺寸：与 ant-design-vue 对齐，`large`(默认) / `middle` / `small` */
   size?: 'small' | 'middle' | 'large'
   /** 显示边框 */
@@ -237,7 +254,7 @@ export interface TableProps<TRecord extends object = Record<string, any>> {
    * 表级别控制是否显示排序 tooltip，默认 true。
    * 可被列级别 showSorterTooltip 覆盖。
    */
-  showSorterTooltip?: boolean
+  showSorterTooltip?: boolean | TableTooltipConfig
 
   /** 表级排序方向列表 */
   sortDirections?: SortOrder[]

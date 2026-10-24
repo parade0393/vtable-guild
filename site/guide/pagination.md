@@ -38,7 +38,9 @@
 
 传入当前页记录和完整 `total`。当处理后记录数小于 `total` 且不超过 `pageSize` 时，不再切片。记录数大于 `pageSize` 却小于 `total` 时，会告警并按本地方式切片。未提供正整数 `total` 时，回退到筛选、排序后的根记录数。
 
-请求由业务代码管理；加载时保留总数，使用请求序号或 AbortController 防止旧响应覆盖新页。服务端排序使用 `sorter: true`，服务端筛选不配置本地 `onFilter`，并在 `change` 中处理相应 action。
+请求可由业务代码管理，也可使用 [useTableRequest 请求管理](/guide/remote-data)。自行管理时，加载期间保留总数，并使用请求序号或 AbortController 防止旧响应覆盖新页。
+
+`sorter: true` 默认仍会本地排序。服务端排序应额外传 `:manual="{ sort: true }"`；服务端筛选传 `manual.filter: true`，保留筛选入口与状态并跳过本地计算。传 `manual.pagination: true` 会跳过分页切片，使用显式 `total`；`manual: true` 同时开启三项。`useTableRequest` 返回的 `manual` 已开启三项，直接绑定即可。
 
 下面的示例启用 `preserveSelectedRowKeys`，展示跨页已选数量和记录名称。可先选中一条记录，翻页继续选择，再返回原页检查勾选状态。“全选所有”仅作用于已加载数据，不会请求其他页。
 

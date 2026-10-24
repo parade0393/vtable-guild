@@ -36,9 +36,9 @@ export type SlotProps<T extends ThemeConfig> = Partial<Record<keyof T['slots'] &
 
 /** 深度可选，用于 locale / theme 局部覆盖。 */
 export type DeepPartial<T> = {
-  [K in keyof T]?: T[K] extends Array<infer U>
+  [K in keyof T]?: NonNullable<T[K]> extends Array<infer U>
     ? Array<DeepPartial<U>>
-    : T[K] extends object
+    : NonNullable<T[K]> extends object
       ? DeepPartial<T[K]>
       : T[K]
 }
@@ -154,6 +154,7 @@ export interface VTableGuildTableSelectionLocale {
 }
 
 export interface VTableGuildTableLocale {
+  cell?: { copy: string; copied: string; copyFailed: string }
   header: VTableGuildTableHeaderLocale
   filterDropdown: VTableGuildTableFilterDropdownLocale
   empty: VTableGuildTableEmptyLocale
@@ -164,6 +165,42 @@ export interface VTableGuildTableLocale {
 export interface VTableGuildLocale {
   table: VTableGuildTableLocale
   pagination?: VTableGuildPaginationLocale
+  columnSettings?: VTableGuildColumnSettingsLocale
+  toolbar?: VTableGuildToolbarLocale
+  selectionAlert?: VTableGuildSelectionAlertLocale
+}
+
+export interface VTableGuildSelectionAlertLocale {
+  label: string
+  selected: string
+  clear: string
+}
+
+export interface VTableGuildToolbarLocale {
+  searchPlaceholder?: string
+  search?: string
+  clearSearch?: string
+  label: string
+  reload: string
+  fullScreen: string
+  exitFullScreen: string
+}
+
+export interface VTableGuildColumnSettingsLocale {
+  fixed?: string
+  fixedLeft?: string
+  fixedRight?: string
+  unfixed?: string
+  mixed?: string
+  move?: string
+  title: string
+  reset: string
+  density: string
+  large: string
+  middle: string
+  small: string
+  columns: string
+  empty: string
 }
 
 export interface VTableGuildPaginationLocale {

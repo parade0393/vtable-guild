@@ -9,6 +9,7 @@ export function positiveInteger(value: unknown, fallback: number): number {
 export function usePagination<T>(options: {
   pagination: () => false | TablePaginationConfig | undefined
   data: () => T[]
+  manual?: () => boolean
   onChange: (state: TablePaginationState) => void
 }) {
   const enabled = computed(() => !!options.pagination())
@@ -31,7 +32,13 @@ export function usePagination<T>(options: {
     const p = config.value
     const pageSize = positiveInteger(p.pageSize, innerPageSize.value)
     // Ant uses a positive explicit total, falling back to the processed root count.
-    const total = positiveInteger(p.total, options.data().length)
+    const total =
+      options.manual?.() &&
+      typeof p.total === 'number' &&
+      Number.isSafeInteger(p.total) &&
+      p.total >= 0
+        ? p.total
+        : positiveInteger(p.total, options.data().length)
     const current = Math.min(
       positiveInteger(p.current, innerCurrent.value),
       Math.max(1, Math.ceil(total / pageSize)),
@@ -49,7 +56,7 @@ export function usePagination<T>(options: {
 
   const pageData = computed(() => {
     const data = options.data()
-    if (!enabled.value) return data
+    if (!enabled.value || options.manual?.()) return data
     const { current, pageSize, total } = state.value
     if (data.length < total && data.length <= pageSize) return data
     return data.slice((current - 1) * pageSize, current * pageSize)
@@ -58,7 +65,7 @@ export function usePagination<T>(options: {
   watch(
     () => [enabled.value, options.data().length, state.value.total, state.value.pageSize] as const,
     ([active, length, total, pageSize]) => {
-      if (active && length < total && length > pageSize) {
+      if (active && !options.manual?.() && length < total && length > pageSize) {
         devWarn(
           'vtable-pagination-remote-length',
           '[VTable] dataSource length is less than pagination.total but exceeds pageSize. Remote pagination expects one page of data.',

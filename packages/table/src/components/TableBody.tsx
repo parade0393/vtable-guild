@@ -63,6 +63,7 @@ export default defineComponent({
             column,
             bodyCell: tableContext.bodyCell,
             transformCellText: tableContext.transformCellText,
+            columnEmptyText: tableContext.columnEmptyText?.value,
           })
 
           const colSpan = normalizeSpan(resolvedCell.colSpan)

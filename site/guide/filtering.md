@@ -126,3 +126,11 @@ const handleChange: NonNullable<VTableEventProps<UserRow>['onChange']> = (filter
 <<< @/.vitepress/type-declarations/table.ts#VTableEventProps
 
 :::
+
+## 清空与受控状态
+
+`filteredValue: undefined` 使用内部非受控状态；`null` 和 `[]` 都表示受控且无筛选值。受控时确认、重置或清空仅发出更新事件，父组件接受新值后才改变展示数据。
+
+`filterResetToDefaultFilteredValue: true` 让重置恢复 defaultFilteredValue，否则清空。自定义面板调用 `clearFilters()` 时只提交一次重置结果，启用恢复默认值时使用 defaultFilteredValue；`clearFilters({ confirm: false })` 仅清理面板草稿，不提交筛选事件。`confirm({ closeDropdown: false })` 可提交并保留面板。
+
+列 `filters: true` 可从 valueEnum 生成筛选项；`onFilter: false` 或表格 `manual.filter` 可跳过本地计算，保留筛选 UI 和事件。完整示例见[单元格展示](./cell-display.md)。

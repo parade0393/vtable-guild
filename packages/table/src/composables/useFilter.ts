@@ -2,7 +2,8 @@
 
 import { computed } from 'vue'
 import type { ColumnType } from '../types'
-import { getColumnKey } from './useColumns'
+import { getByDataIndex, getColumnKey } from './useColumns'
+import { matchesEnumFilter } from '../utils/valueEnum'
 import { useControlledColumnState } from './useControlledColumnState'
 
 /** 筛选状态记录：columnKey → 选中的筛选值数组 */
@@ -64,7 +65,7 @@ export function useFilter(options: UseFilterOptions) {
     }> = []
 
     for (const col of columns()) {
-      if (!col.onFilter) continue
+      if (col.onFilter === false || (!col.onFilter && col.filters !== true)) continue
 
       const values = getFilteredValue(col)
       if (values.length > 0) {
@@ -151,7 +152,11 @@ export function useFilter(options: UseFilterOptions) {
 
     return data.filter((record) =>
       filters.every(({ column, values }) =>
-        values.some((val) => column.onFilter!(val, record as Record<string, unknown>)),
+        values.some((val) =>
+          typeof column.onFilter === 'function'
+            ? column.onFilter(val, record)
+            : matchesEnumFilter(column, val, getByDataIndex(record, column.dataIndex)),
+        ),
       ),
     )
   }

@@ -8,6 +8,9 @@ import type {
   tooltipTheme,
   scrollbarTheme,
   paginationTheme,
+  columnSettingsTheme,
+  toolbarTheme,
+  selectionAlertTheme,
 } from '@vtable-guild/vtable-guild'
 import type { AlignType, SummaryFixed } from './table'
 
@@ -27,9 +30,9 @@ export type SlotProps<T extends ThemeConfig> = Partial<Record<keyof T['slots'] &
 
 // #region DeepPartial
 export type DeepPartial<T> = {
-  [K in keyof T]?: T[K] extends Array<infer U>
+  [K in keyof T]?: NonNullable<T[K]> extends Array<infer U>
     ? Array<DeepPartial<U>>
-    : T[K] extends object
+    : NonNullable<T[K]> extends object
       ? DeepPartial<T[K]>
       : T[K]
 }
@@ -130,6 +133,10 @@ export type TableSlots =
   | 'sortAreaOuter'
   | 'sortAreaWrapper'
   | 'sortAreaTitle'
+  | 'headerHelp'
+  | 'cellContent'
+  | 'copyButton'
+  | 'cellStatus'
   | 'filterIconWrapper'
   | 'filterIcon'
   | 'filterDropdown'
@@ -273,6 +280,21 @@ export type PaginationSlots =
 export type PaginationThemeConfig = typeof paginationTheme
 // #endregion PaginationThemeConfig
 
+// #region ColumnSettingsThemeTypes
+export type ColumnSettingsThemeConfig = typeof columnSettingsTheme
+export type ColumnSettingsSlots = keyof ColumnSettingsThemeConfig['slots']
+// #endregion ColumnSettingsThemeTypes
+
+// #region ToolbarThemeTypes
+export type ToolbarThemeConfig = typeof toolbarTheme
+export type ToolbarSlots = keyof ToolbarThemeConfig['slots']
+// #endregion ToolbarThemeTypes
+
+// #region SelectionAlertThemeTypes
+export type SelectionAlertThemeConfig = typeof selectionAlertTheme
+export type SelectionAlertSlots = keyof SelectionAlertThemeConfig['slots']
+// #endregion SelectionAlertThemeTypes
+
 // #region VTableGuildThemeOverridesMap
 export interface VTableGuildThemeOverridesMap {
   table: ThemeOverrideConfig<TableThemeConfig>
@@ -283,6 +305,9 @@ export interface VTableGuildThemeOverridesMap {
   tooltip: ThemeOverrideConfig<TooltipThemeConfig>
   scrollbar: ThemeOverrideConfig<ScrollbarThemeConfig>
   pagination: ThemeOverrideConfig<PaginationThemeConfig>
+  columnSettings: ThemeOverrideConfig<ColumnSettingsThemeConfig>
+  toolbar: ThemeOverrideConfig<ToolbarThemeConfig>
+  selectionAlert: ThemeOverrideConfig<SelectionAlertThemeConfig>
 }
 // #endregion VTableGuildThemeOverridesMap
 
@@ -345,6 +370,7 @@ export interface VTableGuildTableSelectionLocale {
 
 // #region VTableGuildTableLocale
 export interface VTableGuildTableLocale {
+  cell?: { copy: string; copied: string; copyFailed: string }
   header: VTableGuildTableHeaderLocale
   filterDropdown: VTableGuildTableFilterDropdownLocale
   empty: VTableGuildTableEmptyLocale
@@ -384,8 +410,50 @@ export declare const elementPlusPaginationEnUS: VTableGuildPaginationLocale
 export interface VTableGuildLocale {
   table: VTableGuildTableLocale
   pagination?: VTableGuildPaginationLocale
+  columnSettings?: VTableGuildColumnSettingsLocale
+  toolbar?: VTableGuildToolbarLocale
+  selectionAlert?: VTableGuildSelectionAlertLocale
 }
 // #endregion VTableGuildLocale
+
+// #region VTableGuildColumnSettingsLocale
+export interface VTableGuildColumnSettingsLocale {
+  fixed?: string
+  fixedLeft?: string
+  fixedRight?: string
+  unfixed?: string
+  mixed?: string
+  move?: string
+  title: string
+  reset: string
+  density: string
+  large: string
+  middle: string
+  small: string
+  columns: string
+  empty: string
+}
+// #endregion VTableGuildColumnSettingsLocale
+
+// #region VTableGuildToolbarLocale
+export interface VTableGuildToolbarLocale {
+  searchPlaceholder?: string
+  search?: string
+  clearSearch?: string
+  label: string
+  reload: string
+  fullScreen: string
+  exitFullScreen: string
+}
+// #endregion VTableGuildToolbarLocale
+
+// #region VTableGuildSelectionAlertLocale
+export interface VTableGuildSelectionAlertLocale {
+  label: string
+  selected: string
+  clear: string
+}
+// #endregion VTableGuildSelectionAlertLocale
 
 // #region VTableGuildOptions
 export interface VTableGuildOptions {
