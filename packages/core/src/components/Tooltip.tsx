@@ -143,6 +143,14 @@ export default defineComponent({
       }
     }
 
+    watch(isControlled, (controlled) => {
+      if (controlled) {
+        // Controlled suppression must discard the previous hover and any delayed work.
+        clearTimers()
+        internalOpen.value = false
+      }
+    })
+
     function handleMouseEnter() {
       if (isControlled.value) return
       clearTimers()

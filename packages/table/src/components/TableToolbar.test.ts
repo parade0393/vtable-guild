@@ -19,6 +19,7 @@ afterEach(() => {
     if (descriptor) Object.defineProperty(document, key, descriptor)
     else Reflect.deleteProperty(document, key)
   }
+  vi.useRealTimers()
   vi.restoreAllMocks()
   document.body.innerHTML = ''
 })
@@ -110,6 +111,38 @@ describe.each(['antdv', 'element-plus'] as const)('%s toolbar', (preset) => {
     await button(overlay('dialog'), 'Reset').trigger('click')
     expect(wrapper.emitted('reset')).toEqual([[]])
     expect(wrapper.emitted('update:size')).toHaveLength(1)
+  })
+
+  it.each([
+    ['Density', 'menu'],
+    ['Column settings', 'dialog'],
+  ] as const)('keeps the %s tooltip hidden after closing its panel', async (label, role) => {
+    vi.useFakeTimers()
+    const { wrapper } = create(preset)
+    const control = button(wrapper, label)
+    const tooltipTrigger = new DOMWrapper(control.element.parentElement!)
+
+    await tooltipTrigger.trigger('mouseenter')
+    await vi.advanceTimersByTimeAsync(100)
+    expect(document.querySelector('[role="tooltip"]')?.textContent).toBe(label)
+
+    await control.trigger('click')
+    expect(document.querySelector(`[role="${role}"]`)).not.toBeNull()
+    expect(document.querySelector('[role="tooltip"]')).toBeNull()
+    await tooltipTrigger.trigger('mouseleave')
+
+    if (role === 'menu') await button(overlay(role), 'Compact').trigger('click')
+    else await overlay(role).trigger('keydown', { key: 'Escape' })
+    await vi.advanceTimersByTimeAsync(100)
+    expect(document.querySelector(`[role="${role}"]`)).toBeNull()
+    expect(document.querySelector('[role="tooltip"]')).toBeNull()
+
+    await tooltipTrigger.trigger('mouseenter')
+    await vi.advanceTimersByTimeAsync(100)
+    expect(document.querySelector('[role="tooltip"]')?.textContent).toBe(label)
+    await tooltipTrigger.trigger('mouseleave')
+    await vi.advanceTimersByTimeAsync(100)
+    expect(document.querySelector('[role="tooltip"]')).toBeNull()
   })
 
   it('hides column settings when columns are omitted and follows the table default density', async () => {
