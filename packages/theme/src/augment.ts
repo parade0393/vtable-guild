@@ -11,6 +11,8 @@ import type { InputThemeConfig } from './input'
 import type { TooltipThemeConfig } from './tooltip'
 import type { ScrollbarThemeConfig } from './scrollbar'
 import type { PaginationThemeConfig } from './pagination'
+import type { ColumnSettingsThemeConfig } from './column-settings'
+import type { ToolbarThemeConfig } from './toolbar'
 
 declare module '@vtable-guild/core' {
   interface VTableGuildThemeOverridesMap {
@@ -22,5 +24,7 @@ declare module '@vtable-guild/core' {
     tooltip: ThemeOverrideConfig<TooltipThemeConfig>
     scrollbar: ThemeOverrideConfig<ScrollbarThemeConfig>
     pagination: ThemeOverrideConfig<PaginationThemeConfig>
+    columnSettings: ThemeOverrideConfig<ColumnSettingsThemeConfig>
+    toolbar: ThemeOverrideConfig<ToolbarThemeConfig>
   }
 }

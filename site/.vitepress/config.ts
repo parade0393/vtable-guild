@@ -42,6 +42,7 @@ const zhTheme = {
           { text: '虚拟滚动', link: '/guide/virtualization' },
           { text: '列宽拖拽', link: '/guide/column-resize' },
           { text: '列显示与列顺序', link: '/guide/column-display' },
+          { text: '工具栏与业务扩展', link: '/guide/toolbar' },
           { text: '行拖拽排序', link: '/guide/row-drag-sort' },
           { text: '多级表头与合并', link: '/guide/grouped-and-merged-cells' },
           { text: '标题与摘要行', link: '/guide/title-footer-summary' },

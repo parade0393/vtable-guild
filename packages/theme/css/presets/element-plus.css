@@ -12,6 +12,13 @@
  */
 
 [data-vtg-preset='element-plus'] {
+  --vtg-column-settings-width: 280px;
+  --vtg-toolbar-title-font-size: 16px;
+  --vtg-toolbar-title-font-weight: 500;
+  --vtg-column-settings-radius: 4px;
+  --vtg-column-settings-icon-size: 16px;
+  --vtg-column-settings-z: 2000;
+  --vtg-column-settings-shadow: var(--vtg-pagination-popup-shadow);
   --vtg-pagination-size: 32px;
   --vtg-pagination-size-sm: 24px;
   --vtg-pagination-font-size: 14px;

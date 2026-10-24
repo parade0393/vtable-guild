@@ -20,6 +20,8 @@ import type {
   TooltipThemeConfig,
   ScrollbarThemeConfig,
   PaginationThemeConfig,
+  ColumnSettingsThemeConfig,
+  ToolbarThemeConfig,
 } from '@vtable-guild/theme'
 
 declare module '../../core/src/index' {
@@ -32,5 +34,7 @@ declare module '../../core/src/index' {
     tooltip: ThemeOverrideConfig<TooltipThemeConfig>
     scrollbar: ThemeOverrideConfig<ScrollbarThemeConfig>
     pagination: ThemeOverrideConfig<PaginationThemeConfig>
+    columnSettings: ThemeOverrideConfig<ColumnSettingsThemeConfig>
+    toolbar: ThemeOverrideConfig<ToolbarThemeConfig>
   }
 }

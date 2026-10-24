@@ -11,6 +11,8 @@
 ```ts
 import {
   VTable,
+  VTableToolbar,
+  VTableColumnSettings,
   VTableSummary,
   EXPAND_COLUMN,
   SELECTION_COLUMN,
@@ -19,6 +21,14 @@ import {
   type Expandable,
 } from '@vtable-guild/vtable-guild'
 ```
+
+## 工具栏与列设置
+
+`VTableToolbar` 是独立组件，放进 `VTable` 的 `#title` 即可组合使用。与表格共享 `v-model:columns`、`v-model:size`；默认开启刷新、密度和列设置，全屏通过 `options.fullScreen` 与 `fullscreenTarget` 启用。刷新仅发出 `reload`，数据请求与 `loading` 由业务管理。
+
+`#actions` 添加导出、新增等业务按钮；`#settings` 完全替换内置工具；`options: false` 只关闭内置工具，保留业务插槽。完整 props、事件、插槽和可运行导出示例见 [工具栏与业务扩展](/guide/toolbar)。
+
+只需要密度和列显隐时可单独使用 `VTableColumnSettings`，支持 `options.density` / `options.setting` 开关和 `#columnLabel`。重置只恢复初始列显隐。面板不提供列拖拽或固定列编辑，详见 [列显示与列顺序](/guide/column-display)。
 
 ## VTable Props
 

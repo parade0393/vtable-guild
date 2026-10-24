@@ -5,7 +5,6 @@ import {
   VTableSummary,
   VTableSummaryCell,
   VTABLE_GUILD_INJECTION_KEY,
-  paginationEnUS,
 } from '@vtable-guild/vtable-guild'
 import type * as Public from '@vtable-guild/vtable-guild'
 import type * as Docs from './config'
@@ -19,6 +18,9 @@ type PropInputs<T> = { -readonly [K in keyof T]: T[K] }
 /** 所有手工声明都对比推荐包入口，而不是内部源码路径。 */
 export type ConfigDeclarationContracts = [
   Assert<Equal<Docs.ThemeConfig, Public.ThemeConfig>>,
+  Assert<Equal<Docs.ToolbarSlots, Public.ToolbarSlots>>,
+  Assert<Equal<Docs.ToolbarThemeConfig, Public.ToolbarThemeConfig>>,
+  Assert<Equal<Docs.VTableGuildToolbarLocale, Public.VTableGuildToolbarLocale>>,
   Assert<Equal<Docs.SlotProps<Docs.TableThemeConfig>, Public.SlotProps<Public.TableThemeConfig>>>,
   Assert<
     Equal<Docs.DeepPartial<Docs.VTableGuildLocale>, Public.DeepPartial<Public.VTableGuildLocale>>
@@ -42,6 +44,9 @@ export type ConfigDeclarationContracts = [
   Assert<Equal<Docs.ScrollbarThemeConfig, Public.ScrollbarThemeConfig>>,
   Assert<Equal<Docs.PaginationSlots, Public.PaginationSlots>>,
   Assert<Equal<Docs.PaginationThemeConfig, Public.PaginationThemeConfig>>,
+  Assert<Equal<Docs.ColumnSettingsThemeConfig, Public.ColumnSettingsThemeConfig>>,
+  Assert<Equal<Docs.ColumnSettingsSlots, Public.ColumnSettingsSlots>>,
+  Assert<Equal<Docs.VTableGuildColumnSettingsLocale, Public.VTableGuildColumnSettingsLocale>>,
   Assert<Equal<Docs.VTableGuildThemeOverridesMap, Public.VTableGuildThemeOverridesMap>>,
   Assert<Equal<Docs.VTableGuildThemeOverrides, Public.VTableGuildThemeOverrides>>,
   Assert<
@@ -158,7 +163,9 @@ export const pluginOptions: Public.VTableGuildOptions = {
   locale: 'en-US',
   localeOverrides: {
     table: { empty: { text: 'No results' } },
-    pagination: { ...paginationEnUS, page: 'Page' },
+    pagination: { page: 'Page' },
+    columnSettings: { reset: 'Restore columns' },
+    toolbar: { reload: 'Refresh rows' },
   },
 }
 

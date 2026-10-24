@@ -9,6 +9,8 @@
 - `summary`
   和当前数据直接相关的汇总行
 
+`title` 也可以放入 `VTableToolbar`，组合标题、刷新、密度、列设置和业务按钮。通过工具栏的 `#actions` 加入导出等操作，完整示例见 [工具栏与业务扩展](/guide/toolbar)。外层 `VTable #title` 提供 `{ data }`，内层工具栏插槽提供工具状态与方法，两者作用域不同。
+
 ## 在线示例
 
 <Demo src="title-footer-summary/basic">

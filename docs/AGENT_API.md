@@ -11,6 +11,8 @@
 ```ts
 import {
   VTable,
+  VTableToolbar, // 可选工具栏，通过 actions 插槽添加导出等业务按钮
+  VTableColumnSettings, // 可单独使用的密度与列显隐面板
   VTableSummary, // 摘要行容器，子组件 VTableSummary.Row / VTableSummary.Cell
   EXPAND_COLUMN, // 展开列占位常量，放进 columns
   SELECTION_COLUMN, // 选择列占位常量，放进 columns
@@ -19,6 +21,9 @@ import {
   SELECTION_NONE, // 批量选择菜单哨兵
   type TableColumnsType,
   type TableProps,
+  type TableColumnSettingsSize,
+  type TableToolbarOptions,
+  type TableToolbarSlotProps,
   type RowSelection,
   type Expandable,
   type Key, // string | number
@@ -77,10 +82,42 @@ const dataSource: UserRow[] = [
 </template>
 ```
 
+## 可选工具栏与业务扩展
+
+`VTableToolbar` 放在 `VTable` 的 `#title` 中，与表格共享受控 `columns`、`size`。以下片段中 `columns` / `size` 应声明为 `ref`；`dataSource`、`loading`、`reloadRows` 和 `exportRows` 由业务提供，UI 按钮使用项目已安装的组件库。
+
+```vue
+<VTable :columns="columns" :data-source="dataSource" :size="size" row-key="key">
+  <template #title="{ data }">
+    <VTableToolbar
+      v-model:columns="columns"
+      v-model:size="size"
+      title="用户列表"
+      :loading="loading"
+      @reload="reloadRows"
+    >
+      <template #actions="{ disabled }">
+        <a-button :disabled="disabled" @click="exportRows(data, columns)">导出</a-button>
+      </template>
+    </VTableToolbar>
+  </template>
+</VTable>
+```
+
+- `options` 默认开启 `reload`、`density`、`setting`；`fullScreen` 默认关闭。`options: false` 关闭内置工具，保留业务插槽；未传 `columns` 时隐藏列设置。
+- `#actions` 追加业务按钮；`#settings` 完全替换内置工具。`title` / `actions` / `settings` 共享 `TableToolbarSlotProps`，包含 `columns`、`size`、`loading`、`disabled`、`fullscreen`、`fullscreenAvailable`、`reload()`、`toggleFullscreen()`；`#columnLabel` 自定义列选项标签。
+- 刷新只发出 `reload`，业务管理请求与 `loading`。`disabled` 禁用内置操作，自定义按钮按插槽状态设置禁用规则。
+- 全屏需开启 `options.fullScreen` 并传 `fullscreenTarget: () => HTMLElement | null | undefined`。浏览器确认后触发 `fullscreenChange`；失败触发 `fullscreenError`。列设置浮层默认挂到全屏目标内。
+- `VTableColumnSettings` 可单独使用，必传受控 `v-model:columns`，可选 `v-model:size`，用 `options.density` / `options.setting` 分别控制两个入口。两者的 `reset` 只恢复初始列显隐；不编辑列顺序或固定列，也不重置列宽、密度、排序或筛选。
+- 全局样式使用 `theme.toolbar.slots` / `theme.columnSettings.slots`，实例使用各自 `ui`。语言使用 `localeOverrides.toolbar` / `localeOverrides.columnSettings`，支持仅覆盖少量字段。
+
+完整用法和类型见[工具栏与业务扩展](../site/guide/toolbar.md)、[列显示与列顺序](../site/guide/column-display.md)。
+
 ## 不支持的功能 / 常见幻觉点（生成代码前必读）
 
 | 幻觉                                                            | 事实                                                                                                                                                                            |
 | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 直接给 `VTable` 传 `toolbar`、`export` 或 `toolBarRender`       | 工具栏是独立的 `VTableToolbar`，使用 `#actions` 扩展导出等业务功能；不自动请求数据或生成导出文件。                                                                              |
 | 认为分页默认开启，或只能外接 `<a-pagination>`                   | 内置分页默认关闭，传 `pagination` 配置对象启用；支持本地与远程分页，保持三参数 change，状态从 extra.pagination 读取。                                                           |
 | `change` 事件带 `pagination` 参数                               | `change(filters, sorter, extra)` 只有三个参数，`extra.action` 支持 `'sort' \| 'filter' \| 'select' \| 'paginate'`；启用分页时提供 extra.pagination。                            |
 | `scroll.y` 传 `'50%'` / `'30vh'`                                | `virtual` 模式支持正数、`'auto'` 或正数 px 字符串；相对单位会告警并回退到 400px。非虚拟模式可按 CSS `max-height` 传入其他字符串。                                               |

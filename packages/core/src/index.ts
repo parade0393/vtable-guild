@@ -32,6 +32,8 @@ export type {
   VTableGuildCssMode,
   VTableGuildLocale,
   VTableGuildPaginationLocale,
+  VTableGuildColumnSettingsLocale,
+  VTableGuildToolbarLocale,
   VTableGuildTableLocale,
   VTableGuildTableHeaderLocale,
   VTableGuildTableFilterDropdownLocale,

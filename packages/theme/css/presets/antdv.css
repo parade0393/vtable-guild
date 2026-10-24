@@ -9,6 +9,13 @@
 
 :where(:root),
 [data-vtg-preset='antdv'] {
+  --vtg-column-settings-width: 224px;
+  --vtg-toolbar-title-font-size: 16px;
+  --vtg-toolbar-title-font-weight: 500;
+  --vtg-column-settings-radius: 8px;
+  --vtg-column-settings-icon-size: 16px;
+  --vtg-column-settings-z: 1050;
+  --vtg-column-settings-shadow: var(--vtg-pagination-popup-shadow);
   --vtg-pagination-size: 32px;
   --vtg-pagination-size-sm: 24px;
   --vtg-pagination-gap: 8px;

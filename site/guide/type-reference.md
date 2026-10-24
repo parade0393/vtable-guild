@@ -313,6 +313,22 @@ const handleChange: NonNullable<VTableEventProps<UserRow>['onChange']> = (
 
 <<< @/.vitepress/type-declarations/config.ts#VTableSummaryCellProps
 
+## 工具栏与列设置类型
+
+`TableToolbarProps`、`TableToolbarOptions`、`TableToolbarSlotProps`、`TableToolbarSlots` 对应独立组件 `VTableToolbar`，不是 `VTable` 的 props 或插槽。完整行为和导出示例见 [工具栏与业务扩展](/guide/toolbar)。
+
+<<< @/.vitepress/type-declarations/toolbar.ts
+
+`VTableColumnSettings` 的受控列配置、密度和扩展标签类型：
+
+<<< @/.vitepress/type-declarations/column-settings.ts#TableColumnSettingsSize
+
+<<< @/.vitepress/type-declarations/column-settings.ts#TableColumnSettingsOptions
+
+<<< @/.vitepress/type-declarations/column-settings.ts#TableColumnSettingsProps
+
+<<< @/.vitepress/type-declarations/column-settings.ts#TableColumnSettingsSlots
+
 ## 主题与插件类型
 
 ### ThemePresetName
@@ -373,6 +389,10 @@ const handleChange: NonNullable<VTableEventProps<UserRow>['onChange']> = (
 
 <<< @/.vitepress/type-declarations/config.ts#VTableGuildPaginationLocale
 
+<<< @/.vitepress/type-declarations/config.ts#VTableGuildColumnSettingsLocale
+
+<<< @/.vitepress/type-declarations/config.ts#VTableGuildToolbarLocale
+
 <<< @/.vitepress/type-declarations/config.ts#PaginationLocaleConstants
 
 ### DeepPartial
@@ -414,6 +434,10 @@ const handleChange: NonNullable<VTableEventProps<UserRow>['onChange']> = (
 <<< @/.vitepress/type-declarations/config.ts#PaginationSlots
 
 <<< @/.vitepress/type-declarations/config.ts#PaginationThemeConfig
+
+<<< @/.vitepress/type-declarations/config.ts#ColumnSettingsThemeTypes
+
+<<< @/.vitepress/type-declarations/config.ts#ToolbarThemeTypes
 
 ### VTableGuildThemeOverrides
 

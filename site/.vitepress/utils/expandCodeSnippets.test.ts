@@ -37,6 +37,7 @@ describe('plain-text documentation snippets', () => {
     'guide/sorting',
     'guide/theme-overrides',
     'guide/title-footer-summary',
+    'guide/toolbar',
     'guide/tree-table',
     'guide/ui-slots-reference',
     'guide/virtualization',
@@ -96,6 +97,16 @@ describe('plain-text documentation snippets', () => {
     expect(output).toContain('filters: TableFiltersInfo')
     expect(output).not.toContain('<<<')
     expect(output).not.toContain('export interface RowSelection')
+  })
+
+  it('includes toolbar extensions and their dependent declarations in plain text', () => {
+    const markdown = readFileSync(join(siteRoot, 'guide/toolbar.md'), 'utf8')
+    const output = expandCodeSnippets(markdown, siteRoot)
+    expect(output).toContain('<template #actions')
+    expect(output).toContain('export interface TableToolbarSlotProps')
+    expect(output).toContain('export interface TableColumnSettingsOptions')
+    expect(output).toContain('export interface VTableGuildToolbarLocale')
+    expect(output).not.toContain('<<<')
   })
 
   it('renders the same isolated region through the actual VitePress renderer', async () => {

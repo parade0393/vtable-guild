@@ -93,7 +93,7 @@ https://parade0393.github.io/vtable-guild/llms.txt
 
 ## 它是怎样生成的？
 
-站点构建结束时会扫描 `site/` 下的 Markdown 页面，并把页面正文整理到构建产物目录：
+站点构建结束时会收录首页、`site/guide/`、`site/comparison/`、`site/en/` 顶层页面及 `site/en/guide/` 下的 Markdown。生成器展开页面引用的 Vue 示例和类型声明，把完整正文写入构建产物；`docs/` 维护文档不合并到全文中。
 
 ```bash
 pnpm --filter @vtable-guild/site build
@@ -114,6 +114,7 @@ site/.vitepress/dist/llms-full.txt
 2. 再读 `llms-full.txt` 或具体页面，确认真实 API 和限制。
 3. 生成代码时显式配置稳定的 `rowKey`，不要凭经验补写未记录的 Table API。
 4. 涉及虚拟滚动、树形数据、展开行或 summary 时，同时检查相关功能页的边界说明。
+5. 添加导出、新增等业务操作时，先读 [工具栏与业务扩展](/guide/toolbar)，通过 `VTableToolbar` 的 `#actions` 扩展；不要假设存在内置导出配置。
 
 <div class="llms-callout">
   <strong>提示</strong>

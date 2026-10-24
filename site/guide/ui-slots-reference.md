@@ -306,6 +306,40 @@ app.use(
 | `hoverable` | `true` / `false`             | `true`  | `td`，行 hover 背景                                           |
 | `loading`   | `true` / `false`             | 无      | `table`，半透明和禁交互状态                                   |
 
+## 工具栏与列设置的主题 slots
+
+这两个组件有独立的主题配置：全局使用 `theme.toolbar.slots` / `theme.columnSettings.slots`，实例使用各自的 `ui`。`VTableToolbar` 内部列设置的实例样式通过 `columnSettings.ui` 传入；单独使用 `VTableColumnSettings` 时直接传 `ui`。
+
+### VTableToolbar
+
+| Slot          | 说明                          |
+| ------------- | ----------------------------- |
+| `root`        | 工具栏根容器与响应式布局      |
+| `title`       | 标题区                        |
+| `right`       | 业务操作和内置工具的包裹层    |
+| `actions`     | `#actions` 业务按钮容器       |
+| `settings`    | 内置工具或 `#settings` 的容器 |
+| `action`      | 刷新、全屏等内置按钮          |
+| `icon`        | 内置工具图标                  |
+| `loadingIcon` | 刷新加载动画                  |
+
+### VTableColumnSettings
+
+| Slot                              | 说明                         |
+| --------------------------------- | ---------------------------- |
+| `root`                            | 密度与列设置触发器容器       |
+| `trigger` / `densityTrigger`      | 列设置 / 密度按钮            |
+| `popup` / `densityPopup`          | 列设置 / 密度浮层            |
+| `header` / `heading` / `reset`    | 面板头部、全选标题和重置按钮 |
+| `density`                         | 密度菜单选项                 |
+| `columns` / `children` / `item`   | 列列表、分组子列表和列表项   |
+| `label` / `labelText`             | 列选项标签与文字             |
+| `checkboxControl` / `checkbox`    | 复选框容器与输入元素         |
+| `checkMark` / `indeterminateMark` | 选中和半选标记               |
+| `empty`                           | 无可配置列时的提示           |
+
+主题 slot 用来改样式；Vue 内容插槽 `#actions`、`#settings` 和 `#columnLabel` 用来扩展内容，属于工具栏或列设置组件。完整示例见 [工具栏与业务扩展](/guide/toolbar)。
+
 ## 进一步阅读
 
 - [三层主题覆盖](/guide/theme-overrides)
@@ -324,6 +358,10 @@ app.use(
 <<< @/.vitepress/type-declarations/config.ts#TableVariantProps
 
 <<< @/.vitepress/type-declarations/config.ts#TableThemeConfig
+
+<<< @/.vitepress/type-declarations/config.ts#ToolbarThemeTypes
+
+<<< @/.vitepress/type-declarations/config.ts#ColumnSettingsThemeTypes
 
 <<< @/.vitepress/type-declarations/config.ts#SlotProps
 

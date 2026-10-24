@@ -12,6 +12,8 @@ import type { InputThemeConfig } from './input'
 import type { TooltipThemeConfig } from './tooltip'
 import type { ScrollbarThemeConfig } from './scrollbar'
 import type { PaginationThemeConfig } from './pagination'
+import type { ColumnSettingsThemeConfig } from './column-settings'
+import type { ToolbarThemeConfig } from './toolbar'
 
 declare module '@vtable-guild/core' {
   interface VTableGuildThemeOverridesMap {
@@ -23,6 +25,8 @@ declare module '@vtable-guild/core' {
     tooltip: ThemeOverrideConfig<TooltipThemeConfig>
     scrollbar: ThemeOverrideConfig<ScrollbarThemeConfig>
     pagination: ThemeOverrideConfig<PaginationThemeConfig>
+    columnSettings: ThemeOverrideConfig<ColumnSettingsThemeConfig>
+    toolbar: ThemeOverrideConfig<ToolbarThemeConfig>
   }
 }
 
@@ -44,6 +48,22 @@ export {
   paginationEnUS,
 } from './pagination'
 export type { PaginationThemeConfig, PaginationSlots } from './pagination'
+export {
+  columnSettingsTheme,
+  elementPlusColumnSettingsTheme,
+  resolveColumnSettingsThemePreset,
+  columnSettingsZhCN,
+  columnSettingsEnUS,
+} from './column-settings'
+export type { ColumnSettingsThemeConfig, ColumnSettingsSlots } from './column-settings'
+export {
+  toolbarTheme,
+  elementPlusToolbarTheme,
+  resolveToolbarThemePreset,
+  toolbarZhCN,
+  toolbarEnUS,
+} from './toolbar'
+export type { ToolbarThemeConfig, ToolbarSlots } from './toolbar'
 
 // ---------- 预设解析 ----------
 export {

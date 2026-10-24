@@ -142,3 +142,19 @@ antdv 预设不声明这个变量，走 `264px` 回退值；element-plus 预设�
 双预设支持 `--vtg-pagination-size`、`size-sm`、`gap`、`margin`、`radius`、`input-width`、`border`、`bg`、`active-bg`、`active-color`、`active-border`、`popup-z`、`popup-shadow`（均带 `--vtg-pagination-` 前缀）。颜色引用语义 tokens，自动跟随暗色模式。
 
 Element Plus 预设另提供 `font-size`、`font-size-sm`、`page-gap`、`control-gap`、`select-width`、`select-width-sm` 和 `popup-padding`，分别控制分页字号、页码与跳页间距、选择器宽度及弹层留白。
+
+## 工具栏与列设置 tokens
+
+两套预设都支持下列变量。颜色、字体族、正文大小与复选框沿用已有语义和组件 tokens，可配合 `theme.toolbar.slots`、`theme.columnSettings.slots` 或实例 `ui` 调整。
+
+| 变量名                            | 作用                   | antdv 默认值                         | element-plus 默认值                  |
+| --------------------------------- | ---------------------- | ------------------------------------ | ------------------------------------ |
+| `--vtg-toolbar-title-font-size`   | 工具栏标题字号         | `16px`                               | `16px`                               |
+| `--vtg-toolbar-title-font-weight` | 工具栏标题字重         | `500`                                | `500`                                |
+| `--vtg-column-settings-width`     | 列设置面板宽度         | `224px`                              | `280px`                              |
+| `--vtg-column-settings-radius`    | 列设置与密度浮层圆角   | `8px`                                | `4px`                                |
+| `--vtg-column-settings-icon-size` | 工具栏与列设置图标大小 | `16px`                               | `16px`                               |
+| `--vtg-column-settings-z`         | 列设置与密度浮层层级   | `1050`                               | `2000`                               |
+| `--vtg-column-settings-shadow`    | 浮层阴影               | `var(--vtg-pagination-popup-shadow)` | `var(--vtg-pagination-popup-shadow)` |
+
+业务导出、新增等按钮由项目 UI 库提供，使用该 UI 库的样式配置。工具栏负责按钮区布局，使用方式见 [工具栏与业务扩展](/guide/toolbar)。

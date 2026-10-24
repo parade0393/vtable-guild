@@ -10,6 +10,21 @@ import _VTableSummary from './components/VTableSummary'
 import _VTableSummaryRow from './components/VTableSummaryRow'
 import _VTableSummaryCell from './components/VTableSummaryCell'
 
+export { default as VTableColumnSettings } from './components/VTableColumnSettings.vue'
+export type {
+  TableColumnSettingsProps,
+  TableColumnSettingsSize,
+  TableColumnSettingsSlots,
+  TableColumnSettingsOptions,
+} from './types/column-settings'
+export { default as VTableToolbar } from './components/VTableToolbar.vue'
+export type {
+  TableToolbarProps,
+  TableToolbarOptions,
+  TableToolbarSlots,
+  TableToolbarSlotProps,
+} from './types/toolbar'
+
 const VTable = Object.assign(_VTable, {
   SELECTION_ALL,
   SELECTION_INVERT,

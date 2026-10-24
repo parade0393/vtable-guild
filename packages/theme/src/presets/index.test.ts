@@ -15,6 +15,9 @@ describe('theme presets', () => {
       expect(preset.input?.slots.root).toBeTruthy()
       expect(preset.tooltip?.slots.content).toBeTruthy()
       expect(preset.scrollbar?.slots.root).toBeTruthy()
+      expect(preset.toolbar?.slots.actions).toBeTruthy()
+      expect(preset.locales['zh-CN'].toolbar?.reload).toBe('刷新')
+      expect(preset.locales['en-US'].toolbar?.fullScreen).toBe('Full screen')
       expect(preset.table.defaultVariants?.size).toBeTruthy()
       // scroll.y: 'auto' 自动高度布局 slots 必须两套预设同时具备。
       expect(preset.table.slots.rootAutoHeight).toContain('flex-col')

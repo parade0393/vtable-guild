@@ -24,6 +24,8 @@
   [展开行](/guide/expandable-rows)、[树形表格](/guide/tree-table)
 - 大表格体验：
   [固定列](/guide/fixed-columns)、[虚拟滚动](/guide/virtualization)、[列宽拖拽](/guide/column-resize)
+- 展示与操作：
+  [列显示与列顺序](/guide/column-display)、[工具栏与业务扩展](/guide/toolbar)
 - 结构扩展：
   [多级表头与合并](/guide/grouped-and-merged-cells)、[标题与摘要行](/guide/title-footer-summary)、[自定义行与插槽](/guide/api-wiring-and-slots)、[编辑](/guide/editing)
 
