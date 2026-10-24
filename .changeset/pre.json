@@ -1,0 +1,16 @@
+{
+  "mode": "pre",
+  "tag": "alpha",
+  "initialVersions": {
+    "@vtable-guild/core": "2.0.3",
+    "@vtable-guild/icons": "1.0.2",
+    "@vtable-guild/table": "2.0.3",
+    "@vtable-guild/theme": "2.0.3",
+    "@vtable-guild/vtable-guild": "2.8.0",
+    "@vtable-guild/perf": "0.0.1",
+    "@vtable-guild/play": "0.0.0",
+    "@vtable-guild/playground": "0.0.0",
+    "@vtable-guild/site": "0.0.0"
+  },
+  "changesets": []
+}
