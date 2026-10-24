@@ -18,6 +18,22 @@ export type {
   TableColumnSettingsOptions,
 } from './types/column-settings'
 export { default as VTableToolbar } from './components/VTableToolbar.vue'
+export { default as VTableSelectionAlert } from './components/VTableSelectionAlert.vue'
+export type {
+  TableSelectionAlertProps,
+  TableSelectionAlertSlotProps,
+  TableSelectionAlertSlots,
+} from './types/selection-alert'
+export type { TableToolbarSearchConfig } from './types/toolbar'
+export { useTableRequest } from './composables/useTableRequest'
+export type * from './types/request'
+export { useColumnState } from './composables/useColumnState'
+export type {
+  TableColumnState,
+  TableColumnStateValue,
+  UseColumnStateOptions,
+} from './composables/useColumnState'
+export type * from './types/presentation'
 export type {
   TableToolbarProps,
   TableToolbarOptions,

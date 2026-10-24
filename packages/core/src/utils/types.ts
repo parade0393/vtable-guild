@@ -154,6 +154,7 @@ export interface VTableGuildTableSelectionLocale {
 }
 
 export interface VTableGuildTableLocale {
+  cell?: { copy: string; copied: string; copyFailed: string }
   header: VTableGuildTableHeaderLocale
   filterDropdown: VTableGuildTableFilterDropdownLocale
   empty: VTableGuildTableEmptyLocale
@@ -166,9 +167,19 @@ export interface VTableGuildLocale {
   pagination?: VTableGuildPaginationLocale
   columnSettings?: VTableGuildColumnSettingsLocale
   toolbar?: VTableGuildToolbarLocale
+  selectionAlert?: VTableGuildSelectionAlertLocale
+}
+
+export interface VTableGuildSelectionAlertLocale {
+  label: string
+  selected: string
+  clear: string
 }
 
 export interface VTableGuildToolbarLocale {
+  searchPlaceholder?: string
+  search?: string
+  clearSearch?: string
   label: string
   reload: string
   fullScreen: string
@@ -176,6 +187,12 @@ export interface VTableGuildToolbarLocale {
 }
 
 export interface VTableGuildColumnSettingsLocale {
+  fixed?: string
+  fixedLeft?: string
+  fixedRight?: string
+  unfixed?: string
+  mixed?: string
+  move?: string
   title: string
   reset: string
   density: string

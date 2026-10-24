@@ -10,6 +10,7 @@ import type {
   paginationTheme,
   columnSettingsTheme,
   toolbarTheme,
+  selectionAlertTheme,
 } from '@vtable-guild/vtable-guild'
 import type { AlignType, SummaryFixed } from './table'
 
@@ -132,6 +133,10 @@ export type TableSlots =
   | 'sortAreaOuter'
   | 'sortAreaWrapper'
   | 'sortAreaTitle'
+  | 'headerHelp'
+  | 'cellContent'
+  | 'copyButton'
+  | 'cellStatus'
   | 'filterIconWrapper'
   | 'filterIcon'
   | 'filterDropdown'
@@ -285,6 +290,11 @@ export type ToolbarThemeConfig = typeof toolbarTheme
 export type ToolbarSlots = keyof ToolbarThemeConfig['slots']
 // #endregion ToolbarThemeTypes
 
+// #region SelectionAlertThemeTypes
+export type SelectionAlertThemeConfig = typeof selectionAlertTheme
+export type SelectionAlertSlots = keyof SelectionAlertThemeConfig['slots']
+// #endregion SelectionAlertThemeTypes
+
 // #region VTableGuildThemeOverridesMap
 export interface VTableGuildThemeOverridesMap {
   table: ThemeOverrideConfig<TableThemeConfig>
@@ -297,6 +307,7 @@ export interface VTableGuildThemeOverridesMap {
   pagination: ThemeOverrideConfig<PaginationThemeConfig>
   columnSettings: ThemeOverrideConfig<ColumnSettingsThemeConfig>
   toolbar: ThemeOverrideConfig<ToolbarThemeConfig>
+  selectionAlert: ThemeOverrideConfig<SelectionAlertThemeConfig>
 }
 // #endregion VTableGuildThemeOverridesMap
 
@@ -359,6 +370,7 @@ export interface VTableGuildTableSelectionLocale {
 
 // #region VTableGuildTableLocale
 export interface VTableGuildTableLocale {
+  cell?: { copy: string; copied: string; copyFailed: string }
   header: VTableGuildTableHeaderLocale
   filterDropdown: VTableGuildTableFilterDropdownLocale
   empty: VTableGuildTableEmptyLocale
@@ -400,11 +412,18 @@ export interface VTableGuildLocale {
   pagination?: VTableGuildPaginationLocale
   columnSettings?: VTableGuildColumnSettingsLocale
   toolbar?: VTableGuildToolbarLocale
+  selectionAlert?: VTableGuildSelectionAlertLocale
 }
 // #endregion VTableGuildLocale
 
 // #region VTableGuildColumnSettingsLocale
 export interface VTableGuildColumnSettingsLocale {
+  fixed?: string
+  fixedLeft?: string
+  fixedRight?: string
+  unfixed?: string
+  mixed?: string
+  move?: string
   title: string
   reset: string
   density: string
@@ -418,12 +437,23 @@ export interface VTableGuildColumnSettingsLocale {
 
 // #region VTableGuildToolbarLocale
 export interface VTableGuildToolbarLocale {
+  searchPlaceholder?: string
+  search?: string
+  clearSearch?: string
   label: string
   reload: string
   fullScreen: string
   exitFullScreen: string
 }
 // #endregion VTableGuildToolbarLocale
+
+// #region VTableGuildSelectionAlertLocale
+export interface VTableGuildSelectionAlertLocale {
+  label: string
+  selected: string
+  clear: string
+}
+// #endregion VTableGuildSelectionAlertLocale
 
 // #region VTableGuildOptions
 export interface VTableGuildOptions {

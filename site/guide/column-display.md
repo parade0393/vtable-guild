@@ -1,6 +1,6 @@
 ---
 title: 列显示与列顺序
-description: 使用 VTableColumnSettings 配置列显隐与表格密度，以及 visible、responsive、columnOrder 的受控行为和扩展方式。
+description: 使用 VTableColumnSettings 配置列显隐、固定与顺序，通过 useColumnState 保存用户偏好。
 ---
 
 # 列显示与列顺序
@@ -13,7 +13,7 @@ description: 使用 VTableColumnSettings 配置列显隐与表格密度，以及
 
 需要同时提供标题、导出按钮、刷新和全屏时，使用可组合的 [VTableToolbar 工具栏](/guide/toolbar)。它复用下方列设置能力，并通过插槽支持业务操作。
 
-`VTableColumnSettings` 提供列显隐、三档密度和重置。交互布局对齐 React ProTable：密度图标打开独立下拉菜单，齿轮图标打开列设置浮层，顶部提供“列展示”全选框与“重置”。它是独立组件，可放进表格的 `title` 插槽或外部工具栏，与表格绑定同一份 `columns`、`size`：
+`VTableColumnSettings` 提供列显隐、固定左右、顶层拖拽换序、三档密度和重置。交互布局对齐 React ProTable：密度图标打开独立下拉菜单，齿轮图标打开列设置浮层，顶部提供“列展示”全选框与“重置”。它是独立组件，可放进表格的 `title` 插槽或外部工具栏，与表格绑定同一份 `columns`、`size`：
 
 <Demo src="column-display/settings">
 
@@ -29,27 +29,65 @@ description: 使用 VTableColumnSettings 配置列显隐与表格密度，以及
 - 重置只恢复组件首次接收到的列显隐，密度独立选择。列宽、顺序、固定状态、排序或筛选均保留。动态新增列以首次出现的显隐为默认，删除的列不会被重新加入。
 - 为列和分组设置稳定、同级唯一的 `key`。未提供时使用 `dataIndex`，再缺省则使用位置；无稳定标识的列重排后不能保证默认值对应原列。跨分组移动视为新列。需要重新建立默认基线时，可改变组件的 Vue `key` 重新挂载。
 - 普通 `title` 用作选项标签；函数式标题不会被面板调用，默认显示 `key` / `dataIndex`。通过 `#columnLabel="{ column }"` 提供易读标签，避免在选项标签内放置交互控件。
-- 首版不调整列顺序和固定位置。键盘可操作按钮与复选框，Escape 关闭并回到入口，Tab 离开面板时关闭。
+- `hideInSetting: true` 让列及其子列不出现在设置面板，也不参与面板全选或重置。它不改变表格中的显示状态。
+- `disable: true` 锁定显隐、固定与顺序；对象形式可分别设置 `checkbox`、`fixed`、`order`。分组中有锁定显隐的子列时，整组不能隐藏，但其他可编辑子列仍可独立调整；组自身禁用显隐时，其子项也不可更改。
+- 固定操作将顶层列或整个分组移到左侧、中央或右侧，并保持固定列处于两端。分组固定会同步所有叶子列；有禁止固定的子列时整组固定操作禁用。
+- 拖动行前的手柄可调整同一固定区域内的顶层顺序，分组整组移动，不允许子列跨组移动。禁用顺序的列是移动边界，其他列不能拖动跨过它；跨固定区域请使用固定操作。选择列、展开列哨兵的位置保留。
+- 键盘可操作现有按钮与复选框，Escape 关闭并回到入口，Tab 离开面板时关闭。
+
+### 固定与顺序
+
+默认显示固定入口和拖拽手柄。`options.fixed: false` 隐藏固定入口，`options.draggable: false` 关闭拖拽。`options.density` 与 `options.setting` 继续分别控制密度和列设置入口。
+
+列设置修改 `columns` 数组顺序，不额外维护 `columnOrder`。绑定表格时请让同一份 `columns` 持有生效顺序；如果同时传入 `columnOrder`，表格仍会按该属性覆盖显示顺序。
+
+现有“重置”只恢复初始显隐，保持顺序、固定与密度不变。需要恢复全部列偏好时，可使用下方 `useColumnState().reset()`。
 
 ### 面板 API
 
-| Prop                | 类型 / 默认值                                     | 说明                                 |
-| ------------------- | ------------------------------------------------- | ------------------------------------ |
-| `columns`           | `TableColumnsType<TRecord>`，必传                 | 受控列配置                           |
-| `size`              | `'large' \| 'middle' \| 'small'` / 表格主题默认值 | 与表格共用的密度                     |
-| `disabled`          | `boolean` / `false`                               | 禁用入口并关闭已打开面板             |
-| `options`           | `{ density?: boolean; setting?: boolean }`        | 分别控制密度与列设置入口，默认都开启 |
-| `getPopupContainer` | `(trigger: HTMLElement) => HTMLElement`           | 默认挂载到 `document.body`           |
-| `locale`            | `Partial<VTableGuildColumnSettingsLocale>`        | 实例文案覆盖                         |
-| `ui` / `class`      | slot class 映射 / `string`                        | 实例主题覆盖 / 根元素 class          |
+| Prop                | 类型 / 默认值                                                                    | 说明                                         |
+| ------------------- | -------------------------------------------------------------------------------- | -------------------------------------------- |
+| `columns`           | `TableColumnsType<TRecord>`，必传                                                | 受控列配置                                   |
+| `size`              | `'large' \| 'middle' \| 'small'` / 表格主题默认值                                | 与表格共用的密度                             |
+| `disabled`          | `boolean` / `false`                                                              | 禁用入口并关闭已打开面板                     |
+| `options`           | `{ density?: boolean; setting?: boolean; fixed?: boolean; draggable?: boolean }` | 分别控制密度、列设置、固定与拖拽，默认都开启 |
+| `getPopupContainer` | `(trigger: HTMLElement) => HTMLElement`                                          | 默认挂载到 `document.body`                   |
+| `locale`            | `Partial<VTableGuildColumnSettingsLocale>`                                       | 实例文案覆盖                                 |
+| `ui` / `class`      | slot class 映射 / `string`                                                       | 实例主题覆盖 / 根元素 class                  |
 
 事件：`update:columns(columns)`、`update:size(size)`、`reset()`。重置依次发出列更新和 `reset`；选择密度后关闭菜单，选中项保持受控。面板本身不会触发表格的 `change` 事件或发起请求。
 
-全局样式使用 `theme.columnSettings.slots`，实例使用 `ui`。两套预设共享 `root`、`trigger`、`densityTrigger`、`popup`、`densityPopup`、`header`、`heading`、`reset`、`density`、`columns`、`children`、`item`、`label`、`checkboxControl`、`checkbox`、`checkMark`、`indeterminateMark`、`labelText`、`empty`。可通过 `--vtg-column-settings-width`、`--vtg-column-settings-radius`、`--vtg-column-settings-icon-size`、`--vtg-column-settings-shadow`、`--vtg-column-settings-z` 调整图标和弹层。
+全局样式使用 `theme.columnSettings.slots`，实例使用 `ui`。两套预设共享 `root`、`trigger`、`densityTrigger`、`popup`、`densityPopup`、`header`、`heading`、`reset`、`density`、`columns`、`children`、`item`、`label`、`checkboxControl`、`checkbox`、`checkMark`、`indeterminateMark`、`labelText`、`empty`，以及新增的 `row`、`dragHandle`、`pinActions`、`pinAction`、`pinIcon`、`group`、`groupTitle`、`groupColumns`。可通过 `--vtg-column-settings-width`、`--vtg-column-settings-radius`、`--vtg-column-settings-icon-size`、`--vtg-column-settings-pin-icon-size`、`--vtg-column-settings-shadow`、`--vtg-column-settings-z` 调整图标和弹层。
 
 中英文文案跟随全局或 ConfigProvider 的 `locale`，支持 `localeOverrides.columnSettings` 和实例 `locale`。旧语言包无需补字段。
 
 ### 保存用户偏好
+
+`useColumnState` 将列定义与用户偏好组合成可写的 `columns`，可以直接同时绑定 `VTable` 和 `VTableColumnSettings`。它只保存稳定路径、显隐、顶层固定位置和顺序，原列上的 renderer、sorter 等函数始终来自源定义。
+
+<Demo src="column-display/preferences">
+
+<<< @/demos/column-display/preferences.vue
+
+</Demo>
+
+```ts
+const { columns, state, setState, reset, restore, save } = useColumnState(baseColumns, {
+  storageKey: 'members:columns',
+  storageType: 'localStorage',
+  version: 1,
+})
+```
+
+- `baseColumns` 接受数组、ref 或 getter，负责列结构和业务配置。对返回 `columns` 的赋值只记录设置偏好，不回写源列定义。
+- `state` 是生效状态的只读 computed，键为基于列 `key` / `dataIndex` 生成的路径。可将其保存到业务服务，再通过 `defaultValue` 或 `setState` 恢复；不要依赖路径字符串的内部拼接形式。
+- `setState` 替换用户偏好，忽略非法字段。新增列采用其源定义，删除列不会因恢复而重建；同一路径再次出现时重置仍使用首次记录的默认值。
+- `reset` 恢复首次记录的显隐、固定与顺序，以及显式 `defaultValue`；不恢复列宽、密度、排序、筛选和已删除列。它与面板只恢复显隐的 `reset` 含义不同。
+- 配置 `storageKey` 后状态变化自动保存，`save` 可手动触发。组件内在 `onMounted` 恢复存储；服务端不读取浏览器存储。`storageType` 支持 `localStorage` 或 `sessionStorage`，也可传入具有 `getItem / setItem / removeItem` 的 `storage` 适配器。
+- `version` 默认 `1`；存储版本不一致时使用源定义与默认偏好。存储不可用、JSON 错误通过可选 `onError(error)` 报告，不妨碍表格渲染。
+- 锁定规则同样约束恢复后的偏好；更新源定义中的锁定配置后，旧存储不能隐藏或移动受保护的列。
+
+#### 由业务自行保存
 
 持久化由业务选择时机和存储位置。只保存列 key、显隐和密度，不要序列化整个列配置，否则函数式 renderer、排序器等会丢失。例如，平铺列可在父组件里订阅状态：
 

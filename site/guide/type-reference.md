@@ -281,6 +281,13 @@ const handleChange: NonNullable<VTableEventProps<UserRow>['onChange']> = (
 
 <<< @/.vitepress/type-declarations/table.ts#TableProps
 
+### 服务端请求与手动计算
+
+`TableManualConfig` 定义是否跳过本地排序、筛选与分页。`useTableRequest` 的请求函数、选项及返回值具有独立的泛型类型，
+完整用法见[服务端请求管理](/guide/remote-data)。
+
+<<< @/.vitepress/type-declarations/request.ts
+
 ### VTableEventProps
 
 `change`、`resizeColumn` 与 `rowDragEnd` 的完整事件 props 类型。仅监听分页时也要接收三个参数，或改用 `TablePaginationConfig['onChange']`。

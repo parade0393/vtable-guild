@@ -12,6 +12,9 @@ import {
   type SlotsType,
   type VNodeChild,
 } from 'vue'
+import type { TableManualConfig } from '../types/request'
+import type { TableTooltipConfig } from '../types/presentation'
+import { isManual } from '../utils/manual'
 import {
   cn,
   devWarn,
@@ -177,6 +180,8 @@ export default defineComponent({
       type: [Boolean, Object] as PropType<false | TablePaginationConfig>,
       default: false,
     },
+    manual: { type: [Boolean, Object] as PropType<boolean | TableManualConfig>, default: false },
+    columnEmptyText: { type: null as unknown as PropType<VNodeChild | false>, default: false },
     dataSource: { type: Array as PropType<TableRecord[]>, default: () => [] },
     columns: { type: Array as PropType<ColumnsType<TableRecord>>, default: () => [] },
     columnOrder: { type: Array as PropType<Key[]>, default: undefined },
@@ -186,7 +191,14 @@ export default defineComponent({
     },
     loading: {
       type: [Boolean, Object] as PropType<
-        boolean | { spinning?: boolean; indicator?: VNodeChild; tip?: string }
+        | boolean
+        | {
+            spinning?: boolean
+            indicator?: VNodeChild
+            tip?: string
+            delay?: number
+            wrapperClassName?: string
+          }
       >,
       default: false,
     },
@@ -231,7 +243,10 @@ export default defineComponent({
       default: undefined,
     },
     class: { type: String, default: undefined },
-    showSorterTooltip: { type: Boolean, default: undefined },
+    showSorterTooltip: {
+      type: [Boolean, Object] as PropType<boolean | TableTooltipConfig>,
+      default: undefined,
+    },
     sortDirections: {
       type: Array as PropType<Array<'ascend' | 'descend' | null>>,
       default: undefined,
@@ -375,8 +390,35 @@ export default defineComponent({
     footer: { data: Record<string, unknown>[] }
     paginationItem: TablePaginationSlotProps
     summary: void
+    expandColumnTitle: void
   }>,
   setup(props, { slots, emit }) {
+    const loadingVisible = ref(false)
+    let loadingTimer: ReturnType<typeof setTimeout> | undefined
+    watch(
+      () => {
+        const value = props.loading
+        return [
+          value === true ||
+            (typeof value === 'object' && value !== null && value.spinning !== false),
+          typeof value === 'object' && value !== null ? value.delay : 0,
+        ] as const
+      },
+      ([active, delay]) => {
+        clearTimeout(loadingTimer)
+        if (!active) loadingVisible.value = false
+        else if (!delay || !Number.isFinite(delay) || delay < 0) loadingVisible.value = true
+        else if (!loadingVisible.value)
+          loadingTimer = setTimeout(() => {
+            loadingVisible.value = true
+          }, delay)
+      },
+      { immediate: true },
+    )
+    onBeforeUnmount(() => clearTimeout(loadingTimer))
+    const loadingWrapperClass = computed(() =>
+      typeof props.loading === 'object' ? props.loading?.wrapperClassName : undefined,
+    )
     const globalContext = inject<VTableGuildContext | null>(VTABLE_GUILD_INJECTION_KEY, null)
 
     const effectiveThemePreset = computed(() => globalContext?.themePreset ?? 'antdv')
@@ -544,14 +586,15 @@ export default defineComponent({
     // ---- 处理后数据：筛选 → 排序 ----
     function getProcessedData() {
       let data = props.dataSource
-      data = filterData(data)
-      data = sortData(data)
+      if (!isManual(props.manual, 'filter')) data = filterData(data)
+      if (!isManual(props.manual, 'sort')) data = sortData(data)
       return data
     }
 
     const processedData = computed(() => getProcessedData())
 
     const pagination = usePagination({
+      manual: () => isManual(props.manual, 'pagination'),
       pagination: () => props.pagination,
       data: () => processedData.value,
       onChange(state) {
@@ -727,7 +770,7 @@ export default defineComponent({
         exp && exp.showExpandColumn !== false
           ? {
               key: EXPAND_COLUMN_KEY,
-              title: '',
+              title: () => slots.expandColumnTitle?.() ?? exp.columnTitle ?? '',
               width: exp.columnWidth ?? 48,
               align: 'center',
               fixed: exp.fixed === true ? 'left' : exp.fixed,
@@ -771,8 +814,19 @@ export default defineComponent({
       }
 
       // 用户没用 sentinel 时退回到现有默认行为：[selection, expand, ...user]
-      if (expandCol && !expandPlaced) cols.unshift(expandCol)
       if (selCol && !selectionPlaced) cols.unshift(selCol)
+      if (expandCol && !expandPlaced) {
+        const index = exp?.expandIconColumnIndex
+        cols.splice(
+          typeof index === 'number' && Number.isFinite(index)
+            ? Math.min(cols.length, Math.max(0, Math.floor(index)) + (selCol ? 1 : 0))
+            : selCol
+              ? 1
+              : 0,
+          0,
+          expandCol,
+        )
+      }
 
       // columnOrder 重排（order 为空时恒等返回）；选择列/展开列不参与匹配、固定行首
       return applyColumnOrder(cols, props.columnOrder, [SELECTION_COLUMN_KEY, EXPAND_COLUMN_KEY])
@@ -1164,6 +1218,10 @@ export default defineComponent({
       sortAreaOuter: themeSlots.sortAreaOuter,
       sortAreaWrapper: themeSlots.sortAreaWrapper,
       sortAreaTitle: themeSlots.sortAreaTitle,
+      headerHelp: themeSlots.headerHelp,
+      cellContent: themeSlots.cellContent,
+      copyButton: themeSlots.copyButton,
+      cellStatus: themeSlots.cellStatus,
       filterIconWrapper: themeSlots.filterIconWrapper,
       filterIcon: themeSlots.filterIcon,
       filterDropdown: themeSlots.filterDropdown,
@@ -1292,6 +1350,7 @@ export default defineComponent({
       getColumnTitle: getResolvedColumnTitle,
       getPopupContainer: props.getPopupContainer,
       transformCellText: props.transformCellText,
+      columnEmptyText: computed(() => props.columnEmptyText),
       expandable: () => props.expandable as Expandable<Record<string, unknown>> | undefined,
       isExpanded: expIsExpanded,
       toggleExpand: toggleExpandedRow,
@@ -1304,6 +1363,22 @@ export default defineComponent({
         summaryFixed.value = fixed
       },
       isTreeData,
+      treeIndentColumnIndex: computed(() => {
+        const businessColumns = displayColumns.value
+          .map((column, index) => ({ column, index }))
+          .filter(
+            ({ column }) => column.key !== '__vtg_selection__' && column.key !== '__vtg_expand__',
+          )
+        const index = (props.expandable as Expandable | undefined)?.expandIconColumnIndex ?? 0
+        return (
+          businessColumns[
+            Math.max(
+              0,
+              Math.min(businessColumns.length - 1, Math.floor(Number.isFinite(index) ? index : 0)),
+            )
+          ]?.index ?? -1
+        )
+      }),
       treeFlattenData,
       getFlattenRow: (record) => treeRowMetaMap.value.get(record),
       toggleTreeExpand,
@@ -1358,11 +1433,7 @@ export default defineComponent({
       Object.assign(tableStyle, columnLayout.tableStyle.value)
 
       const loadingValue = props.loading
-      const loadingActive =
-        loadingValue === true ||
-        (typeof loadingValue === 'object' &&
-          loadingValue !== null &&
-          loadingValue.spinning !== false)
+      const loadingActive = loadingVisible.value
       const loadingIndicator =
         typeof loadingValue === 'object' && loadingValue !== null
           ? loadingValue.indicator
@@ -1516,6 +1587,7 @@ export default defineComponent({
               themeSlots.root(),
               autoScrollY.value && themeSlots.rootAutoHeight(),
               rootCompatClass.value,
+              loadingWrapperClass.value,
             )}
           >
             {renderPagination('top')}
@@ -1577,7 +1649,10 @@ export default defineComponent({
       )
 
       return (
-        <div ref={layoutRootRef} class={cn(themeSlots.root(), rootCompatClass.value)}>
+        <div
+          ref={layoutRootRef}
+          class={cn(themeSlots.root(), rootCompatClass.value, loadingWrapperClass.value)}
+        >
           {renderPagination('top')}
           {titleContent && <div class={themeSlots.title()}>{titleContent}</div>}
           <Scrollbar

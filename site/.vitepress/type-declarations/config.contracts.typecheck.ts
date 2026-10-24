@@ -21,6 +21,9 @@ export type ConfigDeclarationContracts = [
   Assert<Equal<Docs.ToolbarSlots, Public.ToolbarSlots>>,
   Assert<Equal<Docs.ToolbarThemeConfig, Public.ToolbarThemeConfig>>,
   Assert<Equal<Docs.VTableGuildToolbarLocale, Public.VTableGuildToolbarLocale>>,
+  Assert<Equal<Docs.SelectionAlertSlots, Public.SelectionAlertSlots>>,
+  Assert<Equal<Docs.SelectionAlertThemeConfig, Public.SelectionAlertThemeConfig>>,
+  Assert<Equal<Docs.VTableGuildSelectionAlertLocale, Public.VTableGuildSelectionAlertLocale>>,
   Assert<Equal<Docs.SlotProps<Docs.TableThemeConfig>, Public.SlotProps<Public.TableThemeConfig>>>,
   Assert<
     Equal<Docs.DeepPartial<Docs.VTableGuildLocale>, Public.DeepPartial<Public.VTableGuildLocale>>

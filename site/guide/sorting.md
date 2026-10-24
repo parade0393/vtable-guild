@@ -85,6 +85,23 @@ const handleChange: NonNullable<VTableEventProps<ScoreRow>['onChange']> = (_filt
 
 沿用上面的 `ScoreRow`，再给表格绑定 `@change="handleChange"`。`VTableEventProps<ScoreRow>['onChange']` 提供完整事件参数类型，`NonNullable` 去掉可选事件属性的 `undefined`。单列结果是对象，多列结果是数组，读取前用 `Array.isArray` 收窄。在受控模式下，是否更新 `sortOrder` 由你自己决定。
 
+## 服务端排序
+
+`sorter: true` 使用本地默认比较器；受控 `sortOrder` 也不会自动禁止本地排序。服务端已排序时，额外启用 `manual.sort`，以保留返回记录的顺序：
+
+```vue
+<VTable
+  row-key="key"
+  :columns="columns"
+  :data-source="dataSource"
+  :manual="{ sort: true }"
+  @change="handleChange"
+/>
+```
+
+排序入口、单列与多列状态和 `change` 事件继续工作；业务在 `extra.action === 'sort'` 时重新查询。
+也可以使用 [useTableRequest](/guide/remote-data)，统一管理服务端排序、筛选、分页和刷新。
+
 ## 多列排序
 
 当多个字段都需要参与排序时，使用 multiple 指定优先级。数值越大，优先级越高。
@@ -110,7 +127,7 @@ const columns: TableColumnsType<TeamScoreRow> = [
 
 - 简单排序优先用 sorter: true，避免为普通数字和字符串字段重复写比较函数。
 - 如果页面还有筛选，当前数据处理顺序是先筛选再排序，多列排序会基于筛选后的结果运行。
-- 如果你打算和服务端联动，建议从一开始就用受控模式，减少前后端状态不一致的问题。
+- 如果你打算和服务端联动，启用 `manual.sort`；需要外部重置排序时，再绑定受控 `sortOrder`，使表头与请求状态一致。
 
 ## 相关页面
 

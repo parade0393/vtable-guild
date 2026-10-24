@@ -10,6 +10,7 @@ interface Member {
 }
 export type ToolbarContracts = [
   Assert<Equal<Docs.TableToolbarOptions, Public.TableToolbarOptions>>,
+  Assert<Equal<Docs.TableToolbarSearchConfig, Public.TableToolbarSearchConfig>>,
   Assert<Equal<Docs.TableToolbarProps<Member>, Public.TableToolbarProps<Member>>>,
   Assert<Equal<Docs.TableToolbarSlots<Member>, Public.TableToolbarSlots<Member>>>,
   Assert<Equal<Docs.TableToolbarSlotProps<Member>, Public.TableToolbarSlotProps<Member>>>,

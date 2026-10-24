@@ -10,11 +10,12 @@ import {
   type PropType,
   type SlotsType,
 } from 'vue'
-import { Tooltip, useTheme, VTABLE_GUILD_INJECTION_KEY } from '@vtable-guild/core'
+import { Input, Tooltip, useTheme, VTABLE_GUILD_INJECTION_KEY } from '@vtable-guild/core'
 import {
   FullscreenExitOutlinedIcon,
   FullscreenOutlinedIcon,
   ReloadOutlinedIcon,
+  SearchIcon,
 } from '@vtable-guild/icons'
 import {
   resolveBuiltInLocale,
@@ -40,6 +41,9 @@ export default defineComponent({
       default: undefined,
     },
     loading: Boolean,
+    search: { type: [Boolean, Object] as PropType<TableToolbarProps['search']>, default: false },
+    searchValue: { type: String, default: '' },
+    multipleLine: Boolean,
     disabled: Boolean,
     fullscreenTarget: Function as PropType<TableToolbarProps['fullscreenTarget']>,
     columnSettings: Object as PropType<TableToolbarProps['columnSettings']>,
@@ -52,6 +56,9 @@ export default defineComponent({
     'update:size': (_size: TableColumnSettingsSize) => true,
     reset: () => true,
     reload: () => true,
+    'update:searchValue': (_value: string) => true,
+    search: (_value: string) => true,
+    clearSearch: () => true,
     fullscreenChange: (_active: boolean) => true,
     fullscreenError: (_error: unknown) => true,
   },
@@ -85,6 +92,8 @@ export default defineComponent({
         reload: enabled && configured?.reload !== false,
         density: enabled && configured?.density !== false,
         setting: enabled && configured?.setting !== false,
+        fixed: enabled && configured?.fixed !== false,
+        draggable: enabled && configured?.draggable !== false,
         fullScreen: enabled && configured?.fullScreen === true,
       }
     })
@@ -127,6 +136,76 @@ export default defineComponent({
     function reload() {
       if (!props.disabled && !props.loading) emit('reload')
     }
+    function updateSearchValue(value: string) {
+      if (!props.disabled) emit('update:searchValue', value)
+    }
+    function submitSearch(value = props.searchValue) {
+      if (!props.disabled && !props.loading) emit('search', value)
+    }
+    function clearSearch() {
+      if (props.disabled || props.loading) return
+      emit('update:searchValue', '')
+      emit('clearSearch')
+    }
+    function renderSearch(scope: TableToolbarSlotProps) {
+      if (slots.search) return slots.search(scope)
+      if (!props.search) return null
+      const config = typeof props.search === 'object' ? props.search : undefined
+      return (
+        <div class={styles.searchGroup()} data-vtg-search-group="">
+          <span class={styles.searchField()} data-disabled={props.disabled ? '' : undefined}>
+            <Input
+              bare
+              value={props.searchValue}
+              placeholder={config?.placeholder ?? locale.value.searchPlaceholder}
+              aria-label={config?.placeholder ?? locale.value.searchPlaceholder}
+              disabled={props.disabled}
+              ui={{ root: styles.searchInput() }}
+              onUpdate:value={updateSearchValue}
+              onPressEnter={(event: KeyboardEvent) => {
+                if (!event.isComposing) {
+                  event.preventDefault()
+                  submitSearch()
+                }
+              }}
+            />
+            {config?.clearable !== false && props.searchValue && (
+              <button
+                type="button"
+                class={styles.searchClear()}
+                aria-label={locale.value.clearSearch}
+                title={locale.value.clearSearch}
+                disabled={props.disabled || props.loading}
+                onClick={clearSearch}
+              >
+                <svg
+                  class={styles.searchIcon()}
+                  viewBox="0 0 16 16"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm-2.1 4.2-.7.7L7.3 8l-2.1 2.1.7.7L8 8.7l2.1 2.1.7-.7L8.7 8l2.1-2.1-.7-.7L8 7.3 5.9 5.2Z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+              </button>
+            )}
+          </span>
+          <button
+            type="button"
+            class={styles.searchSubmit()}
+            aria-label={locale.value.search}
+            title={locale.value.search}
+            disabled={props.disabled || props.loading}
+            onClick={() => submitSearch()}
+          >
+            <SearchIcon class={styles.searchIcon()} aria-hidden="true" />
+          </button>
+        </div>
+      )
+    }
     async function toggleFullscreen() {
       if (props.disabled || fullscreenPending.value || !fullscreenAvailable.value) return
       const target = props.fullscreenTarget?.()
@@ -167,7 +246,12 @@ export default defineComponent({
               getPopupContainer={popupContainer.value}
               columns={props.columns ?? []}
               size={size.value}
-              options={{ density: showDensity, setting: showColumns }}
+              options={{
+                density: showDensity,
+                setting: showColumns,
+                fixed: options.value.fixed,
+                draggable: options.value.draggable,
+              }}
               disabled={props.disabled}
               onUpdate:columns={(columns) => emit('update:columns', columns)}
               onUpdate:size={(value) => emit('update:size', value)}
@@ -210,6 +294,10 @@ export default defineComponent({
         fullscreenAvailable: fullscreenAvailable.value,
         reload,
         toggleFullscreen,
+        searchValue: props.searchValue,
+        updateSearchValue,
+        submitSearch,
+        clearSearch,
       }
       const showSettings =
         slots.settings ||
@@ -228,6 +316,12 @@ export default defineComponent({
             <div class={styles.title()}>{slots.title ? slots.title(scope) : props.title}</div>
           )}
           <div class={styles.right()}>
+            {(slots.search || props.search) && (
+              <div class={styles.search()}>{renderSearch(scope)}</div>
+            )}
+            {slots.filter && !props.multipleLine && (
+              <div class={styles.filter()}>{slots.filter(scope)}</div>
+            )}
             {slots.actions && <div class={styles.actions()}>{slots.actions(scope)}</div>}
             {showSettings && (
               <div class={styles.settings()}>
@@ -235,6 +329,10 @@ export default defineComponent({
               </div>
             )}
           </div>
+          {slots.filter && props.multipleLine && (
+            <div class={styles.extra()}>{slots.filter(scope)}</div>
+          )}
+          {slots.extra && <div class={styles.extra()}>{slots.extra(scope)}</div>}
         </div>
       )
     }

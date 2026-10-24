@@ -38,7 +38,7 @@ function overlay(role: 'menu' | 'dialog') {
 }
 function create(preset: 'antdv' | 'element-plus', options: VTableGuildOptions = {}) {
   const exported = vi.fn()
-  const wrapper = mount(VTableToolbar, {
+  const wrapper = mount(VTableToolbar<Record<string, unknown>>, {
     attachTo: document.body,
     props: { title: 'Members', columns, size: 'middle' },
     slots: {
@@ -91,6 +91,14 @@ describe.each(['antdv', 'element-plus'] as const)('%s toolbar', (preset) => {
     expect(
       wrapper.findAll('button').every((item) => item.attributes('disabled') !== undefined),
     ).toBe(true)
+  })
+
+  it('forwards column pinning and drag options to the settings panel', async () => {
+    const { wrapper } = create(preset)
+    await wrapper.setProps({ options: { fixed: false, draggable: false } })
+    await button(wrapper, 'Column settings').trigger('click')
+    expect(overlay('dialog').find('[data-column-pin]').exists()).toBe(false)
+    expect(overlay('dialog').find('[draggable]').exists()).toBe(false)
   })
 
   it('forwards controlled column, density and reset events through the public generic bridge', async () => {
@@ -167,10 +175,75 @@ describe.each(['antdv', 'element-plus'] as const)('%s toolbar', (preset) => {
     expect(button(wrapper, 'Refresh')).toBeDefined()
     expect(wrapper.find('[role="group"]').attributes('data-vtg-preset')).toBe(preset)
   })
+
+  it('keeps search text controlled and separates input, submit, clear and reload', async () => {
+    const { wrapper } = create(preset)
+    await wrapper.setProps({ search: true, searchValue: 'Ada' })
+    const input = wrapper.get('input')
+    expect(input.attributes('placeholder')).toBe('Enter keywords')
+    const searchGroup = wrapper.get('[data-vtg-search-group]')
+    const searchButton = button(wrapper, 'Search')
+    expect(searchButton.text()).toBe('')
+    expect(searchButton.find('svg').exists()).toBe(true)
+    expect(searchButton.element.parentElement).toBe(searchGroup.element)
+    expect(input.element.parentElement?.parentElement).toBe(searchGroup.element)
+    expect(button(wrapper, 'Clear search').element.parentElement).toBe(input.element.parentElement)
+    await input.setValue('Grace')
+    expect(wrapper.emitted('update:searchValue')).toEqual([['Grace']])
+    expect(wrapper.props('searchValue')).toBe('Ada')
+    expect(wrapper.emitted('search')).toBeUndefined()
+    await wrapper.setProps({ searchValue: 'Grace' })
+    await input.trigger('keydown', { key: 'Enter', isComposing: true })
+    expect(wrapper.emitted('search')).toBeUndefined()
+    await input.trigger('keydown', { key: 'Enter' })
+    expect(wrapper.emitted('search')).toEqual([['Grace']])
+    await button(wrapper, 'Search').trigger('click')
+    expect(wrapper.emitted('search')).toEqual([['Grace'], ['Grace']])
+    await button(wrapper, 'Clear search').trigger('click')
+    expect(wrapper.emitted('update:searchValue')?.at(-1)).toEqual([''])
+    expect(wrapper.emitted('clearSearch')).toEqual([[]])
+    expect(wrapper.emitted('search')).toHaveLength(2)
+    expect(wrapper.emitted('reload')).toBeUndefined()
+    expect(wrapper.get('button').attributes('type')).toBe('button')
+    await wrapper.setProps({ loading: true })
+    await input.trigger('keydown', { key: 'Enter' })
+    expect(wrapper.emitted('search')).toHaveLength(2)
+    await wrapper.setProps({ disabled: true })
+    expect(input.attributes('disabled')).toBeDefined()
+  })
+
+  it('renders replaceable search, inline or second-row filters, and view tabs without built-ins', async () => {
+    const wrapper = mount(VTableToolbar<Record<string, unknown>>, {
+      props: {
+        options: false,
+        searchValue: 'pending',
+        multipleLine: true,
+        ui: { search: 'test-search', filter: 'test-filter', extra: 'test-extra' },
+      },
+      slots: {
+        search: (scope: TableToolbarSlotProps) =>
+          h('button', { onClick: () => scope.submitSearch('custom') }, 'Custom search'),
+        filter: () => h('select', { 'aria-label': 'Status' }, [h('option', 'Pending')]),
+        extra: () => h('nav', [h('button', 'All'), h('button', 'Pending')]),
+      },
+      global: { plugins: [createVTableGuild({ themePreset: preset })] },
+    })
+    wrappers.push(wrapper)
+    expect(wrapper.find('input').exists()).toBe(false)
+    expect(wrapper.get('.test-search').text()).toBe('Custom search')
+    expect(wrapper.get('select').element.parentElement?.classList.contains('test-extra')).toBe(true)
+    expect(wrapper.get('nav').element.parentElement?.classList.contains('test-extra')).toBe(true)
+    await button(wrapper, 'Custom search').trigger('click')
+    expect(wrapper.emitted('search')).toEqual([['custom']])
+    await wrapper.setProps({ multipleLine: false })
+    expect(wrapper.get('select').element.parentElement?.classList.contains('test-filter')).toBe(
+      true,
+    )
+  })
 })
 
 it('supports complete settings replacement, custom titles and typed business slot state', async () => {
-  const wrapper = mount(VTableToolbar, {
+  const wrapper = mount(VTableToolbar<Record<string, unknown>>, {
     props: { columns, options: false, loading: true, title: 'Fallback' },
     slots: {
       title: () => h('strong', 'Custom title'),

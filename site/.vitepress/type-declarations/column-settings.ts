@@ -16,6 +16,8 @@ export type TableColumnSettingsSize = 'large' | 'middle' | 'small'
 export interface TableColumnSettingsOptions {
   density?: boolean
   setting?: boolean
+  fixed?: boolean
+  draggable?: boolean
 }
 // #endregion TableColumnSettingsOptions
 

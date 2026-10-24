@@ -61,7 +61,7 @@ app.use(createVTableGuild({ themePreset: 'element-plus' }))
 
 写在前面，省得你走到一半才发现：
 
-- **要完整编辑引擎、Excel 导出、列拖拽换序、右键菜单**：单元格和整行编辑可通过 [`bodyCell`](https://parade0393.github.io/vtable-guild/guide/editing) 组合，但不内置编辑状态、校验和 Excel 式键盘导航；这些完整企业表格能力仍是 [vxe-table](https://vxetable.cn/) 的主场
+- **要完整编辑引擎、Excel 导出、表头直接拖拽换序、右键菜单**：单元格和整行编辑可通过 [`bodyCell`](https://parade0393.github.io/vtable-guild/guide/editing) 组合，但不内置编辑状态、校验和 Excel 式键盘导航；这些完整企业表格能力仍是 [vxe-table](https://vxetable.cn/) 的主场
 - **有键盘可达性 / 无障碍合规要求**：目前排序头和筛选触发器还不能键盘操作，正在补
 - **只需要一张基础表格**：原生 `a-table` / `el-table` 就够了，不必多引一个依赖
 
@@ -131,6 +131,8 @@ const dataSource: UserRow[] = [
 每一项在文档站都有**可以直接点的 demo**：[功能索引](https://parade0393.github.io/vtable-guild/guide/)。
 
 内置[分页](https://parade0393.github.io/vtable-guild/guide/pagination)，传 `:pagination="{}"` 启用，默认关闭。支持本地 / 远程分页、受控状态和跨页选择；`change(filters, sorter, extra)` 保留三参数，分页状态从 `extra.pagination` 读取。
+
+工具栏支持搜索和业务操作；列设置支持固定、锁定与面板内拖拽。可选的[请求管理](https://parade0393.github.io/vtable-guild/guide/remote-data)、[批量提示条](https://parade0393.github.io/vtable-guild/guide/selection-alert)与[单元格展示](https://parade0393.github.io/vtable-guild/guide/cell-display)减少重复的业务代码，列偏好可通过 `useColumnState` 持久化。
 
 ## 样式接入
 

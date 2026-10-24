@@ -10,6 +10,10 @@ import type {
   LocaleRegistry,
   SlotProps,
   TableSlots,
+  TableManualConfig,
+  TableTooltipConfig,
+  ColumnCopyable,
+  ColumnValueEnum,
   VTableGuildPaginationLocale,
   VTableGuildTableLocale,
   SELECTION_ALL,
@@ -133,6 +137,11 @@ export type ColumnTitle<TRecord extends object = Record<string, any>> =
 export interface ColumnType<TRecord extends object = Record<string, any>> {
   key?: Key
   title?: ColumnTitle<TRecord>
+  tooltip?: string | TableTooltipConfig
+  copyable?: ColumnCopyable<TRecord>
+  valueEnum?: ColumnValueEnum
+  hideInSetting?: boolean
+  disable?: boolean | { checkbox?: boolean; fixed?: boolean; order?: boolean }
   dataIndex?: DataIndex
   width?: number | string
   align?: AlignType
@@ -150,8 +159,8 @@ export interface ColumnType<TRecord extends object = Record<string, any>> {
   sortOrder?: SortOrder
   defaultSortOrder?: SortOrder
   sortDirections?: SortOrder[]
-  filters?: ColumnFilterItem[]
-  onFilter?: (value: string | number | boolean, record: TRecord) => boolean
+  filters?: ColumnFilterItem[] | boolean
+  onFilter?: boolean | ((value: string | number | boolean, record: TRecord) => boolean)
   filterMultiple?: boolean
   filteredValue?: (string | number | boolean)[] | null
   defaultFilteredValue?: (string | number | boolean)[]
@@ -164,7 +173,7 @@ export interface ColumnType<TRecord extends object = Record<string, any>> {
   filtered?: boolean
   filterIcon?: (opt: { filtered: boolean }) => VNodeChild
   filterDropdown?: VNodeChild | ((props: CustomFilterDropdownSlotProps<TRecord>) => VNodeChild)
-  showSorterTooltip?: boolean
+  showSorterTooltip?: boolean | TableTooltipConfig
   visible?: boolean
   responsive?: Breakpoint[]
 }
@@ -251,6 +260,8 @@ export interface Expandable<TRecord extends object = Record<string, any>> {
   defaultExpandAllRows?: boolean
   rowExpandable?: (record: TRecord) => boolean
   showExpandColumn?: boolean
+  expandIconColumnIndex?: number
+  columnTitle?: string | number
   expandedRowClassName?: string | RowClassName<TRecord>
 }
 // #endregion Expandable
@@ -343,17 +354,28 @@ export interface TableSlotsDecl<TRecord extends object = Record<string, any>> {
   footer?: (props: TableDataSlotProps<TRecord>) => VNodeChild
   paginationItem?: (props: TablePaginationSlotProps) => VNodeChild
   summary?: () => VNodeChild
+  expandColumnTitle?: () => VNodeChild
 }
 // #endregion TableSlotsDecl
 
 // #region TableProps
 export interface TableProps<TRecord extends object = Record<string, any>> {
   pagination?: false | TablePaginationConfig
+  manual?: boolean | TableManualConfig
+  columnEmptyText?: VNodeChild | false
   dataSource: TRecord[]
   columns: ColumnsType<TRecord>
   columnOrder?: Key[]
   rowKey?: string | ((record: TRecord) => Key)
-  loading?: boolean | { spinning?: boolean; indicator?: VNodeChild; tip?: string }
+  loading?:
+    | boolean
+    | {
+        spinning?: boolean
+        indicator?: VNodeChild
+        tip?: string
+        delay?: number
+        wrapperClassName?: string
+      }
   size?: 'small' | 'middle' | 'large'
   bordered?: boolean
   striped?: boolean
@@ -370,7 +392,7 @@ export interface TableProps<TRecord extends object = Record<string, any>> {
     columns: Array<ColumnType<TRecord> | ColumnGroupType<TRecord>>,
     index?: number,
   ) => CellAdditionalProps
-  showSorterTooltip?: boolean
+  showSorterTooltip?: boolean | TableTooltipConfig
   sortDirections?: SortOrder[]
   locale?: LocaleName
   locales?: LocaleRegistry

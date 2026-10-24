@@ -3,6 +3,12 @@
 import type { BuiltInLocaleName, ThemePreset } from './types'
 import { toolbarTheme, elementPlusToolbarTheme, toolbarZhCN, toolbarEnUS } from '../toolbar'
 import {
+  selectionAlertTheme,
+  elementPlusSelectionAlertTheme,
+  selectionAlertZhCN,
+  selectionAlertEnUS,
+} from '../selection-alert'
+import {
   columnSettingsTheme,
   elementPlusColumnSettingsTheme,
   columnSettingsZhCN,
@@ -61,6 +67,7 @@ const presetMap: Record<ThemePresetName, ThemePreset> = {
     pagination: paginationTheme,
     columnSettings: columnSettingsTheme,
     toolbar: toolbarTheme,
+    selectionAlert: selectionAlertTheme,
     tableLocale: antdvTableLocale,
     locales: {
       'zh-CN': {
@@ -68,12 +75,14 @@ const presetMap: Record<ThemePresetName, ThemePreset> = {
         pagination: paginationZhCN,
         columnSettings: columnSettingsZhCN,
         toolbar: toolbarZhCN,
+        selectionAlert: selectionAlertZhCN,
       },
       'en-US': {
         table: antdvTableEnUSLocale,
         pagination: paginationEnUS,
         columnSettings: columnSettingsEnUS,
         toolbar: toolbarEnUS,
+        selectionAlert: selectionAlertEnUS,
       },
     },
   },
@@ -88,6 +97,7 @@ const presetMap: Record<ThemePresetName, ThemePreset> = {
     pagination: elementPlusPaginationTheme,
     columnSettings: elementPlusColumnSettingsTheme,
     toolbar: elementPlusToolbarTheme,
+    selectionAlert: elementPlusSelectionAlertTheme,
     tableLocale: elementPlusTableLocale,
     locales: {
       'zh-CN': {
@@ -95,12 +105,14 @@ const presetMap: Record<ThemePresetName, ThemePreset> = {
         pagination: elementPlusPaginationZhCN,
         columnSettings: columnSettingsZhCN,
         toolbar: toolbarZhCN,
+        selectionAlert: selectionAlertZhCN,
       },
       'en-US': {
         table: elementPlusTableEnUSLocale,
         pagination: elementPlusPaginationEnUS,
         columnSettings: columnSettingsEnUS,
         toolbar: toolbarEnUS,
+        selectionAlert: selectionAlertEnUS,
       },
     },
   },

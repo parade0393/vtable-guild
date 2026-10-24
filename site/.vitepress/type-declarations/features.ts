@@ -20,6 +20,7 @@ import type {
   TableLayout,
   TableSticky,
   TransformCellText,
+  TableTooltipConfig,
 } from '@vtable-guild/vtable-guild'
 
 // #region SortingColumnFields
@@ -30,7 +31,7 @@ export interface SortingColumnFields<TRecord extends object = Record<string, any
   sortOrder?: SortOrder
   defaultSortOrder?: SortOrder
   sortDirections?: SortOrder[]
-  showSorterTooltip?: boolean
+  showSorterTooltip?: boolean | TableTooltipConfig
 }
 // #endregion SortingColumnFields
 
@@ -38,8 +39,8 @@ export interface SortingColumnFields<TRecord extends object = Record<string, any
 /** ColumnType 节选；文档辅助接口，不是包导出。 */
 export interface FilteringColumnFields<TRecord extends object = Record<string, any>> {
   key?: Key
-  filters?: ColumnFilterItem[]
-  onFilter?: (value: string | number | boolean, record: TRecord) => boolean
+  filters?: ColumnFilterItem[] | boolean
+  onFilter?: boolean | ((value: string | number | boolean, record: TRecord) => boolean)
   filterMultiple?: boolean
   filteredValue?: (string | number | boolean)[] | null
   defaultFilteredValue?: (string | number | boolean)[]

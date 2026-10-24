@@ -3,6 +3,7 @@
 > 这份文档描述**当前实现**的结构与设计取舍，面向维护者和二次开发者。
 > 面向使用者的说明在文档站：[指南](../site/guide/index.md)、[API Reference](../site/guide/api-reference.md)。
 > 性能设计与实测看 [performance.md](./performance.md)。
+> 能力缺口、React ProTable 对齐与后续排期看 [table-feature-todo.md](./table-feature-todo.md)。
 
 ## 1. 项目定位
 

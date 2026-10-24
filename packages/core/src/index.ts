@@ -34,6 +34,7 @@ export type {
   VTableGuildPaginationLocale,
   VTableGuildColumnSettingsLocale,
   VTableGuildToolbarLocale,
+  VTableGuildSelectionAlertLocale,
   VTableGuildTableLocale,
   VTableGuildTableHeaderLocale,
   VTableGuildTableFilterDropdownLocale,

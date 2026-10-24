@@ -27,8 +27,18 @@ export const columnSettingsTheme = {
     columns: 'm-0 max-h-[280px] overflow-auto list-none px-0 py-2',
     children: 'm-0 list-none pl-6',
     item: 'm-0 p-0 pb-1',
+    row: 'flex min-w-0 items-center gap-1',
+    dragHandle:
+      'shrink-0 select-none text-[color:var(--color-muted)] cursor-grab active:cursor-grabbing [&:not([draggable=true])]:cursor-not-allowed',
+    pinActions: 'inline-flex shrink-0 items-center gap-0.5',
+    pinAction: `inline-flex items-center justify-center h-5 w-5 p-0 border-0 rounded-[var(--vtg-btn-border-radius-sm)] bg-transparent text-[color:var(--color-muted)] cursor-pointer hover:text-[color:var(--color-primary)] hover:bg-[color:var(--color-control-item-hover-bg)] aria-pressed:text-[color:var(--color-primary)] disabled:cursor-not-allowed disabled:text-[color:var(--color-text-disabled)] ${focus}`,
+    pinIcon:
+      'h-[var(--vtg-column-settings-pin-icon-size,14px)] w-[var(--vtg-column-settings-pin-icon-size,14px)]',
+    group: 'm-0 list-none p-0',
+    groupTitle: 'py-1 text-[length:var(--vtg-table-font-size)] text-[color:var(--color-muted)]',
+    groupColumns: 'm-0 list-none p-0',
     label:
-      'group flex min-h-6 items-center gap-1 pl-6 cursor-pointer has-[:disabled]:cursor-not-allowed has-[:disabled]:text-[color:var(--color-text-disabled)]',
+      'group flex min-w-0 flex-1 min-h-6 items-center gap-1 cursor-pointer has-[:disabled]:cursor-not-allowed has-[:disabled]:text-[color:var(--color-text-disabled)]',
     checkboxControl:
       'relative inline-flex shrink-0 h-[var(--vtg-checkbox-size)] w-[var(--vtg-checkbox-size)]',
     checkbox: `peer m-0 h-full w-full appearance-none border border-[color:var(--color-border)] rounded-[var(--vtg-checkbox-border-radius)] bg-[color:var(--color-surface)] cursor-inherit transition-colors duration-300 checked:bg-[color:var(--color-primary)] checked:border-[color:var(--color-primary)] group-hover:enabled:border-[color:var(--color-primary)] group-hover:enabled:checked:bg-[color:var(--color-primary-hover)] group-hover:enabled:checked:border-transparent disabled:bg-[color:var(--color-bg-disabled)] disabled:border-[color:var(--color-border)] ${focus}`,
@@ -67,6 +77,12 @@ export const columnSettingsZhCN = {
   small: '紧凑',
   columns: '列展示',
   empty: '暂无可配置列',
+  fixed: '固定位置',
+  fixedLeft: '固定左侧',
+  fixedRight: '固定右侧',
+  unfixed: '不固定',
+  mixed: '混合固定',
+  move: '拖动调整列顺序',
 } as const satisfies VTableGuildColumnSettingsLocale
 
 export const columnSettingsEnUS = {
@@ -78,4 +94,10 @@ export const columnSettingsEnUS = {
   small: 'Compact',
   columns: 'Column display',
   empty: 'No configurable columns',
+  fixed: 'Pin column',
+  fixedLeft: 'Pin left',
+  fixedRight: 'Pin right',
+  unfixed: 'Unpinned',
+  mixed: 'Mixed pinning',
+  move: 'Drag to reorder columns',
 } as const satisfies VTableGuildColumnSettingsLocale

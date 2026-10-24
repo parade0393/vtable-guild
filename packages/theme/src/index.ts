@@ -14,6 +14,7 @@ import type { ScrollbarThemeConfig } from './scrollbar'
 import type { PaginationThemeConfig } from './pagination'
 import type { ColumnSettingsThemeConfig } from './column-settings'
 import type { ToolbarThemeConfig } from './toolbar'
+import type { SelectionAlertThemeConfig } from './selection-alert'
 
 declare module '@vtable-guild/core' {
   interface VTableGuildThemeOverridesMap {
@@ -27,6 +28,7 @@ declare module '@vtable-guild/core' {
     pagination: ThemeOverrideConfig<PaginationThemeConfig>
     columnSettings: ThemeOverrideConfig<ColumnSettingsThemeConfig>
     toolbar: ThemeOverrideConfig<ToolbarThemeConfig>
+    selectionAlert: ThemeOverrideConfig<SelectionAlertThemeConfig>
   }
 }
 
@@ -64,6 +66,14 @@ export {
   toolbarEnUS,
 } from './toolbar'
 export type { ToolbarThemeConfig, ToolbarSlots } from './toolbar'
+export {
+  selectionAlertTheme,
+  elementPlusSelectionAlertTheme,
+  resolveSelectionAlertThemePreset,
+  selectionAlertZhCN,
+  selectionAlertEnUS,
+} from './selection-alert'
+export type { SelectionAlertThemeConfig, SelectionAlertSlots } from './selection-alert'
 
 // ---------- 预设解析 ----------
 export {

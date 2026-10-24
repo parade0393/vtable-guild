@@ -1,6 +1,7 @@
 import type { VTableGuildTableLocale } from '@vtable-guild/core'
 
 export const elementPlusTableLocale = {
+  cell: { copy: '复制', copied: '已复制', copyFailed: '复制失败' },
   header: {
     sortTriggerAsc: '点击升序',
     sortTriggerDesc: '点击降序',
@@ -29,6 +30,7 @@ export const elementPlusTableLocale = {
 } as const satisfies VTableGuildTableLocale
 
 export const elementPlusTableEnUSLocale = {
+  cell: { copy: 'Copy', copied: 'Copied', copyFailed: 'Copy failed' },
   header: {
     sortTriggerAsc: 'Sort ascending',
     sortTriggerDesc: 'Sort descending',

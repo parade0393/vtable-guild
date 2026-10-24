@@ -83,6 +83,13 @@ export const elementPlusTableTheme = {
     sortAreaOuter: 'flex min-w-0',
     sortAreaWrapper: 'flex items-center min-w-0',
     sortAreaTitle: 'min-w-0',
+    headerHelp:
+      'inline-flex shrink-0 items-center ml-1 text-[color:var(--color-muted)] cursor-help',
+    cellContent: 'inline-flex max-w-full items-center gap-1 [&>div]:min-w-0',
+    copyButton:
+      'inline-flex shrink-0 items-center justify-center border-0 bg-transparent p-1 text-[color:var(--color-primary)] cursor-pointer disabled:opacity-50',
+    cellStatus:
+      "inline-flex items-center gap-1 before:content-[''] before:size-1.5 before:rounded-full before:bg-[color:var(--color-muted)] [&[data-status=success]]:before:bg-[color:var(--vtg-cell-success)] [&[data-status=warning]]:before:bg-[color:var(--vtg-cell-warning)] [&[data-status=error]]:before:bg-[color:var(--vtg-cell-error)] [&[data-status=processing]]:before:bg-[color:var(--color-primary)]",
 
     // ---- 筛选图标相关 ----
     filterIconWrapper: 'shrink-0 flex items-center',

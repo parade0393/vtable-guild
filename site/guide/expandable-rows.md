@@ -83,3 +83,9 @@ const dataSource: UserRow[] = [{ key: '1', name: 'Ada', role: '产品设计', ci
 <<< @/.vitepress/type-declarations/table.ts#RowClassName
 
 :::
+
+## 展开列位置与标题
+
+`expandable.expandIconColumnIndex` 指定展开列在业务列中的位置，从 0 开始；选择列仍保留在前。负数和越界值会收敛到有效范围。显式的 `EXPAND_COLUMN` 占位优先于该位置配置。
+
+`expandable.columnTitle` 支持文本或数字标题。复杂内容使用 `#expandColumnTitle`，其优先级高于 columnTitle；选择列的标题仍由 `rowSelection.columnTitle` 配置。树形缩进图标也可使用 expandIconColumnIndex 选择业务列。

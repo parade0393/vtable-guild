@@ -12,6 +12,9 @@
 import {
   VTable,
   VTableToolbar, // 可选工具栏，通过 actions 插槽添加导出等业务按钮
+  VTableSelectionAlert, // 受控的已选数量与批量操作提示条
+  useTableRequest, // 可选服务端请求管理
+  useColumnState, // 可选列偏好与持久化
   VTableColumnSettings, // 可单独使用的密度与列显隐面板
   VTableSummary, // 摘要行容器，子组件 VTableSummary.Row / VTableSummary.Cell
   EXPAND_COLUMN, // 展开列占位常量，放进 columns
@@ -29,6 +32,16 @@ import {
   type Key, // string | number
 } from '@vtable-guild/vtable-guild'
 ```
+
+## ProTable 常用扩展
+
+- `manual: true` 跳过本地排序、筛选和分页计算；对象形式可分别配置 `sort / filter / pagination`，状态与事件保留。`sorter: true` 默认仍会本地比较，不能单独作为远程排序开关。
+- `useTableRequest` 连接表格 `change` 与工具栏 `reload`；返回数据、加载、错误、分页、manual、submit / reset / reload。只绑定一个请求入口，选择事件不查询。见[远程数据](../site/guide/remote-data.md)。
+- `VTableSelectionAlert` 使用受控 `selectedRowKeys` 统计跨页数量，清空只请求更新。已选 keys 不代表已获得全部 records。见[批量操作](../site/guide/selection-alert.md)。
+- 列 `copyable / tooltip / valueEnum` 与表格 `columnEmptyText` 提供复制、说明、枚举和空值显示。`filters: true` 从枚举生成筛选项，`onFilter: false` 关闭本地筛选。见[单元格展示](../site/guide/cell-display.md)。
+- `useColumnState` 可保存显隐、固定与顶层顺序；列的 `hideInSetting / disable` 控制设置入口。面板 reset 仍只恢复显隐，helper.reset 恢复全部偏好。见[列设置](../site/guide/column-display.md)。
+- 工具栏支持 `search`、受控 `searchValue`、`search / clearSearch` 事件以及 `search / filter / extra` 插槽；业务决定视图切换时的页码与选择状态。
+- `loading` 对象支持 `delay`（毫秒）和 `wrapperClassName`；`showSorterTooltip` 支持独立的 tooltip 配置对象（延迟单位秒）。
 
 ## 初始化（一次性）
 
@@ -108,7 +121,7 @@ const dataSource: UserRow[] = [
 - `#actions` 追加业务按钮；`#settings` 完全替换内置工具。`title` / `actions` / `settings` 共享 `TableToolbarSlotProps`，包含 `columns`、`size`、`loading`、`disabled`、`fullscreen`、`fullscreenAvailable`、`reload()`、`toggleFullscreen()`；`#columnLabel` 自定义列选项标签。
 - 刷新只发出 `reload`，业务管理请求与 `loading`。`disabled` 禁用内置操作，自定义按钮按插槽状态设置禁用规则。
 - 全屏需开启 `options.fullScreen` 并传 `fullscreenTarget: () => HTMLElement | null | undefined`。浏览器确认后触发 `fullscreenChange`；失败触发 `fullscreenError`。列设置浮层默认挂到全屏目标内。
-- `VTableColumnSettings` 可单独使用，必传受控 `v-model:columns`，可选 `v-model:size`，用 `options.density` / `options.setting` 分别控制两个入口。两者的 `reset` 只恢复初始列显隐；不编辑列顺序或固定列，也不重置列宽、密度、排序或筛选。
+- `VTableColumnSettings` 可单独使用，必传受控 `v-model:columns`，可选 `v-model:size`，用 `options.density` / `options.setting` 分别控制两个入口。两者的 `reset` 只恢复初始列显隐；重置不改变列宽、密度、固定、顺序、排序或筛选。面板现支持固定位置与顶层分组拖拽，配置见列设置指南。
 - 全局样式使用 `theme.toolbar.slots` / `theme.columnSettings.slots`，实例使用各自 `ui`。语言使用 `localeOverrides.toolbar` / `localeOverrides.columnSettings`，支持仅覆盖少量字段。
 
 完整用法和类型见[工具栏与业务扩展](../site/guide/toolbar.md)、[列显示与列顺序](../site/guide/column-display.md)。
@@ -125,7 +138,7 @@ const dataSource: UserRow[] = [
 | 树形选择按 antdv 习惯写（不传 `checkStrictly`）                 | **本库与 ant-design-vue 4.x 都默认 `checkStrictly: true`（父子独立选择）**。两个库默认行为一致，无需显式传 `true`。如需父子联动（勾父带子），显式传 `checkStrictly: false`。    |
 | 树形数据 + 筛选 = 递归过滤                                      | **`onFilter` 只过滤顶层记录**：不递归 `children`，匹配子节点也不会保留其父节点。树形数据慎用筛选，或在外层自行实现递归过滤。                                                    |
 | `virtual` 模式下 `summary` 会静默丢失                           | 已支持 summary：非 fixed summary 渲染在虚拟表体后，fixed summary 保持 sticky 底部块。                                                                                           |
-| 所有 antdv Table props 都存在                                   | 只实现了本文列出的 props。`expandIconColumnIndex`、`sticky.offsetScroll`/`getContainer` 等尚未实现，不要使用。                                                                  |
+| 所有 antdv Table props 都存在                                   | 只实现了本文列出的 props。`sticky.offsetScroll`/`getContainer` 等尚未实现，不要使用。                                                                                           |
 | 树形数据的展开 props 写在 `expandable` 里                       | 树形数据的 `expandedRowKeys` / `defaultExpandAllRows` / `onExpand` / `onExpandedRowsChange` 在 **VTable 顶层 props**；`expandable` 对象只管展开行渲染（见下文 Expandable 表）。 |
 | `column.ellipsis` 支持多行 `{ rows }`                           | 只支持 `boolean \| { showTitle?: boolean }`（单行省略）。                                                                                                                       |
 | 树形 + 虚拟滚动不兼容                                           | **支持组合**：树形数据可以开 `virtual`（展开状态由组件维护）。                                                                                                                  |

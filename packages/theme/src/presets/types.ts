@@ -24,6 +24,7 @@ export interface ThemePreset {
   pagination?: ThemeConfig
   columnSettings?: ThemeConfig
   toolbar?: ThemeConfig
+  selectionAlert?: ThemeConfig
   tableLocale: VTableGuildTableLocale
   locales: Record<BuiltInLocaleName, VTableGuildLocale>
 }

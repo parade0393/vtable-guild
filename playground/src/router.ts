@@ -4,6 +4,11 @@ export const router = createRouter({
   history: createWebHashHistory(),
   routes: [
     {
+      path: '/enterprise',
+      name: 'enterprise',
+      component: () => import('./pages/EnterprisePage.vue'),
+    },
+    {
       path: '/toolbar',
       name: 'toolbar',
       component: () => import('./pages/ToolbarPage.vue'),

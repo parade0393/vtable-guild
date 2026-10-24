@@ -34,8 +34,11 @@ const zhTheme = {
         items: [
           { text: '排序', link: '/guide/sorting' },
           { text: '分页', link: '/guide/pagination' },
+          { text: '远程数据与请求管理', link: '/guide/remote-data' },
           { text: '筛选', link: '/guide/filtering' },
           { text: '行选择', link: '/guide/selection' },
+          { text: '批量操作提示条', link: '/guide/selection-alert' },
+          { text: '单元格展示与枚举', link: '/guide/cell-display' },
           { text: '展开行', link: '/guide/expandable-rows' },
           { text: '树形表格', link: '/guide/tree-table' },
           { text: '固定列', link: '/guide/fixed-columns' },

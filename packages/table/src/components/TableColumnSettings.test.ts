@@ -252,6 +252,83 @@ describe.each(['antdv', 'element-plus'] as const)('%s column settings', (preset)
     expect(document.querySelector('[role="menu"]')).toBeNull()
     expect(document.activeElement).toBe(densityTrigger(wrapper).element)
   })
+
+  it('keeps hidden settings and locked descendants out of bulk visibility changes', async () => {
+    const wrapper = create(preset)
+    await wrapper.setProps({
+      columns: [
+        { key: 'hidden', title: 'Internal', hideInSetting: true },
+        { key: 'name', title: 'Name', disable: { checkbox: true } },
+        {
+          key: 'group',
+          title: 'Group',
+          children: [
+            { key: 'required', title: 'Required', disable: true },
+            { key: 'optional', title: 'Optional' },
+          ],
+        },
+      ],
+    })
+    await settingsTrigger(wrapper).trigger('click')
+    expect(popup().text()).not.toContain('Internal')
+    expect(checkbox('Name').attributes('disabled')).toBeDefined()
+    expect(checkbox('Group').attributes('disabled')).toBeDefined()
+    await checkbox('Column display').setValue(false)
+    const next = wrapper.emitted('update:columns')!.at(-1)![0] as ColumnType[]
+    expect(next[0]!.visible).toBeUndefined()
+    expect(next[1]!.visible).toBeUndefined()
+    const group = next[2] as ColumnGroupType
+    expect(group.visible).toBeUndefined()
+    expect(group.children[0]!.visible).toBeUndefined()
+    expect(group.children[1]!.visible).toBe(false)
+  })
+
+  it('pins a top-level group through controlled updates and keeps visibility reset independent', async () => {
+    const wrapper = create(preset)
+    await settingsTrigger(wrapper).trigger('click')
+    const pin = popup().get('button[aria-label="Contact: Pin left"]')
+    await pin.trigger('click')
+    const next = wrapper.emitted('update:columns')!.at(-1)![0] as ColumnsType
+    expect((wrapper.props('columns')[1] as ColumnType).key).toBe('name')
+    expect((next[1] as ColumnGroupType).key).toBe('contact')
+    expect((next[1] as ColumnGroupType).children.every((column) => column.fixed === 'left')).toBe(
+      true,
+    )
+    await wrapper.setProps({ columns: next })
+    expect(popup().get('button[aria-label="Contact: Pin left"]').attributes('aria-pressed')).toBe(
+      'true',
+    )
+    await button('Reset').trigger('click')
+    const reset = wrapper.emitted('update:columns')!.at(-1)![0] as ColumnsType
+    expect((reset[1] as ColumnGroupType).children.every((column) => column.fixed === 'left')).toBe(
+      true,
+    )
+    expect((reset[1] as ColumnGroupType).children[1]!.visible).toBe(false)
+  })
+
+  it('drags whole top-level groups without accepting cross-group or locked moves', async () => {
+    const wrapper = create(preset)
+    await settingsTrigger(wrapper).trigger('click')
+    const items = popup().findAll('[data-column-setting]')
+    const source = items.find((item) => item.get('label').text() === 'Contact')!
+    const target = items.find((item) => item.get('label').text() === 'Name')!
+    const transfer = { setData: vi.fn(), effectAllowed: '' }
+    await source.get('[draggable="true"]').trigger('dragstart', { dataTransfer: transfer })
+    await target.trigger('drop')
+    const next = wrapper.emitted('update:columns')!.at(-1)![0] as ColumnsType
+    expect(next[0]).toBe(SELECTION_COLUMN)
+    expect((next[1] as ColumnType).key).toBe('contact')
+    expect((next[2] as ColumnType).key).toBe('name')
+    expect(next[3]).toBe(EXPAND_COLUMN)
+    expect((next[1] as ColumnGroupType).children.map((column) => column.key)).toEqual([
+      'city',
+      'email',
+    ])
+    expect(transfer.setData).toHaveBeenCalled()
+    await wrapper.setProps({ options: { fixed: false, draggable: false } })
+    expect(popup().find('[data-column-pin]').exists()).toBe(false)
+    expect(popup().find('[draggable]').exists()).toBe(false)
+  })
 })
 
 it('renders function titles through an explicit label slot without invoking table renderers', async () => {

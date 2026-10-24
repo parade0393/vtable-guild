@@ -2,6 +2,7 @@
 import type { CSSProperties, VNodeChild } from 'vue'
 import type { CustomFilterDropdownSlotProps } from './table'
 import type { ColumnSentinel } from '../constants'
+import type { ColumnCopyable, ColumnValueEnum, TableTooltipConfig } from './presentation'
 
 /** 行唯一标识 */
 export type Key = string | number
@@ -87,6 +88,13 @@ export type ColumnTitle<TRecord extends object = Record<string, any>> =
 export interface ColumnType<TRecord extends object = Record<string, any>> {
   key?: Key
   title?: ColumnTitle<TRecord>
+  /** Header help, independent from the sorting tooltip. */
+  tooltip?: string | TableTooltipConfig
+  copyable?: ColumnCopyable<TRecord>
+  valueEnum?: ColumnValueEnum
+  /** Excludes the column from the column settings panel without changing visibility. */
+  hideInSetting?: boolean
+  disable?: boolean | { checkbox?: boolean; fixed?: boolean; order?: boolean }
   dataIndex?: DataIndex
   /** 列的目标宽度；最终布局宽度仍受 minWidth 和可用空间/内容约束。数字按 CSS px 处理。 */
   width?: number | string
@@ -152,14 +160,14 @@ export interface ColumnType<TRecord extends object = Record<string, any>> {
   /**
    * 筛选项列表。传入后该列表头显示筛选图标。
    */
-  filters?: ColumnFilterItem[]
+  filters?: ColumnFilterItem[] | boolean
 
   /**
    * 筛选函数。返回 true 表示该行匹配当前筛选值。
    * @param value - 当前选中的筛选值
    * @param record - 行数据
    */
-  onFilter?: (value: string | number | boolean, record: TRecord) => boolean
+  onFilter?: boolean | ((value: string | number | boolean, record: TRecord) => boolean)
 
   /**
    * 是否支持多选筛选。默认 true。
@@ -231,7 +239,7 @@ export interface ColumnType<TRecord extends object = Record<string, any>> {
    * 列级别控制是否显示排序 tooltip。
    * 未设置时使用 Table 级别的 showSorterTooltip。
    */
-  showSorterTooltip?: boolean
+  showSorterTooltip?: boolean | TableTooltipConfig
 
   /**
    * 控制列是否显示。`false` 时该列从表头/表体中移除，默认显示。

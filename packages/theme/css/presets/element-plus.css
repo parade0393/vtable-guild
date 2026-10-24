@@ -15,6 +15,16 @@
   --vtg-column-settings-width: 280px;
   --vtg-toolbar-title-font-size: 16px;
   --vtg-toolbar-title-font-weight: 500;
+  --vtg-toolbar-search-width: 240px;
+  --vtg-toolbar-search-height: 32px;
+  --vtg-toolbar-search-font-size: 14px;
+  --vtg-selection-alert-radius: 4px;
+  --vtg-selection-alert-bg: #fafafa;
+  --vtg-selection-alert-padding-inline: 24px;
+  --vtg-selection-alert-padding-block: 8px;
+  --vtg-cell-success: #67c23a;
+  --vtg-cell-warning: #e6a23c;
+  --vtg-cell-error: #f56c6c;
   --vtg-column-settings-radius: 4px;
   --vtg-column-settings-icon-size: 16px;
   --vtg-column-settings-z: 2000;
@@ -242,4 +252,7 @@
 
   /* Striped 行背景 */
   --vtg-table-row-striped-bg: #1d1d1d;
+
+  /* 批量提示条中性底 — 暗色翻转为 2% 白 */
+  --vtg-selection-alert-bg: rgb(255 255 255 / 2%);
 }

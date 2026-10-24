@@ -22,6 +22,7 @@ import type {
   PaginationThemeConfig,
   ColumnSettingsThemeConfig,
   ToolbarThemeConfig,
+  SelectionAlertThemeConfig,
 } from '@vtable-guild/theme'
 
 declare module '../../core/src/index' {
@@ -36,5 +37,6 @@ declare module '../../core/src/index' {
     pagination: ThemeOverrideConfig<PaginationThemeConfig>
     columnSettings: ThemeOverrideConfig<ColumnSettingsThemeConfig>
     toolbar: ThemeOverrideConfig<ToolbarThemeConfig>
+    selectionAlert: ThemeOverrideConfig<SelectionAlertThemeConfig>
   }
 }

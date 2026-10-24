@@ -11,6 +11,9 @@ const emit = defineEmits<{
   'update:size': [size: TableColumnSettingsSize]
   reset: []
   reload: []
+  'update:searchValue': [value: string]
+  search: [value: string]
+  clearSearch: []
   fullscreenChange: [active: boolean]
   fullscreenError: [error: unknown]
 }>()
@@ -28,6 +31,9 @@ function withRecordType<T>(value: unknown): T {
     @update:size="emit('update:size', $event)"
     @reset="emit('reset')"
     @reload="emit('reload')"
+    @update:search-value="emit('update:searchValue', $event)"
+    @search="emit('search', $event)"
+    @clear-search="emit('clearSearch')"
     @fullscreen-change="emit('fullscreenChange', $event)"
     @fullscreen-error="emit('fullscreenError', $event)"
   >
@@ -62,6 +68,30 @@ function withRecordType<T>(value: unknown): T {
           withRecordType<Parameters<NonNullable<TableToolbarSlots<TRecord>['columnLabel']>>[0]>(
             scope,
           )
+        "
+      />
+    </template>
+    <template v-if="$slots.search" #search="scope">
+      <slot
+        name="search"
+        v-bind="
+          withRecordType<Parameters<NonNullable<TableToolbarSlots<TRecord>['search']>>[0]>(scope)
+        "
+      />
+    </template>
+    <template v-if="$slots.filter" #filter="scope">
+      <slot
+        name="filter"
+        v-bind="
+          withRecordType<Parameters<NonNullable<TableToolbarSlots<TRecord>['filter']>>[0]>(scope)
+        "
+      />
+    </template>
+    <template v-if="$slots.extra" #extra="scope">
+      <slot
+        name="extra"
+        v-bind="
+          withRecordType<Parameters<NonNullable<TableToolbarSlots<TRecord>['extra']>>[0]>(scope)
         "
       />
     </template>
