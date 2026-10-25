@@ -1,6 +1,60 @@
 # 编辑
 
-vtable-guild 通过 `bodyCell` 插槽支持单元格编辑和整行编辑。表格负责稳定地渲染列、行与单元格，业务代码负责草稿、校验和提交，这样编辑器可以直接使用项目里已有的表单控件。
+vtable-guild 通过 `bodyCell` 插槽支持单元格编辑和整行编辑。`useTableEdit` 管理按稳定行键保存的草稿、校验和异步保存；编辑器直接使用项目已有的 Ant Design Vue、Element Plus 或表单控件。
+
+## 编辑状态与校验协议
+
+`useTableEdit` 对齐 [EditableProTable 的编辑协议](https://procomponents.ant.design/components/editable-table/)：`editableKeys` 表示当前编辑行，保存完成后退出编辑，校验或保存失败保留草稿；`onCancel` 完成后丢弃草稿。`add()` 对应缓存新增行，取消后该行消失。新增按钮和操作列由业务组合。
+
+<Demo src="editing/protocol">
+
+<<< @/demos/editing/protocol.vue
+
+</Demo>
+
+```ts
+const edit = useTableEdit<Member>({
+  rowKey: 'key',
+  mode: 'multiple',
+  validate: (draft) => (draft.name.trim() ? undefined : { fields: { name: '请输入姓名' } }),
+  onSave: async (draft, { key, original, isNew, signal }) => {
+    const saved = await api.saveMember(draft, { signal })
+    // 使用 key 定位已有记录，isNew 时插入；original 是进入编辑时的快照。
+    updateDataSource(saved, { key, isNew, original })
+    return saved // 也可返回 true / void 接受草稿，返回 false 保持编辑。
+  },
+})
+```
+
+| 配置                       | 说明                                                                                            |
+| -------------------------- | ----------------------------------------------------------------------------------------------- |
+| `rowKey`                   | 必填，记录字段名或返回 `string / number` 的函数，不使用行索引                                   |
+| `mode`                     | `'single'`（默认）或 `'multiple'`；单行模式已有草稿时 `start / add` 返回 `false`                |
+| `clone`                    | 可选完整记录复制函数；默认复制普通对象、数组及 Date，含可变类实例时自行提供                     |
+| `validate(draft, context)` | 同步或异步返回 `{ message?, fields? }`；返回 `void` 或空错误对象继续保存                        |
+| `onSave(draft, context)`   | 校验通过后调用；可返回服务端规范化记录或 `void`，由业务更新 `dataSource`；返回 `false` 保留草稿 |
+| `onCancel(draft, context)` | 可选同步或异步取消处理；返回 `false` 保留草稿，拒绝时记录 `'cancel'` 错误                       |
+| `onError(error, key)`      | 校验、保存和取消失败通知；同时可从 `errors` 读取行错误                                          |
+
+`context` 包含 `key / original / isNew / signal`。新增行的 `original` 为 `undefined`；已有记录在输入和保存期间保持相同行键，新增行可在保存结果中使用服务端分配的新键。
+
+| 状态或方法                       | 说明                                                                                    |
+| -------------------------------- | --------------------------------------------------------------------------------------- |
+| `editableKeys`                   | 只读编辑行键数组；通过 `start / add / cancel / save` 变更                               |
+| `savingKeys / cancellingKeys`    | 保存（含校验）和取消中的行键集合，可用于禁用编辑器或显示 loading                        |
+| `errors`                         | 行键到 `{ type, message, fields?, cause? }` 的映射                                      |
+| `newRecords`                     | 未保存新增行的草稿副本，组合到 `dataSource` 的首部或尾部                                |
+| `start(record) / add(record)`    | 创建已有记录或新增记录的草稿，重复行键返回 `false`                                      |
+| `isEditing(key) / getDraft(key)` | 查询编辑状态及隔离的草稿副本                                                            |
+| `setDraft(key, patch)`           | 合并部分字段，或通过 `(draft) => record` 更新嵌套字段；清除旧错误                       |
+| `save(key)`                      | 返回 `Promise<Record \| undefined>`；成功返回记录并结束编辑，失败或失效返回 `undefined` |
+| `cancel(key) / cancelAll()`      | 返回取消结果的 Promise；成功取消后清理草稿和错误                                        |
+
+输入期间只调用 `setDraft()`，不要直接改写源数据或 `getDraft()` 的返回值。保存期间相同行的重复调用复用同一 Promise，不会重复调用 `onSave`。取消或更新草稿会中止旧任务，过期的成功或失败不能关闭新草稿；组件作用域销毁会清理全部任务。异步业务回调仍须传递并检查 `signal`，防止已经取消的请求写回业务数据。
+
+编辑状态位于组合式函数中，虚拟行离屏卸载不会丢失草稿。分页、刷新、数据替换也不会自动取消草稿；业务需要在离开页面、切换数据集或删除记录时明确调用 `cancel / cancelAll`。
+
+这个协议不包含 React Form 实例、自动编辑器生成、删除确认或整表事务；使用 `bodyCell` 将 `a-input / el-input` 等现有控件连接到同一草稿即可兼容两套预设。
 
 ## 单元格编辑
 
@@ -40,10 +94,10 @@ vtable-guild 通过 `bodyCell` 插槽支持单元格编辑和整行编辑。表�
 
 ## 能力边界
 
-`bodyCell` 已经能承载单元格编辑和整行编辑，但 vtable-guild 当前不内置以下能力：
+`useTableEdit` 已提供行级状态、校验和保存协议，以下能力仍由业务组合：
 
-- 编辑状态管理和表单校验协议。
-- 事务提交、撤销历史或服务端保存流程。
+- 自动查询或编辑表单生成、字段间依赖联动。
+- 整表事务提交、撤销历史或具体 HTTP 服务。
 - Excel 式方向键、Tab 连续编辑和单元格选区。
 
 如果这些能力是核心需求，建议在 `bodyCell` 上组合项目现有的表单方案；需要完整电子表格式编辑引擎时，vxe-table 等功能更完整的方案会更合适。

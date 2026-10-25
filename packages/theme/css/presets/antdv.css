@@ -22,6 +22,12 @@
   --vtg-cell-success: #52c41a;
   --vtg-cell-warning: #faad14;
   --vtg-cell-error: #ff4d4f;
+  --vtg-cell-tag-radius: 4px;
+  --vtg-cell-tag-padding-inline: 7px;
+  --vtg-cell-tag-font-size: 12px;
+  --vtg-cell-tag-line-height: 20px;
+  --vtg-cell-tag-bg: color-mix(in srgb, currentcolor 8%, var(--vtg-table-bg));
+  --vtg-cell-tag-border: color-mix(in srgb, currentcolor 30%, transparent);
   --vtg-column-settings-radius: 8px;
   --vtg-column-settings-icon-size: 16px;
   --vtg-column-settings-z: 1050;

@@ -1,6 +1,6 @@
 # 类型参考
 
-这一页提供站点已介绍 API 的完整 TypeScript 声明。组件行为、默认值和事件语义请看 [API Reference](/guide/api-reference)。声明与功能页共用同一份手工维护文件，并参与类型检查。
+这一页提供站点已介绍 API 的 TypeScript 声明和导入入口。组件行为、默认值和事件语义请看 [API Reference](/guide/api-reference)。核心声明与功能页共用同一份手工维护文件，并参与类型检查；组合式协议直接展示公开导出，详细参数见相应功能指南。
 
 所有公开类型推荐从 `@vtable-guild/vtable-guild` 导入。声明中的 `CSSProperties`、`VNodeChild`、`VNode`、`Plugin`、`InjectionKey` 来自 Vue；主题配置使用公开主题常量的 `typeof` 保留源码的只读属性与字面量。标为“文档辅助”的接口仅用于说明组件 props，不是包导出。
 
@@ -335,6 +335,46 @@ const handleChange: NonNullable<VTableEventProps<UserRow>['onChange']> = (
 <<< @/.vitepress/type-declarations/column-settings.ts#TableColumnSettingsProps
 
 <<< @/.vitepress/type-declarations/column-settings.ts#TableColumnSettingsSlots
+
+## 查询、编辑与字段渲染协议
+
+### useTableQuery
+
+`UseTableQueryOptions<TValues, TParams>` 区分表单值和请求参数类型；`TableQueryFieldTransforms` 按表单键推断转换输入。返回值包括独立草稿、提交快照、展开状态和提交 / 重置方法。`collapsed` 接受共享 Ref，`onCollapse` 观察展开变化。详见 [查询协议](/guide/query)。
+
+<<< @/.vitepress/type-declarations/features.ts#QueryProtocol
+
+### useTableEdit
+
+`UseTableEditOptions<TRecord>` 定义稳定行键、单行 / 多行模式、克隆、校验、保存与取消回调。`TableEditContext` 提供原始快照、新行标记和 AbortSignal；校验失败返回 `TableEditValidationErrors`，错误分类为 `TableEditError`。返回草稿访问、编辑 keys、保存状态与新增行等，详见 [编辑](/guide/editing)。
+
+<<< @/.vitepress/type-declarations/features.ts#EditingProtocol
+
+### 字段渲染器
+
+列通过 `valueType` 选择渲染器，`fieldProps` 支持静态配置或按单元格计算；表格 `renderers` 是作用域内注册表。`TableFieldRenderContext` 包含原值、枚举后的 `displayValue`、状态、配置与语言；返回 VNode 或带 `tooltipText / status` 的 `TableFieldRenderResult`。详见 [字段渲染器](/guide/cell-render)。
+
+<<< @/.vitepress/type-declarations/features.ts#FieldRendererFields
+
+<<< @/.vitepress/type-declarations/features.ts#RendererProtocol
+
+### 懒加载树
+
+`TableTreeLoadData<TRecord>` 接收节点与 `TableTreeLoadContext`，返回子记录数组的 Promise。`isLeaf` 标记终端节点；`onTreeLoadError` 接收失败与节点。重试通过表格实例调用，详见 [树形表格](/guide/tree-table)。
+
+<<< @/.vitepress/type-declarations/features.ts#TreeFields
+
+<<< @/.vitepress/type-declarations/features.ts#TreeLoadProtocol
+
+### TableInstance / TableScrollToOptions
+
+`TableInstance` 是 `ref` 获取的表格实例最小公开协议，包含 `scrollTo(options): Promise<boolean>`、`retryTreeLoad(key): Promise<boolean>` 与 `getTreeLoadError(key)`。滚动选项支持 `key / index / top / left / align / offset`；key 优先于 index，行定位范围是当前已加载且可见的页。详见 [API Reference](/guide/api-reference)。
+
+<<< @/.vitepress/type-declarations/features.ts#TableInstanceProtocol
+
+### 作用域与释放
+
+`useTableQuery`、`useTableEdit` 和 `useTableRequest` 应在组件 `setup` 或 `effectScope` 内创建，随该作用域销毁停止监听并忽略旧异步结果。编辑和请求协议还会中止 signal、结束待完成操作；查询回调中的业务请求由其数据层负责取消。表格自身卸载会使懒加载 / 重试失效并返回 `false`，卸载后的实例滚动同样返回 `false`。`createTableRenderers` 创建的是无监听器的渲染器映射，无需额外释放。
 
 ## 主题与插件类型
 

@@ -1,4 +1,4 @@
-import { computed, defineComponent, inject, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, defineComponent, inject, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import type { CSSProperties, PropType } from 'vue'
 import { cn, devWarn, VirtualList } from '@vtable-guild/core'
 import type { ListRef, VirtualScrollInfo } from '@vtable-guild/core'
@@ -16,6 +16,7 @@ import type { ColumnType, Key } from '../types'
 import { getRowCompatClass } from '../utils/compat'
 import { resolveRowKey } from '../utils/rowKey'
 import { parseStylePxWidth, sumDeclaredColumnWidths } from '../utils/columnWidth'
+import type { TableScrollToOptions } from '../types/instance'
 
 type VirtualTableScrollInfo = VirtualScrollInfo & {
   maxX: number
@@ -64,7 +65,26 @@ export default defineComponent({
   setup(props, { expose }) {
     const tableContext = inject(TABLE_CONTEXT_KEY, {} as TableContext)
     const virtualListRef = ref<ListRef>()
-    expose({ scrollToTop: () => virtualListRef.value?.scrollTo({ top: 0 }) })
+    expose({
+      scrollToTop: () => virtualListRef.value?.scrollTo({ top: 0 }),
+      async scrollTo(options: TableScrollToOptions) {
+        const list = virtualListRef.value
+        if (!list) return false
+        if (options.index !== undefined) {
+          list.scrollTo({ index: options.index, align: options.align, offset: options.offset })
+        } else if (options.top !== undefined) {
+          list.scrollTo({ top: options.top })
+        }
+        // Core List's position form takes priority over index/key; apply X separately.
+        if (options.left !== undefined) list.scrollTo({ left: options.left })
+        await nextTick()
+        if (virtualListRef.value !== list) return false
+        // Programmatic X changes translate the filler without a native scroll event.
+        // Publish the position so the header and the horizontal column window follow.
+        emitVirtualScroll(list.getScrollInfo())
+        return true
+      },
+    })
 
     /** 当前横向滚动偏移。与 Filler 的 `marginLeft: -offsetX` 同源。 */
     const offsetX = ref(0)
@@ -374,6 +394,7 @@ export default defineComponent({
                   >
                     <TableRow
                       data-vtg-virtual-row=""
+                      data-vtg-row-index={rIndex}
                       key={key}
                       rowClass={
                         cn(

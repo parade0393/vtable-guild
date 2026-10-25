@@ -14,6 +14,9 @@ import {
   VTableToolbar, // 可选工具栏，通过 actions 插槽添加导出等业务按钮
   VTableSelectionAlert, // 受控的已选数量与批量操作提示条
   useTableRequest, // 可选服务端请求管理
+  useTableQuery, // 查询草稿、提交、重置、字段参数转换
+  useTableEdit, // EditableProTable 风格的编辑 keys、草稿与校验
+  createTableRenderers, // ProField 风格的 valueType/fieldProps 扩展
   useColumnState, // 可选列偏好与持久化
   VTableColumnSettings, // 可单独使用的密度与列显隐面板
   VTableSummary, // 摘要行容器，子组件 VTableSummary.Row / VTableSummary.Cell
@@ -24,6 +27,7 @@ import {
   SELECTION_NONE, // 批量选择菜单哨兵
   type TableColumnsType,
   type TableProps,
+  type TableInstance,
   type TableColumnSettingsSize,
   type TableToolbarOptions,
   type TableToolbarSlotProps,
@@ -42,6 +46,16 @@ import {
 - `useColumnState` 可保存显隐、固定与顶层顺序；列的 `hideInSetting / disable` 控制设置入口。面板 reset 仍只恢复显隐，helper.reset 恢复全部偏好。见[列设置](../site/guide/column-display.md)。
 - 工具栏支持 `search`、受控 `searchValue`、`search / clearSearch` 事件以及 `search / filter / extra` 插槽；业务决定视图切换时的页码与选择状态。
 - `loading` 对象支持 `delay`（毫秒）和 `wrapperClassName`；`showSorterTooltip` 支持独立的 tooltip 配置对象（延迟单位秒）。
+
+### P2：ProTable 查询、编辑与字段协议
+
+- `useTableQuery({ defaultValues, fieldTransforms, transform, onSubmit, onReset, collapsed, defaultCollapsed, onCollapse })` 返回 `draft / submitted / params / collapsed / submitting / error / submit / reset / resetFields / toggleCollapsed`。草稿不请求；字段转换替换原字段，可展开为多个参数；整体转换在提交、重置时运行。接 `onSubmit: request.submit`、`onReset: request.reset`，各点击请求一次。`resetFields` 只还原草稿；分页继续使用已经提交的参数。`collapsed` 接收共享 Ref，优先于默认 `true` 的 `defaultCollapsed`；`onCollapse` 接收展开收起状态变化。控件与布局复用宿主 UI 库。见[查询协议](../site/guide/query.md)。
+- `useTableEdit({ rowKey, mode, clone, validate, onSave, onCancel, onError })` 对齐 EditableProTable 的 editableKeys 与缓存新增行。默认 single 拒绝同时开启第二行；multiple 允许独立编辑。用 `getDraft / setDraft` 管理隔离草稿，`save / cancel` 执行异步协议；`errors / savingKeys / cancellingKeys` 驱动业务反馈。记录含可变类实例时，通过 `clone(record)` 自定义快照；`onError(error, key)` 接收校验、保存或取消错误。校验失败、回调返回 false 或抛错时保持编辑；业务在 onSave 更新源数据。新增 `newRecords` 保存前由业务合并到展示数据，取消即移除。旧操作与卸载通过 context.signal 失效。见[编辑协议](../site/guide/editing.md)。
+- `column.valueType` 内置 `text / digit / money / date / tag`，`column.fieldProps` 配置 formatter；`createTableRenderers(overrides)` 产生表级不可变注册表，绑定 `VTable.renderers`。`valueEnum` 仍是一份文本与状态定义；customRender/bodyCell 优先，transformCellText 后进入字段展示，复制保持原转换值。见[字段渲染](../site/guide/cell-render.md)。
+- 树形 `loadData(record, { signal })` 返回子节点数组，`isLeaf(record)` 标识叶子。`children: []` 表示已经加载的叶子；未声明 children 的非叶子展开时加载。并发去重、折叠缓存、失败图标重试；`onTreeLoadError` 接错误。缓存不修改输入数据，同 key 替换记录和卸载会中止旧请求。父子选择仅覆盖已加载子树。见[懒加载树](../site/guide/tree-table.md)。
+- 模板 ref 使用 `TableInstance`：`await scrollTo({ key, index, top, left, align, offset })` 返回 boolean，key 优先；index 是当前页可见扁平行索引。当前页未加载、折叠或被筛选移除的行返回 false；业务先加载/展开/切页。普通和虚拟模式共用接口，不定行高沿用测量纠偏。`retryTreeLoad(key)` 不改变展开状态；`getTreeLoadError(key)` 读取错误。见[实例方法](../site/guide/table-instance.md)。
+
+这些协议参考 Ant Design ProTable / EditableProTable / ProField，并适配 Vue props、slots 与 composables。完整列驱动自动查询表单、完整编辑器引擎、事务和电子表格导航继续由业务或后续扩展负责。
 
 ## 初始化（一次性）
 

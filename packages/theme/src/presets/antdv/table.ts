@@ -94,6 +94,8 @@ export const antdvTableTheme = {
       'inline-flex shrink-0 items-center justify-center border-0 bg-transparent p-1 text-[color:var(--color-primary)] cursor-pointer disabled:opacity-50',
     cellStatus:
       "inline-flex items-center gap-1 before:content-[''] before:size-1.5 before:rounded-full before:bg-[color:var(--color-muted)] [&[data-status=success]]:before:bg-[color:var(--vtg-cell-success)] [&[data-status=warning]]:before:bg-[color:var(--vtg-cell-warning)] [&[data-status=error]]:before:bg-[color:var(--vtg-cell-error)] [&[data-status=processing]]:before:bg-[color:var(--color-primary)]",
+    cellTag:
+      'inline-flex items-center whitespace-nowrap border border-[color:var(--vtg-cell-tag-border)] rounded-[var(--vtg-cell-tag-radius)] px-[var(--vtg-cell-tag-padding-inline)] text-[length:var(--vtg-cell-tag-font-size)] leading-[var(--vtg-cell-tag-line-height)] bg-[color:var(--vtg-cell-tag-bg)] text-[color:var(--color-muted)] [&[data-status=success]]:text-[color:var(--vtg-cell-success)] [&[data-status=warning]]:text-[color:var(--vtg-cell-warning)] [&[data-status=error]]:text-[color:var(--vtg-cell-error)] [&[data-status=processing]]:text-[color:var(--color-primary)]',
 
     // ---- 筛选图标相关 ----
     filterIconWrapper: 'shrink-0 ml-1 self-stretch -my-1 -me-2 flex items-center',
@@ -285,6 +287,9 @@ export const antdvTableTheme = {
     treeExpandIconDisabled:
       'me-2 cursor-default border-transparent bg-transparent before:hidden after:hidden invisible',
     treeExpandIconSymbol: 'hidden',
+    treeExpandIconLoading:
+      'before:hidden after:hidden [&>span]:text-[length:12px] [&>span]:animate-spin motion-reduce:[&>span]:animate-none',
+    treeExpandIconError: 'before:hidden after:hidden text-[color:var(--color-error)]',
     treeExpandIconSymbolExpanded: '',
     treeExpandIconSymbolCollapsed: '',
     expandedRow: '',

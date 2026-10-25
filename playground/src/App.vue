@@ -31,6 +31,7 @@ const navGroups = [
       { to: '/column-settings', label: '列设置' },
       { to: '/toolbar', label: '工具栏' },
       { to: '/enterprise', label: '企业能力' },
+      { to: '/pro-table', label: 'ProTable 协议' },
       { to: '/drag-sort', label: '行拖拽' },
       { to: '/advanced', label: '高级' },
     ],

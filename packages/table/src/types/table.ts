@@ -25,6 +25,8 @@ import type {
 import type { SelectionSentinel } from '../constants'
 import type { TableManualConfig } from './request'
 import type { TableTooltipConfig } from './presentation'
+import type { TableFieldRenderers } from './renderers'
+import type { TableTreeLoadData } from './tree'
 import type { TableSlots } from '@vtable-guild/theme'
 import type {
   TablePaginationConfig,
@@ -174,6 +176,12 @@ export interface TableSlotsDecl<TRecord extends object = Record<string, any>> {
  * Table 组件 Props。
  */
 export interface TableProps<TRecord extends object = Record<string, any>> {
+  /** ProField-style valueType renderer overrides scoped to this table. */
+  renderers?: TableFieldRenderers<TRecord>
+  /** Lazy tree children. Supply stable row keys and isLeaf for terminal records. */
+  loadData?: TableTreeLoadData<TRecord>
+  isLeaf?: (record: TRecord) => boolean
+  onTreeLoadError?: (error: Error, record: TRecord) => void
   /** Explicitly opt in with an object; omitted or false preserves unpaginated behavior. */
   pagination?: false | TablePaginationConfig
   /** Skip local processing while preserving UI state and change events. */

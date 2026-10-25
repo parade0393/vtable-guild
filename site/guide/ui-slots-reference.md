@@ -267,16 +267,24 @@ app.use(
 
 ### 树形展开
 
-| Slot                            | 说明                   |
-| ------------------------------- | ---------------------- |
-| `treeExpandIcon`                | 树形展开按钮基础样式。 |
-| `treeExpandIconExpanded`        | 展开状态。             |
-| `treeExpandIconCollapsed`       | 折叠状态。             |
-| `treeExpandIconSpaced`          | 叶子节点占位。         |
-| `treeExpandIconDisabled`        | 禁用状态。             |
-| `treeExpandIconSymbol`          | 树形 symbol 容器。     |
-| `treeExpandIconSymbolExpanded`  | 树形展开 symbol 状态。 |
-| `treeExpandIconSymbolCollapsed` | 树形折叠 symbol 状态。 |
+`treeExpandIconLoading` 与 `treeExpandIconError` 分别控制懒加载反馈与可重试错误；颜色、大小与动画由预设层定义。
+
+| Slot                            | 说明                         |
+| ------------------------------- | ---------------------------- |
+| `treeExpandIcon`                | 树形展开按钮基础样式。       |
+| `treeExpandIconExpanded`        | 展开状态。                   |
+| `treeExpandIconCollapsed`       | 折叠状态。                   |
+| `treeExpandIconSpaced`          | 叶子节点占位。               |
+| `treeExpandIconDisabled`        | 禁用状态。                   |
+| `treeExpandIconSymbol`          | 树形 symbol 容器。           |
+| `treeExpandIconSymbolExpanded`  | 树形展开 symbol 状态。       |
+| `treeExpandIconSymbolCollapsed` | 树形折叠 symbol 状态。       |
+| `treeExpandIconLoading`         | 懒加载进行中的按钮状态。     |
+| `treeExpandIconError`           | 懒加载失败后的重试按钮状态。 |
+
+### 字段标签
+
+`cellTag` 控制 `valueType: 'tag'` 的标签外观，`cellStatus` 继续控制枚举状态标记。两者共享 `data-status` 与状态色变量；自定义 renderer 也可返回 `presentation: 'tag'` 使用标签主题。
 
 ### 列宽拖拽
 

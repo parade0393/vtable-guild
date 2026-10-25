@@ -48,6 +48,9 @@ type MergedKeys =
 type ScrollKeys = 'scroll' | 'sticky' | 'tableLayout'
 type VirtualizationKeys = 'rowKey' | 'scroll' | 'virtual' | 'virtualColumn' | 'rowHeight'
 type TreeKeys =
+  | 'loadData'
+  | 'isLeaf'
+  | 'onTreeLoadError'
   | 'childrenColumnName'
   | 'rowKey'
   | 'indentSize'
@@ -60,10 +63,17 @@ type CustomStructureKeys = 'rowClassName' | 'customRow' | 'customHeaderRow' | 't
 type TitleFooterKeys = 'title' | 'footer'
 type RowDragKeys = 'rowDraggable' | 'rowKey' | 'childrenColumnName'
 type ColumnOrderKeys = 'columnOrder'
+type FieldRendererColumnKeys = 'valueType' | 'fieldProps'
 
 // Compare exact optional fields and signatures against the public interface excerpts,
 // both with the default row type and with a concrete business row.
 export type FeatureDeclarationContracts = [
+  Assert<Equal<Docs.FieldRendererColumnFields, Pick<ColumnType, FieldRendererColumnKeys>>>,
+  Assert<
+    Equal<Docs.FieldRendererColumnFields<Row>, Pick<ColumnType<Row>, FieldRendererColumnKeys>>
+  >,
+  Assert<Equal<Docs.FieldRendererTableFields, Pick<TableProps, 'renderers'>>>,
+  Assert<Equal<Docs.FieldRendererTableFields<Row>, Pick<TableProps<Row>, 'renderers'>>>,
   Assert<Equal<Docs.SortingColumnFields, Pick<ColumnType, SortingKeys>>>,
   Assert<Equal<Docs.SortingColumnFields<Row>, Pick<ColumnType<Row>, SortingKeys>>>,
   Assert<Equal<Docs.FilteringColumnFields, Pick<ColumnType, FilteringKeys>>>,

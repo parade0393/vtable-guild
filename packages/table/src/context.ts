@@ -17,6 +17,7 @@ import type {
 } from './types'
 import type { Expandable } from './types/table'
 import type { TableTooltipConfig } from './types/presentation'
+import type { TableFieldRenderers } from './types/renderers'
 import type { VNodeChild } from 'vue'
 import type { TablePresetConfig } from './preset-config'
 import type { FixedOffset, ScrollEdgeState } from './composables/useScroll'
@@ -49,6 +50,7 @@ export interface SubThemeSlots {
   cellContent: () => string
   copyButton: () => string
   cellStatus: () => string
+  cellTag: () => string
   filterIconWrapper: () => string
   filterIcon: () => string
   filterDropdown: () => string
@@ -114,6 +116,8 @@ export interface SubThemeSlots {
   treeExpandIconDisabled: () => string
   treeExpandIconSymbol: () => string
   treeExpandIconSymbolExpanded: () => string
+  treeExpandIconLoading: () => string
+  treeExpandIconError: () => string
   treeExpandIconSymbolCollapsed: () => string
   expandedRow: () => string
   expandedRowCell: () => string
@@ -132,6 +136,9 @@ export interface SubThemeSlots {
  * 所有后代组件（TableCell、TableHeaderCell 等）通过 inject 获取。
  */
 export interface TableContext {
+  renderers?: ComputedRef<TableFieldRenderers<Record<string, unknown>> | undefined>
+  isTreeLoading?: (key: Key) => boolean
+  getTreeLoadError?: (key: Key) => Error | undefined
   columnLayout?: ColumnLayout
   /**
    * 用户定义的 bodyCell slot 函数。

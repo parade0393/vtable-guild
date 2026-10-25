@@ -56,6 +56,8 @@ export default defineComponent({
           bodyCell: tableContext.bodyCell,
           transformCellText: tableContext.transformCellText,
           columnEmptyText: tableContext.columnEmptyText?.value,
+          renderers: tableContext.renderers?.value,
+          locale: tableContext.localeName?.value,
         }),
     )
 
@@ -399,6 +401,9 @@ export default defineComponent({
 
       const row = treeRow.value
       const showTreeIndent = isTreeIndentColumn.value && row
+      const treeKey = showTreeIndent
+        ? tableContext.getRowKey?.(props.record, props.rowIndex)
+        : undefined
 
       const treeIndent = showTreeIndent ? (
         <span
@@ -420,6 +425,8 @@ export default defineComponent({
             expanded={row.expanded}
             expandable={true}
             variant="tree"
+            loading={treeKey !== undefined && tableContext.isTreeLoading?.(treeKey)}
+            error={treeKey !== undefined && !!tableContext.getTreeLoadError?.(treeKey)}
             onClick={() => tableContext.toggleTreeExpand?.(props.record, props.rowIndex)}
           />
         ) : showTreeIndent ? (
@@ -430,16 +437,25 @@ export default defineComponent({
       const treeAppendClass = showTreeIndent
         ? (tableContext.compatClass?.('cell-with-append') ?? '')
         : ''
-      const displayContent = resolvedCell.value.status ? (
-        <span
-          class={tableContext.subThemeSlots?.cellStatus()}
-          data-status={resolvedCell.value.status}
-        >
-          {resolvedCell.value.content}
-        </span>
-      ) : (
-        resolvedCell.value.content
-      )
+      const displayContent =
+        resolvedCell.value.presentation === 'tag' ? (
+          <span
+            class={tableContext.subThemeSlots?.cellTag()}
+            data-status={resolvedCell.value.status ?? 'default'}
+            data-vtg-field="tag"
+          >
+            {resolvedCell.value.content}
+          </span>
+        ) : resolvedCell.value.status ? (
+          <span
+            class={tableContext.subThemeSlots?.cellStatus()}
+            data-status={resolvedCell.value.status}
+          >
+            {resolvedCell.value.content}
+          </span>
+        ) : (
+          resolvedCell.value.content
+        )
       const mainContent = ellipsisCfg.enabled ? (
         ellipsisCfg.showTitle ? (
           <Tooltip

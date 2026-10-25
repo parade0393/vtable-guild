@@ -14,6 +14,9 @@ import type {
   TableTooltipConfig,
   ColumnCopyable,
   ColumnValueEnum,
+  TableFieldProps,
+  TableFieldRenderers,
+  TableTreeLoadData,
   VTableGuildPaginationLocale,
   VTableGuildTableLocale,
   SELECTION_ALL,
@@ -140,6 +143,8 @@ export interface ColumnType<TRecord extends object = Record<string, any>> {
   tooltip?: string | TableTooltipConfig
   copyable?: ColumnCopyable<TRecord>
   valueEnum?: ColumnValueEnum
+  valueType?: string
+  fieldProps?: TableFieldProps | ((context: CustomRenderContext<TRecord>) => TableFieldProps)
   hideInSetting?: boolean
   disable?: boolean | { checkbox?: boolean; fixed?: boolean; order?: boolean }
   dataIndex?: DataIndex
@@ -198,6 +203,8 @@ export interface CustomRenderContext<TRecord extends object = Record<string, any
 export interface ColumnGroupType<TRecord extends object = Record<string, any>> extends Omit<
   ColumnType<TRecord>,
   | 'dataIndex'
+  | 'valueType'
+  | 'fieldProps'
   | 'customRender'
   | 'sorter'
   | 'sortOrder'
@@ -363,6 +370,10 @@ export interface TableProps<TRecord extends object = Record<string, any>> {
   pagination?: false | TablePaginationConfig
   manual?: boolean | TableManualConfig
   columnEmptyText?: VNodeChild | false
+  renderers?: TableFieldRenderers<TRecord>
+  loadData?: TableTreeLoadData<TRecord>
+  isLeaf?: (record: TRecord) => boolean
+  onTreeLoadError?: (error: Error, record: TRecord) => void
   dataSource: TRecord[]
   columns: ColumnsType<TRecord>
   columnOrder?: Key[]

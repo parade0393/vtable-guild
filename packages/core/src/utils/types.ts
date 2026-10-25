@@ -154,6 +154,7 @@ export interface VTableGuildTableSelectionLocale {
 }
 
 export interface VTableGuildTableLocale {
+  tree?: { expand: string; collapse: string; retry: string }
   cell?: { copy: string; copied: string; copyFailed: string }
   header: VTableGuildTableHeaderLocale
   filterDropdown: VTableGuildTableFilterDropdownLocale

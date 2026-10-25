@@ -64,6 +64,8 @@ export default defineComponent({
             bodyCell: tableContext.bodyCell,
             transformCellText: tableContext.transformCellText,
             columnEmptyText: tableContext.columnEmptyText?.value,
+            renderers: tableContext.renderers?.value,
+            locale: tableContext.localeName?.value,
           })
 
           const colSpan = normalizeSpan(resolvedCell.colSpan)
@@ -146,6 +148,7 @@ export default defineComponent({
             return [
               <TableRow
                 key={key}
+                data-vtg-row-index={rowIndex}
                 rowClass={
                   cn(
                     props.rowClass,

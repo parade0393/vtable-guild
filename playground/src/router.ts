@@ -3,6 +3,7 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 export const router = createRouter({
   history: createWebHashHistory(),
   routes: [
+    { path: '/pro-table', name: 'pro-table', component: () => import('./pages/ProTablePage.vue') },
     {
       path: '/enterprise',
       name: 'enterprise',

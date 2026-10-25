@@ -11,6 +11,7 @@ vtable-guild 是一个 Vue 3 Table 组件库，目标：
 
 - **API 对齐** ant-design-vue Table（排序、筛选、选择、展开、树形、固定列、虚拟滚动等）。
   分页默认关闭，显式配置启用；在筛选、排序后按根记录切片。`change` 保留 `(filters, sorter, extra)`，状态通过 `extra.pagination` 提供。
+- **业务增强** 参考 Ant Design ProTable 的查询、EditableProTable 与 ProField 协议，提供可组合的请求、查询、编辑和只读字段渲染能力；查询控件、编辑器与业务提交复用宿主 UI 库和数据服务，不扩展为完整表单或 CRUD 页面引擎。
 - **样式系统** 基于 tailwind-variants，参考 Nuxt UI 的三层主题覆盖机制
 - **多预设** 同一套表格逻辑贴合不同 UI 体系的视觉，当前内置 `antdv`（默认）与 `element-plus`
 - **多包架构** pnpm workspace monorepo，按职责拆分
@@ -84,7 +85,8 @@ packages/
 ├── table/                             # @vtable-guild/table
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── VTable.vue             # 唯一的 SFC：泛型桥接层（见 §5）
+│   │   │   ├── VTable.vue             # 泛型桥接层（见 §5）
+│   │   │   ├── VTableToolbar.vue  VTableColumnSettings.vue  VTableSelectionAlert.vue
 │   │   │   ├── Table.tsx              # 主实现
 │   │   │   ├── TableHeader.tsx  TableHeaderCell.tsx  TableBody.tsx
 │   │   │   ├── TableRow.tsx  TableCell.tsx  ColGroup.tsx
@@ -98,6 +100,9 @@ packages/
 │   │   │   ├── useColumns.ts          # 列解析、扁平化、占位常量展开
 │   │   │   ├── useSorter.ts  useFilter.ts  useSelection.ts  useExpand.ts
 │   │   │   ├── useTreeData.ts         # 树 → 可见行扁平化
+│   │   │   ├── useLazyTreeData.ts     # 懒加载、缓存、错误、重试与请求失效
+│   │   │   ├── useTableRequest.ts  useTableQuery.ts  useTableEdit.ts
+│   │   │   ├── useColumnState.ts      # 列显隐、固定、面板顺序与持久化
 │   │   │   ├── useScroll.ts  useFixedColumnStyle.ts  useResize.ts
 │   │   │   ├── useVirtual.ts          # 纵向虚拟化
 │   │   │   ├── useColumnWindow.ts  useColumnMetrics.ts   # 横向虚拟化
@@ -106,10 +111,12 @@ packages/
 │   │   ├── types/
 │   │   │   ├── column.ts              # ColumnType / ColumnGroupType / ColumnsType ...
 │   │   │   ├── table.ts               # TableProps / RowSelection / Expandable / 事件类型
+│   │   │   ├── request.ts  query.ts  editing.ts  renderers.ts  tree.ts  instance.ts
 │   │   │   └── index.ts
 │   │   ├── utils/                     # cell.ts  compat.ts  popupPosition.ts  vnode.ts
 │   │   ├── constants.ts               # SELECTION_* / EXPAND_COLUMN / SELECTION_COLUMN 哨兵
 │   │   ├── context.ts                 # TABLE_CONTEXT_KEY
+│   │   ├── renderers.ts               # 表级可替换的只读字段渲染器
 │   │   ├── preset-config.ts
 │   │   └── index.ts
 │   └── vite.config.ts
@@ -255,12 +262,12 @@ export type AntdvTableSlots = keyof typeof antdvTableTheme.slots
 
 ## 5. Table 组件设计
 
-### 5.1 为什么只有 VTable 是 SFC
+### 5.1 泛型 SFC 与 TSX 实现
 
 表格子组件全部是 TSX——单元格渲染要处理 `customRender` 返回值、`RenderedCell`、slot 转发和
 colSpan/rowSpan 合并，用渲染函数比模板直观得多。
 
-唯一的例外是 `VTable.vue`：它是一层**泛型桥接**。内部实现 `Table.tsx` 以
+`VTable.vue` 是一层**泛型桥接**。工具栏、列设置与批量提示条也使用 SFC 对外提供泛型参数，内部交互实现仍采用 TSX。内部实现 `Table.tsx` 以
 `Record<string, unknown>` 单态运行（TSX 拿不到调用方的 `TRecord`），SFC 层用
 `generic="TRecord extends object"` 持有调用方的真实行类型，把 props、事件和 slot 参数的类型还原回去。
 `withRecordType()` 是全局唯一的类型断言点，运行时对象本就是调用方传入的数据，无成本。
@@ -275,6 +282,7 @@ colSpan/rowSpan 合并，用渲染函数比模板直观得多。
 
 ```
 dataSource
+  → 合并懒加载子节点  useLazyTreeData（保持源记录不变）
   → filterData()    useFilter
   → sortData()      useSorter
   = processedData   ← sort / filter / paginate 事件的 extra.currentDataSource
@@ -314,6 +322,21 @@ auto 保留浏览器内容布局。单表消费逐列下限与整表下限，测
 克隆图片尚未完成解码时，参考节点使用已加载源图片的自然尺寸与比例作为内在尺寸回退，
 保留作者宽高、百分比及显式比例；不等待参考节点的资源加载事件，也不修改显示节点。
 
+### 5.6 ProTable 协议的组合边界
+
+| 能力   | 实现与状态归属                                                                                                                                               |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 请求   | `useTableRequest` 统一 `change / submit / reset / reload` 入口，维护数据、分页和请求代次；`manual` 单独决定表格是否本地计算                                  |
+| 查询   | `useTableQuery` 维护表单草稿、提交快照、字段转换及折叠状态；`submit` 连接请求管理器的提交，`reset` 连接 `request.reset(params)`；输入和 `resetFields` 不请求 |
+| 编辑   | `useTableEdit` 按稳定 key 保存原记录快照与草稿；校验、保存和取消支持异步，逐行任务去重及失效；`onSave` 由业务更新数据，新增行先存缓存                        |
+| 字段   | `createTableRenderers` 创建不可变注册表，`TableProps.renderers` 按表覆盖；`valueType / fieldProps` 复用同一份枚举与空值规则；自定义渲染优先                  |
+| 懒加载 | `useLazyTreeData` 按 key 和源记录身份缓存子节点，并发请求去重；折叠后响应缓存但不重新展开，数据替换或卸载中止旧任务                                          |
+| 实例   | 泛型 SFC 暴露 `TableInstance.scrollTo / retryTreeLoad / getTreeLoadError`，普通表体和虚拟表体统一返回结果；定位不跨页、不自动加载或展开树节点                |
+
+编辑草稿不依赖行组件生命周期，虚拟行离屏不会丢失草稿；业务切换数据集、删除记录或离开页面时自行取消。懒加载后代进入树形展开、选择与虚拟化管线，父子选择只覆盖客户端已加载的数据，分页仍只切根节点。只读渲染器不会生成查询控件或编辑器，也不会改变排序、筛选和复制的数据来源。
+
+视觉新增项进入 `packages/theme` 的 slot 与 token，`antdv / element-plus` 使用相同的状态与错误协议。完整使用与边界见[查询](../site/guide/query.md)、[编辑](../site/guide/editing.md)、[字段渲染](../site/guide/cell-render.md)、[懒加载树](../site/guide/tree-table.md)、[实例定位](../site/guide/table-instance.md)。
+
 ---
 
 ## 6. ant-design-vue Table 功能对照
@@ -330,7 +353,7 @@ auto 保留浏览器内容布局。单表消费逐列下限与整表下限，测
 | 空状态                | `empty` slot                                                                    | 已实现                                    |
 | 固定表头 / 固定列     | `scroll.y`、column `fixed` + `scroll.x`                                         | 已实现                                    |
 | 展开行                | `expandable`                                                                    | 已实现                                    |
-| 树形数据              | `childrenColumnName` / `indentSize` / `expandedRowKeys`                         | 已实现（不支持懒加载）                    |
+| 树形数据              | `childrenColumnName` / `indentSize` / `expandedRowKeys` / `loadData` / `isLeaf` | 已实现，含加载、错误、重试与缓存          |
 | 多级表头 / 单元格合并 | `ColumnGroupType.children`、`customCell` 返回 colSpan/rowSpan                   | 已实现                                    |
 | 汇总行                | `VTableSummary` / `.Row` / `.Cell`                                              | 已实现                                    |
 | 表头 / 表尾           | `title` / `footer`（props 或 slot）                                             | 已实现                                    |
@@ -341,5 +364,10 @@ auto 保留浏览器内容布局。单表消费逐列下限与整表下限，测
 | 自定义行 / 单元格属性 | `customRow` / `customHeaderRow` / `customCell` / `customHeaderCell`             | 已实现                                    |
 | 列占位常量            | `EXPAND_COLUMN` / `SELECTION_COLUMN`                                            | 已实现                                    |
 | 分页                  | `pagination` / `extra.pagination`                                               | 显式启用，支持本地 / 远程与双预设         |
+| 列设置与持久化        | `VTableColumnSettings` / `useColumnState`                                       | 显隐、锁定、固定及面板内顶层组换序        |
+| 查询与请求            | `useTableQuery` / `useTableRequest`                                             | 显式提交、重置、转换与请求状态            |
+| 行编辑                | `useTableEdit` + `bodyCell`                                                     | 草稿、校验、保存、取消与缓存新增          |
+| 字段渲染              | `valueType` / `fieldProps` / `createTableRenderers`                             | 五种内置类型及表级覆盖，共用枚举          |
+| 实例方法              | `TableInstance`                                                                 | 当前页定位与树加载重试                    |
 | 声明式列              | `<VTableColumn>` / `<VTableColumnGroup>`                                        | **未实现**，列只能通过 `columns` 数组配置 |
 | 键盘可达性            | `tabindex` / `keydown`                                                          | **未实现**                                |

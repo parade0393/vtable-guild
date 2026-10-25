@@ -8,6 +8,8 @@ import type {
 import { ensureValidVNode } from './vnode'
 import { resolveValueEnum } from './valueEnum'
 import type { ColumnValueStatus } from '../types/presentation'
+import type { TableFieldRenderers, TableFieldRenderResult } from '../types/renderers'
+import { defaultTableRenderers } from '../renderers'
 
 export interface ResolvedBodyCell {
   content: VNodeChild
@@ -18,6 +20,7 @@ export interface ResolvedBodyCell {
   rowSpan: number
   copyText?: string
   status?: ColumnValueStatus
+  presentation?: 'tag'
 }
 
 function resolveTooltipText(value: unknown): string | undefined {
@@ -31,6 +34,10 @@ function resolveTooltipText(value: unknown): string | undefined {
 
 export function isRenderedCell(value: unknown): value is RenderedCell {
   return !!value && typeof value === 'object' && !Array.isArray(value) && !isVNode(value)
+}
+
+function isFieldRenderResult(value: unknown): value is TableFieldRenderResult {
+  return isRenderedCell(value)
 }
 
 export function getCellSpan(
@@ -69,6 +76,8 @@ export function resolveBodyCell<TRecord extends Record<string, unknown>>(options
   rowIndex: number
   column: ColumnType<TRecord>
   columnEmptyText?: VNodeChild | false
+  renderers?: TableFieldRenderers<TRecord>
+  locale?: string
   bodyCell?: ((props: TableBodyCellSlotProps<TRecord>) => VNodeChild) | undefined
   transformCellText?:
     | ((options: {
@@ -102,6 +111,9 @@ export function resolveBodyCell<TRecord extends Record<string, unknown>>(options
     '') as VNodeChild
   let renderCellProps: CellAdditionalProps | undefined
   let customContent = false
+  let tooltipText = resolveTooltipText(defaultText)
+  let status = enumValue?.status
+  let presentation: 'tag' | undefined
 
   if (column.customRender) {
     customContent = true
@@ -133,14 +145,55 @@ export function resolveBodyCell<TRecord extends Record<string, unknown>>(options
     }
   }
 
+  // Explicit render functions and nonempty body slots keep their existing priority.
+  // Nullish values keep the shared empty-value contract without calling field renderers.
+  if (!customContent && column.valueType && transformedText != null) {
+    const defaults = defaultTableRenderers as TableFieldRenderers<TRecord>
+    const registry = options.renderers ?? defaults
+    const renderer = Object.prototype.hasOwnProperty.call(registry, column.valueType)
+      ? registry[column.valueType]
+      : defaults[column.valueType]
+    if (renderer) {
+      const context = {
+        text: transformedText,
+        value: transformedText,
+        record,
+        index: rowIndex,
+        renderIndex: rowIndex,
+        column,
+      }
+      const rendered = renderer({
+        ...context,
+        displayValue: defaultText as VNodeChild,
+        status,
+        fieldProps:
+          typeof column.fieldProps === 'function'
+            ? column.fieldProps(context)
+            : (column.fieldProps ?? {}),
+        locale: options.locale,
+      })
+      if (isFieldRenderResult(rendered)) {
+        const result = rendered
+        content = result.children
+        tooltipText = result.tooltipText ?? resolveTooltipText(result.children)
+        status = result.status
+        presentation = result.presentation
+      } else {
+        content = rendered
+        tooltipText = resolveTooltipText(rendered)
+      }
+    }
+  }
+
   const colSpan = getCellSpan(renderCellProps, 'colSpan') ?? getCellSpan(customCellProps, 'colSpan')
   const rowSpan = getCellSpan(renderCellProps, 'rowSpan') ?? getCellSpan(customCellProps, 'rowSpan')
 
   return {
     content,
-    tooltipText: resolveTooltipText(defaultText),
+    tooltipText,
     copyText: resolveTooltipText(transformedText),
-    status: customContent ? undefined : enumValue?.status,
+    status: customContent ? undefined : status,
+    presentation: customContent ? undefined : presentation,
     customCellProps,
     renderCellProps,
     colSpan: colSpan ?? 1,
