@@ -12,5 +12,5 @@
     "@vtable-guild/playground": "0.0.0",
     "@vtable-guild/site": "0.0.0"
   },
-  "changesets": ["enterprise-table-capabilities"]
+  "changesets": ["enterprise-table-capabilities", "pro-table-p2-protocols"]
 }

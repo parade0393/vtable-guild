@@ -1,5 +1,11 @@
 # @vtable-guild/vtable-guild
 
+## 2.9.0-alpha.1
+
+### Minor Changes
+
+- [#55](https://github.com/parade0393/vtable-guild/pull/55) [`e633ad6`](https://github.com/parade0393/vtable-guild/commit/e633ad62a17c7755d2231b997a8e140c65d70ba2) Thanks [@parade0393](https://github.com/parade0393)! - Add ProTable-style query submission, editable row drafts and validation, field renderer registries, lazy tree loading with retries, and public table scroll methods.
+
 ## 2.9.0-alpha.0
 
 ### Minor Changes
