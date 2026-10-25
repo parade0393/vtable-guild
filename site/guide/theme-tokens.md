@@ -37,6 +37,19 @@
 | `--vtg-table-header-sort-bg`       | 已激活排序的列表头背景                  |
 | `--vtg-table-body-sort-bg`         | 已激活排序的列单元格背景                |
 
+## 字段标签变量
+
+`valueType: 'tag'` 与渲染器返回 `presentation: 'tag'` 使用相同 token。状态色沿用 `--vtg-cell-success / warning / error` 与 `--color-primary`。
+
+| 变量                            | 作用                           |
+| ------------------------------- | ------------------------------ |
+| `--vtg-cell-tag-radius`         | 标签圆角                       |
+| `--vtg-cell-tag-padding-inline` | 标签横向内边距                 |
+| `--vtg-cell-tag-font-size`      | 标签字号                       |
+| `--vtg-cell-tag-line-height`    | 标签行高                       |
+| `--vtg-cell-tag-bg`             | 标签背景，默认从当前状态色混合 |
+| `--vtg-cell-tag-border`         | 标签边框色                     |
+
 ## 行状态变量
 
 | 变量名                                 | 作用                                                                |

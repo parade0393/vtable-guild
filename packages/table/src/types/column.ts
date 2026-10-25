@@ -3,6 +3,7 @@ import type { CSSProperties, VNodeChild } from 'vue'
 import type { CustomFilterDropdownSlotProps } from './table'
 import type { ColumnSentinel } from '../constants'
 import type { ColumnCopyable, ColumnValueEnum, TableTooltipConfig } from './presentation'
+import type { TableFieldProps } from './renderers'
 
 /** 行唯一标识 */
 export type Key = string | number
@@ -92,6 +93,9 @@ export interface ColumnType<TRecord extends object = Record<string, any>> {
   tooltip?: string | TableTooltipConfig
   copyable?: ColumnCopyable<TRecord>
   valueEnum?: ColumnValueEnum
+  /** Built-in text/digit/money/date/tag or a key in the table's renderers registry. */
+  valueType?: string
+  fieldProps?: TableFieldProps | ((context: CustomRenderContext<TRecord>) => TableFieldProps)
   /** Excludes the column from the column settings panel without changing visibility. */
   hideInSetting?: boolean
   disable?: boolean | { checkbox?: boolean; fixed?: boolean; order?: boolean }
@@ -288,6 +292,8 @@ export interface ColumnGroupType<TRecord extends object = Record<string, any>> e
   ColumnType<TRecord>,
   | 'dataIndex'
   | 'customRender'
+  | 'valueType'
+  | 'fieldProps'
   | 'sorter'
   | 'sortOrder'
   | 'defaultSortOrder'

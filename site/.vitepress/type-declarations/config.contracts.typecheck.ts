@@ -31,6 +31,12 @@ export type ConfigDeclarationContracts = [
   Assert<Equal<Docs.ThemePresetName, Public.ThemePresetName>>,
   Assert<Equal<Docs.VTableGuildCssMode, Public.VTableGuildCssMode>>,
   Assert<Equal<Docs.TableSlots, Public.TableSlots>>,
+  Assert<
+    Equal<
+      Extract<Docs.TableSlots, 'cellTag' | 'treeExpandIconLoading' | 'treeExpandIconError'>,
+      'cellTag' | 'treeExpandIconLoading' | 'treeExpandIconError'
+    >
+  >,
   Assert<Equal<Docs.TableVariantProps, Public.TableVariantProps>>,
   Assert<Equal<Docs.TableThemeConfig, Public.TableThemeConfig>>,
   Assert<Equal<Docs.ButtonSlots, Public.ButtonSlots>>,
@@ -105,6 +111,7 @@ export type ConfigDeclarationContracts = [
   Assert<Equal<Docs.LocaleRegistry, Public.LocaleRegistry>>,
   Assert<Equal<Docs.VTableGuildLocale, Public.VTableGuildLocale>>,
   Assert<Equal<Docs.VTableGuildTableLocale, Public.VTableGuildTableLocale>>,
+  Assert<Equal<Docs.VTableGuildTableLocale['tree'], Public.VTableGuildTableLocale['tree']>>,
   Assert<Equal<Docs.VTableGuildTableHeaderLocale, Public.VTableGuildTableHeaderLocale>>,
   Assert<
     Equal<Docs.VTableGuildTableFilterDropdownLocale, Public.VTableGuildTableFilterDropdownLocale>
@@ -156,7 +163,12 @@ export const pluginOptions: Public.VTableGuildOptions = {
   compatClass: true,
   theme: {
     table: {
-      slots: { th: 'font-semibold' },
+      slots: {
+        th: 'font-semibold',
+        cellTag: 'rounded',
+        treeExpandIconLoading: 'animate-spin',
+        treeExpandIconError: 'text-red-600',
+      },
       variants: { bordered: { true: { root: 'rounded-xl' } } },
       compoundSlots: [{ slots: ['th', 'td'], size: 'small', class: 'px-2' }],
       defaultVariants: { size: 'small', hoverable: false },
@@ -165,7 +177,10 @@ export const pluginOptions: Public.VTableGuildOptions = {
   },
   locale: 'en-US',
   localeOverrides: {
-    table: { empty: { text: 'No results' } },
+    table: {
+      empty: { text: 'No results' },
+      tree: { expand: 'Expand row', collapse: 'Collapse row', retry: 'Retry loading' },
+    },
     pagination: { page: 'Page' },
     columnSettings: { reset: 'Restore columns' },
     toolbar: { reload: 'Refresh rows' },

@@ -137,6 +137,7 @@ export type TableSlots =
   | 'cellContent'
   | 'copyButton'
   | 'cellStatus'
+  | 'cellTag'
   | 'filterIconWrapper'
   | 'filterIcon'
   | 'filterDropdown'
@@ -206,6 +207,8 @@ export type TableSlots =
   | 'treeExpandIconSpaced'
   | 'treeExpandIconDisabled'
   | 'treeExpandIconSymbol'
+  | 'treeExpandIconLoading'
+  | 'treeExpandIconError'
   | 'treeExpandIconSymbolExpanded'
   | 'treeExpandIconSymbolCollapsed'
   | 'expandedRow'
@@ -370,6 +373,7 @@ export interface VTableGuildTableSelectionLocale {
 
 // #region VTableGuildTableLocale
 export interface VTableGuildTableLocale {
+  tree?: { expand: string; collapse: string; retry: string }
   cell?: { copy: string; copied: string; copyFailed: string }
   header: VTableGuildTableHeaderLocale
   filterDropdown: VTableGuildTableFilterDropdownLocale

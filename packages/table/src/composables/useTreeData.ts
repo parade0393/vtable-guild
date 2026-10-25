@@ -28,6 +28,8 @@ export interface UseTreeDataOptions<TRecord = Record<string, unknown>> {
   indentSize?: () => number | undefined
   /** Row key resolver */
   getRowKey: (record: TRecord, index: number) => Key
+  /** Includes lazy parents whose children have not loaded yet. */
+  hasChildren?: (record: TRecord) => boolean
   /** Default expanded keys (uncontrolled) */
   defaultExpandedRowKeys?: () => Key[] | undefined
   /** Controlled expanded keys */
@@ -62,17 +64,14 @@ export function useTreeData<TRecord extends Record<string, unknown> = Record<str
 ): UseTreeDataReturn<TRecord> {
   const childrenField = computed(() => options.childrenColumnName?.() ?? 'children')
   const indentSize = computed(() => options.indentSize?.() ?? 15)
+  const hasChildren = (record: TRecord) =>
+    options.hasChildren?.(record) ??
+    (Array.isArray(record[childrenField.value]) &&
+      (record[childrenField.value] as unknown[]).length > 0)
 
   // Detect if any row has children
   const isTreeData = computed(() => {
-    const field = childrenField.value
-    return options
-      .data()
-      .some(
-        (record) =>
-          Array.isArray((record as Record<string, unknown>)[field]) &&
-          ((record as Record<string, unknown>)[field] as unknown[]).length > 0,
-      )
+    return options.data().some(hasChildren)
   })
 
   // Expanded keys state (controlled / uncontrolled)
@@ -103,11 +102,11 @@ export function useTreeData<TRecord extends Record<string, unknown> = Record<str
           records.forEach((record) => {
             const children = (record as Record<string, unknown>)[field]
             const idx = keyCounter++
-            if (Array.isArray(children) && children.length > 0) {
+            if (hasChildren(record)) {
               const key = options.getRowKey(record, idx)
               if (!preserve || !initializedDefaultKeys.has(key)) allKeys.add(key)
               initializedDefaultKeys.add(key)
-              collectExpandableKeys(children)
+              if (Array.isArray(children)) collectExpandableKeys(children)
             }
           })
         }
@@ -181,15 +180,15 @@ export function useTreeData<TRecord extends Record<string, unknown> = Record<str
     function flatten(records: TRecord[], level: number, parentKey?: Key) {
       records.forEach((record, _i) => {
         const children = (record as Record<string, unknown>)[field] as TRecord[] | undefined
-        const hasChildren = Array.isArray(children) && children.length > 0
+        const canExpand = hasChildren(record)
         const key = options.getRowKey(record, rows.length)
-        const expanded = hasChildren && keys.has(key)
+        const expanded = canExpand && keys.has(key)
 
         rows.push({
           record,
           level,
           expanded,
-          hasChildren,
+          hasChildren: canExpand,
           parentKey,
         })
 

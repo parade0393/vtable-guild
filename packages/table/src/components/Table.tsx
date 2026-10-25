@@ -14,6 +14,9 @@ import {
 } from 'vue'
 import type { TableManualConfig } from '../types/request'
 import type { TableTooltipConfig } from '../types/presentation'
+import type { TableFieldRenderers } from '../types/renderers'
+import type { TableTreeLoadData } from '../types/tree'
+import type { TableInstance, TableScrollToOptions } from '../types/instance'
 import { isManual } from '../utils/manual'
 import {
   cn,
@@ -70,6 +73,7 @@ import { useExpand } from '../composables/useExpand'
 import { useResize } from '../composables/useResize'
 import { INVALID_SCROLL_Y_FALLBACK, useVirtual } from '../composables/useVirtual'
 import { useTreeData } from '../composables/useTreeData'
+import { useLazyTreeData } from '../composables/useLazyTreeData'
 import { useHoverState } from '../composables/useHoverState'
 import { useRowDragSort } from '../composables/useRowDragSort'
 
@@ -181,6 +185,13 @@ export default defineComponent({
       default: false,
     },
     manual: { type: [Boolean, Object] as PropType<boolean | TableManualConfig>, default: false },
+    renderers: { type: Object as PropType<TableFieldRenderers<TableRecord>>, default: undefined },
+    loadData: { type: Function as PropType<TableTreeLoadData<TableRecord>>, default: undefined },
+    isLeaf: { type: Function as PropType<(record: TableRecord) => boolean>, default: undefined },
+    onTreeLoadError: {
+      type: Function as PropType<(error: Error, record: TableRecord) => void>,
+      default: undefined,
+    },
     columnEmptyText: { type: null as unknown as PropType<VNodeChild | false>, default: false },
     dataSource: { type: Array as PropType<TableRecord[]>, default: () => [] },
     columns: { type: Array as PropType<ColumnsType<TableRecord>>, default: () => [] },
@@ -392,7 +403,7 @@ export default defineComponent({
     summary: void
     expandColumnTitle: void
   }>,
-  setup(props, { slots, emit }) {
+  setup(props, { slots, emit, expose }) {
     const loadingVisible = ref(false)
     let loadingTimer: ReturnType<typeof setTimeout> | undefined
     watch(
@@ -583,9 +594,17 @@ export default defineComponent({
       },
     })
 
+    const lazyTree = useLazyTreeData({
+      data: () => props.dataSource,
+      loadData: () => props.loadData,
+      isLeaf: () => props.isLeaf,
+      childrenColumnName: () => props.childrenColumnName,
+      getRowKey: getRowKeyFn,
+      onLoadError: (error, record) => props.onTreeLoadError?.(error, record),
+    })
     // ---- 处理后数据：筛选 → 排序 ----
     function getProcessedData() {
-      let data = props.dataSource
+      let data = lazyTree.data.value
       if (!isManual(props.manual, 'filter')) data = filterData(data)
       if (!isManual(props.manual, 'sort')) data = sortData(data)
       return data
@@ -616,7 +635,10 @@ export default defineComponent({
       ...globalContext?.localeOverrides?.pagination,
       ...pagination.config.value.locale,
     }))
-    const virtualBodyRef = ref<{ scrollToTop: () => void } | null>(null)
+    const virtualBodyRef = ref<{
+      scrollToTop: () => void
+      scrollTo: (options: TableScrollToOptions) => Promise<boolean>
+    } | null>(null)
     function scrollToFirstRow() {
       const enabled = props.scroll?.scrollToFirstRowOnChange ?? pagination.enabled.value
       if (!enabled) return
@@ -672,22 +694,42 @@ export default defineComponent({
       flattenData: treeFlattenData,
       rowMetaMap: treeRowMetaMap,
       isTreeData,
-      toggleTreeExpand,
+      toggleTreeExpand: toggleTreeExpanded,
       isTreeExpanded,
       indentSize: treeIndentSize,
     } = useTreeData({
       data: () => processedData.value,
       pageData: () => pagination.pageData.value,
-      preserveStateOnDataChange: () => pagination.enabled.value,
+      preserveStateOnDataChange: () => pagination.enabled.value || !!props.loadData,
       childrenColumnName: () => props.childrenColumnName,
       indentSize: () => props.indentSize,
       getRowKey: getRowKeyFn,
+      hasChildren: lazyTree.hasChildren,
       defaultExpandedRowKeys: () => props.defaultExpandedRowKeys,
       expandedRowKeys: () => props.expandedRowKeys,
       defaultExpandAllRows: () => props.defaultExpandAllRows,
-      onExpand: props.onExpand,
-      onExpandedRowsChange: props.onExpandedRowsChange,
+      onExpand: (expanded, record) => props.onExpand?.(expanded, record),
+      onExpandedRowsChange: (keys) => props.onExpandedRowsChange?.(keys),
     })
+    function toggleTreeExpand(record: TableRecord, index: number) {
+      const key = getRowKeyFn(record, index)
+      if (lazyTree.getError(key)) {
+        void lazyTree.load(record, index)
+        return
+      }
+      toggleTreeExpanded(record, index)
+    }
+    watch(
+      () => (props.loadData ? treeFlattenData.value : undefined),
+      (rows) => {
+        rows?.forEach((row, index) => {
+          if (row.expanded && !lazyTree.getError(getRowKeyFn(row.record, index))) {
+            void lazyTree.load(row.record, index)
+          }
+        })
+      },
+      { immediate: true },
+    )
 
     const { hoverRange, setHoverRange, clearHoverRange } = useHoverState(100)
 
@@ -1085,6 +1127,88 @@ export default defineComponent({
       },
     )
 
+    let instanceMounted = false
+    onMounted(() => {
+      instanceMounted = true
+    })
+    onBeforeUnmount(() => {
+      instanceMounted = false
+    })
+
+    async function scrollTo(options: TableScrollToOptions): Promise<boolean> {
+      if (!options || typeof options !== 'object') return false
+      for (const value of [options.top, options.left, options.offset]) {
+        if (value !== undefined && (typeof value !== 'number' || !Number.isFinite(value))) {
+          return false
+        }
+      }
+      if (options.align !== undefined && !['top', 'bottom', 'auto'].includes(options.align)) {
+        return false
+      }
+      await nextTick()
+      if (!instanceMounted) return false
+      let index: number | undefined
+      if (options.key !== undefined) {
+        index = displayData.value.findIndex((record, at) => getRowKeyFn(record, at) === options.key)
+        if (index < 0) return false
+      } else if (options.index !== undefined) {
+        if (!Number.isSafeInteger(options.index) || options.index < 0) return false
+        index = options.index
+        if (index >= displayData.value.length) return false
+      } else if (options.top === undefined && options.left === undefined) {
+        return false
+      }
+
+      if (virtualEnabled.value) {
+        return (
+          (await virtualBodyRef.value?.scrollTo({
+            index,
+            top: index === undefined ? options.top : undefined,
+            left: options.left,
+            align: options.align ?? 'top',
+            offset: options.offset,
+          })) ?? false
+        )
+      }
+      const wrap = bodyWrapRef.value
+      if (!wrap || !layoutRootRef.value?.contains(wrap)) return false
+      let top = options.top
+      if (index !== undefined) {
+        const row = wrap.querySelector<HTMLElement>(`[data-vtg-row-index="${index}"]`)
+        if (!row) return false
+        const rowRect = row.getBoundingClientRect()
+        const wrapRect = wrap.getBoundingClientRect()
+        const rowTop = rowRect.top - wrapRect.top + wrap.scrollTop - wrap.clientTop
+        const rowBottom = rowTop + rowRect.height
+        const offset = options.offset ?? 0
+        const align = options.align ?? 'top'
+        if (align === 'top' || (align === 'auto' && rowTop < wrap.scrollTop + offset)) {
+          top = rowTop - offset
+        } else if (
+          align === 'bottom' ||
+          (align === 'auto' && rowBottom > wrap.scrollTop + wrap.clientHeight - offset)
+        ) {
+          top = rowBottom - wrap.clientHeight + offset
+        } else {
+          top = undefined
+        }
+      }
+      if (top !== undefined) {
+        wrap.scrollTop = Math.max(0, Math.min(top, wrap.scrollHeight - wrap.clientHeight))
+      }
+      if (options.left !== undefined) {
+        wrap.scrollLeft = Math.max(0, Math.min(options.left, wrap.scrollWidth - wrap.clientWidth))
+      }
+      updateScrollState()
+      return true
+    }
+
+    expose({
+      scrollTo,
+      retryTreeLoad: lazyTree.retry,
+      getTreeLoadError: lazyTree.getError,
+    } satisfies TableInstance)
+
     // ---- 横向虚拟化 ----
     const displayFixedRanges = computed(() => resolveFixedColumnRanges(displayColumns.value))
 
@@ -1222,6 +1346,7 @@ export default defineComponent({
       cellContent: themeSlots.cellContent,
       copyButton: themeSlots.copyButton,
       cellStatus: themeSlots.cellStatus,
+      cellTag: themeSlots.cellTag,
       filterIconWrapper: themeSlots.filterIconWrapper,
       filterIcon: themeSlots.filterIcon,
       filterDropdown: themeSlots.filterDropdown,
@@ -1278,6 +1403,8 @@ export default defineComponent({
       expandIconSymbolExpanded: themeSlots.expandIconSymbolExpanded,
       expandIconSymbolCollapsed: themeSlots.expandIconSymbolCollapsed,
       treeExpandIcon: themeSlots.treeExpandIcon,
+      treeExpandIconLoading: themeSlots.treeExpandIconLoading,
+      treeExpandIconError: themeSlots.treeExpandIconError,
       treeExpandIconExpanded: themeSlots.treeExpandIconExpanded,
       treeExpandIconCollapsed: themeSlots.treeExpandIconCollapsed,
       treeExpandIconSpaced: themeSlots.treeExpandIconSpaced,
@@ -1301,6 +1428,9 @@ export default defineComponent({
     const summaryFixed = ref<boolean | 'top' | 'bottom' | false>(false)
 
     provide<TableContext>(TABLE_CONTEXT_KEY, {
+      renderers: computed(() => props.renderers),
+      isTreeLoading: lazyTree.isLoading,
+      getTreeLoadError: lazyTree.getError,
       columnLayout,
       bodyCell: slots.bodyCell,
       headerCell: slots.headerCell,

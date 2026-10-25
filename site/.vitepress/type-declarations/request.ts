@@ -85,9 +85,9 @@ export interface UseTableRequestReturn<
   onChange: NonNullable<VTableEventProps<TRecord>['onChange']>
   /** Force a request. true also resets the current page. Resolves after the request settles. */
   reload: (resetPageIndex?: boolean) => Promise<void>
-  /** Replace the submitted query, reset to page one, and request. */
+  /** Replace the submitted query, reset to page one, and request even if values are unchanged. */
   submit: (params?: Partial<TParams>) => Promise<void>
-  /** Restore default query, clear sort and filters, reset to page one, and request. */
-  reset: () => Promise<void>
+  /** Restore defaults (or the supplied query), clear sort/filters, reset to page one, and request. */
+  reset: (params?: Partial<TParams>) => Promise<void>
   cancel: () => void
 }

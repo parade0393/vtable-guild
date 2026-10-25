@@ -1,12 +1,15 @@
 import { cn } from '@vtable-guild/core'
 import { defineComponent, inject, type PropType } from 'vue'
 import { TABLE_CONTEXT_KEY } from '../context'
+import { ReloadOutlinedIcon } from '@vtable-guild/icons'
 
 export default defineComponent({
   name: 'ExpandIcon',
   props: {
     expanded: { type: Boolean, required: true },
     expandable: { type: Boolean, default: true },
+    loading: { type: Boolean, default: false },
+    error: { type: Boolean, default: false },
     variant: {
       type: String as PropType<'row' | 'tree'>,
       default: 'row',
@@ -69,6 +72,8 @@ export default defineComponent({
         !props.expandable && fallbackSpacedClass,
         !props.expandable && buttonSpacedClass,
         props.expandable && (props.expanded ? buttonExpandedClass : buttonCollapsedClass),
+        props.loading && subThemeSlots?.treeExpandIconLoading(),
+        props.error && subThemeSlots?.treeExpandIconError(),
         !props.expandable && buttonDisabledClass,
       )
       const symbolClass = cn(
@@ -77,7 +82,19 @@ export default defineComponent({
         props.expandable && (props.expanded ? symbolExpandedClass : symbolCollapsedClass),
       )
 
-      const iconNode = (
+      const locale = isTree ? tableContext.locale?.value.tree : undefined
+      const iconNode = props.loading ? (
+        <span class={subThemeSlots?.loadingSpinner()} aria-hidden="true">
+          <ReloadOutlinedIcon />
+        </span>
+      ) : props.error ? (
+        <span aria-hidden="true">
+          <svg width="1em" height="1em" viewBox="0 0 16 16" fill="none" stroke="currentColor">
+            <circle cx="8" cy="8" r="6.5" />
+            <path d="M8 4.5v4M8 10.5v1" stroke-width="1.5" />
+          </svg>
+        </span>
+      ) : (
         <span class={symbolClass} aria-hidden="true">
           <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
             <path d="M4 2.5L8 6L4 9.5" stroke-linecap="round" stroke-linejoin="round" />
@@ -99,7 +116,18 @@ export default defineComponent({
           class={buttonClass}
           onClick={handleClick}
           aria-expanded={props.expanded}
-          aria-label={props.expanded ? 'Collapse row' : 'Expand row'}
+          aria-busy={props.loading || undefined}
+          data-load-error={props.error || undefined}
+          title={props.error ? locale?.retry : undefined}
+          aria-label={
+            props.loading
+              ? tableContext.locale?.value.loading.text
+              : props.error
+                ? locale?.retry
+                : props.expanded
+                  ? (locale?.collapse ?? 'Collapse row')
+                  : (locale?.expand ?? 'Expand row')
+          }
         >
           {iconNode}
         </button>

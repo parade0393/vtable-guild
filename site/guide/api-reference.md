@@ -14,11 +14,16 @@ import {
   VTableToolbar,
   VTableColumnSettings,
   VTableSummary,
+  useTableRequest,
+  useTableQuery,
+  useTableEdit,
+  createTableRenderers,
   EXPAND_COLUMN,
   SELECTION_COLUMN,
   type TableColumnsType,
   type RowSelection,
   type Expandable,
+  type TableInstance,
 } from '@vtable-guild/vtable-guild'
 ```
 
@@ -28,21 +33,38 @@ import {
 
 `#actions` 添加导出、新增等业务按钮；`#settings` 完全替换内置工具；`options: false` 只关闭内置工具，保留业务插槽。完整 props、事件、插槽和可运行导出示例见 [工具栏与业务扩展](/guide/toolbar)。
 
-只需要密度和列显隐时可单独使用 `VTableColumnSettings`，支持 `options.density` / `options.setting` 开关和 `#columnLabel`。重置只恢复初始列显隐。面板不提供列拖拽或固定列编辑，详见 [列显示与列顺序](/guide/column-display)。
+只需要密度和列设置时可单独使用 `VTableColumnSettings`，包含显隐、固定左右与同一固定区域内的顶层拖拽换序。`options.density / setting / fixed / draggable` 分别控制入口；列的 `disable` 锁定操作，`hideInSetting` 隐藏设置项，`#columnLabel` 自定义标签。面板重置只恢复初始显隐；`useColumnState().reset()` 可恢复显隐、固定与顺序，详见 [列显示与列顺序](/guide/column-display)。
+
+## 查询与编辑协议
+
+这组 Vue 组合式函数参考 Ant Design ProTable 的查询与 EditableProTable 状态，不会从 columns 生成完整表单。控件、表单校验和数据提交继续使用宿主 UI 库与业务服务，`antdv / element-plus` 共享同一协议。
+
+| 入口                                              | 配置与返回状态                                                                                                                                                                     | 行为                                                                                                                                                         |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [`useTableQuery<TValues, TParams>`](/guide/query) | `defaultValues / fieldTransforms / transform / onSubmit / onReset / collapsed / defaultCollapsed / onCollapse`；返回 `draft / submitted / params / collapsed / submitting / error` | 输入只改草稿；`submit()` 转换并提交，`reset()` 恢复默认值后提交，`resetFields()` 只恢复草稿；`toggleCollapsed()` 不查询                                      |
+| [`useTableEdit<TRecord>`](/guide/editing)         | 必填 `rowKey`；可选 `mode / clone / validate / onSave / onCancel / onError`；返回 `editableKeys / savingKeys / cancellingKeys / errors / newRecords`                               | `start / add / getDraft / setDraft / isEditing / save / cancel / cancelAll` 管理独立草稿；异步校验或保存失败保留草稿，保存完成退出编辑；缓存新增行取消后移除 |
+
+查询通过 `onSubmit: request.submit` 和 `onReset: request.reset` 连接请求管理器；提交与重置都回到第一页，后者同时清空排序与筛选。`useTableQuery` 不自行首次请求，也不因折叠隐藏而清空字段。编辑默认单行模式，开始第二行返回 `false`；多行模式逐行处理。`onSave / onCancel` 返回 `false` 可保持编辑，抛错进入行错误。草稿不依赖可视行组件，业务更新数据源并在切换数据集时明确取消旧草稿。
 
 ## VTable Props
 
 ### 数据与结构
 
-| Prop                 | 类型                                                             | 默认值       | 说明                                                                       |
-| -------------------- | ---------------------------------------------------------------- | ------------ | -------------------------------------------------------------------------- |
-| `dataSource`         | `TRecord[]`                                                      | `[]`         | 表格数据源。                                                               |
-| `pagination`         | `false \| TablePaginationConfig`                                 | `false`      | 传 `{}` 启用本地或远程分页，见[分页](/guide/pagination)。                  |
-| `columns`            | [`TableColumnsType<TRecord>`](/guide/type-reference#columnstype) | `[]`         | 列配置，支持叶子列、列组和列占位常量。                                     |
-| `columnOrder`        | [`Key[]`](/guide/type-reference#key)                             | -            | 列显示顺序，见[列显示与列顺序](/guide/column-display#列顺序-columnorder)。 |
-| `rowKey`             | `string \| ((record: TRecord) => Key)`                           | -            | 行唯一标识，建议显式传入。                                                 |
-| `childrenColumnName` | `string`                                                         | `'children'` | 树形数据的子节点字段名。                                                   |
-| `indentSize`         | `number`                                                         | `15`         | 树形数据缩进宽度，单位 px。                                                |
+| Prop                 | 类型                                                             | 默认值       | 说明                                                                         |
+| -------------------- | ---------------------------------------------------------------- | ------------ | ---------------------------------------------------------------------------- |
+| `dataSource`         | `TRecord[]`                                                      | `[]`         | 表格数据源。                                                                 |
+| `pagination`         | `false \| TablePaginationConfig`                                 | `false`      | 传 `{}` 启用本地或远程分页，见[分页](/guide/pagination)。                    |
+| `columns`            | [`TableColumnsType<TRecord>`](/guide/type-reference#columnstype) | `[]`         | 列配置，支持叶子列、列组和列占位常量。                                       |
+| `columnOrder`        | [`Key[]`](/guide/type-reference#key)                             | -            | 列显示顺序，见[列显示与列顺序](/guide/column-display#列顺序-columnorder)。   |
+| `rowKey`             | `string \| ((record: TRecord) => Key)`                           | -            | 行唯一标识，建议显式传入。                                                   |
+| `childrenColumnName` | `string`                                                         | `'children'` | 树形数据的子节点字段名。                                                     |
+| `indentSize`         | `number`                                                         | `15`         | 树形数据缩进宽度，单位 px。                                                  |
+| `loadData`           | `TableTreeLoadData<TRecord>`                                     | -            | `(record, { signal }) => Promise<TRecord[]>`，懒加载未提供 children 的节点。 |
+| `isLeaf`             | `(record: TRecord) => boolean`                                   | -            | 明确懒加载树的叶子节点；已有 `children: []` 也视为叶子。                     |
+| `onTreeLoadError`    | `(error: Error, record: TRecord) => void`                        | -            | 懒加载错误通知，可用 `@tree-load-error` 绑定。                               |
+| `renderers`          | `TableFieldRenderers<TRecord>`                                   | 内置映射     | 按表覆盖或扩展 `valueType` 的只读渲染器。                                    |
+
+懒加载要求稳定行键；同一节点并发请求去重，折叠后响应进入缓存而不重新展开。删除节点、替换同 key 记录或卸载会使旧任务失效，加载结果不写入输入数据。选择关系只覆盖已加载后代，分页仍以根节点为单位，详见[树形表格](/guide/tree-table)。
 
 ### 服务端计算与请求
 
@@ -125,6 +147,22 @@ import {
 列级 `valueEnum?: ColumnValueEnum` 支持对象或 Map，值为文本或 `{ text, status }`，status 可为 success、warning、error、processing、default。
 `filters: true` 从枚举生成筛选项；`filters: false` 关闭，`onFilter: false` 显式跳过本地过滤，`onFilter: true` 使用等值匹配。
 详见[单元格展示](/guide/cell-display)。
+
+列级 `valueType?: string` 选择 `text / digit / money / date / tag` 或自定义类型；`fieldProps` 为选项对象或上下文回调。`createTableRenderers<TRecord>(overrides)` 合并内置与业务映射，返回不可变注册表，通过表格 `renderers` 接入，不修改全局注册表。`digit / money / date` 使用 Intl 格式化；tag 与 `valueEnum` 共用状态主题。
+
+`transformCellText` 先执行，字段渲染器消费转换后的值与枚举标签；`customRender`、有效 `bodyCell` 内容优先，空值使用既有 `columnEmptyText`，未知类型回退到枚举或原值。排序、筛选与默认复制的数据约定保持不变。渲染器只提供只读展示，详见[字段渲染器](/guide/cell-render)。
+
+## VTable 实例方法
+
+模板 ref 使用公开 `TableInstance` 类型；普通与虚拟表体共用同一接口，详见[表格实例与定位](/guide/table-instance)。
+
+| 方法                                                       | 返回值与边界                                                                                                                                        |
+| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `scrollTo({ key?, index?, top?, left?, align?, offset? })` | `Promise<boolean>`；key 优先于 index 和 top，index 按当前页可见扁平行计数；align 为 `top / bottom / auto`。找不到目标、未挂载或参数无效时返回 false |
+| `retryTreeLoad(key)`                                       | `Promise<boolean>`，重试节点加载，不改变展开 keys                                                                                                   |
+| `getTreeLoadError(key)`                                    | 当前行的 `Error \| undefined`                                                                                                                       |
+
+定位只处理当前页已经加载且可见的记录；跨页、折叠树节点和被筛选移除的记录返回 false，业务先切页、加载或展开，再定位。不定行高虚拟列表使用已有测量与纠偏，Promise 表示定位已提交，不承诺未来图片加载后的最终像素位置。
 
 ## Column 行为
 

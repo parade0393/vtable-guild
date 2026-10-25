@@ -236,6 +236,37 @@ describe('useTableRequest', () => {
     expect(request.mock.lastCall?.[0]).toMatchObject({ current: 1, bounds: { start: 2 } })
   })
 
+  it('snapshots cyclic parameters and safely deduplicates equivalent table and parameter changes', async () => {
+    interface Bounds {
+      start: number
+      self?: Bounds
+    }
+    const bounds: Bounds = { start: 1 }
+    bounds.self = bounds
+    const params = ref({ bounds })
+    const request = vi.fn().mockResolvedValue(response())
+    const hook = setup({ request, params })
+    await flush()
+    const firstBounds = request.mock.calls[0][0].bounds as Bounds
+    expect(firstBounds.self).toBe(firstBounds)
+    expect(firstBounds).not.toBe(bounds)
+    change(hook, 2)
+    change(hook, 2)
+    await flush()
+    expect(request).toHaveBeenCalledTimes(2)
+    const replacement: Bounds = { start: 1 }
+    replacement.self = replacement
+    params.value = { bounds: replacement }
+    await flush()
+    expect(request).toHaveBeenCalledTimes(2)
+    expect(hook.pagination.value.current).toBe(2)
+    params.value.bounds.start = 2
+    await flush()
+    expect(request).toHaveBeenCalledTimes(3)
+    expect(request.mock.lastCall?.[0]).toMatchObject({ current: 1, bounds: { start: 2 } })
+    expect(firstBounds.start).toBe(1)
+  })
+
   it('preserves filter value types and maps multi-sort fields without using display keys', async () => {
     const request = vi.fn().mockResolvedValue(response())
     const hook = setup({ request, manualRequest: true })
@@ -293,6 +324,20 @@ describe('useTableRequest', () => {
       {},
     ])
     expect(hook.query.value).toEqual({ keyword: 'initial' })
+  })
+
+  it('requests on every explicit submit/reset even when the query is unchanged', async () => {
+    const request = vi.fn().mockResolvedValue(response())
+    const hook = setup({ request, manualRequest: true })
+    await hook.submit({ keyword: 'same' })
+    await hook.submit({ keyword: 'same' })
+    expect(request).toHaveBeenCalledTimes(2)
+    await hook.reset({ keyword: 'custom defaults' })
+    await hook.reset({ keyword: 'custom defaults' })
+    expect(request).toHaveBeenCalledTimes(4)
+    expect(hook.query.value).toEqual({ keyword: 'custom defaults' })
+    await hook.reset()
+    expect(hook.query.value).toEqual({})
   })
 
   it('reports request and transform failures, retaining successful data for retry', async () => {

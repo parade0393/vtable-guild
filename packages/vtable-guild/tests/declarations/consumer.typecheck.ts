@@ -10,6 +10,10 @@ import {
   VTableToolbar,
   type TableToolbarProps,
   type TableToolbarSlots,
+  VTable,
+  createTableRenderers,
+  type TableInstance,
+  type TableFieldRenderer,
 } from '@vtable-guild/vtable-guild'
 
 type SummaryProps = InstanceType<typeof VTableSummary>['$props']
@@ -97,3 +101,33 @@ createVTableGuild({
   theme: { toolbar: { slots: { root: 'custom-toolbar', actions: 'gap-3' } } },
   localeOverrides: { toolbar: { reload: 'Refresh' } },
 })
+
+const _memberRenderer: TableFieldRenderer<Member> = ({ record, displayValue }) => ({
+  children: displayValue,
+  tooltipText: record.name,
+  presentation: 'tag',
+  status: 'success',
+})
+const _memberRenderers = createTableRenderers<Member>({ member: _memberRenderer })
+type TablePublicProps = Parameters<typeof VTable<Member>>[0]
+const _renderedTable: TablePublicProps = {
+  dataSource: [{ id: 1, name: 'Member' }],
+  columns: [
+    { dataIndex: 'name', valueType: 'member', fieldProps: ({ record }) => ({ id: record.id }) },
+  ],
+  renderers: _memberRenderers,
+}
+// @ts-expect-error The published factory retains the declared record shape.
+const _invalidRenderer: TableFieldRenderer<Member> = ({ record }) => record.unknown
+
+type TableExposed = Parameters<NonNullable<Parameters<typeof VTable<Member>>[2]>>[0]
+function _publishedInstance(table: TableExposed) {
+  const _instance: TableInstance = table
+  const _located: Promise<boolean> = table.scrollTo({ key: 1, align: 'top', left: 20 })
+  const _retry: Promise<boolean> = table.retryTreeLoad(1)
+  const _error: Error | undefined = table.getTreeLoadError(1)
+  // @ts-expect-error Published instance align values remain constrained.
+  table.scrollTo({ align: 'middle' })
+}
+
+createVTableGuild({ theme: { table: { slots: { cellTag: 'tag-override' } } } })

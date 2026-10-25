@@ -61,8 +61,8 @@ app.use(createVTableGuild({ themePreset: 'element-plus' }))
 
 写在前面，省得你走到一半才发现：
 
-- **要完整编辑引擎、Excel 导出、表头直接拖拽换序、右键菜单**：单元格和整行编辑可通过 [`bodyCell`](https://parade0393.github.io/vtable-guild/guide/editing) 组合，但不内置编辑状态、校验和 Excel 式键盘导航；这些完整企业表格能力仍是 [vxe-table](https://vxetable.cn/) 的主场
-- **有键盘可达性 / 无障碍合规要求**：目前排序头和筛选触发器还不能键盘操作，正在补
+- **要完整编辑引擎、Excel 导出、表头直接拖拽换序、右键菜单**：[`useTableEdit`](https://parade0393.github.io/vtable-guild/guide/editing) 提供草稿、校验和保存协议，编辑器通过 `bodyCell` 组合；整表事务和 Excel 式导航仍需更完整的编辑方案
+- **有键盘可达性 / 无障碍合规要求**：目前排序头和筛选触发器还不能键盘操作，该能力保留在最低优先级排期
 - **只需要一张基础表格**：原生 `a-table` / `el-table` 就够了，不必多引一个依赖
 
 ## 安装
@@ -133,6 +133,18 @@ const dataSource: UserRow[] = [
 内置[分页](https://parade0393.github.io/vtable-guild/guide/pagination)，传 `:pagination="{}"` 启用，默认关闭。支持本地 / 远程分页、受控状态和跨页选择；`change(filters, sorter, extra)` 保留三参数，分页状态从 `extra.pagination` 读取。
 
 工具栏支持搜索和业务操作；列设置支持固定、锁定与面板内拖拽。可选的[请求管理](https://parade0393.github.io/vtable-guild/guide/remote-data)、[批量提示条](https://parade0393.github.io/vtable-guild/guide/selection-alert)与[单元格展示](https://parade0393.github.io/vtable-guild/guide/cell-display)减少重复的业务代码，列偏好可通过 `useColumnState` 持久化。
+
+业务增强以 Ant Design ProTable 的查询、EditableProTable 和 ProField 协议为参照，拆成可组合的 Vue API，两套预设共享同一套状态：
+
+| 能力                                                                       | 入口与边界                                                                                                              |
+| -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| [查询提交](https://parade0393.github.io/vtable-guild/guide/query)          | `useTableQuery` 分离草稿与提交参数，支持字段转换、重置和展开收起；连接 `useTableRequest`，控件与表单校验复用宿主 UI 库  |
+| [行编辑](https://parade0393.github.io/vtable-guild/guide/editing)          | `useTableEdit` 管理 `editableKeys`、草稿、异步校验、保存、取消和缓存新增行；业务提交数据                                |
+| [字段渲染](https://parade0393.github.io/vtable-guild/guide/cell-render)    | `valueType / fieldProps / createTableRenderers` 提供 text、digit、money、date、tag 与自定义只读渲染器，复用 `valueEnum` |
+| [懒加载树](https://parade0393.github.io/vtable-guild/guide/tree-table)     | `loadData / isLeaf` 提供加载、错误、重试、并发去重和失效保护；父子选择只计算已加载后代                                  |
+| [实例定位](https://parade0393.github.io/vtable-guild/guide/table-instance) | `TableInstance.scrollTo({ key, index, top, left })` 支持普通与虚拟表体，只定位当前页已加载且可见的记录                  |
+
+本库不自动生成完整查询或编辑表单，也不承诺完整复刻 React ProTable。输入控件、业务请求与页面流程继续由项目管理。
 
 ## 样式接入
 

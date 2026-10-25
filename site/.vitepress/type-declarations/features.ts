@@ -21,6 +21,9 @@ import type {
   TableSticky,
   TransformCellText,
   TableTooltipConfig,
+  TableTreeLoadData,
+  TableFieldProps,
+  TableFieldRenderers,
 } from '@vtable-guild/vtable-guild'
 
 // #region SortingColumnFields
@@ -120,6 +123,9 @@ export interface VirtualizationFields<TRecord extends object = Record<string, an
 // #region TreeFields
 /** TableProps 节选；文档辅助接口，不是包导出。 */
 export interface TreeFields<TRecord extends object = Record<string, any>> {
+  loadData?: TableTreeLoadData<TRecord>
+  isLeaf?: (record: TRecord) => boolean
+  onTreeLoadError?: (error: Error, record: TRecord) => void
   childrenColumnName?: string
   rowKey?: string | ((record: TRecord) => Key)
   indentSize?: number
@@ -167,3 +173,53 @@ export interface ColumnOrderFields {
   columnOrder?: Key[]
 }
 // #endregion ColumnOrderFields
+
+// #region FieldRendererFields
+/** ColumnType / TableProps 节选；枚举与状态继续使用同一份 valueEnum。 */
+export interface FieldRendererColumnFields<TRecord extends object = Record<string, any>> {
+  valueType?: string
+  fieldProps?: TableFieldProps | ((context: CustomRenderContext<TRecord>) => TableFieldProps)
+}
+export interface FieldRendererTableFields<TRecord extends object = Record<string, any>> {
+  renderers?: TableFieldRenderers<TRecord>
+}
+// #endregion FieldRendererFields
+
+// #region QueryProtocol
+export { useTableQuery } from '@vtable-guild/vtable-guild'
+export type {
+  TableQueryFieldTransforms,
+  UseTableQueryOptions,
+  UseTableQueryReturn,
+} from '@vtable-guild/vtable-guild'
+// #endregion QueryProtocol
+
+// #region EditingProtocol
+export { useTableEdit } from '@vtable-guild/vtable-guild'
+export type {
+  TableEditContext,
+  TableEditValidationErrors,
+  TableEditError,
+  UseTableEditOptions,
+  UseTableEditReturn,
+} from '@vtable-guild/vtable-guild'
+// #endregion EditingProtocol
+
+// #region RendererProtocol
+export { createTableRenderers } from '@vtable-guild/vtable-guild'
+export type {
+  TableFieldProps,
+  TableFieldRenderContext,
+  TableFieldRenderResult,
+  TableFieldRenderer,
+  TableFieldRenderers,
+} from '@vtable-guild/vtable-guild'
+// #endregion RendererProtocol
+
+// #region TreeLoadProtocol
+export type { TableTreeLoadContext, TableTreeLoadData } from '@vtable-guild/vtable-guild'
+// #endregion TreeLoadProtocol
+
+// #region TableInstanceProtocol
+export type { TableInstance, TableScrollToOptions } from '@vtable-guild/vtable-guild'
+// #endregion TableInstanceProtocol

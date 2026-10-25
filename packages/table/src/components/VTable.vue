@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="TRecord extends object = Record<string, unknown>">
-import { getCurrentInstance } from 'vue'
+import { getCurrentInstance, ref } from 'vue'
 import TableImpl from './Table'
 import type {
   ColumnType,
@@ -15,6 +15,7 @@ import type {
   VTableSorterResult,
 } from '../types'
 import type { SorterResult } from '../composables'
+import type { TableInstance } from '../types/instance'
 
 defineOptions({
   name: 'VTable',
@@ -35,10 +36,24 @@ const emit = defineEmits<{
 defineSlots<TableSlotsDecl<TRecord>>()
 
 const instance = getCurrentInstance()
+const tableRef = ref<TableInstance | null>(null)
+defineExpose({
+  scrollTo: (options) => tableRef.value?.scrollTo(options) ?? Promise.resolve(false),
+  retryTreeLoad: (key) => tableRef.value?.retryTreeLoad(key) ?? Promise.resolve(false),
+  getTreeLoadError: (key) => tableRef.value?.getTreeLoadError(key),
+} satisfies TableInstance)
 function getForwardedBindings() {
   const result: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(instance?.vnode.props ?? {})) {
-    if (key !== 'onChange' && key !== 'onResizeColumn' && key !== 'onRowDragEnd') {
+    if (
+      key !== 'onChange' &&
+      key !== 'onResizeColumn' &&
+      key !== 'onRowDragEnd' &&
+      key !== 'key' &&
+      key !== 'ref' &&
+      key !== 'ref_for' &&
+      key !== 'ref_key'
+    ) {
       result[key] = value
     }
   }
@@ -104,6 +119,7 @@ function asDataSlotProps(slotProps: TableDataSlotProps<Record<string, unknown>>)
 
 <template>
   <TableImpl
+    ref="tableRef"
     v-bind="getForwardedBindings()"
     @change="handleChange"
     @resize-column="handleResizeColumn"

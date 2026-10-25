@@ -7,31 +7,25 @@ import type {
   UseTableRequestReturn,
 } from '../types/request'
 import { positiveInteger } from './usePagination'
+import { snapshot } from '../utils/snapshot'
 
-function snapshot<T>(value: T): T {
-  if (value instanceof Date) return new Date(value.getTime()) as T
-  if (Array.isArray(value)) return value.map((item) => snapshot(item)) as T
-  if (value && Object.getPrototypeOf(value) === Object.prototype) {
-    return Object.fromEntries(
-      Object.entries(value).map(([key, item]) => [key, snapshot(item)]),
-    ) as T
-  }
-  return value
-}
-
-function equal(a: unknown, b: unknown): boolean {
+function equal(a: unknown, b: unknown, seen = new WeakMap<object, WeakSet<object>>()): boolean {
   if (Object.is(a, b)) return true
   if (a instanceof Date && b instanceof Date) return a.getTime() === b.getTime()
   if (!a || !b || typeof a !== 'object' || typeof b !== 'object') return false
   if (Object.getPrototypeOf(a) !== Object.getPrototypeOf(b)) return false
   if (Object.getPrototypeOf(a) !== Object.prototype && !Array.isArray(a)) return false
+  if (seen.get(a)?.has(b)) return true
+  const matches = seen.get(a) ?? new WeakSet<object>()
+  seen.set(a, matches)
+  matches.add(b)
   const left = Object.entries(a)
   const right = Object.entries(b)
   return (
     left.length === right.length &&
     left.every(
       ([key, value]) =>
-        Object.prototype.hasOwnProperty.call(b, key) && equal(value, Reflect.get(b, key)),
+        Object.prototype.hasOwnProperty.call(b, key) && equal(value, Reflect.get(b, key), seen),
     )
   )
 }
@@ -227,14 +221,14 @@ export function useTableRequest<
     submit(params = {}) {
       submitted.value = snapshot(params)
       current.value = 1
-      return request()
+      return request(true)
     },
-    reset() {
-      submitted.value = snapshot(defaults)
+    reset(params = defaults) {
+      submitted.value = snapshot(params)
       activeSort.value = {}
       activeFilters.value = {}
       current.value = 1
-      return request()
+      return request(true)
     },
     cancel,
   }
