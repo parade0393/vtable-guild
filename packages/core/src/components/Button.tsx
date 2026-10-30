@@ -84,6 +84,10 @@ export default defineComponent({
       type: String as PropType<'default' | 'primary' | 'link'>,
       default: 'default',
     },
+    htmlType: {
+      type: String as PropType<'button' | 'submit' | 'reset'>,
+      default: 'button',
+    },
     size: {
       type: String as PropType<'sm' | 'md'>,
       default: 'md',
@@ -105,7 +109,12 @@ export default defineComponent({
     }
 
     return () => (
-      <button class={themeSlots.root()} disabled={props.disabled} onClick={handleClick}>
+      <button
+        type={props.htmlType}
+        class={themeSlots.root()}
+        disabled={props.disabled}
+        onClick={handleClick}
+      >
         {slots.default?.()}
       </button>
     )

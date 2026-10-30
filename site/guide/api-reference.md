@@ -148,9 +148,21 @@ import {
 `filters: true` 从枚举生成筛选项；`filters: false` 关闭，`onFilter: false` 显式跳过本地过滤，`onFilter: true` 使用等值匹配。
 详见[单元格展示](/guide/cell-display)。
 
-列级 `valueType?: string` 选择 `text / digit / money / date / tag` 或自定义类型；`fieldProps` 为选项对象或上下文回调。`createTableRenderers<TRecord>(overrides)` 合并内置与业务映射，返回不可变注册表，通过表格 `renderers` 接入，不修改全局注册表。`digit / money / date` 使用 Intl 格式化；tag 与 `valueEnum` 共用状态主题。
+列级 `valueType?: string` 选择 `text / digit / money / date / dateTime / time / dateRange / dateTimeRange / percent / progress / tag` 或自定义类型；`fieldProps` 为选项对象或上下文回调。`createTableRenderers<TRecord>(overrides)` 合并内置与业务映射，返回不可变注册表，通过表格 `renderers` 接入，不修改全局注册表。数字、货币与百分比使用 Intl，日期可通过 dateFormat 启用 Intl；tag / progress 与 `valueEnum` 共用状态主题。
 
 `transformCellText` 先执行，字段渲染器消费转换后的值与枚举标签；`customRender`、有效 `bodyCell` 内容优先，空值使用既有 `columnEmptyText`，未知类型回退到枚举或原值。排序、筛选与默认复制的数据约定保持不变。渲染器只提供只读展示，详见[字段渲染器](/guide/cell-render)。
+
+## 远程字典
+
+`createTableDictionary({ key, request, cacheTime?, maxEntries? })` 创建实例隔离的缓存；`useTableDictionary({ dictionary, params?, selectedOptions?, debounceTime? })` 将共享结果转为宿主控件 `options`、列 `valueEnum` 和完整字典的 `filters`。返回 `search / reload / cancel` 以及 loading/error 状态；局部搜索结果不自动生成表头筛选。完整协议见[远程字典](/guide/dictionary)。
+
+## Schema 查询与列编辑
+
+`VTableQuery` 接 `query / fields / controls`，复用 useTableQuery；`deriveTableQueryFields` 可从带 query 元数据的列定义派生字段。普通查询显式提交，轻量布局只有开启 autoSubmit 才防抖提交；宿主表单通过 validate 接入，包裹已有 Form 时使用 `rootTag="div"`。见 [Schema 查询区](/guide/schema-query)。
+
+`useTableEditable` 接 columns、controls 和行编辑选项，将 `column.editor` 的条件、转换、规则和字典接入同一行草稿。模板通过 `VTableEditCell` 桥接，TSX 可调用 renderEditor；无编辑内容时保留只读回退。见 [列级编辑](/guide/editable-columns)。
+
+`useTableEdit / useTableEditable` 的受控 dataSource/onChange、records、getOriginal/getDrafts/getValues/validateAll/reset、createRecord/maxRows 和 add 的位置/缓存策略用于主表单明细。validateAll 返回同次校验的提交快照，包含客户端持有的离屏记录，不调用保存；onChange 不随逐键输入触发。见 [明细表单](/guide/detail-form)。
 
 ## VTable 实例方法
 

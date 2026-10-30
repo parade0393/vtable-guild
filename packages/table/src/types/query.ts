@@ -8,6 +8,11 @@ export type TableQueryFieldTransforms<TValues extends object, TParams extends ob
   ) => Partial<TParams> | undefined
 }
 
+/** Omit hidden fields from request parameters without changing the form draft or submitted values. */
+export interface TableQuerySubmitOptions<TValues extends object> {
+  omitFields?: readonly (keyof TValues)[]
+}
+
 export interface UseTableQueryOptions<TValues extends object, TParams extends object = TValues> {
   /** A snapshot is taken once. Use ordinary objects, arrays and Date values for form state. */
   defaultValues: TValues
@@ -32,9 +37,9 @@ export interface UseTableQueryReturn<TValues extends object, TParams extends obj
   submitting: ComputedRef<boolean>
   error: ShallowRef<Error | null>
   /** Returns false for a transform/callback failure or an obsolete submission. */
-  submit: () => Promise<boolean>
+  submit: (options?: TableQuerySubmitOptions<TValues>) => Promise<boolean>
   /** Restore draft defaults and submit them through onReset (or onSubmit), once. */
-  reset: () => Promise<boolean>
+  reset: (options?: TableQuerySubmitOptions<TValues>) => Promise<boolean>
   /** Restore draft defaults without changing submitted state or requesting data. */
   resetFields: () => void
   toggleCollapsed: () => void

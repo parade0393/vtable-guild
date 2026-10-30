@@ -27,15 +27,15 @@ description: vtable-guild 与 ant-design-vue Table、element-plus Table 的逐�
 
 vtable-guild 以 Ant Design ProTable 的查询、EditableProTable 与 ProField 协议为参照，提供以下可选能力。它们与基础表格独立组合，保持 `antdv / element-plus` 双预设，不要求引入 React 或更换项目现有表单控件。
 
-| 能力               | 本库入口                                                                  | 采用时需要处理的部分                                                                  |
-| ------------------ | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| 查询提交与参数转换 | [`useTableQuery`](/guide/query) + [`useTableRequest`](/guide/remote-data) | 将现有表单绑定草稿，提交与重置进入统一请求入口；控件和表单校验由宿主管理              |
-| 行编辑与缓存新增   | [`useTableEdit`](/guide/editing) + `bodyCell`                             | 使用独立草稿、异步校验和保存状态；由业务更新数据，提供编辑器与操作按钮                |
-| 可插拔字段展示     | [`valueType / fieldProps / createTableRenderers`](/guide/cell-render)     | 内置五种只读类型，业务扩展映射与 `valueEnum` 共用；不生成完整查询或编辑表单           |
-| 懒加载树           | [`loadData / isLeaf`](/guide/tree-table)                                  | 加载、错误、重试与竞态由表格管理；稳定 key 与叶子判断由业务提供，选择只计算已加载节点 |
-| 实例定位           | [`TableInstance.scrollTo`](/guide/table-instance)                         | 按 key、可见索引或像素定位；未加载页与折叠节点先由业务准备数据                        |
+| 能力               | 本库入口                                                                  | 采用时需要处理的部分                                                                                 |
+| ------------------ | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| 查询提交与参数转换 | [`useTableQuery`](/guide/query) + [`useTableRequest`](/guide/remote-data) | 将现有表单绑定草稿，提交与重置进入统一请求入口；控件和表单校验由宿主管理                             |
+| 行编辑与缓存新增   | [`useTableEdit`](/guide/editing) + `bodyCell`                             | 使用独立草稿、异步校验和保存状态；由业务更新数据，提供编辑器与操作按钮                               |
+| 可插拔字段展示     | [`valueType / fieldProps / createTableRenderers`](/guide/cell-render)     | 内置日期时间/区间、百分比、进度等只读类型，业务扩展映射与 `valueEnum` 共用；不生成完整查询或编辑表单 |
+| 懒加载树           | [`loadData / isLeaf`](/guide/tree-table)                                  | 加载、错误、重试与竞态由表格管理；稳定 key 与叶子判断由业务提供，选择只计算已加载节点                |
+| 实例定位           | [`TableInstance.scrollTo`](/guide/table-instance)                         | 按 key、可见索引或像素定位；未加载页与折叠节点先由业务准备数据                                       |
 
-列设置还提供固定、锁定、隐藏设置项与面板拖拽，`useColumnState` 持久化用户偏好。完整范围以各指南为准；这里的协议对齐不代表完整实现 React ProTable 的自动表单、CRUD 流程或整表编辑引擎。
+列设置还提供固定、锁定、隐藏设置项与面板拖拽，`useColumnState` 持久化用户偏好。[Schema 查询区](/guide/schema-query)与[列编辑/明细表单](/guide/editable-columns)提供可选控件接线、转换和全量草稿校验。完整范围以各指南为准；不包含完整 ProForm、CRUD 流程或服务端批量事务。
 
 ## 结论
 

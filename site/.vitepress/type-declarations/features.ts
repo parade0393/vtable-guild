@@ -189,19 +189,51 @@ export interface FieldRendererTableFields<TRecord extends object = Record<string
 export { useTableQuery } from '@vtable-guild/vtable-guild'
 export type {
   TableQueryFieldTransforms,
+  TableQuerySubmitOptions,
   UseTableQueryOptions,
   UseTableQueryReturn,
 } from '@vtable-guild/vtable-guild'
 // #endregion QueryProtocol
 
+// #region QuerySchemaProtocol
+export { VTableQuery, deriveTableQueryFields } from '@vtable-guild/vtable-guild'
+export type {
+  TableQueryField,
+  TableQueryFieldContext,
+  TableQueryColumn,
+  TableQueryProps,
+  TableQuerySlots,
+  TableQueryInstance,
+  TableQueryValidationContext,
+  TableQueryLocale,
+} from '@vtable-guild/vtable-guild'
+// #endregion QuerySchemaProtocol
+
 // #region EditingProtocol
 export { useTableEdit } from '@vtable-guild/vtable-guild'
+export {
+  useTableEditable,
+  VTableEditCell,
+  createAntdvTableControls,
+  createElementPlusTableControls,
+} from '@vtable-guild/vtable-guild'
 export type {
   TableEditContext,
   TableEditValidationErrors,
   TableEditError,
   UseTableEditOptions,
   UseTableEditReturn,
+  TableEditDraftContext,
+  TableEditAddConfig,
+  TableEditValidationResult,
+  UseTableEditableOptions,
+  UseTableEditableReturn,
+  TableColumnEditor,
+  TableEditableFieldContext,
+  TableEditableCellContext,
+  TableControlContext,
+  TableControls,
+  TableControlComponents,
 } from '@vtable-guild/vtable-guild'
 // #endregion EditingProtocol
 
@@ -215,6 +247,21 @@ export type {
   TableFieldRenderers,
 } from '@vtable-guild/vtable-guild'
 // #endregion RendererProtocol
+
+// #region DictionaryProtocol
+export { createTableDictionary, useTableDictionary } from '@vtable-guild/vtable-guild'
+export type {
+  TableDictionaryOption,
+  TableDictionaryBinding,
+  TableDictionaryResult,
+  TableDictionaryContext,
+  TableDictionaryRequest,
+  TableDictionary,
+  CreateTableDictionaryOptions,
+  UseTableDictionaryOptions,
+  UseTableDictionaryReturn,
+} from '@vtable-guild/vtable-guild'
+// #endregion DictionaryProtocol
 
 // #region TreeLoadProtocol
 export type { TableTreeLoadContext, TableTreeLoadData } from '@vtable-guild/vtable-guild'

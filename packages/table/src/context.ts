@@ -51,6 +51,10 @@ export interface SubThemeSlots {
   copyButton: () => string
   cellStatus: () => string
   cellTag: () => string
+  cellProgress: () => string
+  cellProgressTrack: () => string
+  cellProgressBar: () => string
+  cellProgressText: () => string
   filterIconWrapper: () => string
   filterIcon: () => string
   filterDropdown: () => string

@@ -93,6 +93,20 @@ export const elementPlusTableTheme = {
     cellTag:
       'inline-flex items-center whitespace-nowrap border border-[color:var(--vtg-cell-tag-border)] rounded-[var(--vtg-cell-tag-radius)] px-[var(--vtg-cell-tag-padding-inline)] text-[length:var(--vtg-cell-tag-font-size)] leading-[var(--vtg-cell-tag-line-height)] bg-[color:var(--vtg-cell-tag-bg)] text-[color:var(--color-muted)] [&[data-status=success]]:text-[color:var(--vtg-cell-success)] [&[data-status=warning]]:text-[color:var(--vtg-cell-warning)] [&[data-status=error]]:text-[color:var(--vtg-cell-error)] [&[data-status=processing]]:text-[color:var(--color-primary)]',
 
+    cellProgress:
+      'inline-flex w-full min-w-[var(--vtg-cell-progress-min-width)] max-w-[var(--vtg-cell-progress-max-width)] items-center gap-[var(--vtg-cell-progress-gap)] align-middle',
+    editCell: 'min-w-0',
+    editControl:
+      'min-w-0 [&>*]:w-full [&[data-invalid=true]]:outline [&[data-invalid=true]]:outline-1 [&[data-invalid=true]]:outline-[color:var(--vtg-cell-error)] rounded-[var(--vtg-editor-radius)]',
+    editError:
+      'block mt-[var(--vtg-editor-error-gap)] text-[length:var(--vtg-editor-error-font-size)] text-[color:var(--vtg-cell-error)]',
+    cellProgressTrack:
+      'block min-w-0 flex-1 overflow-hidden h-[var(--vtg-cell-progress-height)] rounded-[var(--vtg-cell-progress-radius)] bg-[color:var(--vtg-cell-progress-trail)]',
+    cellProgressBar:
+      'block h-full rounded-[var(--vtg-cell-progress-radius)] bg-[color:var(--color-primary)] [&[data-status=success]]:bg-[color:var(--vtg-cell-success)] [&[data-status=warning]]:bg-[color:var(--vtg-cell-warning)] [&[data-status=error]]:bg-[color:var(--vtg-cell-error)]',
+    cellProgressText:
+      'shrink-0 tabular-nums text-[length:var(--vtg-cell-progress-font-size)] text-[color:var(--color-on-surface)] [&[data-status=success]]:text-[color:var(--vtg-cell-success)] [&[data-status=error]]:text-[color:var(--vtg-cell-error)] [&>svg]:inline-block [&>svg]:align-middle',
+
     // ---- 筛选图标相关 ----
     filterIconWrapper: 'shrink-0 flex items-center',
     filterIcon:

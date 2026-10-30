@@ -20,6 +20,7 @@ export type RequestDeclarationContracts = [
   Assert<Equal<Docs.TableRequestContext, Public.TableRequestContext>>,
   Assert<Equal<Docs.TableRequestResult<Row>, Public.TableRequestResult<Row>>>,
   Assert<Equal<Docs.TableRequest<Row, Query>, Public.TableRequest<Row, Query>>>,
+  Assert<Equal<Docs.TableRequestPolling<Row>, Public.TableRequestPolling<Row>>>,
   Assert<Equal<Docs.UseTableRequestOptions<Row>, Public.UseTableRequestOptions<Row>>>,
   Assert<Equal<Docs.UseTableRequestOptions<Row, Query>, Public.UseTableRequestOptions<Row, Query>>>,
   Assert<Equal<Docs.UseTableRequestReturn<Row>, Public.UseTableRequestReturn<Row>>>,

@@ -4,6 +4,7 @@ import type { CustomFilterDropdownSlotProps } from './table'
 import type { ColumnSentinel } from '../constants'
 import type { ColumnCopyable, ColumnValueEnum, TableTooltipConfig } from './presentation'
 import type { TableFieldProps } from './renderers'
+import type { TableColumnEditor } from './editable'
 
 /** 行唯一标识 */
 export type Key = string | number
@@ -93,8 +94,10 @@ export interface ColumnType<TRecord extends object = Record<string, any>> {
   tooltip?: string | TableTooltipConfig
   copyable?: ColumnCopyable<TRecord>
   valueEnum?: ColumnValueEnum
-  /** Built-in text/digit/money/date/tag or a key in the table's renderers registry. */
+  /** Built-in readonly field type (text, dateTime, percent, progress, etc.) or a renderer key. */
   valueType?: string
+  /** Optional wiring for useTableEditable; the base table does not mount editors. */
+  editor?: false | TableColumnEditor<TRecord>
   fieldProps?: TableFieldProps | ((context: CustomRenderContext<TRecord>) => TableFieldProps)
   /** Excludes the column from the column settings panel without changing visibility. */
   hideInSetting?: boolean

@@ -20,6 +20,88 @@ function cell(value: unknown, column: ColumnType = {}, extra = {}) {
 }
 
 describe('field renderer registry', () => {
+  it('honors explicit Intl options for time-only values and preserves invalid input', () => {
+    const options = { hour: 'numeric', minute: '2-digit', hour12: true } as const
+    expect(cell('13:45', { valueType: 'time', fieldProps: { dateFormat: options } }).content).toBe(
+      '1:45 PM',
+    )
+    expect(
+      cell('13:45:10', {
+        valueType: 'time',
+        fieldProps: { dateFormat: { ...options, second: '2-digit' } },
+      }).content,
+    ).toBe('1:45:10 PM')
+    expect(cell('25:45', { valueType: 'time', fieldProps: { dateFormat: options } }).content).toBe(
+      '25:45',
+    )
+  })
+  it('formats clock values and date ranges with explicit empty-endpoint and timezone semantics', () => {
+    const stamp = new Date(2026, 9, 26, 8, 9, 10)
+    expect(cell(stamp, { valueType: 'dateTime' }).content).toBe('2026-10-26 08:09:10')
+    expect(cell(stamp, { valueType: 'time' }).content).toBe('08:09:10')
+    expect(cell('09:30', { valueType: 'time' }).content).toBe('09:30:00')
+    expect(cell('25:30', { valueType: 'time' }).content).toBe('25:30')
+    expect(cell('2026-10-26', { valueType: 'dateTime' }).content).toBe('2026-10-26 00:00:00')
+    expect(cell('2026-02-31', { valueType: 'dateTime' }).content).toBe('2026-02-31')
+    expect(cell(['2026-10-25', null], { valueType: 'dateRange' })).toMatchObject({
+      content: '2026-10-25 ~ —',
+      tooltipText: '2026-10-25 ~ —',
+      copyText: undefined,
+    })
+    expect(
+      cell([undefined, stamp], {
+        valueType: 'dateTimeRange',
+        fieldProps: { rangeEmptyText: 'Open', rangeSeparator: ' → ' },
+      }).content,
+    ).toBe('Open → 2026-10-26 08:09:10')
+    expect(
+      cell('2026-10-26T08:00:00Z', {
+        valueType: 'dateTime',
+        fieldProps: { dateFormat: { dateStyle: 'short', timeStyle: 'short', timeZone: 'UTC' } },
+      }).content,
+    ).toBe('10/26/26, 8:00 AM')
+    expect(cell('invalid', { valueType: 'dateTime' }).content).toBe('invalid')
+  })
+
+  it('defines percent scaling and progress clamping without changing raw copy values', () => {
+    expect(cell(12.5, { valueType: 'percent' })).toMatchObject({
+      content: '12.5%',
+      copyText: '12.5',
+    })
+    expect(
+      cell(0.125, { valueType: 'percent', fieldProps: { percentScale: 'ratio' } }).content,
+    ).toBe('12.5%')
+    expect(
+      cell(1, { valueType: 'percent', fieldProps: { numberFormat: { minimumFractionDigits: 3 } } })
+        .content,
+    ).toBe('1.000%')
+    expect(cell(false, { valueType: 'percent' }).content).toBe('false')
+    expect(cell(' ', { valueType: 'progress' }).presentation).toBeUndefined()
+    expect(cell(120, { valueType: 'progress' })).toMatchObject({
+      content: '100%',
+      status: 'success',
+      presentation: 'progress',
+      progress: { percent: 100, showValue: true },
+      copyText: '120',
+    })
+    expect(
+      cell(-10, { valueType: 'progress', fieldProps: { status: 'error', showValue: false } }),
+    ).toMatchObject({
+      status: 'error',
+      progress: { percent: 0, showValue: false },
+      copyText: '-10',
+    })
+    expect(
+      cell(0.25, { valueType: 'progress', fieldProps: { percentScale: 'ratio' } }).progress
+        ?.percent,
+    ).toBe(25)
+    expect(cell(null, { valueType: 'progress' }).presentation).toBeUndefined()
+    expect(cell(25, { valueType: 'progress', customRender: () => 'Custom' })).toMatchObject({
+      content: 'Custom',
+      progress: undefined,
+    })
+  })
+
   it('formats finite numbers and money without changing copied source values', () => {
     expect(cell(1234.5, { valueType: 'digit' })).toMatchObject({
       content: '1,234.5',
@@ -161,6 +243,34 @@ const wrappers: VueWrapper[] = []
 afterEach(() => wrappers.splice(0).forEach((wrapper) => wrapper.unmount()))
 
 describe.each(['antdv', 'element-plus'] as const)('%s field rendering', (preset) => {
+  it.each([false, true])(
+    'renders progress with theme slots and semantic values, virtual=%s',
+    (virtual) => {
+      const wrapper = mount(VTable<Record<string, unknown>>, {
+        props: {
+          dataSource: [
+            { key: 1, progress: 150 },
+            { key: 2, progress: 35 },
+          ],
+          columns: [
+            { dataIndex: 'progress', title: 'Progress', valueType: 'progress', width: 200 },
+          ],
+          virtual,
+          scroll: { y: 300 },
+        },
+        global: { plugins: [createVTableGuild({ themePreset: preset, cssMode: 'tailwind4' })] },
+      })
+      wrappers.push(wrapper)
+      const bars = wrapper.findAll('[role="progressbar"]')
+      expect(bars).toHaveLength(2)
+      expect(bars[0].attributes('aria-valuenow')).toBe('100')
+      expect(bars[1].attributes('aria-valuenow')).toBe('35')
+      expect(bars[0].get('[data-status="success"]').attributes('style')).toContain('width: 100%')
+      expect(bars[1].classes().join(' ')).toContain('--vtg-cell-progress-min-width')
+      expect(bars[1].text()).toBe('35%')
+    },
+  )
+
   it.each([false, true])('uses the same registry for virtual=%s and normal rows', (virtual) => {
     const wrapper = mount(VTable<Record<string, unknown>>, {
       props: {

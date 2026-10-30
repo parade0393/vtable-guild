@@ -1,6 +1,10 @@
 import { computed, getCurrentScope, onScopeDispose, ref, shallowRef, watch } from 'vue'
 import type { Ref } from 'vue'
-import type { UseTableQueryOptions, UseTableQueryReturn } from '../types/query'
+import type {
+  TableQuerySubmitOptions,
+  UseTableQueryOptions,
+  UseTableQueryReturn,
+} from '../types/query'
 import { snapshot } from '../utils/snapshot'
 
 /** Form state and submit protocol; controls and layout remain owned by the host UI library. */
@@ -20,32 +24,39 @@ export function useTableQuery<TValues extends object, TParams extends object = T
     ? watch(collapsed, (value) => options.onCollapse?.(value), { flush: 'sync' })
     : undefined
 
-  function toParams(values: TValues): Partial<TParams> {
+  function toParams(
+    values: TValues,
+    submitOptions?: TableQuerySubmitOptions<TValues>,
+  ): Partial<TParams> {
     const transforms = options.fieldTransforms
+    const omitted = new Set(submitOptions?.omitFields ?? [])
     const result: Record<string, unknown> = {}
     for (const [key, value] of Object.entries(values)) {
       const transform = Object.prototype.hasOwnProperty.call(transforms ?? {}, key)
         ? transforms?.[key as keyof TValues]
         : undefined
-      if (!transform) result[key] = value
+      if (!transform && !omitted.has(key as keyof TValues)) result[key] = value
     }
     // Merge in configuration order, after all fields that retain their original names.
     for (const key of Object.keys(transforms ?? {}) as Array<keyof TValues>) {
       const transform = transforms?.[key]
-      if (transform) Object.assign(result, transform(values[key], values))
+      if (transform && !omitted.has(key)) Object.assign(result, transform(values[key], values))
     }
     const mapped = result as Partial<TParams>
     return snapshot(options.transform?.(mapped, values) ?? mapped)
   }
 
-  async function execute(reset: boolean): Promise<boolean> {
+  async function execute(
+    reset: boolean,
+    submitOptions?: TableQuerySubmitOptions<TValues>,
+  ): Promise<boolean> {
     if (disposed) return false
     const id = ++generation
     submitting.value = true
     error.value = null
     try {
       const values = snapshot(draft.value)
-      const nextParams = toParams(values)
+      const nextParams = toParams(values, submitOptions)
       // Publish after successful transforms; callback failures do not roll back these snapshots.
       // Independent snapshots also protect state from a callback that mutates its arguments.
       submitted.value = snapshot(values)
@@ -79,11 +90,11 @@ export function useTableQuery<TValues extends object, TParams extends object = T
     collapsed,
     submitting: computed(() => submitting.value),
     error,
-    submit: () => execute(false),
-    reset() {
+    submit: (submitOptions) => execute(false, submitOptions),
+    reset(submitOptions) {
       if (disposed) return Promise.resolve(false)
       draft.value = snapshot(defaults)
-      return execute(true)
+      return execute(true, submitOptions)
     },
     resetFields() {
       if (!disposed) draft.value = snapshot(defaults)

@@ -11,6 +11,8 @@ interface Query {
 export const requestOptions: UseTableRequestOptions<RequestRow, Query> = {
   params: () => ({ keyword: 'members' }),
   defaultParams: { keyword: '' },
+  polling: (rows) => (rows.length ? 5000 : false),
+  revalidateOnFocus: true,
   request: async (params, sort, filters, { signal }) => {
     const _page: number = params.current
     const _size: number = params.pageSize
@@ -29,7 +31,9 @@ export function requestReturnContract(value: UseTableRequestReturn<RequestRow, Q
   const _row: RequestRow | undefined = value.dataSource.value[0]
   const _result: Promise<void> = value.submit({ keyword: 'query' })
   const _manual: boolean = value.manual.sort
-  void [_page, _row, _result, _manual]
+  const _refreshing: boolean = value.refreshing.value
+  const _resumed: Promise<void> = value.resume(true)
+  void [_page, _row, _result, _manual, _refreshing, _resumed]
   // @ts-expect-error Submitted query fields preserve their declared types.
   value.submit({ keyword: 42 })
   // @ts-expect-error Request loading is derived and cannot be assigned by consumers.

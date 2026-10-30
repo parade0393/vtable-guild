@@ -3,6 +3,11 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 export const router = createRouter({
   history: createWebHashHistory(),
   routes: [
+    {
+      path: '/pro-schema',
+      name: 'pro-schema',
+      component: () => import('./pages/ProSchemaPage.vue'),
+    },
     { path: '/pro-table', name: 'pro-table', component: () => import('./pages/ProTablePage.vue') },
     {
       path: '/enterprise',
@@ -27,6 +32,11 @@ export const router = createRouter({
     {
       path: '/',
       redirect: '/basic',
+    },
+    {
+      path: '/pro-data',
+      name: 'pro-data',
+      component: () => import('./pages/ProDataPage.vue'),
     },
     {
       path: '/basic',

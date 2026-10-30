@@ -4,6 +4,7 @@
  * Keep these aligned with the public entry point and table.contracts.typecheck.ts.
  */
 import type { CSSProperties, VNodeChild } from 'vue'
+import type { TableColumnEditor } from '@vtable-guild/vtable-guild'
 import type {
   DeepPartial,
   LocaleName,
@@ -144,6 +145,7 @@ export interface ColumnType<TRecord extends object = Record<string, any>> {
   copyable?: ColumnCopyable<TRecord>
   valueEnum?: ColumnValueEnum
   valueType?: string
+  editor?: false | TableColumnEditor<TRecord>
   fieldProps?: TableFieldProps | ((context: CustomRenderContext<TRecord>) => TableFieldProps)
   hideInSetting?: boolean
   disable?: boolean | { checkbox?: boolean; fixed?: boolean; order?: boolean }

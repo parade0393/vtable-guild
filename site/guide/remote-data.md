@@ -76,10 +76,12 @@ await orders.submit({ keyword: 'invoice' })
 
 | 方法                      | 行为                                                                                                          |
 | ------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `reload(resetPageIndex?)` | 强制重新请求；传 `true` 先回第 1 页。立即执行，不等待防抖时间。                                               |
+| `reload(resetPageIndex?)` | 立即刷新；相同参数已有请求正在执行时复用，否则重新请求。传 `true` 先回第 1 页，不等待防抖时间。               |
 | `submit(params?)`         | 替换已提交查询，回第 1 页并强制请求；相同参数重复提交也请求，未传字段回退到 defaultParams。                   |
 | `reset(params?)`          | 无参恢复 defaultParams；传参替换已提交查询。均清空请求排序与筛选，回第 1 页并强制请求；额外 params 继续生效。 |
-| `cancel()`                | 取消待执行和进行中的请求，结束 loading；保留现有数据、页码与错误。                                            |
+| `cancel()`                | 取消待执行和进行中的请求，同时暂停自动刷新；保留现有数据、页码与错误。                                        |
+| `pause()`                 | 暂停自动刷新，并取消正在进行的自动请求；业务手动请求可以继续完成。                                            |
+| `resume(immediate?)`      | 恢复自动刷新；传 true 立即后台刷新。首次手动加载之前不发请求。                                                |
 
 异步方法在本次请求结束、被新请求替代或取消后完成。请求失败通过 `error` 与 `onError` 暴露，方法不会因为 HTTP 失败而拒绝，
 适合直接连接刷新事件。`reset(params)` 中未传入的字段仍按参数合并顺序回退到 `defaultParams`。`reset()` / `reset(params)` 改变请求状态；若需要表头图标同步复位，将返回的 `sort`、`filters` 绑定到受控列配置，如上方示例。
@@ -93,7 +95,35 @@ await orders.submit({ keyword: 'invoice' })
 - 加载和失败期间保留上一次成功的数据与 total，避免分页器因为临时空数组跳回首页。
 - 成功结果显示当前页已越界时，最多向新的末页补发一次请求；total 为 0 时直接回第 1 页。补发同样受取消和竞态保护，不循环重试。
 - 组件作用域销毁后取消请求，后续响应不更新状态，也不会触发成功或失败回调。
-- 相同查询的重复表格事件会被合并；显式 `reload()`、`submit()` 和 `reset()` 始终强制请求。
+- 相同查询的重复表格事件会被合并；`reload()` 可与相同参数的进行中请求合并，`submit()` 和 `reset()` 仍显式发起请求。
+
+## 自动刷新
+
+<Demo src="pagination/polling">
+
+<<< @/demos/pagination/polling.vue
+
+</Demo>
+
+`polling` 默认关闭，可传间隔毫秒数或 `(rows) => number | false`，也可用 ref 包裹以动态开关。
+间隔从上一次请求完成后计算，正数最小为 2000ms；0、false 或非有限值关闭轮询。
+回调拿到最近成功行数据的快照，可以在任务全部完成时返回 false。
+
+首次请求使用 `loading`，成功加载后的自动请求使用 `refreshing`；将 `loading` 绑定表格，
+将 `loading || refreshing` 绑定工具栏即可保留行数据、不闪整表遮罩。手动 reload 仍使用普通 loading。
+自动刷新使用已提交参数和当前页、排序、筛选，不会提交业务查询草稿或重置选择/展开。
+
+默认页面隐藏时停止安排轮询，恢复可见后重新计时；`pollingWhenHidden: true` 可继续后台轮询。
+`revalidateOnFocus: true` 在页面恢复可见时立即刷新（监听 visibilitychange，不是所有 window focus 事件）。
+恢复可见、轮询和手动 reload 重叠时会合并请求。隐藏时已发出的请求可完成，后续调度暂停。
+
+默认请求失败后停止轮询，保留数据和错误；reload 或 `resume(true)` 可重试，`pollingOnError: true` 可按间隔继续。
+`pause()` 适合编辑期间使用；`paused` 表示显式暂停，页面隐藏或动态返回 false 不改变它。
+cancel 后需要 resume 才恢复自动刷新；暂停期间手动提交、翻页或 reload 仍可用。
+`manualRequest: true` 的首次请求之前，轮询、恢复可见和 resume 都不会触发加载。
+自动调度只在浏览器内的 setup/effectScope 中启用，销毁时清理 timer、listener 与进行中的请求。
+
+onError 自身抛错时将该异常存入 error；请求 Promise 仍正常结束，loading/refreshing 会复位。
 
 ## API
 
@@ -106,15 +136,19 @@ await orders.submit({ keyword: 'invoice' })
 | `pagination`            | 分页器的展示选项，例如 showSizeChanger、showTotal；请求状态与事件由组合式函数管理。 |
 | `manualRequest`         | 跳过首次请求，默认 false。                                                          |
 | `debounceTime`          | 查询和表格事件的请求防抖毫秒数，默认 0；reload 不防抖。                             |
+| `polling`               | 间隔或结果回调，支持 ref；默认关闭，最小 2000ms。                                   |
+| `revalidateOnFocus`     | 页面恢复可见时刷新，支持 ref/getter，默认 false。                                   |
+| `pollingWhenHidden`     | 隐藏页面继续轮询，默认 false。                                                      |
+| `pollingOnError`        | 失败后继续轮询，默认 false。                                                        |
 | `resetOnPageSizeChange` | 修改页大小时回首页，默认 true。                                                     |
 | `beforeSearchSubmit`    | 转换合并后的查询参数。                                                              |
 | `postData`              | 转换返回的行数组。                                                                  |
 | `onLoad`                | 成功接收数据后回调，参数为处理后的 data 和原 response。                             |
 | `onError`               | 最新请求失败后回调，参数为 Error。                                                  |
 
-返回 `dataSource`、`loading`、`error`、`pagination`、`query`、`sort`、`filters`、`manual` 以及上方四个方法和 `onChange`。
+返回 `dataSource`、`loading`、`refreshing`、`paused`、`error`、`pagination`、`query`、`sort`、`filters`、`manual` 以及上方方法和 `onChange`。
 在模板里先解构需要的 ref；嵌套在普通对象中的 ref 不会在所有模板表达式里自动解包。
 配置与返回类型均从 `@vtable-guild/vtable-guild` 导入：`UseTableRequestOptions`、`UseTableRequestReturn`、
-`TableRequest`、`TableRequestParams`、`TableRequestSort`、`TableRequestContext`、`TableRequestResult`。
+`TableRequest`、`TableRequestParams`、`TableRequestSort`、`TableRequestContext`、`TableRequestResult`、`TableRequestPolling`。
 
-轮询、聚焦刷新、缓存和自动重试由业务请求方案按需组合，本接口首版没有这些状态。
+通用请求缓存、自动重试退避等仍由业务请求方案按需组合；`pollingOnError` 只控制下一轮轮询，不是通用重试引擎。
