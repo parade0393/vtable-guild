@@ -1,5 +1,11 @@
 # @vtable-guild/vtable-guild
 
+## 2.9.0-alpha.2
+
+### Minor Changes
+
+- [#57](https://github.com/parade0393/vtable-guild/pull/57) [`c83d1ba`](https://github.com/parade0393/vtable-guild/commit/c83d1ba6a2821b91495a1a87aa59cf0697057d88) Thanks [@parade0393](https://github.com/parade0393)! - Add schema query and form components, inline row editing, dictionaries, batch controls, and request polling APIs.
+
 ## 2.9.0-alpha.1
 
 ### Minor Changes
