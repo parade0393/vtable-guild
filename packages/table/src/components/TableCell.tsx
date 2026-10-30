@@ -1,6 +1,7 @@
 import { computed, defineComponent, inject, ref, type PropType, type VNodeChild } from 'vue'
 import { cn, Tooltip } from '@vtable-guild/core'
 import { TABLE_ALIGN_CLASSES } from '@vtable-guild/theme'
+import { CheckCircleFilledIcon, CloseCircleFilledIcon } from '@vtable-guild/icons'
 import type { CellAdditionalProps, ColumnType } from '../types'
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 import { getByDataIndex, isInHoverRange } from '../composables'
@@ -438,7 +439,39 @@ export default defineComponent({
         ? (tableContext.compatClass?.('cell-with-append') ?? '')
         : ''
       const displayContent =
-        resolvedCell.value.presentation === 'tag' ? (
+        resolvedCell.value.presentation === 'progress' && resolvedCell.value.progress ? (
+          <span
+            class={tableContext.subThemeSlots?.cellProgress()}
+            data-vtg-field="progress"
+            role="progressbar"
+            aria-label={resolvedCell.value.tooltipText}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={resolvedCell.value.progress.percent}
+          >
+            <span class={tableContext.subThemeSlots?.cellProgressTrack()}>
+              <span
+                class={tableContext.subThemeSlots?.cellProgressBar()}
+                data-status={resolvedCell.value.status ?? 'processing'}
+                style={{ width: `${resolvedCell.value.progress.percent}%` }}
+              />
+            </span>
+            {resolvedCell.value.progress.showValue ? (
+              <span
+                class={tableContext.subThemeSlots?.cellProgressText()}
+                data-status={resolvedCell.value.status}
+              >
+                {resolvedCell.value.status === 'success' ? (
+                  <CheckCircleFilledIcon />
+                ) : resolvedCell.value.status === 'error' ? (
+                  <CloseCircleFilledIcon fill-rule="evenodd" />
+                ) : (
+                  resolvedCell.value.content
+                )}
+              </span>
+            ) : null}
+          </span>
+        ) : resolvedCell.value.presentation === 'tag' ? (
           <span
             class={tableContext.subThemeSlots?.cellTag()}
             data-status={resolvedCell.value.status ?? 'default'}

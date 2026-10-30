@@ -136,15 +136,15 @@ const dataSource: UserRow[] = [
 
 业务增强以 Ant Design ProTable 的查询、EditableProTable 和 ProField 协议为参照，拆成可组合的 Vue API，两套预设共享同一套状态：
 
-| 能力                                                                       | 入口与边界                                                                                                              |
-| -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| [查询提交](https://parade0393.github.io/vtable-guild/guide/query)          | `useTableQuery` 分离草稿与提交参数，支持字段转换、重置和展开收起；连接 `useTableRequest`，控件与表单校验复用宿主 UI 库  |
-| [行编辑](https://parade0393.github.io/vtable-guild/guide/editing)          | `useTableEdit` 管理 `editableKeys`、草稿、异步校验、保存、取消和缓存新增行；业务提交数据                                |
-| [字段渲染](https://parade0393.github.io/vtable-guild/guide/cell-render)    | `valueType / fieldProps / createTableRenderers` 提供 text、digit、money、date、tag 与自定义只读渲染器，复用 `valueEnum` |
-| [懒加载树](https://parade0393.github.io/vtable-guild/guide/tree-table)     | `loadData / isLeaf` 提供加载、错误、重试、并发去重和失效保护；父子选择只计算已加载后代                                  |
-| [实例定位](https://parade0393.github.io/vtable-guild/guide/table-instance) | `TableInstance.scrollTo({ key, index, top, left })` 支持普通与虚拟表体，只定位当前页已加载且可见的记录                  |
+| 能力                                                                       | 入口与边界                                                                                                                      |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| [查询提交](https://parade0393.github.io/vtable-guild/guide/query)          | `useTableQuery` 分离草稿与提交参数，支持字段转换、重置和展开收起；连接 `useTableRequest`，控件与表单校验复用宿主 UI 库          |
+| [行编辑](https://parade0393.github.io/vtable-guild/guide/editing)          | `useTableEdit` 管理 `editableKeys`、草稿、异步校验、保存、取消和缓存新增行；业务提交数据                                        |
+| [字段渲染](https://parade0393.github.io/vtable-guild/guide/cell-render)    | `valueType / fieldProps / createTableRenderers` 提供日期时间/区间、百分比、进度、金额、标签与自定义只读渲染器，复用 `valueEnum` |
+| [懒加载树](https://parade0393.github.io/vtable-guild/guide/tree-table)     | `loadData / isLeaf` 提供加载、错误、重试、并发去重和失效保护；父子选择只计算已加载后代                                          |
+| [实例定位](https://parade0393.github.io/vtable-guild/guide/table-instance) | `TableInstance.scrollTo({ key, index, top, left })` 支持普通与虚拟表体，只定位当前页已加载且可见的记录                          |
 
-本库不自动生成完整查询或编辑表单，也不承诺完整复刻 React ProTable。输入控件、业务请求与页面流程继续由项目管理。
+可选的 [Schema 查询区](https://parade0393.github.io/vtable-guild/guide/schema-query)、[列级编辑](https://parade0393.github.io/vtable-guild/guide/editable-columns)和[明细表单](https://parade0393.github.io/vtable-guild/guide/detail-form)复用宿主控件，支持字段配置、转换与离屏草稿校验。完整 ProForm、CRUD 页面流程与服务端事务由项目管理。
 
 ## 样式接入
 

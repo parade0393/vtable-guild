@@ -40,6 +40,7 @@ const zhTheme = {
           { text: '行选择', link: '/guide/selection' },
           { text: '批量操作提示条', link: '/guide/selection-alert' },
           { text: '单元格展示与枚举', link: '/guide/cell-display' },
+          { text: '远程字典与选项复用', link: '/guide/dictionary' },
           { text: '字段渲染器', link: '/guide/cell-render' },
           { text: '展开行', link: '/guide/expandable-rows' },
           { text: '树形表格', link: '/guide/tree-table' },
@@ -54,6 +55,9 @@ const zhTheme = {
           { text: '标题与摘要行', link: '/guide/title-footer-summary' },
           { text: '自定义行与插槽', link: '/guide/api-wiring-and-slots' },
           { text: '编辑', link: '/guide/editing' },
+          { text: 'Schema 查询区', link: '/guide/schema-query' },
+          { text: '列级编辑与控件', link: '/guide/editable-columns' },
+          { text: '外部表单与明细', link: '/guide/detail-form' },
         ],
       },
       {

@@ -12,6 +12,16 @@ import {
   type TableToolbarSlots,
   VTable,
   createTableRenderers,
+  createTableDictionary,
+  useTableDictionary,
+  useTableRequest,
+  type TableRequestPolling,
+  VTableQuery,
+  VTableEditCell,
+  useTableQuery,
+  useTableEditable,
+  deriveTableQueryFields,
+  type TableQueryField,
   type TableInstance,
   type TableFieldRenderer,
 } from '@vtable-guild/vtable-guild'
@@ -41,6 +51,53 @@ interface Member {
   id: number
   name: string
 }
+
+const _schemaQuery = useTableQuery({ defaultValues: { name: '' } })
+type QueryProps = Parameters<typeof VTableQuery<{ name: string }>>[0]
+const _schemaProps: QueryProps = {
+  query: _schemaQuery,
+  fields: [{ name: 'name' }],
+  controls: { text: () => null },
+}
+// @ts-expect-error A schema field must belong to the query values.
+const _invalidQueryField: TableQueryField<{ name: string }> = { name: 'missing' }
+const _editable = useTableEditable<Member>({
+  rowKey: 'id',
+  columns: [{ dataIndex: 'name', editor: {} }],
+  controls: { text: () => null },
+})
+type EditCellProps = Parameters<typeof VTableEditCell<Member>>[0]
+const _editorCell: EditCellProps = {
+  edit: _editable,
+  cell: { record: { id: 1, name: 'A' }, column: { dataIndex: 'name' }, text: 'A', index: 0 },
+}
+const _allDrafts: ReadonlyMap<string | number, Member> = _editable.getDrafts()
+const _derivedFields: TableQueryField<{ name: string }>[] = deriveTableQueryFields([
+  { dataIndex: 'name', query: { valueType: 'text' } },
+])
+createVTableGuild({ theme: { query: { slots: { fields: 'custom-grid' } } } })
+// @ts-expect-error Query theme augmentation must survive the published bundle.
+createVTableGuild({ theme: { query: { slots: { missing: 'invalid' } } } })
+
+const _dictionary = createTableDictionary<{ team: number }>({
+  key: 'members',
+  request: async (params, { keyword, signal }) => ({
+    options: signal.aborted ? [] : [{ value: params.team ?? 0, label: keyword }],
+    complete: keyword === '',
+  }),
+})
+const _dictionaryState = useTableDictionary({ dictionary: _dictionary, params: { team: 1 } })
+// @ts-expect-error Dependency types must survive the published bundle.
+useTableDictionary({ dictionary: _dictionary, params: { team: 'invalid' } })
+const _polling: TableRequestPolling<Member> = (rows) => (rows.length ? false : 3000)
+const _request = useTableRequest<Member>({
+  polling: _polling,
+  revalidateOnFocus: true,
+  request: async () => ({ data: [], total: 0 }),
+})
+const _resume: Promise<void> = _request.resume(true)
+const _refreshing: boolean = _request.refreshing.value
+createVTableGuild({ theme: { table: { slots: { cellProgressTrack: 'custom-track' } } } })
 type SettingsProps = Parameters<typeof VTableColumnSettings<Member>>[0]
 const _settings: TableColumnSettingsProps<Member> = {
   columns: [{ key: 'name', dataIndex: 'name', sorter: (a, b) => a.name.localeCompare(b.name) }],

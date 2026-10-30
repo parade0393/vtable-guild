@@ -11,6 +11,7 @@ import type {
   columnSettingsTheme,
   toolbarTheme,
   selectionAlertTheme,
+  queryTheme,
 } from '@vtable-guild/vtable-guild'
 import type { AlignType, SummaryFixed } from './table'
 
@@ -138,6 +139,13 @@ export type TableSlots =
   | 'copyButton'
   | 'cellStatus'
   | 'cellTag'
+  | 'editCell'
+  | 'editControl'
+  | 'editError'
+  | 'cellProgress'
+  | 'cellProgressTrack'
+  | 'cellProgressBar'
+  | 'cellProgressText'
   | 'filterIconWrapper'
   | 'filterIcon'
   | 'filterDropdown'
@@ -296,6 +304,8 @@ export type ToolbarSlots = keyof ToolbarThemeConfig['slots']
 // #region SelectionAlertThemeTypes
 export type SelectionAlertThemeConfig = typeof selectionAlertTheme
 export type SelectionAlertSlots = keyof SelectionAlertThemeConfig['slots']
+export type QueryThemeConfig = typeof queryTheme
+export type QuerySlots = keyof QueryThemeConfig['slots']
 // #endregion SelectionAlertThemeTypes
 
 // #region VTableGuildThemeOverridesMap
@@ -311,6 +321,7 @@ export interface VTableGuildThemeOverridesMap {
   columnSettings: ThemeOverrideConfig<ColumnSettingsThemeConfig>
   toolbar: ThemeOverrideConfig<ToolbarThemeConfig>
   selectionAlert: ThemeOverrideConfig<SelectionAlertThemeConfig>
+  query: ThemeOverrideConfig<QueryThemeConfig>
 }
 // #endregion VTableGuildThemeOverridesMap
 

@@ -23,6 +23,7 @@ import type {
   ColumnSettingsThemeConfig,
   ToolbarThemeConfig,
   SelectionAlertThemeConfig,
+  QueryThemeConfig,
 } from '@vtable-guild/theme'
 
 declare module '../../core/src/index' {
@@ -38,5 +39,6 @@ declare module '../../core/src/index' {
     columnSettings: ThemeOverrideConfig<ColumnSettingsThemeConfig>
     toolbar: ThemeOverrideConfig<ToolbarThemeConfig>
     selectionAlert: ThemeOverrideConfig<SelectionAlertThemeConfig>
+    query: ThemeOverrideConfig<QueryThemeConfig>
   }
 }

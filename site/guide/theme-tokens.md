@@ -171,3 +171,27 @@ Element Plus 预设另提供 `font-size`、`font-size-sm`、`page-gap`、`contro
 | `--vtg-column-settings-shadow`    | 浮层阴影               | `var(--vtg-pagination-popup-shadow)` | `var(--vtg-pagination-popup-shadow)` |
 
 业务导出、新增等按钮由项目 UI 库提供，使用该 UI 库的样式配置。工具栏负责按钮区布局，使用方式见 [工具栏与业务扩展](/guide/toolbar)。
+
+## 编辑控件
+
+| 变量                           | 含义               | antdv / element-plus |
+| ------------------------------ | ------------------ | -------------------- |
+| `--vtg-editor-error-gap`       | 控件与错误文字间距 | `2px / 2px`          |
+| `--vtg-editor-error-font-size` | 错误字号           | `14px / 12px`        |
+| `--vtg-editor-radius`          | 编辑控件轮廓圆角   | `6px / 4px`          |
+
+查询区的栅格、标签宽度、操作间距和轻量布局使用 `--vtg-query-*` 变量，详见 [Schema 查询区](/guide/schema-query)。
+
+## 字段进度
+
+| 变量                            | 含义           | 默认值                                             |
+| ------------------------------- | -------------- | -------------------------------------------------- |
+| `--vtg-cell-progress-min-width` | 最小宽度       | `100px`                                            |
+| `--vtg-cell-progress-max-width` | 最大宽度       | `320px`                                            |
+| `--vtg-cell-progress-height`    | 轨道高度       | `6px`                                              |
+| `--vtg-cell-progress-radius`    | 轨道圆角       | `100px`                                            |
+| `--vtg-cell-progress-gap`       | 轨道与文本间距 | `8px`                                              |
+| `--vtg-cell-progress-font-size` | 文本字号       | `12px`                                             |
+| `--vtg-cell-progress-trail`     | 轨道背景       | Ant 为正文色 6%，Element Plus 为 `--color-default` |
+
+填充色复用 `--color-primary` 与单元格状态色变量；成功 / 错误图标跟随状态色。

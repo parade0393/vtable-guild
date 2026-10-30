@@ -4,6 +4,24 @@ import { useTableQuery } from './useTableQuery'
 import { useTableRequest } from './useTableRequest'
 
 describe('useTableQuery', () => {
+  it('omits hidden query parameters and their transforms while retaining draft/submitted values', async () => {
+    const hiddenTransform = vi.fn((value: string) => ({ hidden: value }))
+    const query = useTableQuery({
+      defaultValues: { keyword: 'one', hidden: 'keep' },
+      fieldTransforms: { hidden: hiddenTransform },
+    })
+    await query.submit({ omitFields: ['hidden'] })
+    expect(query.params.value).toEqual({ keyword: 'one' })
+    expect(hiddenTransform).not.toHaveBeenCalled()
+    expect(query.draft.value.hidden).toBe('keep')
+    expect(query.submitted.value?.hidden).toBe('keep')
+    query.draft.value.keyword = 'two'
+    await query.reset({ omitFields: ['hidden'] })
+    expect(query.params.value).toEqual({ keyword: 'one' })
+    expect(query.draft.value.hidden).toBe('keep')
+    await query.submit()
+    expect(query.params.value).toEqual({ keyword: 'one', hidden: 'keep' })
+  })
   it('shares controlled collapse state and notifies once per change', () => {
     const collapsed = ref(false)
     const onCollapse = vi.fn()

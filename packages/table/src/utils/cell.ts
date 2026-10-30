@@ -20,7 +20,8 @@ export interface ResolvedBodyCell {
   rowSpan: number
   copyText?: string
   status?: ColumnValueStatus
-  presentation?: 'tag'
+  presentation?: TableFieldRenderResult['presentation']
+  progress?: TableFieldRenderResult['progress']
 }
 
 function resolveTooltipText(value: unknown): string | undefined {
@@ -113,7 +114,8 @@ export function resolveBodyCell<TRecord extends Record<string, unknown>>(options
   let customContent = false
   let tooltipText = resolveTooltipText(defaultText)
   let status = enumValue?.status
-  let presentation: 'tag' | undefined
+  let presentation: TableFieldRenderResult['presentation']
+  let progress: TableFieldRenderResult['progress']
 
   if (column.customRender) {
     customContent = true
@@ -178,6 +180,7 @@ export function resolveBodyCell<TRecord extends Record<string, unknown>>(options
         tooltipText = result.tooltipText ?? resolveTooltipText(result.children)
         status = result.status
         presentation = result.presentation
+        progress = result.progress
       } else {
         content = rendered
         tooltipText = resolveTooltipText(rendered)
@@ -194,6 +197,7 @@ export function resolveBodyCell<TRecord extends Record<string, unknown>>(options
     copyText: resolveTooltipText(transformedText),
     status: customContent ? undefined : status,
     presentation: customContent ? undefined : presentation,
+    progress: customContent ? undefined : progress,
     customCellProps,
     renderCellProps,
     colSpan: colSpan ?? 1,

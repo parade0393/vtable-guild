@@ -28,6 +28,16 @@
   --vtg-cell-tag-line-height: 20px;
   --vtg-cell-tag-bg: color-mix(in srgb, currentcolor 8%, var(--vtg-table-bg));
   --vtg-cell-tag-border: color-mix(in srgb, currentcolor 30%, transparent);
+  --vtg-cell-progress-min-width: 100px;
+  --vtg-editor-error-gap: 2px;
+  --vtg-editor-error-font-size: 14px;
+  --vtg-editor-radius: 6px;
+  --vtg-cell-progress-max-width: 320px;
+  --vtg-cell-progress-height: 6px;
+  --vtg-cell-progress-radius: 100px;
+  --vtg-cell-progress-gap: 8px;
+  --vtg-cell-progress-font-size: 12px;
+  --vtg-cell-progress-trail: color-mix(in srgb, var(--color-on-surface) 6%, transparent);
   --vtg-column-settings-radius: 8px;
   --vtg-column-settings-icon-size: 16px;
   --vtg-column-settings-z: 1050;

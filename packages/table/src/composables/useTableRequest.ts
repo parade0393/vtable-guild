@@ -1,4 +1,13 @@
-import { computed, getCurrentScope, onScopeDispose, ref, shallowRef, toValue, watch } from 'vue'
+import {
+  computed,
+  getCurrentScope,
+  onScopeDispose,
+  ref,
+  shallowRef,
+  toValue,
+  unref,
+  watch,
+} from 'vue'
 import type { TableFiltersInfo, VTableSorterResult } from '../types/table'
 import type {
   TableRequestParams,
@@ -8,27 +17,7 @@ import type {
 } from '../types/request'
 import { positiveInteger } from './usePagination'
 import { snapshot } from '../utils/snapshot'
-
-function equal(a: unknown, b: unknown, seen = new WeakMap<object, WeakSet<object>>()): boolean {
-  if (Object.is(a, b)) return true
-  if (a instanceof Date && b instanceof Date) return a.getTime() === b.getTime()
-  if (!a || !b || typeof a !== 'object' || typeof b !== 'object') return false
-  if (Object.getPrototypeOf(a) !== Object.getPrototypeOf(b)) return false
-  if (Object.getPrototypeOf(a) !== Object.prototype && !Array.isArray(a)) return false
-  if (seen.get(a)?.has(b)) return true
-  const matches = seen.get(a) ?? new WeakSet<object>()
-  seen.set(a, matches)
-  matches.add(b)
-  const left = Object.entries(a)
-  const right = Object.entries(b)
-  return (
-    left.length === right.length &&
-    left.every(
-      ([key, value]) =>
-        Object.prototype.hasOwnProperty.call(b, key) && equal(value, Reflect.get(b, key), seen),
-    )
-  )
-}
+import { stateEqual as equal } from '../utils/stateEqual'
 
 function normalizeSort<TRecord extends object>(
   sorter: VTableSorterResult<TRecord>,
@@ -57,6 +46,8 @@ export function useTableRequest<
   const total = ref(Math.max(0, options.initialPagination?.total ?? 0))
   const dataSource = shallowRef<TRecord[]>([])
   const loading = ref(false)
+  const refreshing = ref(false)
+  const paused = ref(false)
   const error = shallowRef<Error | null>(null)
   const manual = Object.freeze({ sort: true, filter: true, pagination: true })
 
@@ -67,8 +58,64 @@ export function useTableRequest<
   let settle: (() => void) | undefined
   let previous: unknown
   let lastPromise: Promise<void> = Promise.resolve()
+  let pollTimer: ReturnType<typeof setTimeout> | undefined
+  let visibilityTimer: ReturnType<typeof setTimeout> | undefined
+  let started = false
+  let loaded = false
+  let backgroundRequest = false
+  const scoped = !!getCurrentScope()
 
-  function cancel() {
+  function clearSchedule() {
+    clearTimeout(pollTimer)
+    clearTimeout(visibilityTimer)
+    pollTimer = undefined
+    visibilityTimer = undefined
+  }
+
+  function canRefresh() {
+    return (
+      scoped &&
+      typeof document !== 'undefined' &&
+      !disposed &&
+      started &&
+      !paused.value &&
+      (options.pollingWhenHidden || document.visibilityState !== 'hidden')
+    )
+  }
+
+  function reportError(reason: unknown) {
+    error.value = reason instanceof Error ? reason : new Error(String(reason))
+    try {
+      options.onError?.(error.value)
+    } catch (callbackReason) {
+      error.value =
+        callbackReason instanceof Error ? callbackReason : new Error(String(callbackReason))
+    }
+  }
+
+  function schedule() {
+    clearSchedule()
+    if (!canRefresh() || controller || (error.value && !options.pollingOnError)) return
+    const polling = unref(options.polling)
+    let interval: number | false | undefined
+    try {
+      interval = typeof polling === 'function' ? polling(snapshot(dataSource.value)) : polling
+    } catch (reason) {
+      reportError(reason)
+      return
+    }
+    if (typeof interval !== 'number' || !Number.isFinite(interval) || interval <= 0) return
+    pollTimer = setTimeout(
+      () => {
+        pollTimer = undefined
+        if (canRefresh()) void request(true, true, true, true)
+      },
+      Math.max(2000, interval),
+    )
+  }
+
+  function abortRequest() {
+    clearSchedule()
     generation++
     if (timer !== undefined) clearTimeout(timer)
     timer = undefined
@@ -77,10 +124,27 @@ export function useTableRequest<
     settle?.()
     settle = undefined
     loading.value = false
+    refreshing.value = false
     previous = undefined
   }
 
-  function request(force = false, immediate = false): Promise<void> {
+  function pause() {
+    paused.value = true
+    clearSchedule()
+    if (controller && backgroundRequest) abortRequest()
+  }
+
+  function cancel() {
+    paused.value = true
+    abortRequest()
+  }
+
+  function request(
+    force = false,
+    immediate = false,
+    background = false,
+    mergeActive = false,
+  ): Promise<void> {
     if (disposed) return Promise.resolve()
     let params: TableRequestParams<TParams>
     try {
@@ -91,22 +155,28 @@ export function useTableRequest<
         pageSize: pageSize.value,
       }
     } catch (reason) {
-      cancel()
-      error.value = reason instanceof Error ? reason : new Error(String(reason))
-      options.onError?.(error.value)
+      abortRequest()
+      reportError(reason)
       return Promise.resolve()
     }
     const sort = snapshot(activeSort.value)
     const filters = snapshot(activeFilters.value)
     const next = snapshot({ params, sort, filters })
+    // A manual reload and an automatic trigger may arrive in the same frame.
+    // Promote a debounced request immediately, but share an already running identical one.
+    if (mergeActive && controller && timer === undefined && equal(previous, next))
+      return lastPromise
     if (!force && previous !== undefined && equal(previous, next)) return lastPromise
 
-    cancel()
+    abortRequest()
+    started = true
+    backgroundRequest = background
     previous = next
     const id = generation
     const abort = new AbortController()
     controller = abort
-    loading.value = true
+    refreshing.value = background && loaded
+    loading.value = !refreshing.value
     error.value = null
     lastPromise = new Promise<void>((resolve) => {
       settle = resolve
@@ -134,21 +204,23 @@ export function useTableRequest<
             current.value = Math.min(params.current, lastPage)
             total.value = response.total
             dataSource.value = rows
+            loaded = true
             previous = snapshot({ params: { ...params, current: current.value }, sort, filters })
             options.onLoad?.(rows, response)
             break
           }
         } catch (reason) {
           if (!disposed && id === generation && !abort.signal.aborted) {
-            error.value = reason instanceof Error ? reason : new Error(String(reason))
             previous = undefined
-            options.onError?.(error.value)
+            reportError(reason)
           }
         } finally {
           if (id === generation) {
             loading.value = false
+            refreshing.value = false
             controller = undefined
             settle = undefined
+            schedule()
           }
           resolve()
         }
@@ -189,10 +261,32 @@ export function useTableRequest<
     },
     { deep: true },
   )
+  const stopRefresh = watch(
+    () => [unref(options.polling), toValue(options.revalidateOnFocus)],
+    schedule,
+  )
+  function onVisibilityChange() {
+    clearSchedule()
+    if (!canRefresh()) return
+    if (document.visibilityState === 'visible' && toValue(options.revalidateOnFocus)) {
+      // Coalesce visibility events with a synchronous user reload.
+      visibilityTimer = setTimeout(() => {
+        visibilityTimer = undefined
+        if (canRefresh() && !controller) void request(true, true, true, true)
+      }, 0)
+    } else schedule()
+  }
+  // Automatic work is browser-only and scoped; ordinary request use remains SSR-compatible.
+  if (getCurrentScope() && typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', onVisibilityChange)
+  }
   if (getCurrentScope()) {
     onScopeDispose(() => {
       disposed = true
       stop()
+      stopRefresh()
+      if (typeof document !== 'undefined')
+        document.removeEventListener('visibilitychange', onVisibilityChange)
       cancel()
     })
   }
@@ -202,6 +296,8 @@ export function useTableRequest<
   return {
     dataSource,
     loading: computed(() => loading.value),
+    refreshing: computed(() => refreshing.value),
+    paused: computed(() => paused.value),
     error,
     pagination: computed(() => ({
       ...options.pagination,
@@ -216,7 +312,7 @@ export function useTableRequest<
     onChange,
     reload(resetPageIndex = false) {
       if (resetPageIndex) current.value = 1
-      return request(true, true)
+      return request(true, true, false, true)
     },
     submit(params = {}) {
       submitted.value = snapshot(params)
@@ -231,5 +327,12 @@ export function useTableRequest<
       return request(true)
     },
     cancel,
+    pause,
+    resume(immediate = false) {
+      paused.value = false
+      if (immediate && canRefresh()) return request(true, true, true, true)
+      schedule()
+      return Promise.resolve()
+    },
   }
 }

@@ -1,5 +1,7 @@
 # 编辑
 
+减少逐列控件绑定代码可使用 [列级编辑与控件](/guide/editable-columns)；主表单一次提交全部明细、虚拟离屏校验与受控新增见 [外部表单与明细](/guide/detail-form)。以下保留手写插槽与基础行草稿协议。
+
 vtable-guild 通过 `bodyCell` 插槽支持单元格编辑和整行编辑。`useTableEdit` 管理按稳定行键保存的草稿、校验和异步保存；编辑器直接使用项目已有的 Ant Design Vue、Element Plus 或表单控件。
 
 ## 编辑状态与校验协议

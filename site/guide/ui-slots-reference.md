@@ -286,6 +286,25 @@ app.use(
 
 `cellTag` 控制 `valueType: 'tag'` 的标签外观，`cellStatus` 继续控制枚举状态标记。两者共享 `data-status` 与状态色变量；自定义 renderer 也可返回 `presentation: 'tag'` 使用标签主题。
 
+### 字段进度
+
+| Slot                | 说明                                 |
+| ------------------- | ------------------------------------ |
+| `cellProgress`      | 进度整体宽度与轨道、数值之间的间距。 |
+| `cellProgressTrack` | 轨道高度、圆角与背景。               |
+| `cellProgressBar`   | 填充色，支持 `data-status` 状态。    |
+| `cellProgressText`  | 百分比文字或成功 / 错误图标。        |
+
+### 编辑控件
+
+| Slot          | 说明                         |
+| ------------- | ---------------------------- |
+| `editCell`    | 已进入编辑的单元格内容容器。 |
+| `editControl` | 宿主控件的宽度和错误轮廓。   |
+| `editError`   | 按字段定位的校验错误。       |
+
+查询区使用独立的 `theme.query`，支持 `root / fields / field / label / control / error / actions / feedback / collapse`，详见 [Schema 查询区](/guide/schema-query)。
+
 ### 列宽拖拽
 
 | Slot           | 说明           |

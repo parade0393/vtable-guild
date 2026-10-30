@@ -10,7 +10,14 @@ export interface TableFieldProps {
   dateFormat?: Intl.DateTimeFormatOptions
   /** Currency used by money; defaults to CNY. */
   currency?: string
-  /** tag reuses the same status tokens as valueEnum. */
+  /** percent/progress input scale. Default 'percent' (25 means 25%); 'ratio' uses 0..1. */
+  percentScale?: 'percent' | 'ratio'
+  /** Range display separator and missing-endpoint placeholder. Defaults to ' ~ ' and '—'. */
+  rangeSeparator?: string
+  rangeEmptyText?: string
+  /** Show the progress percentage next to its track. Default true. */
+  showValue?: boolean
+  /** tag and progress reuse the same status tokens as valueEnum. */
   status?: ColumnValueStatus
   [key: string]: unknown
 }
@@ -33,8 +40,10 @@ export interface TableFieldRenderResult {
   tooltipText?: string
   /** Uses the existing theme status slot. */
   status?: ColumnValueStatus
-  /** Wrap children with the theme's Tag appearance instead of a status dot. */
-  presentation?: 'tag'
+  /** Render with the theme's tag or progress appearance instead of a status dot. */
+  presentation?: 'tag' | 'progress'
+  /** A finite percentage in 0..100; rendered through the table's progress theme slots. */
+  progress?: { percent: number; showValue: boolean }
 }
 
 export type TableFieldRenderer<TRecord extends object = Record<string, unknown>> = (

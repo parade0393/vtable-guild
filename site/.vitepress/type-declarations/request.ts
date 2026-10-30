@@ -1,4 +1,4 @@
-import type { ComputedRef, MaybeRefOrGetter, Ref, ShallowRef } from 'vue'
+import type { ComputedRef, MaybeRef, MaybeRefOrGetter, Ref, ShallowRef } from 'vue'
 import type { SortOrder } from '@vtable-guild/vtable-guild'
 import type { TablePaginationConfig, TablePaginationState } from '@vtable-guild/vtable-guild'
 import type { TableFiltersInfo, VTableEventProps } from '@vtable-guild/vtable-guild'
@@ -35,6 +35,12 @@ export type TableRequest<TRecord extends object, TParams extends object> = (
   context: TableRequestContext,
 ) => Promise<TableRequestResult<TRecord>>
 
+/** Disabled by default. Positive intervals are clamped to at least 2000ms. */
+export type TableRequestPolling<TRecord extends object> =
+  | number
+  | false
+  | ((data: readonly TRecord[]) => number | false)
+
 export interface UseTableRequestOptions<
   TRecord extends object,
   TParams extends object = Record<string, unknown>,
@@ -62,6 +68,14 @@ export interface UseTableRequestOptions<
   manualRequest?: boolean
   /** Debounce query changes and table events. Explicit reload executes immediately. */
   debounceTime?: number
+  /** Schedule the next refresh after the previous request settles, never concurrently. */
+  polling?: MaybeRef<TableRequestPolling<TRecord>>
+  /** Refresh when the document becomes visible. Does not submit query drafts. */
+  revalidateOnFocus?: MaybeRefOrGetter<boolean>
+  /** Continue polling while the document is hidden. Defaults to false. */
+  pollingWhenHidden?: boolean
+  /** Continue polling after an error. Defaults to false; reload/resume can retry. */
+  pollingOnError?: boolean
   /** Defaults to true in this request helper; the base table's pagination policy is unchanged. */
   resetOnPageSizeChange?: boolean
   beforeSearchSubmit?: (params: Partial<TParams>) => Partial<TParams>
@@ -76,6 +90,10 @@ export interface UseTableRequestReturn<
 > {
   dataSource: ShallowRef<TRecord[]>
   loading: Readonly<Ref<boolean>>
+  /** Automatic refresh after a successful load, without a blocking table spinner. */
+  refreshing: Readonly<Ref<boolean>>
+  /** Explicit pause state; document visibility is handled independently. */
+  paused: Readonly<Ref<boolean>>
   error: ShallowRef<Error | null>
   pagination: ComputedRef<TablePaginationConfig>
   query: ComputedRef<Partial<TParams>>
@@ -83,11 +101,15 @@ export interface UseTableRequestReturn<
   filters: ComputedRef<TableFiltersInfo>
   manual: Readonly<Required<TableManualConfig>>
   onChange: NonNullable<VTableEventProps<TRecord>['onChange']>
-  /** Force a request. true also resets the current page. Resolves after the request settles. */
+  /** Refresh immediately, sharing an identical running request. true also resets the page. */
   reload: (resetPageIndex?: boolean) => Promise<void>
   /** Replace the submitted query, reset to page one, and request even if values are unchanged. */
   submit: (params?: Partial<TParams>) => Promise<void>
   /** Restore defaults (or the supplied query), clear sort/filters, reset to page one, and request. */
   reset: (params?: Partial<TParams>) => Promise<void>
   cancel: () => void
+  /** Stop automatic refresh and abort an automatic request, retaining manual requests. */
+  pause: () => void
+  /** Resume automatic refresh; optionally refresh immediately. Never starts a manual first load. */
+  resume: (immediate?: boolean) => Promise<void>
 }

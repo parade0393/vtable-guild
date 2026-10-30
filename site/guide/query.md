@@ -1,5 +1,7 @@
 # 查询提交与重置
 
+需要按 schema 或列配置生成控件与响应式布局时，使用可选的 [Schema 查询区](/guide/schema-query)。它复用本页的状态协议，并可先调用宿主表单校验。
+
 `useTableQuery` 为已有表单提供草稿、提交快照、字段转换与展开收起状态。输入框、日期范围和布局继续使用项目已经集成的 Ant Design Vue 或 Element Plus；组合式函数不会从 columns 自动生成表单。
 
 查询交互对齐 [Ant Design ProTable 搜索表单](https://github.com/ant-design/pro-components/blob/master/site/components/table.md)：输入变化不会自行查询，每次点击搜索或重置均发起请求；字段转换对应 `search.transform`，整体请求转换继续使用 `useTableRequest.beforeSearchSubmit`，展开状态对应 `collapsed / onCollapse`。这里将表单状态拆成 Vue 组合式函数，控件和表单校验交给宿主 UI 库。
