@@ -59,6 +59,11 @@ export const router = createRouter({
       component: () => import('./pages/SortPage.vue'),
     },
     {
+      path: '/header-alignment',
+      name: 'header-alignment',
+      component: () => import('./pages/HeaderAlignmentPage.vue'),
+    },
+    {
       path: '/drag-sort',
       name: 'drag-sort',
       component: () => import('./pages/DragSortPage.vue'),

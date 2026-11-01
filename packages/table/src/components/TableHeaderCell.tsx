@@ -611,8 +611,9 @@ export default defineComponent({
       const sortAreaTitleClass = tableContext.subThemeSlots?.sortAreaTitle()
 
       const sorterContent = (
-        <span class={sortAreaWrapperClass}>
+        <span class={sortAreaWrapperClass} data-align={props.cell.column.align}>
           <span
+            data-align={props.cell.column.align}
             class={cn(
               sortAreaTitleClass,
               shouldApplyHeaderEllipsis.value &&
@@ -658,7 +659,7 @@ export default defineComponent({
 
       const sortAreaOuterClass = tableContext.subThemeSlots?.sortAreaOuter()
       const sortArea = showTooltip.value ? (
-        <span class={sortAreaOuterClass}>
+        <span class={sortAreaOuterClass} data-align={props.cell.column.align}>
           <Tooltip
             block
             placement="top"
@@ -674,7 +675,9 @@ export default defineComponent({
           </Tooltip>
         </span>
       ) : (
-        <span class={sortAreaOuterClass}>{sorterContent}</span>
+        <span class={sortAreaOuterClass} data-align={props.cell.column.align}>
+          {sorterContent}
+        </span>
       )
 
       const filterIconContent =
@@ -683,6 +686,7 @@ export default defineComponent({
           if (column.filterIcon) {
             return (
               <span
+                data-align={props.cell.column.align}
                 class={cn(
                   tableContext.subThemeSlots?.filterIconWrapper(),
                   tableContext.subThemeSlots?.filterIcon(),
@@ -707,6 +711,7 @@ export default defineComponent({
           if (tableContext.customFilterIcon) {
             return (
               <span
+                data-align={props.cell.column.align}
                 class={cn(
                   tableContext.subThemeSlots?.filterIconWrapper(),
                   tableContext.subThemeSlots?.filterIcon(),
@@ -731,6 +736,7 @@ export default defineComponent({
           return (
             <span
               ref={filterAnchorRef}
+              data-align={props.cell.column.align}
               class={[
                 tableContext.subThemeSlots?.filterIconWrapper(),
                 isFiltered.value && tableContext.compatClass && 'active',
@@ -835,6 +841,7 @@ export default defineComponent({
           aria-sort={leafColumn.value ? getAriaSortValue(sortOrder.value) : undefined}
         >
           <span
+            data-align={props.cell.column.align}
             class={cn(
               tableContext.vtgClass?.('flex items-center'),
               props.headerCellInnerClass,
