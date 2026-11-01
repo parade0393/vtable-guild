@@ -1,5 +1,15 @@
 # @vtable-guild/vtable-guild
 
+## 2.9.0-alpha.4
+
+### Patch Changes
+
+- [#64](https://github.com/parade0393/vtable-guild/pull/64) [`00099a1`](https://github.com/parade0393/vtable-guild/commit/00099a1f7adef72abba1ee7adc11aa47761109ee) Thanks [@parade0393](https://github.com/parade0393)! - Center Antdv header titles against the full cell width while keeping sorting and filtering controls at their original right edge. Balance the measured control width so custom filter icons and truncated titles remain aligned without overlapping controls.
+
+- [#62](https://github.com/parade0393/vtable-guild/pull/62) [`eebf8d4`](https://github.com/parade0393/vtable-guild/commit/eebf8d4fbcca664bdf40ddd4292a37e5195293a5) Thanks [@parade0393](https://github.com/parade0393)! - Fix Element Plus header alignment for plain, sortable, and filterable columns. Center Antdv titles against the complete cell width for columns with `align: 'center'`, keeping sorting and filtering controls at their original right edge and usable when long headers are truncated.
+
+  Preserve body-cell center and right alignment when ellipsis tooltips are enabled in either preset.
+
 ## 2.9.0-alpha.3
 
 ### Patch Changes
