@@ -71,14 +71,19 @@ export const elementPlusTableTheme = {
       'flex items-center justify-center',
       'bg-[color:var(--vtg-table-loading-overlay-bg)]',
     ].join(' '),
-    headerCellInner: 'flex items-center',
-    bodyCellEllipsis: 'block min-w-0 overflow-hidden text-ellipsis whitespace-nowrap',
+    // Align the title and its adjacent controls as one group. The nested sort
+    // wrappers stay at their natural width and can shrink for header ellipsis.
+    headerCellInner:
+      'flex min-w-0 items-center [&[data-align=center]]:justify-center [&[data-align=right]]:justify-end',
+    // Tooltip's block trigger is flex; fill it so the inherited text-align applies.
+    bodyCellEllipsis: 'block flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap',
 
     // ---- 排序相关 ----
     thSortable: 'cursor-pointer select-none',
     thSorted: '',
     tdSorted: '',
-    sortButton: 'inline-flex flex-col items-center justify-center text-xs leading-none ml-1',
+    sortButton:
+      'inline-flex shrink-0 flex-col items-center justify-center text-xs leading-none ml-1',
     sortIconDown: '-mt-[5px]',
     sortAreaOuter: 'flex min-w-0',
     sortAreaWrapper: 'flex items-center min-w-0',
