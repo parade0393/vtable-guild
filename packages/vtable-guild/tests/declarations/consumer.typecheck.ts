@@ -24,7 +24,36 @@ import {
   type TableQueryField,
   type TableInstance,
   type TableFieldRenderer,
+  SettingOutlinedIcon,
+  ColumnHeightOutlinedIcon,
+  ReloadOutlinedIcon,
+  FullscreenOutlinedIcon,
+  FullscreenExitOutlinedIcon,
+  CheckCircleFilledIcon,
+  CloseCircleFilledIcon,
 } from '@vtable-guild/vtable-guild'
+import { h, type Component, type SVGAttributes } from 'vue'
+
+// 直接检查 dist 的公共声明；消费者不应依赖未发布的 @vtable-guild/icons。
+const _publicIcons: Component[] = [
+  SettingOutlinedIcon,
+  ColumnHeightOutlinedIcon,
+  ReloadOutlinedIcon,
+  FullscreenOutlinedIcon,
+  FullscreenExitOutlinedIcon,
+  CheckCircleFilledIcon,
+  CloseCircleFilledIcon,
+]
+const _iconAttrs: SVGAttributes = {
+  class: 'business-icon',
+  style: { color: 'red', fontSize: '24px' },
+  width: 24,
+  height: 24,
+  'aria-hidden': false,
+  'aria-label': 'Settings',
+  onClick: (event: MouseEvent) => event.preventDefault(),
+}
+const _iconNodes = _publicIcons.map((Icon) => h(Icon, _iconAttrs))
 
 type SummaryProps = InstanceType<typeof VTableSummary>['$props']
 type CellProps = InstanceType<typeof VTableSummary.Cell>['$props']
