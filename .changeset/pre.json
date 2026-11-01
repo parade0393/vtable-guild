@@ -14,8 +14,10 @@
   },
   "changesets": [
     "bright-tables-ring",
+    "center-antdv-header-titles",
     "enterprise-table-capabilities",
     "pro-table-p2-protocols",
-    "reactive-slots-public-icons"
+    "reactive-slots-public-icons",
+    "tidy-header-alignment"
   ]
 }
