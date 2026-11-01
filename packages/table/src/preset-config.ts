@@ -18,6 +18,8 @@ export interface TablePresetConfig {
   filterIcon: Component
   filterSingleSelectMode: 'radio' | 'highlight'
   showSorterTooltip: boolean
+  /** Whether centered titles use the full cell or travel with adjacent controls. */
+  headerTitleCenter: 'cell' | 'content'
   emptyIcon?: Component
   loadingIcon: Component
 }
@@ -29,6 +31,7 @@ export const tablePresetConfigs: Record<ThemePresetName, TablePresetConfig> = {
     filterIcon: FilterFilledIcon,
     filterSingleSelectMode: 'radio',
     showSorterTooltip: true,
+    headerTitleCenter: 'cell',
     emptyIcon: AntdvEmptyIcon,
     loadingIcon: AntdvSpinIndicator,
   },
@@ -38,6 +41,7 @@ export const tablePresetConfigs: Record<ThemePresetName, TablePresetConfig> = {
     filterIcon: ElArrowDownIcon,
     filterSingleSelectMode: 'highlight',
     showSorterTooltip: false,
+    headerTitleCenter: 'content',
     loadingIcon: ElLoadingIcon,
   },
 }

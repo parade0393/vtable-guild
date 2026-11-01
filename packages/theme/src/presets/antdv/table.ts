@@ -75,8 +75,10 @@ export const antdvTableTheme = {
       'flex items-center justify-center',
       'bg-[color:var(--vtg-table-loading-overlay-bg)]',
     ].join(' '),
-    // Center the complete header content, including optional sort/filter controls.
-    headerCellInner: 'flex min-w-0 items-center [&[data-align=center]]:justify-center',
+    // A non-interactive left spacer balances the actual trailing controls. The
+    // title stays centered in the full cell while the icons keep their right edge.
+    headerCellInner:
+      "flex min-w-0 items-center [&[data-align=center]]:before:content-[''] [&[data-align=center]]:before:shrink-0 [&[data-align=center]]:before:w-[var(--vtg-header-title-spacer,0px)]",
     // Tooltip's block trigger is flex; fill it so the inherited text-align applies.
     bodyCellEllipsis: 'block flex-1 min-w-0 overflow-hidden text-ellipsis whitespace-nowrap',
 
@@ -87,12 +89,9 @@ export const antdvTableTheme = {
     sortButton:
       'inline-flex shrink-0 flex-col items-center justify-center text-xs leading-none ml-1',
     sortIconDown: '-mt-[0.225em]',
-    // Every nested flex item must retain its natural width in centered headers;
-    // letting the title grow would center it in the space left over by the icons.
-    sortAreaOuter: 'flex flex-auto min-w-0 [&[data-align=center]]:flex-initial',
-    sortAreaWrapper:
-      'flex flex-auto items-center justify-between min-w-0 [&[data-align=center]]:flex-initial [&[data-align=center]]:justify-start',
-    sortAreaTitle: 'flex-1 min-w-0 [&[data-align=center]]:flex-initial',
+    sortAreaOuter: 'flex flex-auto min-w-0',
+    sortAreaWrapper: 'flex flex-auto items-center justify-between min-w-0',
+    sortAreaTitle: 'flex-1 min-w-0',
     headerHelp:
       'inline-flex shrink-0 items-center ml-1 text-[color:var(--color-muted)] cursor-help',
     cellContent: 'inline-flex max-w-full items-center gap-1 [&>div]:min-w-0',
@@ -117,9 +116,7 @@ export const antdvTableTheme = {
       'shrink-0 tabular-nums text-[length:var(--vtg-cell-progress-font-size)] text-[color:var(--color-on-surface)] [&[data-status=success]]:text-[color:var(--vtg-cell-success)] [&[data-status=error]]:text-[color:var(--vtg-cell-error)] [&>svg]:inline-block [&>svg]:align-middle',
 
     // ---- 筛选图标相关 ----
-    // The edge offset is only useful for edge-aligned controls, not centered groups.
-    filterIconWrapper:
-      'shrink-0 ml-1 self-stretch -my-1 -me-2 flex items-center [&[data-align=center]]:me-0',
+    filterIconWrapper: 'shrink-0 ml-1 self-stretch -my-1 -me-2 flex items-center',
     filterIcon:
       'inline-flex items-center justify-center cursor-pointer transition-colors text-xs px-1 self-stretch rounded-md hover:bg-black/6',
 

@@ -6,6 +6,7 @@ import {
   ref,
   Teleport,
   watch,
+  type ComponentPublicInstance,
   type PropType,
 } from 'vue'
 import { cn, Tooltip } from '@vtable-guild/core'
@@ -17,6 +18,7 @@ import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
 import type { HeaderCellMeta } from '../composables/useColumns'
 import { getColumnKey } from '../composables/useSorter'
 import { useFixedColumnStyle } from '../composables/useFixedColumnStyle'
+import { useHeaderTitleBalance } from '../composables/useHeaderTitleBalance'
 import { getCellSpan, getEllipsisConfig, omitCellProps } from '../utils/cell'
 import { getPopupPositionStyle, resolvePopupContainer } from '../utils/popupPosition'
 import { ensureValidVNode } from '../utils/vnode'
@@ -107,6 +109,16 @@ export default defineComponent({
       )
     })
 
+    const headerInnerRef = ref<HTMLElement | null>(null)
+    const headerTitleRef = ref<HTMLElement | null>(null)
+    const sortButtonRef = ref<ComponentPublicInstance | null>(null)
+    const sortAnchorRef = computed<HTMLElement | null>(() => sortButtonRef.value?.$el ?? null)
+    const balanceHeaderTitle = computed(
+      () =>
+        props.cell.column.align === 'center' &&
+        (isSortable.value || hasFilters.value) &&
+        tableContext.presetConfig?.value.headerTitleCenter === 'cell',
+    )
     const filteredValue = computed(() => {
       if (!leafColumn.value || !hasFilters.value) return []
       return tableContext.getFilteredValue?.(leafColumn.value) ?? []
@@ -134,6 +146,16 @@ export default defineComponent({
 
     const filterAnchorRef = ref<HTMLElement | null>(null)
     const customDropdownRef = ref<HTMLElement | null>(null)
+
+    // Measure the controls' actual footprint, including custom filter content;
+    // the preset decides how to use the balancing space without moving controls.
+    const headerTitleSpacer = useHeaderTitleBalance(
+      balanceHeaderTitle,
+      headerInnerRef,
+      headerTitleRef,
+      filterAnchorRef,
+      sortAnchorRef,
+    )
 
     function toggleFilterDropdown() {
       setDropdownVisible(!filterDropdownVisible.value)
@@ -613,6 +635,7 @@ export default defineComponent({
       const sorterContent = (
         <span class={sortAreaWrapperClass} data-align={props.cell.column.align}>
           <span
+            ref={headerTitleRef}
             data-align={props.cell.column.align}
             class={cn(
               sortAreaTitleClass,
@@ -653,7 +676,7 @@ export default defineComponent({
               </span>
             )}
           </span>
-          {isSortable.value && <SortButton sortOrder={sortOrder.value} />}
+          {isSortable.value && <SortButton ref={sortButtonRef} sortOrder={sortOrder.value} />}
         </span>
       )
 
@@ -841,7 +864,9 @@ export default defineComponent({
           aria-sort={leafColumn.value ? getAriaSortValue(sortOrder.value) : undefined}
         >
           <span
+            ref={headerInnerRef}
             data-align={props.cell.column.align}
+            style={{ '--vtg-header-title-spacer': `${headerTitleSpacer.value}px` }}
             class={cn(
               tableContext.vtgClass?.('flex items-center'),
               props.headerCellInnerClass,

@@ -54,6 +54,7 @@ const cssMode = ref<VTableGuildCssMode>('prebuilt')
 const showSorterTooltip = ref(true)
 const longTitle = ref(false)
 const headerEllipsis = ref(true)
+const wideIcons = ref(false)
 const resetVersion = ref(0)
 const events = ref<Record<string, unknown>>({})
 const dataSource: AlignmentRow[] = [
@@ -69,6 +70,7 @@ const alignments = ['left', 'center', 'right'] as const
 
 // 所有场景共享配置生成器，但每张 VTable 独立保存排序与筛选状态。
 // 不使用 ui 或 CSS 修补表头，让预设本身承担标题和按钮的对齐。
+// Antdv 标题的中心线应与正文一致，右侧控件变宽也不能把标题推向左侧。
 const fixtures = computed(() =>
   cases.map((fixture) => {
     const children: ColumnType<AlignmentRow>[] = alignments.map((align) => ({
@@ -95,7 +97,7 @@ const fixtures = computed(() =>
               'svg',
               {
                 'data-custom-filter-icon': 'column',
-                width: '1em',
+                width: wideIcons.value ? 40 : 18,
                 height: '1em',
                 viewBox: '0 0 16 16',
                 fill: filtered ? 'currentColor' : 'none',
@@ -140,10 +142,11 @@ function reset() {
       <section class="play-hero">
         <div>
           <p class="play-kicker">Header alignment · Issue #59</p>
-          <h1>表头内容整体对齐</h1>
+          <h1>表头标题与图标对齐</h1>
           <p class="play-summary">
-            每列宽 240px，依次设置 left、center、right。顶部切换预设；center
-            应让标题、排序图标和筛选按钮紧邻并整体居中，正文仍按列独立对齐。
+            每列宽 240px，依次设置 left、center、right。Antdv 的 center
+            标题按完整单元格居中，排序和筛选图标仍靠右；Element Plus
+            保持标题与图标相邻并整体对齐。正文仍按列独立对齐。
           </p>
         </div>
       </section>
@@ -169,6 +172,10 @@ function reset() {
             <input v-model="headerEllipsis" type="checkbox" data-testid="alignment-ellipsis" />
             表头省略
           </label>
+          <label>
+            <input v-model="wideIcons" type="checkbox" data-testid="alignment-wide-icons" />
+            加宽自定义筛选图标（18 → 40px）
+          </label>
           <button type="button" class="play-ghost-button" @click="reset">重置所有排序和筛选</button>
         </div>
         <p class="play-case__desc">
@@ -176,6 +183,11 @@ function reset() {
           降序。点击筛选按钮只打开筛选面板，不能触发排序。
           开启长标题后，省略号应出现且排序、筛选按钮始终可见；关闭省略允许标题换行。 Element Plus 的
           left / right 应将整组内容靠左 / 靠右；Antdv 的 left / right 保留原有按钮布局。
+        </p>
+        <p class="play-case__desc">
+          在 Antdv 预设下，比较 center
+          列标题文字与正文数值的中心线；标题居中时不扣除右侧图标占用的区域。
+          切换自定义筛选图标宽度，列级图标与插槽图标两张表的标题都应保持原中心，图标仍靠右。
         </p>
       </section>
 
@@ -205,7 +217,7 @@ function reset() {
             <template v-if="fixture.slotIcon" #customFilterIcon="{ filtered }">
               <svg
                 data-custom-filter-icon="slot"
-                width="1em"
+                :width="wideIcons ? 40 : 18"
                 height="1em"
                 viewBox="0 0 16 16"
                 :fill="filtered ? 'currentColor' : 'none'"
