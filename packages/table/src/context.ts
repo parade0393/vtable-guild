@@ -146,12 +146,12 @@ export interface TableContext {
   columnLayout?: ColumnLayout
   /**
    * 用户定义的 bodyCell slot 函数。
-   * 来自 Table.vue 的 useSlots().bodyCell。
+   * 通过响应式快照同步当前插槽，支持运行时添加、替换与移除。
    */
   bodyCell?: Slots['bodyCell']
   /**
    * 用户定义的 headerCell slot 函数。
-   * 来自 Table.vue 的 useSlots().headerCell。
+   * 通过响应式快照同步当前插槽，支持运行时添加、替换与移除。
    */
   headerCell?: Slots['headerCell']
   /**

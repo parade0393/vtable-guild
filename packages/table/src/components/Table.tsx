@@ -4,9 +4,11 @@ import {
   inject,
   nextTick,
   onBeforeUnmount,
+  onBeforeUpdate,
   onMounted,
   provide,
   ref,
+  shallowReactive,
   watch,
   type PropType,
   type SlotsType,
@@ -1431,22 +1433,49 @@ export default defineComponent({
     // ---- Summary fixed ----
     const summaryFixed = ref<boolean | 'top' | 'bottom' | false>(false)
 
+    // Vue 的 slots 对象不是响应式的。仅用 getter 读取 slots.* 仍无法让后代
+    // 的 computed/render 失效；在 updateSlots 完成后逐项同步，保持各插槽独立追踪。
+    const currentSlots = shallowReactive({
+      bodyCell: slots.bodyCell,
+      headerCell: slots.headerCell,
+      empty: slots.empty,
+      customFilterDropdown: slots.customFilterDropdown,
+      customFilterIcon: slots.customFilterIcon,
+    })
+    onBeforeUpdate(() => {
+      currentSlots.bodyCell = slots.bodyCell
+      currentSlots.headerCell = slots.headerCell
+      currentSlots.empty = slots.empty
+      currentSlots.customFilterDropdown = slots.customFilterDropdown
+      currentSlots.customFilterIcon = slots.customFilterIcon
+    })
+
     provide<TableContext>(TABLE_CONTEXT_KEY, {
       renderers: computed(() => props.renderers),
       isTreeLoading: lazyTree.isLoading,
       getTreeLoadError: lazyTree.getError,
       columnLayout,
-      bodyCell: slots.bodyCell,
-      headerCell: slots.headerCell,
-      empty: slots.empty,
+      get bodyCell() {
+        return currentSlots.bodyCell
+      },
+      get headerCell() {
+        return currentSlots.headerCell
+      },
+      get empty() {
+        return currentSlots.empty
+      },
       getSortOrder,
       toggleSortOrder,
       isColumnSorted,
       getFilteredValue,
       confirmFilter,
       resetFilter,
-      customFilterDropdown: slots.customFilterDropdown,
-      customFilterIcon: slots.customFilterIcon,
+      get customFilterDropdown() {
+        return currentSlots.customFilterDropdown
+      },
+      get customFilterIcon() {
+        return currentSlots.customFilterIcon
+      },
       showSorterTooltip: computed(
         () => props.showSorterTooltip ?? presetConfig.value.showSorterTooltip,
       ),
@@ -1482,8 +1511,12 @@ export default defineComponent({
       getRowClassName: getResolvedRowClassName,
       getHeaderRowProps: getResolvedHeaderRowProps,
       getColumnTitle: getResolvedColumnTitle,
-      getPopupContainer: props.getPopupContainer,
-      transformCellText: props.transformCellText,
+      get getPopupContainer() {
+        return props.getPopupContainer
+      },
+      get transformCellText() {
+        return props.transformCellText
+      },
       columnEmptyText: computed(() => props.columnEmptyText),
       expandable: () => props.expandable as Expandable<Record<string, unknown>> | undefined,
       isExpanded: expIsExpanded,

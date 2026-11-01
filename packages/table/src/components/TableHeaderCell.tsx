@@ -2,7 +2,6 @@ import {
   computed,
   defineComponent,
   inject,
-  nextTick,
   onBeforeUnmount,
   ref,
   Teleport,
@@ -159,19 +158,16 @@ export default defineComponent({
       )
     })
 
-    watch(filterDropdownVisible, (visible) => {
-      if (visible && isCustomDropdown.value) {
-        nextTick(() => {
-          document.addEventListener('mousedown', handleCustomDropdownMouseDown)
-        })
-      } else {
-        document.removeEventListener('mousedown', handleCustomDropdownMouseDown)
-      }
-    })
-
-    onBeforeUnmount(() => {
-      document.removeEventListener('mousedown', handleCustomDropdownMouseDown)
-    })
+    // 已打开的面板也可动态增删自定义插槽；切换模式或卸载时同步清理监听。
+    watch(
+      [filterDropdownVisible, isCustomDropdown],
+      ([visible, custom], _previous, onCleanup) => {
+        if (!visible || !custom) return
+        document.addEventListener('mousedown', handleCustomDropdownMouseDown)
+        onCleanup(() => document.removeEventListener('mousedown', handleCustomDropdownMouseDown))
+      },
+      { flush: 'post', immediate: true },
+    )
 
     function getAnchorRect() {
       if (!filterAnchorRef.value) return { top: 0, left: 0, right: 0, bottom: 0 }

@@ -51,13 +51,24 @@
     // 声明成 inputs，否则改上游包不会让下游的 test 缓存失效、可能复用旧结果。
     // 哪些 project 真的读到了哪些兄弟包，是按根 vitest.config.ts 的 projects 定义
     // 逐个跟 import 图确认过的；没有测试文件的 project
-    //（icons / vtable-guild / playground / perf，均 passWithNoTests）不读任何兄弟包，
+    //（icons / playground / perf，均 passWithNoTests）不读任何兄弟包，
     // 不需要额外 inputs。
     "@vtable-guild/table#test": {
       // 测试直接 import @vtable-guild/core 与 @vtable-guild/theme，
       // 并经 table/src 的组件链（FilterDropdown / TableHeaderCell / preset-config 等）
       // 间接读到 @vtable-guild/icons 源码。
       "inputs": ["$TURBO_DEFAULT$", "../core/src/**", "../icons/src/**", "../theme/src/**"],
+      "outputs": ["coverage/**"]
+    },
+    "@vtable-guild/vtable-guild#test": {
+      // 聚合根入口的图标契约测试会加载全部 re-export，需跟踪其源码依赖。
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "../core/src/**",
+        "../icons/src/**",
+        "../theme/src/**",
+        "../table/src/**"
+      ],
       "outputs": ["coverage/**"]
     },
     "@vtable-guild/theme#test": {
