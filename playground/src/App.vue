@@ -27,7 +27,7 @@ const navGroups = [
       { to: '/filter', label: '筛选' },
       { to: '/selection', label: '选择' },
       { to: '/sort', label: '排序' },
-      { to: '/header-alignment', label: '表头对齐' },
+      { to: '/header-alignment', label: '表头标题与图标对齐' },
       { to: '/pagination', label: '分页' },
       { to: '/column-settings', label: '列设置' },
       { to: '/toolbar', label: '工具栏' },

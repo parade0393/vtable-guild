@@ -1,39 +1,54 @@
-# 表头内容整体对齐验证
+# 表头标题与图标对齐验证
 
 关联：[#59](https://github.com/parade0393/vtable-guild/issues/59)。
 
 ## 行为
 
 - Element Plus：普通表头、排序、筛选和排序＋筛选均按 `column.align` 对齐，标题与控件保持相邻。
-- Antdv：`align: 'center'` 将标题、排序图标与筛选按钮作为整体居中；left/right 保留原布局。这是视觉优化，不以原生 Antdv 的标题占满剩余空间为目标。
+- Antdv：`align: 'center'` 的标题文字以完整单元格宽度为基准居中，包含右侧图标占用的区域；排序、筛选图标保持原来的靠右位置。标题应与居中正文的中心线一致，不因控件占位而偏左。left/right 保留原布局。
 - 两套预设：长标题省略时保留排序、筛选控件的宽度；正文开启省略提示后仍保持 center/right 对齐。
-- 排序 Tooltip 开关、列级与插槽筛选图标、分组表头及虚拟表体均覆盖。
+- 排序 Tooltip 开关、列级与插槽筛选图标、动态自定义图标宽度、分组表头及虚拟表体均需覆盖。
 
-`data-align` 由列配置传到各布局层，视觉规则仍由 theme slots 控制。需要通过 `ui` 定制居中布局时，应使用相同的属性变体，例如 `headerCellInner: '[&[data-align=center]]:justify-start'`。只修改 th 的 `text-align` 不会改变内容组的位置。
+通过 `column.align` 声明对齐方式，视觉规则由 theme slots 控制。两套预设的居中语义分别验证，不能用“标题和图标组成的整体居中”作为 Antdv 的验收标准。
 
 ## 复现入口
 
-运行 `pnpm playground`，打开 `/#/header-alignment`，切换顶部两套预设。页面支持 prebuilt/Tailwind 4、排序提示、长标题、省略开关，包含 8 张独立表格。
+运行 `pnpm playground`，打开 `/#/header-alignment`，切换顶部两套预设。页面支持 prebuilt/Tailwind 4、排序提示、长标题、省略和自定义图标宽度开关，包含 8 张独立表格。
 
-1. 观察普通、仅排序、仅筛选和排序＋筛选的 center 列，整个内容组应有相等的左右留白。
+1. 在 Antdv 下观察普通、仅排序、仅筛选和排序＋筛选的 center 列，标题文字到单元格左右边缘的距离应相等，图标仍在右侧。
 2. 点击排序列，数据依次为 20、50、80；点击筛选按钮不应改变排序。
 3. 筛选“大于等于 50”，结果为 50、80；再次排序可变为 80、50。
 4. 开启长标题、关闭排序提示，标题省略且按钮仍可点击。
-5. 检查 Element Plus 的 left/right、两预设的正文对齐，以及自定义筛选图标、分组和虚拟表格。
+5. 切换“加宽自定义筛选图标（18 → 40px）”，列级和插槽图标的实际占用宽度改变后，Antdv 标题中心不应移动，标题不能与按钮重叠。
+6. 切换 Element Plus，检查标题与图标组成的整体按 left/center/right 对齐；继续检查两预设的正文、分组和虚拟表格。
+
+## 验证指标
+
+浏览器应直接消费聚合包构建产物，不使用 demo 的布局补丁。覆盖 prebuilt、Tailwind 3（使用公开 preset 独立生成 CSS）、Tailwind 4，并记录每种组合的测量结果。
+
+Playground 每列宽 240px，使用以下指标分别验收：
+
+| 场景                     | 预期指标                                               |
+| ------------------------ | ------------------------------------------------------ |
+| Antdv 短标题             | 标题文字中心与单元格中心重合，并与正文中心线一致       |
+| Antdv 排序、筛选控件     | 保持相同配置下原有的右侧位置，不随标题一起居中         |
+| Antdv 自定义图标宽度变化 | 18px / 40px 两种宽度下标题中心不移动，图标仍靠右       |
+| Element Plus             | 标题与图标相邻，整个内容组按 left/center/right 对齐    |
+| 长标题省略               | 标题截断，排序和筛选按钮保持可见、可点击且不与标题重叠 |
+| 正文省略提示             | center/right 对齐保持正确                              |
+
+除几何测量外，还需执行真实排序、筛选与长标题交互，检查 Tooltip 开关、动态 align 和分组列。仓库检查使用 `pnpm lint`、`pnpm type-check`、`pnpm build`、`pnpm test`。
 
 ## 验证结果
 
-独立浏览器页面直接消费本地聚合包构建产物，未使用 demo 的补丁样式。prebuilt、Tailwind 3（使用公开 preset 独立生成 CSS）、Tailwind 4 共 240 个表头布局检查通过；包括 Tooltip 开关、长标题、帮助图标、默认及两种自定义筛选图标、分组和虚拟表体。
+三个 CSS 模式、两套预设共 240 项表头布局检查通过。Antdv 排序、筛选图标到右边缘的距离与 npm `2.9.0-alpha.3` 相同；两套预设的图标 SVG 和默认颜色均一致。
 
-Playground 的 240px 列宽下，排序＋筛选内容组实测：
+Playground 的 Antdv 排序＋筛选列宽为 240px：标题文字左侧留白 100.09px、右侧留白 100.11px；排序图标右侧距离 32px、筛选按钮右侧距离 8px。标题与正文的中心线重合，图标保持原有边缘位置。
 
-| 预设         | 左侧留白 | 右侧留白 |
-| ------------ | -------: | -------: |
-| Antdv        |  80.09px |  80.11px |
-| Element Plus |  79.98px |  79.98px |
+prebuilt/Tailwind 4 均验证真实排序、筛选、Tooltip 开关、长标题省略和正文对齐；列级/插槽筛选图标从 18px 增至 40px 后，Antdv 标题中心误差为 0px，图标右边缘不移动。新增 7 项测量和生命周期测试，既有表头交互回归测试继续通过；上述四项仓库检查均通过。
 
-Playground 的 prebuilt/Tailwind 4 均完成真实排序、筛选与长标题交互；新增 14 项回归测试覆盖交互隔离、动态对齐与分组列。仓库检查使用 `pnpm lint`、`pnpm type-check`、`pnpm build`、`pnpm test`。
+另外，120px 窄列在三个 CSS 模式下完成 9 组动态图标宽度检查；标题宽度已缩至 0px 时，继续增大筛选图标仍保持按钮间距 4px、筛选按钮右侧留白 8px，不与排序图标重叠。
 
-![Antdv 排序与筛选整体居中](../playground/screenshots/header-alignment-antdv.png)
+![Antdv 标题按整格居中，排序与筛选图标靠右](../playground/screenshots/header-alignment-antdv.png)
 
 ![Element Plus 排序与筛选整体对齐](../playground/screenshots/header-alignment-element-plus.png)
