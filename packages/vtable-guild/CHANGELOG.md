@@ -1,5 +1,13 @@
 # @vtable-guild/vtable-guild
 
+## 2.9.0-alpha.3
+
+### Patch Changes
+
+- [#60](https://github.com/parade0393/vtable-guild/pull/60) [`7db2b41`](https://github.com/parade0393/vtable-guild/commit/7db2b416ee971c1c07409b4f539e41c9ccc4365f) Thanks [@parade0393](https://github.com/parade0393)! - Fix dynamic table slots and callbacks so empty, body, header and filter content update without remounting the table. Keep custom filter dismissal working when its slot changes, and apply replacement cell transformers and popup containers immediately.
+
+  Export the seven column settings, toolbar and progress icons from the aggregate package root. Internal workspace packages remain private and are not published separately.
+
 ## 2.9.0-alpha.2
 
 ### Minor Changes
