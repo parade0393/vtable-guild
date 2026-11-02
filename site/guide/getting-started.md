@@ -15,13 +15,28 @@ description: 在 Vue 3 + Vite 项目中安装并初始化 vtable-guild，几分�
 - pnpm `>=10.28.0`
 - Vue `^3.5.0`
 - Vite `^5` 或更高版本
+- TypeScript 项目推荐固定使用 `5.9.3`；另已验证 `6.0.3`
 
 ## 安装
+
+::: warning TypeScript 版本限制
+本项目当前验证的 `vue-tsc` 工具链和在线 Playground 暂不支持 TypeScript 7 及以上，请先使用已验证的 TypeScript `5.9.3` 或 `6.0.3`，避免直接安装 `typescript@latest`。
+
+真实项目已验证的组合为 Vue `3.5.26`、`vue-tsc 3.2.2`，配合上述两个 TypeScript 版本。TS 7 的普通 `.ts` 组件类型检查可以通过，但现有 `vue-tsc` 无法加载其新编译器；其他 TS 7 的 Vue 工具链尚未纳入本项目支持范围。更早的 TypeScript 版本也需要单独验证。
+
+在线 Playground 固定使用 TypeScript `5.9.3`。它依赖浏览器可加载的 JS 编译器和标准库声明，当前不能使用 TS 7 的原生编译器；此限制与组件运行时的 JavaScript 无关。
+:::
 
 组件本身不要求宿主项目安装 Tailwind CSS。先安装组件包：
 
 ```bash
 pnpm add @vtable-guild/vtable-guild
+```
+
+TypeScript 项目需要安装或调整类型检查工具时，可使用已验证的组合：
+
+```bash
+pnpm add -D -E typescript@5.9.3 vue-tsc@3.2.2
 ```
 
 ## 配置样式入口

@@ -1,6 +1,6 @@
 import { fileURLToPath, URL } from 'node:url'
-import { createReadStream, existsSync, statSync } from 'node:fs'
-import { extname, join, normalize, resolve } from 'node:path'
+import { createReadStream, existsSync, readdirSync, statSync } from 'node:fs'
+import { extname, isAbsolute, relative, resolve, sep } from 'node:path'
 
 import { defineConfig, type Plugin } from 'vite'
 import vue from '@vitejs/plugin-vue'
@@ -12,6 +12,8 @@ const MIME: Record<string, string> = {
   '.mjs': 'text/javascript; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.ts': 'text/plain; charset=utf-8',
 }
 
 /**
@@ -27,26 +29,56 @@ function localPackagePlugin(): Plugin {
     apply: 'serve',
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
-        const url = req.url?.split('?')[0] ?? ''
+        const requestUrl = new URL(req.url ?? '/', 'http://localhost')
+        const url = requestUrl.pathname
         const index = url.indexOf(LOCAL_PREFIX)
         if (index === -1) return next()
 
-        const relative = decodeURIComponent(url.slice(index + LOCAL_PREFIX.length))
-        const filePath = join(PKG_ROOT, normalize(relative).replace(/^(\.\.[/\\])+/, ''))
+        let requestedPath: string
+        try {
+          requestedPath = decodeURIComponent(url.slice(index + LOCAL_PREFIX.length))
+        } catch {
+          res.statusCode = 400
+          res.end('invalid local package path')
+          return
+        }
+        const filePath = resolve(PKG_ROOT, requestedPath)
+        const packagePath = relative(PKG_ROOT, filePath)
         if (
-          !filePath.startsWith(PKG_ROOT) ||
-          !existsSync(filePath) ||
-          !statSync(filePath).isFile()
+          packagePath === '..' ||
+          packagePath.startsWith(`..${sep}`) ||
+          isAbsolute(packagePath) ||
+          !existsSync(filePath)
         ) {
           res.statusCode = 404
           res.end(
-            `local package file not found: ${relative}\n先跑 pnpm --filter @vtable-guild/vtable-guild build`,
+            `local package file not found: ${requestedPath}\n先跑 pnpm --filter @vtable-guild/vtable-guild build`,
           )
           return
         }
 
-        res.setHeader('Content-Type', MIME[extname(filePath)] ?? 'application/octet-stream')
         res.setHeader('Access-Control-Allow-Origin', '*')
+        if (requestUrl.searchParams.has('meta') && statSync(filePath).isDirectory()) {
+          const prefix = packagePath.split(sep).filter(Boolean).join('/')
+          res.setHeader('Content-Type', 'application/json; charset=utf-8')
+          res.end(
+            JSON.stringify({
+              files: readdirSync(filePath, { withFileTypes: true })
+                .filter((entry) => entry.isFile() || entry.isDirectory())
+                .map((entry) => ({
+                  path: `/${[prefix, entry.name].filter(Boolean).join('/')}`,
+                  type: entry.isDirectory() ? 'directory' : 'file',
+                })),
+            }),
+          )
+          return
+        }
+        if (!statSync(filePath).isFile()) {
+          res.statusCode = 404
+          res.end('local package file not found')
+          return
+        }
+        res.setHeader('Content-Type', MIME[extname(filePath)] ?? 'application/octet-stream')
         createReadStream(filePath).pipe(res)
       })
     },
@@ -68,6 +100,8 @@ export default defineConfig({
     target: 'esnext',
   },
   optimizeDeps: {
+    // 预打包会把 REPL 内部 worker 的相对 URL 移到 .vite/deps，导致 dev 下 404。
+    exclude: ['@vue/repl'],
     esbuildOptions: {
       target: 'esnext',
     },

@@ -1,8 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { effectScope, type EffectScope } from 'vue'
-import type { ReplStore } from '@vue/repl'
+import { effectScope, nextTick, ref, type EffectScope } from 'vue'
+import type { ReplStore, StoreState } from '@vue/repl'
 
-import { VERSION_LOAD_TIMEOUT, VERSION_REQUEST_TIMEOUT } from '@/constants'
+import {
+  PLAYGROUND_TYPESCRIPT_VERSION,
+  VERSION_LOAD_TIMEOUT,
+  VERSION_REQUEST_TIMEOUT,
+  VTG_PKG,
+} from '@/constants'
 import { useVtgRepl, type UseVtgReplOptions } from './useVtgRepl'
 
 /**
@@ -69,6 +74,7 @@ function storeStub(): ReplStore {
   return {
     serialize: () => '#repl-state',
     setFiles: vi.fn(),
+    reloadLanguageTools: vi.fn(),
   } as unknown as ReplStore
 }
 
@@ -90,6 +96,53 @@ beforeEach(() => {
   replMocks.useStore.mockImplementation(() => storeStub())
   vi.stubGlobal('fetch', fetchMock)
   window.localStorage.clear()
+  window.history.replaceState({}, '', '/')
+})
+
+describe('useVtgRepl 的类型服务', () => {
+  it('旧分享链接不能把语言服务恢复到 latest 或不兼容的 TS 7', async () => {
+    const actual = await vi.importActual<typeof import('@vue/repl/core')>('@vue/repl/core')
+    for (const version of ['latest', '7.0.2']) {
+      const shared = actual.useStore({ typescriptVersion: ref(version) })
+      // REPL 通常省略 latest；显式保留该字段，覆盖历史链接主动写入 latest 的情况。
+      shared.addFile(new actual.File('_tsVersion', version, true))
+      window.history.replaceState({}, '', shared.serialize())
+      mockVersionListRequests()
+      replMocks.useStore.mockImplementation(actual.useStore)
+
+      const { api, scope } = mountRepl()
+      await vi.advanceTimersByTimeAsync(10)
+      expect(api.store.value?.typescriptVersion).toBe(PLAYGROUND_TYPESCRIPT_VERSION)
+      expect(api.store.value?.getFiles()['App.vue']).toContain('<script setup>')
+      scope.stop()
+    }
+  })
+
+  it('声明跟随组件及 Vue 的有效版本，切换 CDN 会重载语言服务', async () => {
+    mockVersionListRequests()
+    const { api, scope } = mountRepl()
+    await vi.advanceTimersByTimeAsync(10)
+    const options = replMocks.useStore.mock.calls[0]![0] as StoreState
+    expect(options.typescriptVersion.value).toBe(PLAYGROUND_TYPESCRIPT_VERSION)
+    expect(options.dependencyVersion.value[VTG_PKG]).toBe(VTG_VERSIONS[0])
+    expect(options.dependencyVersion.value.vue).toBe(VUE_VERSIONS[0])
+
+    api.vtgSelection.value = '2.6.0'
+    api.vueSelection.value = '3.5.12'
+    await nextTick()
+    expect(options.dependencyVersion.value[VTG_PKG]).toBe('2.6.0')
+    for (const [pkg, version] of Object.entries(options.dependencyVersion.value)) {
+      if (pkg !== VTG_PKG) expect(version).toBe('3.5.12')
+    }
+
+    api.cdn.value = 'unpkg'
+    await nextTick()
+    expect(api.store.value?.reloadLanguageTools).toHaveBeenCalledTimes(1)
+    expect(options.resourceLinks?.value?.typescriptLib?.(PLAYGROUND_TYPESCRIPT_VERSION)).toBe(
+      `https://unpkg.com/typescript@${PLAYGROUND_TYPESCRIPT_VERSION}/lib/typescript.js`,
+    )
+    scope.stop()
+  })
 })
 
 afterEach(() => {

@@ -28,6 +28,12 @@ export const MIN_SUPPORTED_VTG_VERSION = '2.4.0'
 export const MIN_SUPPORTED_VUE_VERSION = '3.5.0'
 
 /**
+ * REPL 的浏览器语言服务依赖 JS 编译器及同版本 lib.*.d.ts。
+ * TS 7 改用原生编译器，不能跟随 latest；升级前需同时验证诊断和补全。
+ */
+export const PLAYGROUND_TYPESCRIPT_VERSION = '5.9.3'
+
+/**
  * 启动兜底：版本列表最长等多久（毫秒）。
  *
  * 正常情况下几百毫秒就回来了；但 Playground 不能因为一次慢请求就一直停在 Loading 上，

@@ -65,7 +65,10 @@ watchEffect(() => {
       :preview-options="previewOptions"
       :show-compile-output="false"
       :clear-console="false"
-      :editor-options="{ autoSaveText: '自动保存' }"
+      :editor-options="{
+        autoSaveText: '自动保存',
+        monacoOptions: { quickSuggestions: { other: true, strings: true, comments: false } },
+      }"
     />
     <div v-else class="play-boot">正在确认版本…</div>
   </div>

@@ -19,6 +19,7 @@ import {
   LATEST,
   MIN_SUPPORTED_VTG_VERSION,
   MIN_SUPPORTED_VUE_VERSION,
+  PLAYGROUND_TYPESCRIPT_VERSION,
   VERSION_LOAD_TIMEOUT,
   VERSION_REQUEST_TIMEOUT,
   VTG_PKG,
@@ -26,6 +27,7 @@ import {
   type VersionSelection,
 } from '@/constants'
 import { CDN_SOURCES, cdnFileUrl, fetchVersions, type CdnSource } from '@/utils/cdn'
+import { createLanguageResourceLinks } from '@/utils/languageTools'
 import { takeDemoSourceFromUrl } from '@/utils/share'
 import { resolveStaleSelection, resolveVersion, toVersionSelection } from '@/utils/versionSelection'
 import { NEW_SFC, WELCOME_SFC } from '@/templates'
@@ -100,6 +102,25 @@ export function useVtgRepl(options: UseVtgReplOptions = {}) {
     resolveVersion(vueSelection.value, vueVersions.value, defaultVersion),
   )
 
+  // 运行时 import map 不会传给 Monaco：声明版本必须单独同步。
+  const dependencyVersion = computed(() =>
+    Object.fromEntries([
+      [VTG_PKG, vtgVersion.value],
+      ...[
+        'vue',
+        '@vue/compiler-core',
+        '@vue/compiler-dom',
+        '@vue/compiler-sfc',
+        '@vue/compiler-ssr',
+        '@vue/reactivity',
+        '@vue/runtime-core',
+        '@vue/runtime-dom',
+        '@vue/server-renderer',
+        '@vue/shared',
+      ].map((pkg) => [pkg, effectiveVueVersion.value]),
+    ]),
+  )
+
   const vtgFile = (file: string) => cdnFileUrl(cdn.value, VTG_PKG, vtgVersion.value, file)
 
   /**
@@ -134,6 +155,7 @@ export function useVtgRepl(options: UseVtgReplOptions = {}) {
 
   // 编译器和 es-module-shims 也跟着 CDN 开关走，否则切到 npmmirror 仍然会卡在 jsDelivr
   const resourceLinks = computed(() => ({
+    ...createLanguageResourceLinks(cdn.value),
     vueCompilerUrl: (version: string) =>
       cdnFileUrl(cdn.value, '@vue/compiler-sfc', version, 'dist/compiler-sfc.esm-browser.js'),
     esModuleShims: cdnFileUrl(
@@ -169,6 +191,10 @@ export function useVtgRepl(options: UseVtgReplOptions = {}) {
   const storeScope = effectScope()
   const store = shallowRef<ReplStore | null>(null)
 
+  // REPL 只监听版本和 tsconfig，不监听 resourceLinks；切源时也请求重载类型服务。
+  // 首次 worker 初始化挂起时，上游会合并掉重载请求，需要刷新页面才能恢复。
+  watch(cdn, () => store.value?.reloadLanguageTools?.(), { flush: 'post' })
+
   /**
    * 启动兜底计时器。
    *
@@ -200,12 +226,17 @@ export function useVtgRepl(options: UseVtgReplOptions = {}) {
         {
           builtinImportMap,
           vueVersion: replVueVersion,
+          typescriptVersion: ref(PLAYGROUND_TYPESCRIPT_VERSION),
+          dependencyVersion,
           resourceLinks,
           template: ref({ welcomeSFC: WELCOME_SFC, newSFC: NEW_SFC }),
         },
         // 文档站带过来的 ?demo= 优先；否则用分享链接里的 hash
         incomingDemo ? undefined : location.hash,
       )
+      // 分享链接中的 _tsVersion 会覆盖 useStore 的初值，必须在挂载编辑器前恢复。
+      created.typescriptVersion = PLAYGROUND_TYPESCRIPT_VERSION
+      created.vueVersion = vueSelection.value === LATEST ? null : vueSelection.value
       store.value = created
       if (incomingDemo) {
         void created.setFiles({ 'src/App.vue': incomingDemo }, 'src/App.vue')

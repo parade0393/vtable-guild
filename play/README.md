@@ -20,6 +20,23 @@ pnpm play:build    # 构建到 play/dist
 `vue` / `@vue/server-renderer` / `@vue/compiler-sfc` / `es-module-shims` 的地址也跟着「CDN 源」下拉走，
 否则切到 npmmirror 仍然会卡在 jsDelivr，对国内用户等于没切。
 
+## 编辑器类型服务
+
+Playground 固定使用 TypeScript `5.9.3`，编译器与 `lib.*.d.ts` 使用同一版本。
+当前 `@vue/repl` 浏览器 worker 不支持 TypeScript 7 及以上的原生编译器布局，不能使用
+`typescript@latest`。旧分享链接里的 `_tsVersion` 也会在挂载编辑器前恢复为固定版本。
+升级此版本时需同时检查严格模式诊断、回调泛型推导和 `align` 字面量补全。
+
+运行时 import map 与编辑器声明解析是独立的：`dependencyVersion` 将组件库及 Vue 各子包的
+声明绑定到页面选择的有效版本；切换 CDN 会请求重载语言服务。编译器 JS 与声明文件跟随 CDN，
+公共包的目录元数据仍使用 unpkg 的 `?meta` 格式。本地源的组件目录元数据和声明都由
+`localPackagePlugin` 提供，不会混入线上版本的组件声明。
+
+如果首次 worker 初始化就因网络失败而挂起，当前 REPL 会合并掉切源时的重载请求；
+此时切换到可用 CDN 后需刷新页面。公共目录元数据仍需能够访问 unpkg。
+
+真实项目的 TypeScript 与 Vue 类型检查工具要求见站点的「快速开始 → 安装」。
+
 ## 发版之前怎么验证
 
 CDN 上只有已发布的版本。要验证还没发布的改动：
