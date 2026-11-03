@@ -1,5 +1,13 @@
 # @vtable-guild/vtable-guild
 
+## 2.9.0-alpha.5
+
+### Patch Changes
+
+- [`e974fb3`](https://github.com/parade0393/vtable-guild/commit/e974fb3313d9a570ff85d293f6e8dda7f16f887b) Thanks [@parade0393](https://github.com/parade0393)! - Unify filter, selection, column settings, density, and page-size popups with shared positioning, transitions, and preset tokens.
+
+  Preserve visible overflow in custom popup containers and keep Escape local to the active popup while restoring trigger focus. Support keyboard activation of filter triggers.
+
 ## 2.9.0-alpha.4
 
 ### Patch Changes
