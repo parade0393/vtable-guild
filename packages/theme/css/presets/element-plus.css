@@ -41,10 +41,15 @@
   --vtg-cell-progress-gap: 8px;
   --vtg-cell-progress-font-size: 12px;
   --vtg-cell-progress-trail: var(--color-default);
-  --vtg-column-settings-radius: 4px;
+  --vtg-table-popup-radius: 2px;
+  --vtg-table-popup-border: 1px solid var(--vtg-border-color-lighter, var(--color-default));
+  --vtg-table-popup-padding-block: 5px;
+  --vtg-table-popup-padding-inline: 0px;
+  --vtg-table-popup-shadow: 0 0 12px rgb(0 0 0 / 12%);
+  --vtg-column-settings-radius: var(--vtg-table-popup-radius);
   --vtg-column-settings-icon-size: 16px;
   --vtg-column-settings-z: 2000;
-  --vtg-column-settings-shadow: var(--vtg-pagination-popup-shadow);
+  --vtg-column-settings-shadow: var(--vtg-table-popup-shadow);
   --vtg-pagination-size: 32px;
   --vtg-pagination-size-sm: 24px;
   --vtg-pagination-font-size: 14px;
@@ -76,12 +81,12 @@
   --vtg-pagination-active-color: var(--color-primary);
   --vtg-pagination-active-border: transparent;
   --vtg-pagination-popup-z: 2000;
-  --vtg-pagination-popup-radius: 4px;
+  --vtg-pagination-popup-radius: var(--vtg-table-popup-radius);
   --vtg-pagination-option-height: 34px;
   --vtg-pagination-popup-padding: 6px;
   --vtg-pagination-option-active-color: var(--color-primary);
   --vtg-pagination-option-active-bg: var(--color-surface-hover);
-  --vtg-pagination-popup-shadow: 0 0 12px rgb(0 0 0 / 12%);
+  --vtg-pagination-popup-shadow: var(--vtg-table-popup-shadow);
 
   /* ===== 语义 token — element-plus 设计体系值 ===== */
 

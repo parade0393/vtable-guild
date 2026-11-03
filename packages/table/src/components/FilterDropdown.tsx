@@ -4,10 +4,7 @@ import {
   computed,
   watch,
   onMounted,
-  onBeforeUnmount,
-  Teleport,
   Transition,
-  nextTick,
   inject,
   type PropType,
   type VNode,
@@ -16,7 +13,7 @@ import { Checkbox, Radio, Button, Input, Scrollbar } from '@vtable-guild/core'
 import { SearchIcon, CaretDownIcon } from '@vtable-guild/icons'
 import type { ColumnFilterItem } from '../types'
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
-import { getPopupPositionStyle } from '../utils/popupPosition'
+import TablePopup from './TablePopup'
 
 /** Recursively collect all values (parent + leaf), matching antdv flattenKeys */
 function flattenValues(items: ColumnFilterItem[]): (string | number | boolean)[] {
@@ -51,13 +48,17 @@ export default defineComponent({
     filters: { type: Array as PropType<ColumnFilterItem[]>, required: true },
     selectedKeys: { type: Array as PropType<(string | number | boolean)[]>, default: () => [] },
     multiple: { type: Boolean, default: true },
-    anchorRect: {
-      type: Object as PropType<{ top: number; left: number; right: number; bottom: number }>,
-      required: true,
+    anchor: {
+      type: Object as PropType<HTMLElement | null>,
+      default: null,
     },
-    popupContainer: {
-      type: [String, Object] as PropType<string | HTMLElement>,
-      default: 'body',
+    focusAnchor: {
+      type: Object as PropType<HTMLElement | null>,
+      default: null,
+    },
+    getPopupContainer: {
+      type: Function as PropType<(anchor: HTMLElement) => HTMLElement | string>,
+      default: undefined,
     },
     filterSearch: {
       type: [Boolean, Function] as PropType<
@@ -82,7 +83,6 @@ export default defineComponent({
   setup(props, { emit }) {
     const tableContext = inject(TABLE_CONTEXT_KEY, {} as TableContext)
     const localSelectedKeys = ref<(string | number | boolean)[]>([...props.selectedKeys])
-    const dropdownRef = ref<HTMLElement | null>(null)
     const searchText = ref('')
 
     // 展开/折叠状态（默认全部展开）
@@ -276,32 +276,6 @@ export default defineComponent({
       }
     }
 
-    function handleMouseDown(e: MouseEvent) {
-      if (!props.visible) return
-      if (dropdownRef.value && !dropdownRef.value.contains(e.target as Node)) {
-        emit('close')
-      }
-    }
-
-    function handleScroll(e: Event) {
-      if (!props.visible) return
-      // Ignore scroll events from within the dropdown itself (e.g. Scrollbar)
-      if (dropdownRef.value?.contains(e.target as Node)) return
-      emit('close')
-    }
-
-    onMounted(() => {
-      nextTick(() => {
-        document.addEventListener('mousedown', handleMouseDown)
-        window.addEventListener('scroll', handleScroll, true)
-      })
-    })
-
-    onBeforeUnmount(() => {
-      document.removeEventListener('mousedown', handleMouseDown)
-      window.removeEventListener('scroll', handleScroll, true)
-    })
-
     function renderFilterIndicator(selected: boolean, indeterminate?: boolean) {
       if (props.multiple) {
         return <Checkbox checked={selected} indeterminate={indeterminate} />
@@ -472,9 +446,6 @@ export default defineComponent({
     }
 
     return () => {
-      const { anchorRect } = props
-      const dropdownMinWidth = 150
-      const popupContainer = props.popupContainer
       const isTree = props.filterMode === 'tree'
       const listClass = isTree
         ? tableContext.subThemeSlots?.filterDropdownTreeList()
@@ -483,121 +454,114 @@ export default defineComponent({
         ? tableContext.subThemeSlots?.filterDropdownTreeContentWrapper()
         : tableContext.subThemeSlots?.filterDropdownContentWrapper()
 
-      const style = getPopupPositionStyle(anchorRect, popupContainer, dropdownMinWidth)
-
       return (
-        <Teleport to={popupContainer}>
-          <Transition name="vtg-dropdown">
-            {props.visible && (
-              <div
-                ref={dropdownRef}
-                class={tableContext.subThemeSlots?.filterDropdown()}
-                style={style}
-              >
-                {props.filterSearch && (
-                  <div class={tableContext.subThemeSlots?.filterDropdownSearch()}>
-                    <div class={tableContext.subThemeSlots?.filterDropdownSearchField()}>
-                      <span
-                        class={tableContext.subThemeSlots?.filterDropdownSearchIcon()}
-                        aria-hidden="true"
-                      >
-                        <SearchIcon />
-                      </span>
-                      <Input
-                        bare
-                        value={searchText.value}
-                        placeholder={
-                          filterDropdownLocale.value?.searchPlaceholder ?? '在筛选项中搜索'
-                        }
-                        inputClass={tableContext.subThemeSlots?.filterDropdownSearchInput()}
-                        onUpdate:value={(val: string) => {
-                          searchText.value = val
-                        }}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {isTree ? (
-                  <div class={tableContext.subThemeSlots?.filterDropdownTreeWrapper()}>
-                    {isTreeMultiple.value && (
-                      <div
-                        key="__vtg_select_all__"
-                        class={tableContext.subThemeSlots?.filterDropdownTreeCheckAll()}
-                        onClick={toggleSelectAll}
-                      >
-                        <span class={tableContext.vtgClass?.('mt-1 mr-2 shrink-0')}>
-                          <Checkbox
-                            checked={selectAllState.value === 'all'}
-                            indeterminate={selectAllState.value === 'partial'}
-                          />
-                        </span>
-                        <div
-                          class={[
-                            contentWrapperClass,
-                            selectAllState.value === 'all'
-                              ? tableContext.subThemeSlots?.filterDropdownTreeItemSelected()
-                              : tableContext.subThemeSlots?.filterDropdownItemHover(),
-                          ]}
-                        >
-                          <span
-                            class={tableContext.vtgClass?.('text-[color:var(--color-on-surface)]')}
-                          >
-                            {filterDropdownLocale.value?.selectAllText ?? '全选'}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                    <Scrollbar maxHeight="var(--vtg-table-filter-dropdown-max-height, 264px)">
-                      <ul class={listClass}>
-                        {renderFilterItems(filteredFilters.value)}
-                        {showSearchEmptyState.value && (
-                          <li class={tableContext.subThemeSlots?.filterDropdownListEmpty()}>
-                            {filterDropdownLocale.value?.emptyText ?? 'Not Found'}
-                          </li>
-                        )}
-                      </ul>
-                    </Scrollbar>
-                  </div>
-                ) : (
-                  <Scrollbar maxHeight="var(--vtg-table-filter-dropdown-max-height, 264px)">
-                    <ul
-                      role={!props.multiple && isHighlightMode.value ? 'radiogroup' : undefined}
-                      class={listClass}
-                    >
-                      {renderFilterItems(filteredFilters.value)}
-                      {showSearchEmptyState.value && (
-                        <li class={tableContext.subThemeSlots?.filterDropdownListEmpty()}>
-                          {filterDropdownLocale.value?.emptyText ?? 'Not Found'}
-                        </li>
-                      )}
-                    </ul>
-                  </Scrollbar>
-                )}
-
-                <div class={tableContext.subThemeSlots?.filterDropdownActions()}>
-                  <Button
-                    type="link"
-                    size="sm"
-                    class={tableContext.subThemeSlots?.filterDropdownResetButton?.()}
-                    disabled={localSelectedKeys.value.length === 0}
-                    onClick={handleReset}
-                  >
-                    {filterDropdownLocale.value?.resetText ?? '重置'}
-                  </Button>
-                  <Button
-                    type="primary"
-                    size="sm"
-                    class={tableContext.subThemeSlots?.filterDropdownConfirmButton?.()}
-                    onClick={handleConfirm}
-                  >
-                    {filterDropdownLocale.value?.confirmText ?? '确 定'}
-                  </Button>
-                </div>
+        <TablePopup
+          open={props.visible}
+          anchor={props.anchor}
+          focusAnchor={props.focusAnchor}
+          getPopupContainer={props.getPopupContainer}
+          preset={tableContext.themePreset?.value ?? 'antdv'}
+          alignmentWidth={150}
+          class={tableContext.subThemeSlots?.filterDropdown()}
+          onDismiss={() => emit('close')}
+        >
+          {props.filterSearch && (
+            <div class={tableContext.subThemeSlots?.filterDropdownSearch()}>
+              <div class={tableContext.subThemeSlots?.filterDropdownSearchField()}>
+                <span
+                  class={tableContext.subThemeSlots?.filterDropdownSearchIcon()}
+                  aria-hidden="true"
+                >
+                  <SearchIcon />
+                </span>
+                <Input
+                  bare
+                  value={searchText.value}
+                  placeholder={filterDropdownLocale.value?.searchPlaceholder ?? '在筛选项中搜索'}
+                  inputClass={tableContext.subThemeSlots?.filterDropdownSearchInput()}
+                  onUpdate:value={(val: string) => {
+                    searchText.value = val
+                  }}
+                />
               </div>
-            )}
-          </Transition>
-        </Teleport>
+            </div>
+          )}
+
+          {isTree ? (
+            <div class={tableContext.subThemeSlots?.filterDropdownTreeWrapper()}>
+              {isTreeMultiple.value && (
+                <div
+                  key="__vtg_select_all__"
+                  class={tableContext.subThemeSlots?.filterDropdownTreeCheckAll()}
+                  onClick={toggleSelectAll}
+                >
+                  <span class={tableContext.vtgClass?.('mt-1 mr-2 shrink-0')}>
+                    <Checkbox
+                      checked={selectAllState.value === 'all'}
+                      indeterminate={selectAllState.value === 'partial'}
+                    />
+                  </span>
+                  <div
+                    class={[
+                      contentWrapperClass,
+                      selectAllState.value === 'all'
+                        ? tableContext.subThemeSlots?.filterDropdownTreeItemSelected()
+                        : tableContext.subThemeSlots?.filterDropdownItemHover(),
+                    ]}
+                  >
+                    <span class={tableContext.vtgClass?.('text-[color:var(--color-on-surface)]')}>
+                      {filterDropdownLocale.value?.selectAllText ?? '全选'}
+                    </span>
+                  </div>
+                </div>
+              )}
+              <Scrollbar maxHeight="var(--vtg-table-filter-dropdown-max-height, 264px)">
+                <ul class={listClass}>
+                  {renderFilterItems(filteredFilters.value)}
+                  {showSearchEmptyState.value && (
+                    <li class={tableContext.subThemeSlots?.filterDropdownListEmpty()}>
+                      {filterDropdownLocale.value?.emptyText ?? 'Not Found'}
+                    </li>
+                  )}
+                </ul>
+              </Scrollbar>
+            </div>
+          ) : (
+            <Scrollbar maxHeight="var(--vtg-table-filter-dropdown-max-height, 264px)">
+              <ul
+                role={!props.multiple && isHighlightMode.value ? 'radiogroup' : undefined}
+                class={listClass}
+              >
+                {renderFilterItems(filteredFilters.value)}
+                {showSearchEmptyState.value && (
+                  <li class={tableContext.subThemeSlots?.filterDropdownListEmpty()}>
+                    {filterDropdownLocale.value?.emptyText ?? 'Not Found'}
+                  </li>
+                )}
+              </ul>
+            </Scrollbar>
+          )}
+
+          <div class={tableContext.subThemeSlots?.filterDropdownActions()}>
+            <Button
+              type="link"
+              size="sm"
+              class={tableContext.subThemeSlots?.filterDropdownResetButton?.()}
+              disabled={localSelectedKeys.value.length === 0}
+              onClick={handleReset}
+            >
+              {filterDropdownLocale.value?.resetText ?? '重置'}
+            </Button>
+            <Button
+              type="primary"
+              size="sm"
+              class={tableContext.subThemeSlots?.filterDropdownConfirmButton?.()}
+              onClick={handleConfirm}
+            >
+              {filterDropdownLocale.value?.confirmText ?? '确 定'}
+            </Button>
+          </div>
+        </TablePopup>
       )
     }
   },

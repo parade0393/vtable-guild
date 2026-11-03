@@ -14,6 +14,23 @@
 @import './presets/element-plus.css';
 @import './transitions.css';
 
+.vtg-table-popup {
+  box-sizing: border-box;
+  overflow: auto;
+  width: var(--vtg-table-popup-width, max-content);
+  margin: 0;
+  padding: var(--vtg-table-popup-padding-block) var(--vtg-table-popup-padding-inline);
+  border: var(--vtg-table-popup-border);
+  border-radius: var(--vtg-table-popup-panel-radius, var(--vtg-table-popup-radius));
+  background-color: var(--color-surface);
+  box-shadow: var(--vtg-table-popup-panel-shadow, var(--vtg-table-popup-shadow));
+  color: var(--vtg-table-text-color);
+  font-family: var(--vtg-table-font-family);
+  font-size: var(--vtg-table-font-size);
+  line-height: var(--vtg-table-line-height);
+  transform-origin: top center;
+}
+
 /* Hide native scrollbar — used by Scrollbar component */
 .vtg-scrollbar-none {
   scrollbar-width: none;

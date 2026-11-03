@@ -1,18 +1,7 @@
-import {
-  defineComponent,
-  onMounted,
-  onBeforeUnmount,
-  nextTick,
-  Teleport,
-  Transition,
-  ref,
-  type PropType,
-  type VNodeChild,
-} from 'vue'
-import { inject } from 'vue'
+import { defineComponent, inject, type PropType, type VNodeChild } from 'vue'
 import { TABLE_CONTEXT_KEY, type TableContext } from '../context'
-import { getPopupPositionStyle } from '../utils/popupPosition'
 import type { Key } from '../types'
+import TablePopup from './TablePopup'
 
 export interface SelectionDropdownItemDef {
   key: string
@@ -27,17 +16,9 @@ export default defineComponent({
       type: Array as PropType<SelectionDropdownItemDef[]>,
       required: true,
     },
-    anchorRect: {
-      type: Object as PropType<{ top: number; left: number; right: number; bottom: number }>,
-      required: true,
-    },
     anchorElement: {
       type: Object as PropType<HTMLElement | null>,
       default: null,
-    },
-    popupContainer: {
-      type: [String, Object] as PropType<string | HTMLElement>,
-      default: 'body',
     },
     visible: {
       type: Boolean,
@@ -47,30 +28,6 @@ export default defineComponent({
   emits: ['close', 'select', 'mouseenter', 'mouseleave'],
   setup(props, { emit }) {
     const tableContext = inject(TABLE_CONTEXT_KEY, {} as TableContext)
-    const dropdownRef = ref<HTMLElement | null>(null)
-
-    function handleOutsideInteraction(e: MouseEvent | TouchEvent) {
-      if (!props.visible) return
-      if (
-        dropdownRef.value &&
-        !dropdownRef.value.contains(e.target as Node) &&
-        !props.anchorElement?.contains(e.target as Node)
-      ) {
-        emit('close')
-      }
-    }
-
-    onMounted(() => {
-      nextTick(() => {
-        document.addEventListener('mousedown', handleOutsideInteraction)
-        document.addEventListener('touchstart', handleOutsideInteraction, { passive: true })
-      })
-    })
-
-    onBeforeUnmount(() => {
-      document.removeEventListener('mousedown', handleOutsideInteraction)
-      document.removeEventListener('touchstart', handleOutsideInteraction)
-    })
 
     function handleItemClick(item: SelectionDropdownItemDef) {
       const changeableKeys = tableContext.getChangeableRowKeys?.() ?? []
@@ -79,40 +36,32 @@ export default defineComponent({
       emit('close')
     }
 
-    return () => {
-      const { anchorRect } = props
-      const dropdownMinWidth = 120
-      const popupContainer = props.popupContainer
-
-      const style = getPopupPositionStyle(anchorRect, popupContainer, dropdownMinWidth)
-
-      return (
-        <Teleport to={popupContainer}>
-          <Transition name="vtg-dropdown">
-            {props.visible && (
-              <div
-                ref={dropdownRef}
-                class={tableContext.subThemeSlots?.selectionDropdown()}
-                style={style}
-                onMouseenter={() => emit('mouseenter')}
-                onMouseleave={() => emit('mouseleave')}
-              >
-                <ul class={tableContext.vtgClass?.('m-0 list-none p-0')}>
-                  {props.items.map((item) => (
-                    <li
-                      key={item.key}
-                      class={tableContext.subThemeSlots?.selectionDropdownItem()}
-                      onClick={() => handleItemClick(item)}
-                    >
-                      {item.text}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </Transition>
-        </Teleport>
-      )
-    }
+    return () => (
+      <TablePopup
+        open={props.visible}
+        anchor={props.anchorElement}
+        getPopupContainer={tableContext.getPopupContainer}
+        preset={tableContext.themePreset?.value ?? 'antdv'}
+        alignmentWidth={120}
+        class={tableContext.subThemeSlots?.selectionDropdown()}
+        panelAttrs={{
+          onMouseenter: () => emit('mouseenter'),
+          onMouseleave: () => emit('mouseleave'),
+        }}
+        onDismiss={() => emit('close')}
+      >
+        <ul class={tableContext.vtgClass?.('m-0 list-none p-0')}>
+          {props.items.map((item) => (
+            <li
+              key={item.key}
+              class={tableContext.subThemeSlots?.selectionDropdownItem()}
+              onClick={() => handleItemClick(item)}
+            >
+              {item.text}
+            </li>
+          ))}
+        </ul>
+      </TablePopup>
+    )
   },
 })

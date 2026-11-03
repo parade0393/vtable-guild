@@ -121,14 +121,9 @@ export const antdvTableTheme = {
       'inline-flex items-center justify-center cursor-pointer transition-colors text-xs px-1 self-stretch rounded-md hover:bg-black/6',
 
     // ---- 筛选下拉相关 ----
-    filterDropdown: [
-      'rounded-[6px] bg-[color:var(--color-surface)]',
-      'font-[family-name:var(--vtg-table-font-family)]',
-      'text-[length:var(--vtg-table-font-size)] leading-[var(--vtg-table-line-height)]',
-      'text-[color:var(--vtg-table-text-color)]',
-      'shadow-[0_6px_16px_0_rgba(0,0,0,0.08),0_3px_6px_-4px_rgba(0,0,0,0.12),0_9px_28px_8px_rgba(0,0,0,0.05)]',
-    ].join(' '),
-    filterDropdownList: 'p-1 m-0 list-none min-w-[120px]',
+    filterDropdown: '',
+    filterDropdownList:
+      'm-0 p-0 list-none min-w-[calc(120px-2*var(--vtg-table-popup-padding-inline))]',
     filterDropdownItem: 'flex items-center cursor-pointer',
     filterDropdownItemSelected:
       'bg-[color:var(--color-control-item-active-bg)] hover:bg-[color:var(--color-control-item-active-hover-bg)]',
@@ -202,14 +197,7 @@ export const antdvTableTheme = {
     trDropBelow: '[&>td]:shadow-[inset_0_-2px_0_0_var(--vtg-table-row-drop-indicator-color)]',
 
     // ---- 选择下拉相关 ----
-    selectionDropdown: [
-      'rounded-[6px] bg-[color:var(--color-surface)]',
-      'font-[family-name:var(--vtg-table-font-family)]',
-      'text-[length:var(--vtg-table-font-size)] leading-[var(--vtg-table-line-height)]',
-      'text-[color:var(--vtg-table-text-color)]',
-      'shadow-[0_6px_16px_0_rgba(0,0,0,0.08),0_3px_6px_-4px_rgba(0,0,0,0.12),0_9px_28px_8px_rgba(0,0,0,0.05)]',
-      'p-1',
-    ].join(' '),
+    selectionDropdown: '',
     selectionDropdownItem:
       'flex items-center cursor-pointer px-3 py-[5px] rounded-sm hover:bg-[color:var(--color-control-item-hover-bg)]',
     selectionExtra:

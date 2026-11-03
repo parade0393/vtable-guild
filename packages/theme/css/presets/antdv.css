@@ -38,10 +38,16 @@
   --vtg-cell-progress-gap: 8px;
   --vtg-cell-progress-font-size: 12px;
   --vtg-cell-progress-trail: color-mix(in srgb, var(--color-on-surface) 6%, transparent);
-  --vtg-column-settings-radius: 8px;
+  --vtg-table-popup-radius: 6px;
+  --vtg-table-popup-border: 0;
+  --vtg-table-popup-padding-block: 4px;
+  --vtg-table-popup-padding-inline: 4px;
+  --vtg-table-popup-shadow:
+    0 6px 16px rgb(0 0 0 / 8%), 0 3px 6px -4px rgb(0 0 0 / 12%), 0 9px 28px 8px rgb(0 0 0 / 5%);
+  --vtg-column-settings-radius: var(--vtg-table-popup-radius);
   --vtg-column-settings-icon-size: 16px;
   --vtg-column-settings-z: 1050;
-  --vtg-column-settings-shadow: var(--vtg-pagination-popup-shadow);
+  --vtg-column-settings-shadow: var(--vtg-table-popup-shadow);
   --vtg-pagination-size: 32px;
   --vtg-pagination-size-sm: 24px;
   --vtg-pagination-gap: 8px;
@@ -67,12 +73,11 @@
   --vtg-pagination-active-color: var(--color-primary);
   --vtg-pagination-active-border: var(--color-primary);
   --vtg-pagination-popup-z: 1050;
-  --vtg-pagination-popup-radius: 8px;
+  --vtg-pagination-popup-radius: var(--vtg-table-popup-radius);
   --vtg-pagination-option-height: 32px;
   --vtg-pagination-option-active-color: var(--color-on-surface);
   --vtg-pagination-option-active-bg: var(--vtg-table-row-selected-bg);
-  --vtg-pagination-popup-shadow:
-    0 6px 16px rgb(0 0 0 / 8%), 0 3px 6px -4px rgb(0 0 0 / 12%), 0 9px 28px 8px rgb(0 0 0 / 5%);
+  --vtg-pagination-popup-shadow: var(--vtg-table-popup-shadow);
 
   /* ===== 语义 token — antdv 设计体系值 ===== */
 

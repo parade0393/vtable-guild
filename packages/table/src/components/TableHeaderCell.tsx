@@ -4,7 +4,6 @@ import {
   inject,
   onBeforeUnmount,
   ref,
-  Teleport,
   watch,
   type ComponentPublicInstance,
   type PropType,
@@ -20,13 +19,13 @@ import { getColumnKey } from '../composables/useSorter'
 import { useFixedColumnStyle } from '../composables/useFixedColumnStyle'
 import { useHeaderTitleBalance } from '../composables/useHeaderTitleBalance'
 import { getCellSpan, getEllipsisConfig, omitCellProps } from '../utils/cell'
-import { getPopupPositionStyle, resolvePopupContainer } from '../utils/popupPosition'
 import { ensureValidVNode } from '../utils/vnode'
 import SortButton from './SortButton'
 import FilterIcon from './FilterIcon'
 import FilterDropdown from './FilterDropdown'
 import SelectionCheckbox from './SelectionCheckbox'
 import SelectionDropdown from './SelectionDropdown'
+import TablePopup from './TablePopup'
 import { getColumnFilters } from '../utils/valueEnum'
 import ResizeHandle from './ResizeHandle'
 
@@ -145,7 +144,6 @@ export default defineComponent({
     }
 
     const filterAnchorRef = ref<HTMLElement | null>(null)
-    const customDropdownRef = ref<HTMLElement | null>(null)
 
     // Measure the controls' actual footprint, including custom filter content;
     // the preset decides how to use the balancing space without moving controls.
@@ -161,39 +159,11 @@ export default defineComponent({
       setDropdownVisible(!filterDropdownVisible.value)
     }
 
-    function handleCustomDropdownMouseDown(e: MouseEvent) {
-      if (
-        customDropdownRef.value &&
-        !customDropdownRef.value.contains(e.target as Node) &&
-        !filterAnchorRef.value?.contains(e.target as Node)
-      ) {
-        setDropdownVisible(false)
-      }
-    }
-
-    const isCustomDropdown = computed(() => {
-      const column = leafColumn.value
-      if (!column) return false
-      return (
-        !!column.filterDropdown ||
-        (!!column.customFilterDropdown && !!tableContext.customFilterDropdown)
-      )
-    })
-
-    // 已打开的面板也可动态增删自定义插槽；切换模式或卸载时同步清理监听。
-    watch(
-      [filterDropdownVisible, isCustomDropdown],
-      ([visible, custom], _previous, onCleanup) => {
-        if (!visible || !custom) return
-        document.addEventListener('mousedown', handleCustomDropdownMouseDown)
-        onCleanup(() => document.removeEventListener('mousedown', handleCustomDropdownMouseDown))
-      },
-      { flush: 'post', immediate: true },
-    )
-
-    function getAnchorRect() {
-      if (!filterAnchorRef.value) return { top: 0, left: 0, right: 0, bottom: 0 }
-      return filterAnchorRef.value.getBoundingClientRect()
+    function handleFilterTriggerKeydown(event: KeyboardEvent) {
+      if (event.key !== 'Enter' && event.key !== ' ') return
+      event.preventDefault()
+      event.stopPropagation()
+      toggleFilterDropdown()
     }
 
     const pendingSelectedKeys = ref<(string | number | boolean)[]>([])
@@ -371,11 +341,6 @@ export default defineComponent({
     const selectionDropdownVisible = ref(false)
     const selectionAnchorRef = ref<HTMLElement | null>(null)
 
-    function getSelectionAnchorRect() {
-      if (!selectionAnchorRef.value) return { top: 0, left: 0, right: 0, bottom: 0 }
-      return selectionAnchorRef.value.getBoundingClientRect()
-    }
-
     let selectionHoverTimer: ReturnType<typeof setTimeout> | null = null
 
     function openSelectionDropdown() {
@@ -401,7 +366,10 @@ export default defineComponent({
 
     const sortAreaHovered = ref(false)
     let sorterHoverTimer: ReturnType<typeof setTimeout> | undefined
-    onBeforeUnmount(() => clearTimeout(sorterHoverTimer))
+    onBeforeUnmount(() => {
+      clearTimeout(sorterHoverTimer)
+      cancelCloseSelectionDropdown()
+    })
     function setSorterHover(active: boolean) {
       clearTimeout(sorterHoverTimer)
       const config = sorterTooltipConfig.value
@@ -606,8 +574,6 @@ export default defineComponent({
               <SelectionDropdown
                 items={selectionItems}
                 anchorElement={selectionAnchorRef.value}
-                anchorRect={getSelectionAnchorRect()}
-                popupContainer={resolvePopupContainer(tableContext, selectionAnchorRef.value)}
                 visible={selectionDropdownVisible.value}
                 onClose={closeSelectionDropdown}
                 onMouseenter={cancelCloseSelectionDropdown}
@@ -703,6 +669,11 @@ export default defineComponent({
         </span>
       )
 
+      const filterTriggerAttrs = {
+        tabindex: 0,
+        'aria-expanded': filterDropdownVisible.value,
+        onKeydown: handleFilterTriggerKeydown,
+      }
       const filterIconContent =
         column &&
         (() => {
@@ -725,6 +696,7 @@ export default defineComponent({
                 }}
                 role="button"
                 aria-label={tableLocale?.header.filterTriggerAriaLabel ?? '筛选'}
+                {...filterTriggerAttrs}
               >
                 {column.filterIcon({ filtered: isFiltered.value })}
               </span>
@@ -750,6 +722,7 @@ export default defineComponent({
                 }}
                 role="button"
                 aria-label={tableLocale?.header.filterTriggerAriaLabel ?? '筛选'}
+                {...filterTriggerAttrs}
               >
                 {tableContext.customFilterIcon({ column, filtered: isFiltered.value })}
               </span>
@@ -768,7 +741,12 @@ export default defineComponent({
               onMouseleave={handleFilterIconMouseLeave}
               onMousedown={(e: MouseEvent) => e.stopPropagation()}
             >
-              <FilterIcon active={isFiltered.value} onClick={() => toggleFilterDropdown()} />
+              <FilterIcon
+                active={isFiltered.value}
+                data-vtg-filter-trigger
+                onClick={toggleFilterDropdown}
+                {...filterTriggerAttrs}
+              />
             </span>
           )
         })()
@@ -800,6 +778,9 @@ export default defineComponent({
       const customFilterDropdownSlot = column?.customFilterDropdown
         ? tableContext.customFilterDropdown
         : undefined
+      const filterAnchor = filterAnchorRef.value
+      const filterFocusAnchor =
+        filterAnchor?.querySelector<HTMLElement>('[data-vtg-filter-trigger]') ?? filterAnchor
 
       const filterDropdownContent =
         column &&
@@ -812,20 +793,19 @@ export default defineComponent({
                 (customFilterDropdownSlot ? customFilterDropdownSlot(dropdownSlotProps) : null))
 
           if (customContent) {
-            const popupContainer = resolvePopupContainer(tableContext, filterAnchorRef.value)
-
             return (
-              <Teleport to={popupContainer}>
-                {filterDropdownVisible.value && (
-                  <div
-                    ref={customDropdownRef}
-                    class={tableContext.subThemeSlots?.filterDropdown()}
-                    style={getPopupPositionStyle(getAnchorRect(), popupContainer, 150)}
-                  >
-                    {customContent}
-                  </div>
-                )}
-              </Teleport>
+              <TablePopup
+                open={filterDropdownVisible.value}
+                anchor={filterAnchor}
+                focusAnchor={filterFocusAnchor}
+                getPopupContainer={tableContext.getPopupContainer}
+                preset={tableContext.themePreset?.value ?? 'antdv'}
+                alignmentWidth={150}
+                class={tableContext.subThemeSlots?.filterDropdown()}
+                onDismiss={handleFilterClose}
+              >
+                {customContent}
+              </TablePopup>
             )
           }
 
@@ -834,8 +814,9 @@ export default defineComponent({
               filters={getColumnFilters(column)}
               selectedKeys={filteredValue.value}
               multiple={column.filterMultiple !== false}
-              anchorRect={getAnchorRect()}
-              popupContainer={resolvePopupContainer(tableContext, filterAnchorRef.value)}
+              anchor={filterAnchor}
+              focusAnchor={filterFocusAnchor}
+              getPopupContainer={tableContext.getPopupContainer}
               filterSearch={column.filterSearch ?? false}
               filterMode={column.filterMode ?? 'menu'}
               expandedKeys={treeExpandedKeys.value}

@@ -1,46 +1,27 @@
-/* ===== 下拉菜单过渡（FilterDropdown / SelectionDropdown） ===== */
+/* Shared table popup motion. */
 
-.vtg-dropdown-enter-active,
-.vtg-dropdown-leave-active {
+.vtg-table-popup-enter-active,
+.vtg-table-popup-leave-active {
   transition:
-    opacity 0.15s cubic-bezier(0.645, 0.045, 0.355, 1),
-    transform 0.15s cubic-bezier(0.645, 0.045, 0.355, 1);
-  transform-origin: top center;
+    opacity var(--vtg-table-popup-motion-duration, 0.15s)
+      var(--vtg-table-popup-motion-easing, cubic-bezier(0.645, 0.045, 0.355, 1)),
+    transform var(--vtg-table-popup-motion-duration, 0.15s)
+      var(--vtg-table-popup-motion-easing, cubic-bezier(0.645, 0.045, 0.355, 1));
 }
 
-.vtg-dropdown-enter-from,
-.vtg-dropdown-leave-to {
+.vtg-table-popup-enter-from,
+.vtg-table-popup-leave-to {
   opacity: 0;
   transform: scaleY(0.8);
 }
 
-.vtg-dropdown-enter-to,
-.vtg-dropdown-leave-from {
-  opacity: 1;
-  transform: scaleY(1);
-}
-
-/* Pagination popup origin follows its measured above/below placement. */
-.vtg-pagination-popup-enter-active,
-.vtg-pagination-popup-leave-active {
-  transition:
-    opacity var(--vtg-pagination-motion-duration) var(--vtg-pagination-motion-easing),
-    transform var(--vtg-pagination-motion-duration) var(--vtg-pagination-motion-easing);
-}
-
-.vtg-pagination-popup-enter-from,
-.vtg-pagination-popup-leave-to {
-  opacity: 0;
-  transform: scaleY(0.8);
-}
-
-.vtg-pagination-popup-leave-active {
+.vtg-table-popup-leave-active {
   pointer-events: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .vtg-pagination-popup-enter-active,
-  .vtg-pagination-popup-leave-active {
+  .vtg-table-popup-enter-active,
+  .vtg-table-popup-leave-active {
     transition: none;
   }
 }

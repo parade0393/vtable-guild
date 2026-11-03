@@ -1,5 +1,3 @@
-import type { TableContext } from '../context'
-
 export interface PopupAnchorRect {
   top: number
   left: number
@@ -24,21 +22,7 @@ export function getPopupVerticalBoundary(
 }
 
 /**
- * 解析下拉层挂载容器：优先表级 getPopupContainer，回退 document.body。
- */
-export function resolvePopupContainer(
-  tableContext: TableContext,
-  triggerNode: HTMLElement | null,
-): HTMLElement | string {
-  if (!triggerNode || typeof document === 'undefined') {
-    return 'body'
-  }
-
-  return tableContext.getPopupContainer?.(triggerNode) ?? document.body
-}
-
-/**
- * 计算下拉层定位样式（TableHeaderCell / FilterDropdown / SelectionDropdown 共享）。
+ * 计算表格弹层定位样式。
  *
  * - 挂载 body（或字符串容器）：fixed 定位，按视口宽度决定左右对齐
  * - 挂载自定义容器：absolute 定位，按容器滚动偏移换算

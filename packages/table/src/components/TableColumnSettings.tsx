@@ -2,10 +2,7 @@ import {
   computed,
   defineComponent,
   inject,
-  nextTick,
-  onBeforeUnmount,
   ref,
-  Teleport,
   useId,
   watch,
   type PropType,
@@ -38,7 +35,7 @@ import {
   type ColumnFixed,
   type SettingsEntry,
 } from '../utils/columnSettings'
-import { getPopupPositionStyle } from '../utils/popupPosition'
+import TablePopup from './TablePopup'
 
 type Row = Record<string, unknown>
 type Panel = 'columns' | 'density'
@@ -83,10 +80,10 @@ export default defineComponent({
     const id = useId()
     const trigger = ref<HTMLButtonElement | null>(null)
     const densityTrigger = ref<HTMLButtonElement | null>(null)
+    const root = ref<HTMLElement | null>(null)
     const popup = ref<HTMLElement | null>(null)
     const open = ref<Panel | null>(null)
-    const position = ref<Record<string, string>>({})
-    const container = ref<HTMLElement | string>('body')
+    const panel = ref<Panel>('columns')
     const entries = computed(() => configurableEntries(props.columns))
     const dragging = ref<string | null>(null)
     const defaults = new Map<string, boolean | undefined>()
@@ -148,66 +145,17 @@ export default defineComponent({
     function activeTrigger(panel = open.value) {
       return panel === 'density' ? densityTrigger.value : trigger.value
     }
-    let observer: ResizeObserver | undefined
     function close(restoreFocus = false) {
       const anchor = activeTrigger()
       open.value = null
       if (restoreFocus) anchor?.focus()
     }
-    function reposition() {
-      const anchor = activeTrigger()
-      if (!open.value || !anchor) return
-      const rect = anchor.getBoundingClientRect()
-      const width = popup.value?.getBoundingClientRect().width ?? 0
-      // ProTable aligns both overlays to the right edge of their toolbar icon.
-      const aligned = {
-        top: rect.top,
-        right: rect.right,
-        bottom: rect.bottom,
-        left: rect.right - width,
-      }
-      position.value = {
-        ...getPopupPositionStyle(aligned, container.value, width, popup.value?.scrollHeight),
-        zIndex: 'var(--vtg-column-settings-z)',
-      }
-      if (container.value === document.body) {
-        position.value.left = `${Math.max(8, Math.min(aligned.left, window.innerWidth - width - 8))}px`
-        delete position.value.right
-      }
-    }
-    function outside(event: Event) {
-      const node = event.target as Node
-      if (
-        !trigger.value?.contains(node) &&
-        !densityTrigger.value?.contains(node) &&
-        !popup.value?.contains(node)
-      )
-        close()
-    }
-    async function show(panel: Panel) {
-      const anchor = activeTrigger(panel)
+    function show(nextPanel: Panel) {
+      const anchor = activeTrigger(nextPanel)
       if (props.disabled || !anchor) return
-      if (open.value === panel) return close()
-      cleanup()
-      container.value = props.getPopupContainer?.(anchor) ?? document.body
-      open.value = panel
-      reposition()
-      await nextTick()
-      if (open.value !== panel) return
-      reposition()
-      const first =
-        panel === 'density'
-          ? '[aria-checked="true"]'
-          : 'input:not(:disabled), button:not(:disabled)'
-      const focusTarget =
-        popup.value?.querySelector<HTMLElement>(first) ??
-        popup.value?.querySelector<HTMLElement>('button:not(:disabled)')
-      focusTarget?.focus()
-      if (typeof ResizeObserver !== 'undefined') {
-        observer = new ResizeObserver(reposition)
-        observer.observe(anchor)
-        if (popup.value) observer.observe(popup.value)
-      }
+      if (open.value === nextPanel) return close()
+      panel.value = nextPanel
+      open.value = nextPanel
     }
     function keydown(event: KeyboardEvent) {
       if (open.value === 'density' && ['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
@@ -224,10 +172,6 @@ export default defineComponent({
               ? items.length - 1
               : (current + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length
         items[next]?.focus()
-      } else if (event.key === 'Escape') {
-        event.preventDefault()
-        event.stopPropagation()
-        close(true)
       } else if (event.key === 'Tab') {
         if (open.value === 'density') {
           close(true)
@@ -248,22 +192,6 @@ export default defineComponent({
         }
       }
     }
-    function cleanup() {
-      observer?.disconnect()
-      observer = undefined
-      if (typeof document === 'undefined') return
-      document.removeEventListener('pointerdown', outside)
-      document.removeEventListener('focusin', outside)
-      window.removeEventListener('resize', reposition)
-      window.removeEventListener('scroll', reposition, true)
-    }
-    watch(open, (active) => {
-      if (!active) return cleanup()
-      document.addEventListener('pointerdown', outside)
-      document.addEventListener('focusin', outside)
-      window.addEventListener('resize', reposition)
-      window.addEventListener('scroll', reposition, true)
-    })
     watch(
       () => props.disabled,
       (disabled) => {
@@ -284,7 +212,6 @@ export default defineComponent({
           close()
       },
     )
-    onBeforeUnmount(cleanup)
 
     function changeFixed(entry: SettingsEntry<Row>, value: ColumnFixed) {
       if (props.disabled || !canSetColumnFixed(entry)) return
@@ -453,7 +380,7 @@ export default defineComponent({
       })
     }
     return () => (
-      <span class={styles.root()}>
+      <span ref={root} class={styles.root()}>
         {props.options?.density !== false && (
           <Tooltip title={locale.value.density} open={open.value ? false : undefined}>
             <button
@@ -465,7 +392,7 @@ export default defineComponent({
               aria-haspopup="menu"
               aria-expanded={open.value === 'density'}
               aria-controls={open.value === 'density' ? `${id}-density` : undefined}
-              onClick={() => void show('density')}
+              onClick={() => show('density')}
             >
               <ColumnHeightOutlinedIcon />
             </button>
@@ -482,80 +409,88 @@ export default defineComponent({
               aria-haspopup="dialog"
               aria-expanded={open.value === 'columns'}
               aria-controls={open.value === 'columns' ? `${id}-columns` : undefined}
-              onClick={() => void show('columns')}
+              onClick={() => show('columns')}
             >
               <SettingOutlinedIcon />
             </button>
           </Tooltip>
         )}
-        {open.value && (
-          <Teleport to={container.value}>
-            <div
-              ref={popup}
-              key={open.value}
-              id={`${id}-${open.value}`}
-              role={open.value === 'density' ? 'menu' : 'dialog'}
-              aria-label={open.value === 'density' ? locale.value.density : locale.value.title}
-              data-vtg-preset={preset.value}
-              class={open.value === 'density' ? styles.densityPopup() : styles.popup()}
-              style={position.value}
-              onKeydown={keydown}
-            >
-              {open.value === 'density' ? (
-                (['large', 'middle', 'small'] as const).map((density) => (
-                  <button
-                    type="button"
-                    role="menuitemradio"
-                    tabindex={size.value === density ? 0 : -1}
-                    class={styles.density()}
-                    aria-checked={size.value === density}
-                    onClick={() => {
-                      if (props.disabled) return
-                      if (size.value !== density) emit('update:size', density)
-                      close(true)
-                    }}
-                  >
-                    {locale.value[density]}
-                  </button>
-                ))
+        <TablePopup
+          open={open.value !== null}
+          anchor={activeTrigger(panel.value)}
+          getPopupContainer={props.getPopupContainer}
+          preset={preset.value}
+          align="end"
+          zIndex="var(--vtg-column-settings-z)"
+          panelKey={panel.value}
+          panelRef={(element) => (popup.value = element)}
+          initialFocus={
+            panel.value === 'density'
+              ? '[aria-checked="true"]'
+              : 'input:not(:disabled), button:not(:disabled)'
+          }
+          outsideBoundary={root.value}
+          closeOnFocusOutside
+          class={panel.value === 'density' ? styles.densityPopup() : styles.popup()}
+          panelAttrs={{
+            id: `${id}-${panel.value}`,
+            role: panel.value === 'density' ? 'menu' : 'dialog',
+            'aria-label': panel.value === 'density' ? locale.value.density : locale.value.title,
+            onKeydown: keydown,
+          }}
+          onDismiss={() => close()}
+        >
+          {panel.value === 'density' ? (
+            (['large', 'middle', 'small'] as const).map((density) => (
+              <button
+                type="button"
+                role="menuitemradio"
+                tabindex={size.value === density ? 0 : -1}
+                class={styles.density()}
+                aria-checked={size.value === density}
+                onClick={() => {
+                  if (props.disabled) return
+                  if (size.value !== density) emit('update:size', density)
+                  close(true)
+                }}
+              >
+                {locale.value[density]}
+              </button>
+            ))
+          ) : (
+            <>
+              <div class={styles.header()}>
+                <label class={styles.heading()}>
+                  <span class={styles.checkboxControl()}>
+                    <input
+                      type="checkbox"
+                      class={styles.checkbox()}
+                      checked={selection.value.all}
+                      indeterminate={selection.value.partial}
+                      disabled={props.disabled || !entries.value.length}
+                      onChange={changeAll}
+                    />
+                    {selection.value.all && <span class={styles.checkMark()} aria-hidden="true" />}
+                    {selection.value.partial && (
+                      <span class={styles.indeterminateMark()} aria-hidden="true" />
+                    )}
+                  </span>
+                  {locale.value.columns}
+                </label>
+                <button type="button" class={styles.reset()} onClick={reset}>
+                  {locale.value.reset}
+                </button>
+              </div>
+              {entries.value.length ? (
+                <ul class={styles.columns()} aria-label={locale.value.columns}>
+                  {renderColumnGroups()}
+                </ul>
               ) : (
-                <>
-                  <div class={styles.header()}>
-                    <label class={styles.heading()}>
-                      <span class={styles.checkboxControl()}>
-                        <input
-                          type="checkbox"
-                          class={styles.checkbox()}
-                          checked={selection.value.all}
-                          indeterminate={selection.value.partial}
-                          disabled={props.disabled || !entries.value.length}
-                          onChange={changeAll}
-                        />
-                        {selection.value.all && (
-                          <span class={styles.checkMark()} aria-hidden="true" />
-                        )}
-                        {selection.value.partial && (
-                          <span class={styles.indeterminateMark()} aria-hidden="true" />
-                        )}
-                      </span>
-                      {locale.value.columns}
-                    </label>
-                    <button type="button" class={styles.reset()} onClick={reset}>
-                      {locale.value.reset}
-                    </button>
-                  </div>
-                  {entries.value.length ? (
-                    <ul class={styles.columns()} aria-label={locale.value.columns}>
-                      {renderColumnGroups()}
-                    </ul>
-                  ) : (
-                    <div class={styles.empty()}>{locale.value.empty}</div>
-                  )}
-                </>
+                <div class={styles.empty()}>{locale.value.empty}</div>
               )}
-            </div>
-          </Teleport>
-        )}
+            </>
+          )}
+        </TablePopup>
       </span>
     )
   },

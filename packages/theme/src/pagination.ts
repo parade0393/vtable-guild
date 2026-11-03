@@ -28,7 +28,7 @@ export const paginationTheme = {
     select:
       'inline-flex items-center justify-between gap-2 whitespace-nowrap px-[var(--vtg-pagination-select-padding)] border-[color:var(--color-border)] bg-[color:var(--color-surface)] [&:not([aria-disabled=true]):hover]:bg-[color:var(--color-surface)] [&:not([aria-disabled=true]):hover]:text-inherit [&:not([aria-disabled=true]):hover]:border-[color:var(--color-primary-hover)] aria-expanded:border-[color:var(--color-primary)] aria-expanded:shadow-[var(--vtg-pagination-focus-shadow)] disabled:bg-[color:var(--color-bg-disabled)] disabled:border-[color:var(--color-border)] [&_svg]:text-[color:var(--color-text-placeholder)]',
     popup:
-      'box-border overflow-y-auto z-[var(--vtg-pagination-popup-z)] m-0 list-none rounded-[var(--vtg-pagination-popup-radius)] bg-[color:var(--color-surface)] p-1 text-[length:var(--vtg-table-font-size)] text-[color:var(--color-on-surface)] shadow-[var(--vtg-pagination-popup-shadow)]',
+      'list-none [--vtg-table-popup-panel-radius:var(--vtg-pagination-popup-radius)] [--vtg-table-popup-panel-shadow:var(--vtg-pagination-popup-shadow)]',
     option:
       'flex min-h-[var(--vtg-pagination-option-height)] cursor-pointer items-center rounded leading-[22px] px-3 py-[5px] outline-none hover:bg-[color:var(--vtg-pagination-option-hover-bg)] focus:bg-[color:var(--vtg-pagination-option-hover-bg)]',
     optionActive:
@@ -86,7 +86,6 @@ export const elementPlusPaginationTheme = {
     total: 'whitespace-nowrap text-[color:var(--color-text-regular)]',
     input: `${paginationTheme.slots.input} rounded-[var(--vtg-input-border-radius)] text-[color:var(--color-text-regular)] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none enabled:hover:border-[color:var(--color-border-hover)] enabled:focus:border-[color:var(--color-primary)] enabled:focus:shadow-none`,
     select: `${paginationTheme.slots.select} border w-[var(--vtg-pagination-select-width)] rounded-[var(--vtg-input-border-radius)] text-[color:var(--color-text-regular)] [&:not([aria-disabled=true]):hover]:border-[color:var(--color-border-hover)] aria-expanded:shadow-none [&_svg]:transition-transform aria-expanded:[&_svg]:rotate-180`,
-    popup: `${paginationTheme.slots.popup} border border-[color:var(--vtg-border-color-lighter)] py-[var(--vtg-pagination-popup-padding)] px-0`,
     option:
       'flex min-h-[var(--vtg-pagination-option-height)] cursor-pointer items-center px-5 text-[color:var(--color-text-regular)] outline-none hover:bg-[color:var(--vtg-pagination-option-hover-bg)] focus:bg-[color:var(--vtg-pagination-option-hover-bg)]',
     optionActive:

@@ -10,7 +10,7 @@ const focus =
   'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-primary)]'
 const trigger = `inline-flex items-center justify-center h-6 w-6 p-0 border-0 bg-transparent text-[length:var(--vtg-column-settings-icon-size)] text-[color:var(--color-on-surface)] cursor-pointer transition-colors duration-200 hover:text-[color:var(--color-primary)] disabled:cursor-not-allowed disabled:text-[color:var(--color-text-disabled)] ${focus}`
 const popup =
-  'box-border overflow-auto rounded-[var(--vtg-column-settings-radius)] bg-[color:var(--color-surface)] text-[color:var(--color-on-surface)] text-[length:var(--vtg-table-font-size)] font-[family-name:var(--font-family-base)] font-normal leading-[var(--vtg-table-line-height)] shadow-[var(--vtg-column-settings-shadow)]'
+  '[--vtg-table-popup-panel-radius:var(--vtg-column-settings-radius)] [--vtg-table-popup-panel-shadow:var(--vtg-column-settings-shadow)]'
 
 /** ProTable's separate density menu and column-setting popover, using Ant Design tokens. */
 export const columnSettingsTheme = {
@@ -18,8 +18,8 @@ export const columnSettingsTheme = {
     root: 'inline-flex items-center gap-4',
     trigger,
     densityTrigger: trigger,
-    popup: `${popup} flex flex-col w-[var(--vtg-column-settings-width)] max-w-[calc(100vw-16px)] p-3`,
-    densityPopup: `${popup} min-w-[80px] p-1`,
+    popup: `${popup} flex flex-col [--vtg-table-popup-width:var(--vtg-column-settings-width)] max-w-[calc(100vw-16px)]`,
+    densityPopup: `${popup} min-w-[80px]`,
     density: `block w-full border-0 rounded-[var(--vtg-btn-border-radius-sm)] px-3 py-[5px] text-left text-[length:var(--vtg-table-font-size)] font-normal leading-[var(--vtg-table-line-height)] bg-transparent cursor-pointer hover:bg-[color:var(--color-control-item-hover-bg)] aria-checked:bg-[color:var(--color-control-item-active-bg)] aria-checked:text-[color:var(--color-primary)] ${focus}`,
     header: 'flex items-center justify-between gap-3 h-8 mb-2',
     heading: 'group inline-flex items-center gap-2 cursor-pointer font-normal',
@@ -53,8 +53,6 @@ export const elementPlusColumnSettingsTheme = {
   ...columnSettingsTheme,
   slots: {
     ...columnSettingsTheme.slots,
-    popup: `${columnSettingsTheme.slots.popup} border border-[color:var(--color-border)]`,
-    densityPopup: `${columnSettingsTheme.slots.densityPopup} border border-[color:var(--color-border)]`,
     checkbox: `${columnSettingsTheme.slots.checkbox} indeterminate:bg-[color:var(--color-primary)] indeterminate:border-[color:var(--color-primary)]`,
     checkMark: `${elementPlusCheckboxTheme.slots.checkMark} peer-disabled:border-[color:var(--color-text-placeholder)]`,
     indeterminateMark: elementPlusCheckboxTheme.slots.indeterminateMark,

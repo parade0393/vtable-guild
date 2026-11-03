@@ -120,16 +120,9 @@ export const elementPlusTableTheme = {
     // ---- 筛选下拉相关 ----
     // 与 element-plus 官方 .el-table-filter 1:1 对齐：
     // 2px 圆角、border-color-lighter、--el-box-shadow-light 等价的浅阴影
-    filterDropdown: [
-      'rounded-[2px] bg-[color:var(--color-surface)]',
-      'border border-[color:var(--vtg-border-color-lighter,var(--color-default))]',
-      'shadow-[0_0_12px_rgba(0,0,0,0.12)]',
-      'font-[family-name:var(--vtg-table-font-family)]',
-      'text-[length:var(--vtg-table-font-size)] leading-[var(--vtg-table-line-height)]',
-      'text-[color:var(--vtg-table-text-color)]',
-    ].join(' '),
-    // .el-table-filter__list: padding 5px 0; min-width 100px
-    filterDropdownList: 'py-[5px] px-0 m-0 list-none min-w-[100px]',
+    filterDropdown: '',
+    filterDropdownList:
+      'p-0 m-0 list-none min-w-[calc(100px-2*var(--vtg-table-popup-padding-inline))]',
     // li 自身只控制指针；hover/selected/padding 全在 contentWrapper
     filterDropdownItem: 'cursor-pointer',
     // 多选选中（默认 selected 槽）：仅 checkbox label 变 primary 色，无背景；
@@ -198,13 +191,7 @@ export const elementPlusTableTheme = {
     trDropBelow: '[&>td]:shadow-[inset_0_-2px_0_0_var(--vtg-table-row-drop-indicator-color)]',
 
     // ---- 选择下拉相关 ----
-    selectionDropdown: [
-      'rounded bg-[color:var(--color-surface)] shadow-lg border border-[color:var(--color-default)]',
-      'font-[family-name:var(--vtg-table-font-family)]',
-      'text-[length:var(--vtg-table-font-size)] leading-[var(--vtg-table-line-height)]',
-      'text-[color:var(--vtg-table-text-color)]',
-      'p-1 min-w-[120px]',
-    ].join(' '),
+    selectionDropdown: 'min-w-[120px]',
     selectionDropdownItem:
       'flex items-center cursor-pointer px-3 py-1.5 rounded-sm hover:bg-[color:var(--color-control-item-hover-bg)]',
     selectionExtra:
