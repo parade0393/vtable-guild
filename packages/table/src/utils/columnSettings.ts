@@ -1,3 +1,4 @@
+import type { DropPosition } from '../composables/useRowDragSort'
 import type { ColumnsType, ColumnType, ColumnGroupType } from '../types'
 
 export interface SettingsEntry<T extends object> {
@@ -119,6 +120,11 @@ export function moveSettingColumn<T extends object>(
   columns: ColumnsType<T>,
   sourceId: string,
   targetId: string,
+  /**
+   * 显式插入位置；缺省时占据目标原槽位（顺序恢复等场景依赖该语义）。
+   * 位置按移除源后的数组计算：before 取目标之前，after 取目标之后。
+   */
+  position?: DropPosition,
 ): ColumnsType<T> {
   const entries = settingsEntries(columns)
   const from = entries.findIndex((entry) => entry.id === sourceId)
@@ -135,7 +141,18 @@ export function moveSettingColumn<T extends object>(
   )
     return columns
   const business = entries.map((entry) => entry.column)
-  business.splice(to, 0, business.splice(from, 1)[0]!)
+  business.splice(from, 1)
+  const insertAt =
+    position === 'before'
+      ? from < to
+        ? to - 1
+        : to
+      : position === 'after'
+        ? from < to
+          ? to
+          : to + 1
+        : to
+  business.splice(insertAt, 0, source.column)
   const ranks = business
     .map(columnFixedRegion)
     .map((value) => (value === 'left' ? -1 : value === 'right' ? 1 : 0))

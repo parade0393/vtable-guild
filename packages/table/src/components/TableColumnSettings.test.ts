@@ -329,6 +329,45 @@ describe.each(['antdv', 'element-plus'] as const)('%s column settings', (preset)
     expect(popup().find('[data-column-pin]').exists()).toBe(false)
     expect(popup().find('[draggable]').exists()).toBe(false)
   })
+
+  it('marks drag states and places columns before or after the hovered row', async () => {
+    const wrapper = create(preset)
+    await settingsTrigger(wrapper).trigger('click')
+    const items = popup().findAll('[data-column-setting]')
+    const source = items.find((item) => item.get('label').text() === 'Contact')!
+    const target = items.find((item) => item.get('label').text() === 'Name')!
+    const row = source.get('[draggable="true"]')
+    expect(row.element.tagName).toBe('DIV')
+    // 把手是纯视觉标记：拖拽语义完全由行承载
+    expect(source.get('[title="Drag to reorder columns"]').attributes('draggable')).toBeUndefined()
+    const transfer = { setData: vi.fn(), effectAllowed: '' }
+    await source.get('label').trigger('dragstart', { dataTransfer: transfer })
+    // 高亮延迟一拍：dragstart 同帧不上样式，原生拖拽幽灵保持行的原始外观
+    expect(source.get('[draggable="true"]').attributes('data-dragging')).toBeUndefined()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(source.get('[draggable="true"]').attributes('data-dragging')).toBe('true')
+    // 悬停目标行中线之下（happy-dom rect 全 0）→ after：源列落在目标之后
+    await target.trigger('dragover', { dataTransfer: transfer, clientY: 10 })
+    expect(target.get('[draggable="true"]').attributes('data-drop-target')).toBe('after')
+    await target.trigger('drop')
+    const after = wrapper.emitted('update:columns')!.at(-1)![0] as ColumnsType
+    expect((after[1] as ColumnType).key).toBe('name')
+    expect((after[2] as ColumnGroupType).key).toBe('contact')
+    expect(source.get('[draggable="true"]').attributes('data-dragging')).toBeUndefined()
+    expect(target.get('[draggable="true"]').attributes('data-drop-target')).toBeUndefined()
+    // 悬停目标行中线之上 → before：源列落在目标之前
+    await source.get('[draggable="true"]').trigger('dragstart', { dataTransfer: transfer })
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await target.trigger('dragover', { dataTransfer: transfer, clientY: -10 })
+    expect(target.get('[draggable="true"]').attributes('data-drop-target')).toBe('before')
+    await target.trigger('drop')
+    const before = wrapper.emitted('update:columns')!.at(-1)![0] as ColumnsType
+    expect((before[1] as ColumnGroupType).key).toBe('contact')
+    expect((before[2] as ColumnType).key).toBe('name')
+    expect(transfer.setData).toHaveBeenCalled()
+    const nested = items.find((item) => item.get('label').text() === 'City')!
+    expect(nested.find('[draggable]').exists()).toBe(false)
+  })
 })
 
 it('renders function titles through an explicit label slot without invoking table renderers', async () => {

@@ -21,15 +21,23 @@ export const columnSettingsTheme = {
     popup: `${popup} flex flex-col [--vtg-table-popup-width:var(--vtg-column-settings-width)] max-w-[calc(100vw-16px)]`,
     densityPopup: `${popup} min-w-[80px]`,
     density: `block w-full border-0 rounded-[var(--vtg-btn-border-radius-sm)] px-3 py-[5px] text-left text-[length:var(--vtg-table-font-size)] font-normal leading-[var(--vtg-table-line-height)] bg-transparent cursor-pointer hover:bg-[color:var(--color-control-item-hover-bg)] aria-checked:bg-[color:var(--color-control-item-active-bg)] aria-checked:text-[color:var(--color-primary)] ${focus}`,
-    header: 'flex items-center justify-between gap-3 h-8 mb-2',
+    header: 'flex items-center justify-between gap-3 h-8 mb-2 px-2',
     heading: 'group inline-flex items-center gap-2 cursor-pointer font-normal',
     reset: `shrink-0 border-0 bg-transparent p-0 text-[color:var(--color-primary)] text-[length:var(--vtg-table-font-size)] font-semibold cursor-pointer hover:text-[color:var(--color-primary-hover)] ${focus}`,
-    columns: 'm-0 max-h-[280px] overflow-auto list-none px-0 py-2',
+    columns: 'm-0 max-h-[280px] overflow-auto list-none px-2 py-2',
     children: 'm-0 list-none pl-6',
     item: 'm-0 p-0 pb-1',
-    row: 'flex min-w-0 items-center gap-1',
+    row: 'relative flex min-w-0 items-center gap-1 select-none [&[draggable=true]]:cursor-grab [&[draggable=true]]:active:cursor-grabbing [&[draggable=false]]:cursor-not-allowed',
+    rowDragging:
+      'rounded-[var(--vtg-btn-border-radius-sm)] bg-[color:var(--color-control-item-active-bg)] ring-1 ring-inset ring-[color:var(--color-primary)]',
+    rowDropAbove:
+      'pointer-events-none absolute right-0 top-0 z-[1] h-[2px] rounded-[1px] left-[calc(var(--vtg-column-settings-icon-size)+var(--vtg-checkbox-size)+16px)] bg-[color:var(--vtg-table-row-drop-indicator-color)]',
+    rowDropBelow:
+      'pointer-events-none absolute right-0 bottom-0 z-[1] h-[2px] rounded-[1px] left-[calc(var(--vtg-column-settings-icon-size)+var(--vtg-checkbox-size)+16px)] bg-[color:var(--vtg-table-row-drop-indicator-color)]',
+    rowDropDot:
+      'pointer-events-none absolute start-[-6px] top-[-3px] h-2 w-2 rounded-full border-2 border-[color:var(--vtg-table-row-drop-indicator-color)] bg-transparent',
     dragHandle:
-      'shrink-0 select-none text-[color:var(--color-muted)] cursor-grab active:cursor-grabbing [&:not([draggable=true])]:cursor-not-allowed',
+      'inline-flex w-[var(--vtg-column-settings-icon-size)] shrink-0 items-center justify-center mr-2 select-none text-[color:var(--color-muted)]',
     pinActions: 'inline-flex shrink-0 items-center gap-0.5',
     pinAction: `inline-flex items-center justify-center h-5 w-5 p-0 border-0 rounded-[var(--vtg-btn-border-radius-sm)] bg-transparent text-[color:var(--color-muted)] cursor-pointer hover:text-[color:var(--color-primary)] hover:bg-[color:var(--color-control-item-hover-bg)] aria-pressed:text-[color:var(--color-primary)] disabled:cursor-not-allowed disabled:text-[color:var(--color-text-disabled)] ${focus}`,
     pinIcon:
@@ -45,7 +53,7 @@ export const columnSettingsTheme = {
     checkMark: `${antdvCheckboxTheme.slots.checkMark} peer-disabled:border-[color:var(--color-text-disabled)]`,
     indeterminateMark: antdvCheckboxTheme.slots.indeterminateMark,
     labelText: 'min-w-0 flex-1 truncate px-1',
-    empty: 'py-2 text-[color:var(--color-muted)]',
+    empty: 'px-2 py-2 text-[color:var(--color-muted)]',
   },
 } as const satisfies ThemeConfig
 

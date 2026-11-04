@@ -73,6 +73,23 @@ describe('column settings constraints', () => {
     expect(setColumnFixed(columns, id('c'), 'left')).toBe(columns)
   })
 
+  it('inserts before or after the target while the default keeps the target slot', () => {
+    const columns: ColumnsType = [{ key: 'a' }, { key: 'b' }, { key: 'c' }]
+    const entries = settingsEntries(columns)
+    const id = (key: string) => entries.find((entry) => entry.column.key === key)!.id
+    const keys = (result: ColumnsType) =>
+      result.map((column) => (typeof column === 'symbol' ? '' : column.key))
+    // 下移（from < to）
+    expect(keys(moveSettingColumn(columns, id('a'), id('c'), 'before'))).toEqual(['b', 'a', 'c'])
+    expect(keys(moveSettingColumn(columns, id('a'), id('c'), 'after'))).toEqual(['b', 'c', 'a'])
+    // 上移（from > to）
+    expect(keys(moveSettingColumn(columns, id('c'), id('a'), 'before'))).toEqual(['c', 'a', 'b'])
+    expect(keys(moveSettingColumn(columns, id('c'), id('a'), 'after'))).toEqual(['a', 'c', 'b'])
+    // 缺省 position 占据目标槽位（顺序恢复语义：下移同 after，上移同 before）
+    expect(keys(moveSettingColumn(columns, id('a'), id('c')))).toEqual(['b', 'c', 'a'])
+    expect(keys(moveSettingColumn(columns, id('c'), id('a')))).toEqual(['c', 'a', 'b'])
+  })
+
   it('does not bypass a child pin lock with a group action', () => {
     const columns: ColumnsType = [
       { key: 'group', children: [{ key: 'a', disable: { fixed: true } }, { key: 'b' }] },

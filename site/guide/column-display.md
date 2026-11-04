@@ -32,7 +32,7 @@ description: 使用 VTableColumnSettings 配置列显隐、固定与顺序，通
 - `hideInSetting: true` 让列及其子列不出现在设置面板，也不参与面板全选或重置。它不改变表格中的显示状态。
 - `disable: true` 锁定显隐、固定与顺序；对象形式可分别设置 `checkbox`、`fixed`、`order`。分组中有锁定显隐的子列时，整组不能隐藏，但其他可编辑子列仍可独立调整；组自身禁用显隐时，其子项也不可更改。
 - 固定操作将顶层列或整个分组移到左侧、中央或右侧，并保持固定列处于两端。分组固定会同步所有叶子列；有禁止固定的子列时整组固定操作禁用。
-- 拖动行前的手柄可调整同一固定区域内的顶层顺序，分组整组移动，不允许子列跨组移动。禁用顺序的列是移动边界，其他列不能拖动跨过它；跨固定区域请使用固定操作。选择列、展开列哨兵的位置保留。
+- 拖动整行（或行前的手柄）可调整同一固定区域内的顶层顺序，分组整组移动，不允许子列跨组移动。拖拽中源行显示主题色描边，目标行按悬停位置的中线显示带圆点的上 / 下插入线，落点即插入位置。禁用顺序的列是移动边界，其他列不能拖动跨过它；跨固定区域请使用固定操作。选择列、展开列哨兵的位置保留。
 - 键盘可操作现有按钮与复选框，Escape 关闭并回到入口，Tab 离开面板时关闭。
 
 ### 固定与顺序
@@ -57,7 +57,7 @@ description: 使用 VTableColumnSettings 配置列显隐、固定与顺序，通
 
 事件：`update:columns(columns)`、`update:size(size)`、`reset()`。重置依次发出列更新和 `reset`；选择密度后关闭菜单，选中项保持受控。面板本身不会触发表格的 `change` 事件或发起请求。
 
-全局样式使用 `theme.columnSettings.slots`，实例使用 `ui`。两套预设共享 `root`、`trigger`、`densityTrigger`、`popup`、`densityPopup`、`header`、`heading`、`reset`、`density`、`columns`、`children`、`item`、`label`、`checkboxControl`、`checkbox`、`checkMark`、`indeterminateMark`、`labelText`、`empty`，以及新增的 `row`、`dragHandle`、`pinActions`、`pinAction`、`pinIcon`、`group`、`groupTitle`、`groupColumns`。可通过 `--vtg-column-settings-width`、`--vtg-column-settings-radius`、`--vtg-column-settings-icon-size`、`--vtg-column-settings-pin-icon-size`、`--vtg-column-settings-shadow`、`--vtg-column-settings-z` 调整图标和弹层。
+全局样式使用 `theme.columnSettings.slots`，实例使用 `ui`。两套预设共享 `root`、`trigger`、`densityTrigger`、`popup`、`densityPopup`、`header`、`heading`、`reset`、`density`、`columns`、`children`、`item`、`label`、`checkboxControl`、`checkbox`、`checkMark`、`indeterminateMark`、`labelText`、`empty`，以及新增的 `row`、`rowDragging`、`rowDropAbove`、`rowDropBelow`、`rowDropDot`、`dragHandle`、`pinActions`、`pinAction`、`pinIcon`、`group`、`groupTitle`、`groupColumns`。可通过 `--vtg-column-settings-width`、`--vtg-column-settings-radius`、`--vtg-column-settings-icon-size`、`--vtg-column-settings-pin-icon-size`、`--vtg-column-settings-shadow`、`--vtg-column-settings-z` 调整图标和弹层。
 
 中英文文案跟随全局或 ConfigProvider 的 `locale`，支持 `localeOverrides.columnSettings` 和实例 `locale`。旧语言包无需补字段。
 

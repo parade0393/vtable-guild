@@ -360,6 +360,10 @@ app.use(
 | `header` / `heading` / `reset`    | 面板头部、全选标题和重置按钮 |
 | `density`                         | 密度菜单选项                 |
 | `columns` / `children` / `item`   | 列列表、分组子列表和列表项   |
+| `row`                             | 列选项行（拖拽载体）         |
+| `rowDragging`                     | 拖拽中的源行描边             |
+| `rowDropAbove` / `rowDropBelow`   | 目标行的上 / 下插入线        |
+| `rowDropDot`                      | 插入线左端的圆点             |
 | `label` / `labelText`             | 列选项标签与文字             |
 | `checkboxControl` / `checkbox`    | 复选框容器与输入元素         |
 | `checkMark` / `indeterminateMark` | 选中和半选标记               |

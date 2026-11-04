@@ -35,6 +35,7 @@ import {
   type ColumnFixed,
   type SettingsEntry,
 } from '../utils/columnSettings'
+import type { DropPosition } from '../composables/useRowDragSort'
 import TablePopup from './TablePopup'
 
 type Row = Record<string, unknown>
@@ -86,6 +87,9 @@ export default defineComponent({
     const panel = ref<Panel>('columns')
     const entries = computed(() => configurableEntries(props.columns))
     const dragging = ref<string | null>(null)
+    const draggingShown = ref<string | null>(null)
+    const dropTarget = ref<{ id: string; position: DropPosition } | null>(null)
+    let showDragTimer: ReturnType<typeof setTimeout> | null = null
     const defaults = new Map<string, boolean | undefined>()
     const selection = computed(() => {
       const visible: boolean[] = []
@@ -223,10 +227,35 @@ export default defineComponent({
       event.preventDefault()
       event.stopPropagation()
       const from = dragging.value
+      const target = dropTarget.value
       dragging.value = null
+      dropTarget.value = null
+      hideDragging()
       if (!from || props.disabled || props.options?.draggable === false) return
-      const next = moveSettingColumn(props.columns, from, entry.id)
+      // 真实浏览器中 drop 前必有 dragover；无记录时保持占据目标槽位的旧行为
+      const position = target?.id === entry.id ? target.position : undefined
+      const next = moveSettingColumn(props.columns, from, target?.id ?? entry.id, position)
       if (next !== props.columns) emit('update:columns', next)
+    }
+    /** 原生拖拽图像在 dragstart 事件结束时立即快照；高亮延迟一拍，避免被烤进拖拽幽灵 */
+    function showDragging(id: string) {
+      if (showDragTimer) clearTimeout(showDragTimer)
+      showDragTimer = setTimeout(() => {
+        showDragTimer = null
+        draggingShown.value = id
+      }, 0)
+    }
+    function hideDragging() {
+      if (showDragTimer) {
+        clearTimeout(showDragTimer)
+        showDragTimer = null
+      }
+      draggingShown.value = null
+    }
+    /** 拖拽态 class：源行描边高亮（rowDragging），插入线由独立元素渲染 */
+    function dragRowClass(id: string) {
+      if (draggingShown.value === id) return `${styles.row()} ${styles.rowDragging()}`
+      return styles.row()
     }
     function renderColumns(
       items: SettingsEntry<Row>[],
@@ -239,39 +268,83 @@ export default defineComponent({
           slots.columnLabel?.({ column }) ??
           (typeof column.title === 'function' ? undefined : column.title) ??
           String(column.key ?? ('dataIndex' in column ? (column.dataIndex ?? '') : ''))
+        const dragEnabled = !nested && props.options?.draggable !== false
+        const dragAllowed =
+          !props.disabled &&
+          !isColumnSettingDisabled(column, 'order') &&
+          columnFixedRegion(column) !== 'mixed'
         return (
           <li
             key={entry.id}
             class={styles.item()}
             data-column-setting={entry.id}
             onDragover={(event: DragEvent) => {
-              if (dragging.value && !nested) event.preventDefault()
+              if (!dragging.value || nested) return
+              event.preventDefault()
+              if (event.dataTransfer) event.dataTransfer.dropEffect = 'move'
+              if (dragging.value === entry.id) {
+                dropTarget.value = null
+                return
+              }
+              const rect = (event.currentTarget as HTMLElement | null)?.getBoundingClientRect()
+              const position: DropPosition =
+                rect && event.clientY >= rect.top + rect.height / 2 ? 'after' : 'before'
+              const current = dropTarget.value
+              if (!current || current.id !== entry.id || current.position !== position) {
+                dropTarget.value = { id: entry.id, position }
+              }
+            }}
+            onDragleave={() => {
+              if (dragging.value !== null && dropTarget.value?.id === entry.id) {
+                dropTarget.value = null
+              }
             }}
             onDrop={!nested ? (event: DragEvent) => drop(entry, event) : undefined}
           >
-            <div class={styles.row()}>
-              {!nested && props.options?.draggable !== false && (
-                <span
-                  class={styles.dragHandle()}
-                  draggable={
-                    !props.disabled &&
-                    !isColumnSettingDisabled(column, 'order') &&
-                    columnFixedRegion(column) !== 'mixed'
-                  }
-                  title={locale.value.move}
-                  aria-hidden="true"
-                  onDragstart={(event: DragEvent) => {
-                    if (props.disabled || isColumnSettingDisabled(column, 'order'))
-                      return event.preventDefault()
-                    dragging.value = entry.id
-                    event.dataTransfer?.setData('text/plain', entry.id)
-                    if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move'
-                  }}
-                  onDragend={() => {
-                    dragging.value = null
-                  }}
-                >
+            <div
+              class={dragRowClass(entry.id)}
+              data-dragging={draggingShown.value === entry.id || undefined}
+              data-drop-target={
+                dropTarget.value?.id === entry.id ? dropTarget.value.position : undefined
+              }
+              draggable={dragEnabled ? dragAllowed : undefined}
+              onDragstart={
+                dragEnabled
+                  ? (event: DragEvent) => {
+                      if (props.disabled || isColumnSettingDisabled(column, 'order'))
+                        return event.preventDefault()
+                      dragging.value = entry.id
+                      showDragging(entry.id)
+                      event.dataTransfer?.setData('text/plain', entry.id)
+                      if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move'
+                    }
+                  : undefined
+              }
+              onDragend={
+                dragEnabled
+                  ? () => {
+                      dragging.value = null
+                      dropTarget.value = null
+                      hideDragging()
+                    }
+                  : undefined
+              }
+            >
+              {dragEnabled && (
+                <span class={styles.dragHandle()} title={locale.value.move} aria-hidden="true">
                   ⋮⋮
+                </span>
+              )}
+              {dropTarget.value?.id === entry.id && (
+                <span
+                  class={
+                    dropTarget.value.position === 'before'
+                      ? styles.rowDropAbove()
+                      : styles.rowDropBelow()
+                  }
+                  aria-hidden="true"
+                >
+                  <span class={styles.rowDropDot()} />
                 </span>
               )}
               <label class={styles.label()}>
