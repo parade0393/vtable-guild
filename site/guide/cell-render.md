@@ -98,3 +98,49 @@ Element Plus 项目使用 `ElAvatar / ElImage`；业务负责 URL 校验、占�
 5. 默认复制使用转换后的标量原值，不复制货币符号或枚举标签。使用 `copyable.text` 可以显式改变复制内容。
 
 不设置 `valueType` 时保持既有单元格展示流程。渲染器只负责只读展示，查询控件与编辑器仍由业务使用已有 UI 库组合。
+
+## API
+
+`TRecord` 表示业务行类型。表格的完整配置见 [API Reference](/guide/api-reference)。
+
+### Props
+
+<!-- @api: props cell-render -->
+
+### Column 字段
+
+<!-- @api: columns cell-render -->
+
+### Slots
+
+<!-- @api: slots cell-render -->
+
+## 主题
+
+字段标签与进度条的 class 可通过实例 `ui` 或全局 `theme.table.slots` 覆盖。调整颜色或尺寸时可使用下方 [CSS 变量](#css-变量)。覆盖顺序见[三层主题覆盖](/guide/theme-overrides)。
+
+### ui slots
+
+<!-- @api: ui cell-render -->
+
+### 预设默认值
+
+两套预设的默认 class 可用下方标签切换。默认预编译模式下 utility 的覆盖方式见[前缀与覆盖规则](/guide/theme-overrides#utility-前缀与覆盖规则)。
+
+<!-- @api: theme cell-render -->
+
+### CSS 变量
+
+表中列出亮色模式的默认值。暗色模式可通过 `.dark` 单独覆盖。
+
+<!-- @api: css-vars cell-render -->
+
+## Type Declarations
+
+::: details 查看类型声明
+
+<<< @/.vitepress/type-declarations/features.ts#FieldRendererFields
+
+<<< @/.vitepress/type-declarations/features.ts#RendererProtocol
+
+:::

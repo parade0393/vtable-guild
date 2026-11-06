@@ -45,19 +45,11 @@ description: 使用 VTableColumnSettings 配置列显隐、固定与顺序，通
 
 ### 面板 API
 
-| Prop                | 类型 / 默认值                                                                    | 说明                                         |
-| ------------------- | -------------------------------------------------------------------------------- | -------------------------------------------- |
-| `columns`           | `TableColumnsType<TRecord>`，必传                                                | 受控列配置                                   |
-| `size`              | `'large' \| 'middle' \| 'small'` / 表格主题默认值                                | 与表格共用的密度                             |
-| `disabled`          | `boolean` / `false`                                                              | 禁用入口并关闭已打开面板                     |
-| `options`           | `{ density?: boolean; setting?: boolean; fixed?: boolean; draggable?: boolean }` | 分别控制密度、列设置、固定与拖拽，默认都开启 |
-| `getPopupContainer` | `(trigger: HTMLElement) => HTMLElement`                                          | 默认挂载到 `document.body`                   |
-| `locale`            | `Partial<VTableGuildColumnSettingsLocale>`                                       | 实例文案覆盖                                 |
-| `ui` / `class`      | slot class 映射 / `string`                                                       | 实例主题覆盖 / 根元素 class                  |
+<!-- @api: reference column-settings-props -->
 
 事件：`update:columns(columns)`、`update:size(size)`、`reset()`。重置依次发出列更新和 `reset`；选择密度后关闭菜单，选中项保持受控。面板本身不会触发表格的 `change` 事件或发起请求。
 
-全局样式使用 `theme.columnSettings.slots`，实例使用 `ui`。两套预设共享 `root`、`trigger`、`densityTrigger`、`popup`、`densityPopup`、`header`、`heading`、`reset`、`density`、`columns`、`children`、`item`、`label`、`checkboxControl`、`checkbox`、`checkMark`、`indeterminateMark`、`labelText`、`empty`，以及新增的 `row`、`rowDragging`、`rowDropAbove`、`rowDropBelow`、`rowDropDot`、`dragHandle`、`pinActions`、`pinAction`、`pinIcon`、`group`、`groupTitle`、`groupColumns`。可通过 `--vtg-column-settings-width`、`--vtg-column-settings-radius`、`--vtg-column-settings-icon-size`、`--vtg-column-settings-pin-icon-size`、`--vtg-column-settings-shadow`、`--vtg-column-settings-z` 调整图标和弹层。
+面板的实例 `ui`、全局样式及弹层尺寸见[主题](#主题)。
 
 中英文文案跟随全局或 ConfigProvider 的 `locale`，支持 `localeOverrides.columnSettings` 和实例 `locale`。旧语言包无需补字段。
 
@@ -177,11 +169,37 @@ const columns: TableColumnsType<UserRow> = [
   不满足结构会有 dev 告警并回落为渲染全部列。
 - 列宽拖拽的宽度覆写按列 key 记录，重排后自动保留。
 
-## 相关页面
+## API
 
-- [列宽拖拽](/guide/column-resize)
-- [固定列](/guide/fixed-columns)
-- [API 参考](/guide/api-reference)
+`TRecord` 表示业务行类型。表格的完整配置见 [API Reference](/guide/api-reference)。
+
+### Props
+
+<!-- @api: props column-display -->
+
+### Column 字段
+
+<!-- @api: columns column-display -->
+
+## 主题
+
+列设置面板可通过 `VTableColumnSettings` 的实例 `ui` 或全局 `theme.columnSettings.slots` 覆盖 class。调整颜色或尺寸时可使用下方 [CSS 变量](#css-变量)。覆盖顺序见[三层主题覆盖](/guide/theme-overrides)。
+
+### ui slots
+
+<!-- @api: ui column-display -->
+
+### 预设默认值
+
+两套预设的默认 class 可用下方标签切换。默认预编译模式下 utility 的覆盖方式见[前缀与覆盖规则](/guide/theme-overrides#utility-前缀与覆盖规则)。
+
+<!-- @api: theme column-display -->
+
+### CSS 变量
+
+表中列出亮色模式的默认值。暗色模式可通过 `.dark` 单独覆盖。
+
+<!-- @api: css-vars column-display -->
 
 ## Type Declarations
 
@@ -208,3 +226,9 @@ const columns: TableColumnsType<UserRow> = [
 <<< @/.vitepress/type-declarations/features.ts#ColumnOrderFields
 
 :::
+
+## 相关页面
+
+- [列宽拖拽](/guide/column-resize)
+- [固定列](/guide/fixed-columns)
+- [API 参考](/guide/api-reference)

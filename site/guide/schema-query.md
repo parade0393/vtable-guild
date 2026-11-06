@@ -143,22 +143,45 @@ const fields = [{ name: 'team', label: '团队', valueType: 'select', dictionary
 
 `actions` 插槽收到 `{ submit, reset, submitting, collapsed, toggleCollapsed }`。自定义原生按钮请设置 `type="button"`，避免触发表单默认提交。
 
+## API
+
+### VTableQuery Props
+
+<!-- @api: reference schema-query-props -->
+
+### TableQueryField
+
+<!-- @api: reference schema-query-fields -->
+
+### VTableQuery Slots
+
+<!-- @api: reference schema-query-slots -->
+
 ## 主题与布局
 
-默认使用 ProTable 风格的间距和响应式栅格，两套预设共用 `query` slots：`root / fields / field / label / control / error / actions / feedback / collapse`。
+默认使用响应式栅格，轻量布局使用紧凑字段和可换行的操作区。
 可通过实例 `ui` 或全局 `theme.query.slots` 覆盖；宿主控件本身由对应 UI 库控制样式。
 
-| token                                             | 默认值 / 含义                                 |
-| ------------------------------------------------- | --------------------------------------------- |
-| `--vtg-query-padding`                             | `24px`，普通查询区内边距                      |
-| `--vtg-query-light-padding`                       | `16px`，轻量查询区内边距                      |
-| `--vtg-query-column-gap / --vtg-query-row-gap`    | `24px / 16px`，栅格间距                       |
-| `--vtg-query-field-min-width`                     | `240px`，普通字段最小布局宽度，窄容器自动收缩 |
-| `--vtg-query-label-width / --vtg-query-label-gap` | `80px / 12px`                                 |
-| `--vtg-query-control-height`                      | `32px`，标签和操作区对齐高度                  |
-| `--vtg-query-light-field-width`                   | `240px`，轻量字段宽度                         |
-| `--vtg-query-action-gap`                          | `8px`                                         |
-| `--vtg-query-radius`                              | Ant `6px`、Element Plus `4px`                 |
-| `--vtg-query-error-font-size`                     | `12px`                                        |
+布局、校验反馈与操作区的默认 class 由预设提供。
+
+### ui slots
+
+<!-- @api: ui schema-query -->
+
+### 预设默认值
+
+<!-- @api: theme schema-query -->
+
+### CSS 变量
+
+<!-- @api: css-vars schema-query -->
 
 完整 ProForm、ModalForm、DrawerForm 与 CRUD 页面引擎不在此适配层范围内。
+
+## Type Declarations
+
+::: details 查看类型声明
+
+<<< @/.vitepress/type-declarations/features.ts#QuerySchemaProtocol
+
+:::

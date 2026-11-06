@@ -102,236 +102,101 @@ app.use(
 
 ### 核心结构
 
-| Slot                | 说明                                                                              |
-| ------------------- | --------------------------------------------------------------------------------- |
-| `root`              | 表格最外层容器。控制字体、字号、行高。                                            |
-| `wrapper`           | `<table>` 元素的滚动包裹层。                                                      |
-| `rootAutoHeight`    | `scroll.y: 'auto'` 时叠加在 `root` 上的自动高度布局（填满父容器）。               |
-| `wrapperAutoHeight` | `scroll.y: 'auto'` 时叠加在 `wrapper` 上的自动高度布局（吃剩余高度）。            |
-| `table`             | `<table>` 元素。控制背景色、文字色、边框间距。                                    |
-| `thead`             | `<thead>` 元素。                                                                  |
-| `tbody`             | `<tbody>` 元素。                                                                  |
-| `tr`                | `<tr>` 元素。默认带 `group/row`，供子元素做 hover 匹配。                          |
-| `th`                | 表头单元格 `<th>`。控制背景、文字色、边框和分割线。                               |
-| `td`                | 数据单元格 `<td>`。控制背景、文字色、边框；hover、选中、斑马纹通过 variant 追加。 |
+<!-- @api: theme-reference slots-structure -->
 
 ### 表头与单元格包装
 
-| Slot               | 说明                            |
-| ------------------ | ------------------------------- |
-| `headerCellInner`  | 表头单元格内部的 flex 包裹层。  |
-| `bodyCellEllipsis` | `ellipsis` 列内容的文本截断层。 |
+<!-- @api: theme-reference slots-cell-wrappers -->
 
 ### 分组表头
 
-| Slot                 | 说明                         |
-| -------------------- | ---------------------------- |
-| `groupedHeaderTable` | 多级表头中的内层 `<table>`。 |
-| `groupedHeaderTh`    | 分组表头 `<th>`。            |
-| `groupedHeaderTd`    | 分组表头 `<td>`。            |
+<!-- @api: theme-reference slots-grouped-header -->
 
 ### 排序
 
-| Slot              | 说明                             |
-| ----------------- | -------------------------------- |
-| `thSortable`      | 可排序列的 `<th>` 附加样式。     |
-| `thSorted`        | 已激活排序的列 `<th>` 背景。     |
-| `tdSorted`        | 已激活排序的列 `<td>` 背景。     |
-| `sortButton`      | 排序图标容器。                   |
-| `sortIconDown`    | 降序图标的间距调整。             |
-| `sortAreaOuter`   | 排序区最外层 flex 包裹。         |
-| `sortAreaWrapper` | 标题和排序图标之间的 flex 包裹。 |
-| `sortAreaTitle`   | 排序标题文本容器。               |
+<!-- @api: theme-reference slots-sorting -->
 
 ### 筛选图标
 
-| Slot                | 说明               |
-| ------------------- | ------------------ |
-| `filterIconWrapper` | 筛选图标包裹容器。 |
-| `filterIcon`        | 筛选触发图标本身。 |
+<!-- @api: theme-reference slots-filter-icon -->
 
 ### 筛选下拉面板
 
-| Slot                               | 说明                                                |
-| ---------------------------------- | --------------------------------------------------- |
-| `filterDropdown`                   | 筛选面板根容器。                                    |
-| `filterDropdownList`               | 筛选选项列表容器。                                  |
-| `filterDropdownItem`               | 单个筛选项。                                        |
-| `filterDropdownItemSelected`       | 选中项样式。                                        |
-| `filterDropdownItemSelectedSingle` | 单选（`filterMultiple: false`）下的选中项附加样式。 |
-| `filterDropdownItemHover`          | hover 项样式。                                      |
-| `filterDropdownContentWrapper`     | 选项内容包裹层。                                    |
-| `filterDropdownActions`            | 底部操作栏。                                        |
-| `filterDropdownResetButton`        | 底部「重置」按钮的附加样式。                        |
-| `filterDropdownConfirmButton`      | 底部「确定」按钮的附加样式。                        |
-| `filterDropdownSearch`             | 搜索区外层。                                        |
-| `filterDropdownSearchField`        | 搜索输入框容器。                                    |
-| `filterDropdownSearchIcon`         | 搜索图标。                                          |
-| `filterDropdownSearchInput`        | 搜索输入框。                                        |
-| `filterDropdownListEmpty`          | 空结果提示。                                        |
+<!-- @api: theme-reference slots-filter-menu -->
 
 ### 筛选树形结构
 
-| Slot                               | 说明                  |
-| ---------------------------------- | --------------------- |
-| `filterDropdownSwitcher`           | 树节点展开/折叠按钮。 |
-| `filterDropdownSwitcherExpanded`   | 展开状态。            |
-| `filterDropdownSwitcherCollapsed`  | 折叠状态。            |
-| `filterDropdownSwitcherNoop`       | 不可切换节点占位。    |
-| `filterDropdownTreeWrapper`        | 树列表包裹层。        |
-| `filterDropdownTreeList`           | 树列表 `<ul>`。       |
-| `filterDropdownTreeItem`           | 单个树节点行。        |
-| `filterDropdownTreeContentWrapper` | 树节点内容包裹层。    |
-| `filterDropdownTreeItemSelected`   | 选中节点样式。        |
-| `filterDropdownTreeItemMatched`    | 搜索命中节点样式。    |
-| `filterDropdownTreeCheckAll`       | “全选” 行。           |
+<!-- @api: theme-reference slots-filter-tree -->
 
 ### 空状态
 
-| Slot           | 说明               |
-| -------------- | ------------------ |
-| `empty`        | 空状态根容器。     |
-| `emptyWrapper` | 空状态内容包裹层。 |
-| `emptyIcon`    | 空状态图标区域。   |
-| `emptyText`    | 空状态文字。       |
+<!-- @api: theme-reference slots-empty -->
 
 ### 加载态
 
-| Slot             | 说明                          |
-| ---------------- | ----------------------------- |
-| `loading`        | 覆盖整张表的 loading 遮罩层。 |
-| `loadingSpinner` | loading 图标。                |
+<!-- @api: theme-reference slots-loading -->
 
 ### 行选中
 
-| Slot                 | 说明                                 |
-| -------------------- | ------------------------------------ |
-| `tdSelected`         | 选中行的 `<td>` 背景。               |
-| `tdRowHover`         | hover 时普通行的 `<td>` 背景。       |
-| `tdRowSelectedHover` | hover 时选中行的 `<td>` 背景叠加层。 |
+<!-- @api: theme-reference slots-row-states -->
 
 ### 行拖拽排序
 
-| Slot          | 说明                                         |
-| ------------- | -------------------------------------------- |
-| `trDragging`  | 拖拽中的行 `<tr>`。                          |
-| `trDropAbove` | 放置目标行（插入到其上方）的 `<tr>` 指示线。 |
-| `trDropBelow` | 放置目标行（插入到其下方）的 `<tr>` 指示线。 |
+<!-- @api: theme-reference slots-row-drag -->
 
 ### 行选择下拉
 
-| Slot                    | 说明                         |
-| ----------------------- | ---------------------------- |
-| `selectionDropdown`     | 行选择下拉面板。             |
-| `selectionDropdownItem` | 行选择下拉项。               |
-| `selectionExtra`        | 行选择列头部的额外触发图标。 |
+<!-- @api: theme-reference slots-selection-menu -->
 
 ### 标题、页脚与摘要
 
-| Slot          | 说明           |
-| ------------- | -------------- |
-| `title`       | 表格标题区域。 |
-| `footer`      | 表格页脚区域。 |
-| `summary`     | 摘要容器。     |
-| `summaryRow`  | 摘要 `<tr>`。  |
-| `summaryCell` | 摘要 `<td>`。  |
+<!-- @api: theme-reference slots-summary -->
 
 ### 固定列与固定表头
 
-| Slot                     | 说明                             |
-| ------------------------ | -------------------------------- |
-| `headerWrapper`          | 固定表头模式下的表头滚动包裹层。 |
-| `bodyWrapper`            | 固定表头模式下的表体滚动包裹层。 |
-| `fixedCell`              | 固定列单元格。                   |
-| `fixedDividerLeft`       | 左固定列分隔线。                 |
-| `fixedDividerRight`      | 右固定列分隔线。                 |
-| `fixedShadowLeft`        | 左固定列阴影层。                 |
-| `fixedShadowRight`       | 右固定列阴影层。                 |
-| `fixedShadowLeftHidden`  | 左侧阴影隐藏状态。               |
-| `fixedShadowRightHidden` | 右侧阴影隐藏状态。               |
+<!-- @api: theme-reference slots-fixed -->
 
 ### 展开行
 
-| Slot                        | 说明                     |
-| --------------------------- | ------------------------ |
-| `expandIcon`                | 展开按钮基础样式。       |
-| `expandIconExpanded`        | 展开状态。               |
-| `expandIconCollapsed`       | 折叠状态。               |
-| `expandIconSpaced`          | 不可展开行的占位符。     |
-| `expandIconDisabled`        | 禁用状态。               |
-| `expandIconSymbol`          | 展开图标的 symbol 容器。 |
-| `expandIconSymbolExpanded`  | 展开 symbol 状态。       |
-| `expandIconSymbolCollapsed` | 折叠 symbol 状态。       |
-| `expandedRow`               | 展开行 `<tr>`。          |
-| `expandedRowCell`           | 展开内容 `<td>`。        |
+<!-- @api: theme-reference slots-expand -->
 
 ### 树形展开
 
 `treeExpandIconLoading` 与 `treeExpandIconError` 分别控制懒加载反馈与可重试错误；颜色、大小与动画由预设层定义。
 
-| Slot                            | 说明                         |
-| ------------------------------- | ---------------------------- |
-| `treeExpandIcon`                | 树形展开按钮基础样式。       |
-| `treeExpandIconExpanded`        | 展开状态。                   |
-| `treeExpandIconCollapsed`       | 折叠状态。                   |
-| `treeExpandIconSpaced`          | 叶子节点占位。               |
-| `treeExpandIconDisabled`        | 禁用状态。                   |
-| `treeExpandIconSymbol`          | 树形 symbol 容器。           |
-| `treeExpandIconSymbolExpanded`  | 树形展开 symbol 状态。       |
-| `treeExpandIconSymbolCollapsed` | 树形折叠 symbol 状态。       |
-| `treeExpandIconLoading`         | 懒加载进行中的按钮状态。     |
-| `treeExpandIconError`           | 懒加载失败后的重试按钮状态。 |
+<!-- @api: theme-reference slots-tree -->
 
 ### 字段标签
 
 `cellTag` 控制 `valueType: 'tag'` 的标签外观，`cellStatus` 继续控制枚举状态标记。两者共享 `data-status` 与状态色变量；自定义 renderer 也可返回 `presentation: 'tag'` 使用标签主题。
 
+<!-- @api: theme-reference slots-tags -->
+
 ### 字段进度
 
-| Slot                | 说明                                 |
-| ------------------- | ------------------------------------ |
-| `cellProgress`      | 进度整体宽度与轨道、数值之间的间距。 |
-| `cellProgressTrack` | 轨道高度、圆角与背景。               |
-| `cellProgressBar`   | 填充色，支持 `data-status` 状态。    |
-| `cellProgressText`  | 百分比文字或成功 / 错误图标。        |
+<!-- @api: theme-reference slots-progress -->
 
 ### 编辑控件
 
-| Slot          | 说明                         |
-| ------------- | ---------------------------- |
-| `editCell`    | 已进入编辑的单元格内容容器。 |
-| `editControl` | 宿主控件的宽度和错误轮廓。   |
-| `editError`   | 按字段定位的校验错误。       |
+<!-- @api: theme-reference slots-edit -->
 
-查询区使用独立的 `theme.query`，支持 `root / fields / field / label / control / error / actions / feedback / collapse`，详见 [Schema 查询区](/guide/schema-query)。
+查询区使用独立的 `theme.query`，见 [Schema 查询区](#schema-查询区)。
 
 ### 列宽拖拽
 
-| Slot           | 说明           |
-| -------------- | -------------- |
-| `resizeHandle` | 列宽拖拽手柄。 |
+<!-- @api: theme-reference slots-resize -->
 
 ### 列宽布局
 
-| Slot                   | 说明                             |
-| ---------------------- | -------------------------------- |
-| `widthConstraintCell`  | 用于约束列宽的单元格。           |
-| `widthConstraintInner` | 列宽约束单元格的内部元素。       |
-| `widthLayoutCell`      | 使用列宽布局时附加的单元格样式。 |
+<!-- @api: theme-reference slots-width-layout -->
 
 ---
 
 ## Variant 列表
 
-除了直接的 slot 覆盖，主题还通过 variant 控制条件样式。它们可以通过 props 控制，也可以通过全局 `theme.table.variants` 和 `theme.table.defaultVariants` 调整。
+表格根据 props 应用条件样式。全局 `theme.table.variants` 可覆盖预设的条件 class。表格未传 `size` 时，可通过 `theme.table.defaultVariants.size` 调整默认尺寸。
 
-| Variant     | 值                           | 默认值  | 影响的 Slot                                                   |
-| ----------- | ---------------------------- | ------- | ------------------------------------------------------------- |
-| `size`      | `small` / `middle` / `large` | `large` | `th`、`td`、`title`、`footer`、`summaryCell` 的 padding       |
-| `bordered`  | `true` / `false`             | `false` | `root`、`th`、`td`、`tbody`、`title`、`footer`、`summaryCell` |
-| `striped`   | `true` / `false`             | `false` | `td`，偶数行背景                                              |
-| `hoverable` | `true` / `false`             | `true`  | `td`，行 hover 背景                                           |
-| `loading`   | `true` / `false`             | 无      | `table`，半透明和禁交互状态                                   |
+<!-- @api: theme-reference table-variants -->
 
 ## 工具栏与列设置的主题 slots
 
@@ -339,37 +204,29 @@ app.use(
 
 ### VTableToolbar
 
-| Slot          | 说明                          |
-| ------------- | ----------------------------- |
-| `root`        | 工具栏根容器与响应式布局      |
-| `title`       | 标题区                        |
-| `right`       | 业务操作和内置工具的包裹层    |
-| `actions`     | `#actions` 业务按钮容器       |
-| `settings`    | 内置工具或 `#settings` 的容器 |
-| `action`      | 刷新、全屏等内置按钮          |
-| `icon`        | 内置工具图标                  |
-| `loadingIcon` | 刷新加载动画                  |
+<!-- @api: theme-reference slots-toolbar -->
 
 ### VTableColumnSettings
 
-| Slot                              | 说明                         |
-| --------------------------------- | ---------------------------- |
-| `root`                            | 密度与列设置触发器容器       |
-| `trigger` / `densityTrigger`      | 列设置 / 密度按钮            |
-| `popup` / `densityPopup`          | 列设置 / 密度浮层            |
-| `header` / `heading` / `reset`    | 面板头部、全选标题和重置按钮 |
-| `density`                         | 密度菜单选项                 |
-| `columns` / `children` / `item`   | 列列表、分组子列表和列表项   |
-| `row`                             | 列选项行（拖拽载体）         |
-| `rowDragging`                     | 拖拽中的源行描边             |
-| `rowDropAbove` / `rowDropBelow`   | 目标行的上 / 下插入线        |
-| `rowDropDot`                      | 插入线左端的圆点             |
-| `label` / `labelText`             | 列选项标签与文字             |
-| `checkboxControl` / `checkbox`    | 复选框容器与输入元素         |
-| `checkMark` / `indeterminateMark` | 选中和半选标记               |
-| `empty`                           | 无可配置列时的提示           |
+<!-- @api: theme-reference slots-column-settings -->
 
 主题 slot 用来改样式；Vue 内容插槽 `#actions`、`#settings` 和 `#columnLabel` 用来扩展内容，属于工具栏或列设置组件。完整示例见 [工具栏与业务扩展](/guide/toolbar)。
+
+## 分页、批量提示与查询区的主题 slots
+
+分页使用全局 `theme.pagination.slots`。批量操作提示条和 Schema 查询区也有各自的全局主题和实例 `ui`。
+
+### 分页
+
+<!-- @api: theme-reference slots-pagination -->
+
+### 批量操作提示条
+
+<!-- @api: theme-reference slots-selection-alert -->
+
+### Schema 查询区
+
+<!-- @api: theme-reference slots-query -->
 
 ## 进一步阅读
 

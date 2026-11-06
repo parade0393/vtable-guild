@@ -90,10 +90,41 @@ const footer: NonNullable<TableProps<ScoreRow>['footer']> = () => '数据更新�
 - `summary` 更适合表达和当前数据直接相关的结果，而不是通用描述
 - 如果页面外层已经有完整卡片头部，表格 `title` 可以只承载局部状态信息
 
-## 相关页面
+## API
 
-- [多级表头与单元格合并](/guide/grouped-and-merged-cells)
-- [自定义行与插槽](/guide/api-wiring-and-slots)
+`TRecord` 表示业务行类型。表格的完整配置见 [API Reference](/guide/api-reference)。
+
+### Props
+
+<!-- @api: props title-footer-summary -->
+
+### Slots
+
+<!-- @api: slots title-footer-summary -->
+
+### VTableSummary
+
+<!-- @api: reference summary -->
+
+## 主题
+
+标题、页脚和摘要区域的 class 可通过实例 `ui` 或全局 `theme.table.slots` 覆盖。调整颜色或尺寸时可使用下方 [CSS 变量](#css-变量)。覆盖顺序见[三层主题覆盖](/guide/theme-overrides)。
+
+### ui slots
+
+<!-- @api: ui title-footer-summary -->
+
+### 预设默认值
+
+两套预设的默认 class 可用下方标签切换。默认预编译模式下 utility 的覆盖方式见[前缀与覆盖规则](/guide/theme-overrides#utility-前缀与覆盖规则)。
+
+<!-- @api: theme title-footer-summary -->
+
+### CSS 变量
+
+表中列出亮色模式的默认值。暗色模式可通过 `.dark` 单独覆盖。
+
+<!-- @api: css-vars title-footer-summary -->
 
 ## Type Declarations
 
@@ -112,3 +143,8 @@ const footer: NonNullable<TableProps<ScoreRow>['footer']> = () => '数据更新�
 <<< @/.vitepress/type-declarations/config.ts#VTableSummaryCellProps
 
 :::
+
+## 相关页面
+
+- [多级表头与单元格合并](/guide/grouped-and-merged-cells)
+- [自定义行与插槽](/guide/api-wiring-and-slots)

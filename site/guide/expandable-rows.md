@@ -53,6 +53,12 @@ const dataSource: UserRow[] = [{ key: '1', name: 'Ada', role: '产品设计', ci
 
 `TRecord` 由 `Expandable<UserRow>` 中的 `UserRow` 指定；展开图标的参数对象包含 `expanded`、`record`、`expandable` 和 `onExpand`，完整字段与回调签名见页末声明。
 
+## 展开列位置与标题
+
+`expandable.expandIconColumnIndex` 指定展开列在业务列中的位置，从 0 开始；选择列仍保留在前。负数和越界值会收敛到有效范围。显式的 `EXPAND_COLUMN` 占位优先于该位置配置。
+
+`expandable.columnTitle` 支持文本或数字标题。复杂内容使用 `#expandColumnTitle`，其优先级高于 columnTitle；选择列的标题仍由 `rowSelection.columnTitle` 配置。树形缩进图标也可使用 expandIconColumnIndex 选择业务列。
+
 ## 什么时候用
 
 - 行内详情预览
@@ -63,12 +69,41 @@ const dataSource: UserRow[] = [{ key: '1', name: 'Ada', role: '产品设计', ci
 
 - **不支持 preserve-expanded-content**：收起行时，展开内容会从 DOM 中销毁，再次展开时重新渲染。element-plus 原版 Table（2.9.7+）提供了 `preserve-expanded-content` 属性来保留已展开内容的 DOM 状态，当前 vtable-guild 尚未实现该能力。如果展开内容包含表单或有状态组件，收起后状态会丢失。
 
-## 相关页面
+## API
 
-- [树形表格](/guide/tree-table)
-- [自定义行与插槽](/guide/api-wiring-and-slots)
-- [API Reference](/guide/api-reference)
-- [类型参考](/guide/type-reference)
+`TRecord` 表示业务行类型。表格的完整配置见 [API Reference](/guide/api-reference)。
+
+### Props
+
+<!-- @api: props expandable-rows -->
+
+### Expandable
+
+<!-- @api: reference expandable -->
+
+### Slots
+
+<!-- @api: slots expandable-rows -->
+
+## 主题
+
+展开内容与展开按钮的 class 可通过实例 `ui` 或全局 `theme.table.slots` 覆盖。调整颜色或尺寸时可使用下方 [CSS 变量](#css-变量)。覆盖顺序见[三层主题覆盖](/guide/theme-overrides)。
+
+### ui slots
+
+<!-- @api: ui expandable-rows -->
+
+### 预设默认值
+
+两套预设的默认 class 可用下方标签切换。默认预编译模式下 utility 的覆盖方式见[前缀与覆盖规则](/guide/theme-overrides#utility-前缀与覆盖规则)。
+
+<!-- @api: theme expandable-rows -->
+
+### CSS 变量
+
+表中列出亮色模式的默认值。暗色模式可通过 `.dark` 单独覆盖。
+
+<!-- @api: css-vars expandable-rows -->
 
 ## Type Declarations
 
@@ -84,8 +119,9 @@ const dataSource: UserRow[] = [{ key: '1', name: 'Ada', role: '产品设计', ci
 
 :::
 
-## 展开列位置与标题
+## 相关页面
 
-`expandable.expandIconColumnIndex` 指定展开列在业务列中的位置，从 0 开始；选择列仍保留在前。负数和越界值会收敛到有效范围。显式的 `EXPAND_COLUMN` 占位优先于该位置配置。
-
-`expandable.columnTitle` 支持文本或数字标题。复杂内容使用 `#expandColumnTitle`，其优先级高于 columnTitle；选择列的标题仍由 `rowSelection.columnTitle` 配置。树形缩进图标也可使用 expandIconColumnIndex 选择业务列。
+- [树形表格](/guide/tree-table)
+- [自定义行与插槽](/guide/api-wiring-and-slots)
+- [API Reference](/guide/api-reference)
+- [类型参考](/guide/type-reference)

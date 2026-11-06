@@ -87,21 +87,7 @@ description: 使用 VTableToolbar 组合刷新、密度、列设置与全屏，�
 
 ## API
 
-| Prop               | 类型 / 默认值                                                                        | 说明                                              |
-| ------------------ | ------------------------------------------------------------------------------------ | ------------------------------------------------- |
-| `title`            | `VNodeChild`                                                                         | 标题，也可使用 `#title`                           |
-| `columns`          | `TableColumnsType<TRecord>`                                                          | 与表格共用的受控列配置                            |
-| `size`             | `'large' \| 'middle' \| 'small'`                                                     | 表格密度，默认跟随表格主题                        |
-| `options`          | `false \| TableToolbarOptions`                                                       | 默认开启刷新、密度和列设置，全屏默认关闭          |
-| `loading`          | `boolean` / `false`                                                                  | 刷新按钮加载状态                                  |
-| `search`           | `boolean \| TableToolbarSearchConfig` / `false`                                      | 开启内置搜索；对象支持 `placeholder`、`clearable` |
-| `searchValue`      | `string` / `''`                                                                      | 受控搜索输入草稿                                  |
-| `multipleLine`     | `boolean` / `false`                                                                  | 将 `filter` 插槽移到独立一行                      |
-| `disabled`         | `boolean` / `false`                                                                  | 禁用内置操作                                      |
-| `fullscreenTarget` | `() => HTMLElement \| null \| undefined`                                             | 显式全屏目标                                      |
-| `columnSettings`   | `Pick<TableColumnSettingsProps, 'locale' \| 'ui' \| 'class' \| 'getPopupContainer'>` | 列设置面板的进一步配置                            |
-| `locale`           | `Partial<VTableGuildToolbarLocale>`                                                  | 实例文案覆盖                                      |
-| `ui` / `class`     | slot class 映射 / `string`                                                           | 实例主题覆盖                                      |
+<!-- @api: reference toolbar-props -->
 
 `options` 支持 `reload`、`density`、`setting`、`fullScreen` 布尔开关，并将 `fixed`、`draggable` 传递给列设置面板，分别控制固定位置和拖拽排序入口。
 
@@ -111,9 +97,23 @@ description: 使用 VTableToolbar 组合刷新、密度、列设置与全屏，�
 
 ## 主题与语言
 
-全局使用 `theme.toolbar.slots`，实例使用 `ui`。两套预设共享 `root`、`title`、`right`、`actions`、`settings`、`search`、`searchGroup`、`searchField`、`searchInput`、`searchSubmit`、`searchClear`、`searchIcon`、`filter`、`extra`、`action`、`icon`、`loadingIcon`，可调整布局、间距和图标。标题使用 `--vtg-toolbar-title-font-size`、`--vtg-toolbar-title-font-weight`；搜索区使用 `--vtg-toolbar-search-width`、`--vtg-toolbar-search-height`、`--vtg-toolbar-search-font-size`；工具图标复用列设置的图标 token。
+工具栏使用全局 `theme.toolbar.slots` 或实例 `ui`，内嵌列设置通过 `theme.columnSettings.slots` 或 `columnSettings.ui` 覆盖。
 
 工具栏文案跟随全局语言，支持 `localeOverrides.toolbar` 和实例 `locale`。列设置文案仍由 `columnSettings.locale` 或 `localeOverrides.columnSettings` 控制。
+
+主题代码分别列出工具栏和列设置面板的默认 class。
+
+### ui slots
+
+<!-- @api: ui toolbar -->
+
+### 预设默认值
+
+<!-- @api: theme toolbar -->
+
+### CSS 变量
+
+<!-- @api: css-vars toolbar -->
 
 ## Type Declarations
 

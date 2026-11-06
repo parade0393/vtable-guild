@@ -168,10 +168,33 @@ ant-design-vue Table、antdv-next、el-table-v2 与 vxe-table 放在**同一批�
 下跑一遍（1k / 1 万 / 10 万行 × 6 / 50 / 200 列），给出渲染耗时、DOM 节点数与内存，
 并一键导出结果。采集方法与已知的不对等之处都写在页面上。
 
-## 相关页面
+## API
 
-- [固定列](/guide/fixed-columns)
-- [功能对比总览](/comparison/)
+`TRecord` 表示业务行类型。表格的完整配置见 [API Reference](/guide/api-reference)。
+
+### Props
+
+<!-- @api: props virtualization -->
+
+## 主题
+
+虚拟表体和滚动容器的 class 可通过实例 `ui` 或全局 `theme.table.slots` 覆盖。调整颜色或尺寸时可使用下方 [CSS 变量](#css-变量)。覆盖顺序见[三层主题覆盖](/guide/theme-overrides)。
+
+### ui slots
+
+<!-- @api: ui virtualization -->
+
+### 预设默认值
+
+两套预设的默认 class 可用下方标签切换。默认预编译模式下 utility 的覆盖方式见[前缀与覆盖规则](/guide/theme-overrides#utility-前缀与覆盖规则)。
+
+<!-- @api: theme virtualization -->
+
+### CSS 变量
+
+表中列出亮色模式的默认值。暗色模式可通过 `.dark` 单独覆盖。
+
+<!-- @api: css-vars virtualization -->
 
 ## Type Declarations
 
@@ -184,3 +207,8 @@ ant-design-vue Table、antdv-next、el-table-v2 与 vxe-table 放在**同一批�
 <<< @/.vitepress/type-declarations/features.ts#VirtualizationFields
 
 :::
+
+## 相关页面
+
+- [固定列](/guide/fixed-columns)
+- [功能对比总览](/comparison/)

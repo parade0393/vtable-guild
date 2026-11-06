@@ -41,7 +41,7 @@ const dataSource: ScoreRow[] = [
   { key: '5', name: '何川', team: '交易', score: 79, reviews: 27 },
 ]
 
-const lastSorter = ref('（点击表头试试，按住 Shift 可叠加多列）')
+const lastSorter = ref('（点击表头试试，团队和评分可叠加排序）')
 
 const handleChange: NonNullable<VTableEventProps<ScoreRow>['onChange']> = (_filters, sorter) => {
   const list = Array.isArray(sorter) ? sorter : [sorter]

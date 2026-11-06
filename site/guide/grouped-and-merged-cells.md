@@ -104,10 +104,37 @@ const columns: TableColumnsType<ReportRow> = [
 
 这与 ant-design-vue 的行为一致，通过 JS 区间重叠判断实现，不依赖 CSS group-hover。
 
-## 相关页面
+## API
 
-- [标题与摘要行](/guide/title-footer-summary)
-- [固定列](/guide/fixed-columns)
+`TRecord` 表示业务行类型。表格的完整配置见 [API Reference](/guide/api-reference)。
+
+### Props
+
+<!-- @api: props grouped-and-merged-cells -->
+
+### Column 字段
+
+<!-- @api: columns grouped-and-merged-cells -->
+
+## 主题
+
+表头与单元格的 class 可通过实例 `ui` 或全局 `theme.table.slots` 覆盖。调整颜色或尺寸时可使用下方 [CSS 变量](#css-变量)。覆盖顺序见[三层主题覆盖](/guide/theme-overrides)。
+
+### ui slots
+
+<!-- @api: ui grouped-and-merged-cells -->
+
+### 预设默认值
+
+两套预设的默认 class 可用下方标签切换。默认预编译模式下 utility 的覆盖方式见[前缀与覆盖规则](/guide/theme-overrides#utility-前缀与覆盖规则)。
+
+<!-- @api: theme grouped-and-merged-cells -->
+
+### CSS 变量
+
+表中列出亮色模式的默认值。暗色模式可通过 `.dark` 单独覆盖。
+
+<!-- @api: css-vars grouped-and-merged-cells -->
 
 ## Type Declarations
 
@@ -130,3 +157,8 @@ const columns: TableColumnsType<ReportRow> = [
 <<< @/.vitepress/type-declarations/table.ts#CellAdditionalProps
 
 :::
+
+## 相关页面
+
+- [标题与摘要行](/guide/title-footer-summary)
+- [固定列](/guide/fixed-columns)

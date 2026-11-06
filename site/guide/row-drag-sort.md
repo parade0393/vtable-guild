@@ -92,15 +92,39 @@ function handleRowDragEnd(newData: TaskRow[], _info: RowDragSortInfo) {
 </template>
 ```
 
-- `trDragging`：拖拽中的行（默认半透明）。
-- `trDropAbove` / `trDropBelow`：放置目标行上/下边缘的指示线。
-- `--vtg-table-row-drop-indicator-color`：指示线颜色。
+拖拽与放置指示线的默认 class 和颜色见[主题](#主题)。
 
-## 相关页面
+## API
 
-- [排序](/guide/sorting)
-- [ui Slot 参考](/guide/ui-slots-reference)
-- [API 参考](/guide/api-reference)
+`TRecord` 表示业务行类型。表格的完整配置见 [API Reference](/guide/api-reference)。
+
+### Props
+
+<!-- @api: props row-drag-sort -->
+
+### Events
+
+<!-- @api: events row-drag-sort -->
+
+## 主题
+
+拖拽中的行和放置指示线可通过实例 `ui` 或全局 `theme.table.slots` 覆盖 class。调整颜色或尺寸时可使用下方 [CSS 变量](#css-变量)。覆盖顺序见[三层主题覆盖](/guide/theme-overrides)。
+
+### ui slots
+
+<!-- @api: ui row-drag-sort -->
+
+### 预设默认值
+
+两套预设的默认 class 可用下方标签切换。默认预编译模式下 utility 的覆盖方式见[前缀与覆盖规则](/guide/theme-overrides#utility-前缀与覆盖规则)。
+
+<!-- @api: theme row-drag-sort -->
+
+### CSS 变量
+
+表中列出亮色模式的默认值。暗色模式可通过 `.dark` 单独覆盖。
+
+<!-- @api: css-vars row-drag-sort -->
 
 ## Type Declarations
 
@@ -117,3 +141,9 @@ function handleRowDragEnd(newData: TaskRow[], _info: RowDragSortInfo) {
 <<< @/.vitepress/type-declarations/features.ts#RowDragFields
 
 :::
+
+## 相关页面
+
+- [排序](/guide/sorting)
+- [ui Slot 参考](/guide/ui-slots-reference)
+- [API 参考](/guide/api-reference)

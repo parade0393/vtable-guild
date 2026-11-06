@@ -81,11 +81,13 @@
     "@vtable-guild/site#test": {
       // demos 的测试 import @vtable-guild/vtable-guild，alias 指向
       // packages/vtable-guild/src/index.ts，它再转出 table / core / icons / theme 源码。
+      // API 指令测试还直接读取预设 CSS。
       "inputs": [
         "$TURBO_DEFAULT$",
         "../packages/core/src/**",
         "../packages/icons/src/**",
         "../packages/theme/src/**",
+        "../packages/theme/css/presets/**",
         "../packages/table/src/**",
         "../packages/vtable-guild/src/**"
       ],

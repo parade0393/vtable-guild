@@ -64,10 +64,37 @@ const dataSource: UserRow[] = [
 - 表格同时存在状态列、操作列和大量内容列
 - 页面不适合拆成多张表，但横向信息量很高
 
-## 相关页面
+## API
 
-- [列宽拖拽](/guide/column-resize)
-- [虚拟滚动](/guide/virtualization)
+`TRecord` 表示业务行类型。表格的完整配置见 [API Reference](/guide/api-reference)。
+
+### Props
+
+<!-- @api: props fixed-columns -->
+
+### Column 字段
+
+<!-- @api: columns fixed-columns -->
+
+## 主题
+
+固定边缘、阴影和滚动区域的 class 可通过实例 `ui` 或全局 `theme.table.slots` 覆盖。调整颜色或尺寸时可使用下方 [CSS 变量](#css-变量)。覆盖顺序见[三层主题覆盖](/guide/theme-overrides)。
+
+### ui slots
+
+<!-- @api: ui fixed-columns -->
+
+### 预设默认值
+
+两套预设的默认 class 可用下方标签切换。默认预编译模式下 utility 的覆盖方式见[前缀与覆盖规则](/guide/theme-overrides#utility-前缀与覆盖规则)。
+
+<!-- @api: theme fixed-columns -->
+
+### CSS 变量
+
+表中列出亮色模式的默认值。暗色模式可通过 `.dark` 单独覆盖。
+
+<!-- @api: css-vars fixed-columns -->
 
 ## Type Declarations
 
@@ -84,3 +111,8 @@ const dataSource: UserRow[] = [
 <<< @/.vitepress/type-declarations/features.ts#ScrollFields
 
 :::
+
+## 相关页面
+
+- [列宽拖拽](/guide/column-resize)
+- [虚拟滚动](/guide/virtualization)

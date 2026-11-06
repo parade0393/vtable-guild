@@ -6,7 +6,7 @@
 
 ## 在线示例
 
-单列、多列、自定义比较函数在同一张表里。点击表头切换排序，按住 Shift 叠加多列。
+单列、多列、自定义比较函数在同一张表里。点击表头切换排序，依次点击设置了 `sorter.multiple` 的列即可叠加排序。
 
 <Demo src="sorting/basic">
 
@@ -19,7 +19,7 @@
 - sorter: true，使用默认比较规则。数字按数值排序，其他值按字符串比较。
 - `sorter: (a: TRecord, b: TRecord) => number`，使用自定义比较函数；`TRecord` 是行数据类型。
 - sorter: { multiple: number }，启用多列排序并指定优先级。
-- defaultSortOrder，在首次渲染时设置默认排序方向。
+- defaultSortOrder，在列首次初始化时设置默认排序方向。
 - sortOrder，进入受控模式，由外部状态决定当前排序方向。
 
 ## 最常见的写法
@@ -129,11 +129,43 @@ const columns: TableColumnsType<TeamScoreRow> = [
 - 如果页面还有筛选，当前数据处理顺序是先筛选再排序，多列排序会基于筛选后的结果运行。
 - 如果你打算和服务端联动，启用 `manual.sort`；需要外部重置排序时，再绑定受控 `sortOrder`，使表头与请求状态一致。
 
-## 相关页面
+## API
 
-- [筛选](/guide/filtering)
-- [API Reference](/guide/api-reference)
-- [类型参考](/guide/type-reference)
+`TRecord` 表示业务行类型。下表只列与排序相关的配置，全部 props 见 [API Reference](/guide/api-reference)。
+
+### Props
+
+<!-- @api: props sorting -->
+
+### Column 字段
+
+<!-- @api: columns sorting -->
+
+### Events
+
+<!-- @api: events sorting -->
+
+排序触发时 `extra.action` 为 `'sort'`，`extra.currentDataSource` 为分页前处理后的数据。`sorter` 在有多个生效的排序列时返回数组，其余情况返回对象。受控排序时，`sorter` 反映本次操作请求的排序，`extra.currentDataSource` 仍按当前传入的 `sortOrder` 计算。
+
+## 主题
+
+只改颜色时优先覆盖 [CSS 变量](#css-变量)；要改 class 时，用实例 `ui` 或全局 `theme.table.slots`。三种方式怎么选见[三层主题覆盖](/guide/theme-overrides)。
+
+### ui slots
+
+<!-- @api: ui sorting -->
+
+### 预设默认值
+
+两套预设在上述 slot 上的默认 class，按 `createVTableGuild({ theme })` 的结构给出，复制后修改即可；覆盖值会通过 `cn()` 与默认值合并。默认预编译模式下这些 utility 在运行时带 `vtg-` 前缀，覆盖规则见 [utility 前缀与覆盖规则](/guide/theme-overrides#utility-前缀与覆盖规则)。
+
+<!-- @api: theme sorting -->
+
+### CSS 变量
+
+表中为亮色模式下的默认值，暗色模式在 `.dark` 下另行覆盖。
+
+<!-- @api: css-vars sorting -->
 
 ## Type Declarations
 
@@ -162,3 +194,10 @@ const columns: TableColumnsType<TeamScoreRow> = [
 <<< @/.vitepress/type-declarations/table.ts#VTableEventProps
 
 :::
+
+## 相关页面
+
+- [筛选](/guide/filtering)
+- [API Reference](/guide/api-reference)
+- [类型参考](/guide/type-reference)
+- [ui Slot 参考](/guide/ui-slots-reference)

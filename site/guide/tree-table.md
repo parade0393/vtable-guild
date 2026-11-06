@@ -103,11 +103,37 @@ const handleExpandedRowsChange: NonNullable<TableProps<OrgNode>['onExpandedRowsC
 - **懒加载需要稳定 key**：不要使用行索引。已声明 `children: []` 的记录视为叶子；未提供 children 的记录由 `isLeaf(record)` 判定，未声明叶子时可继续加载。
 - **筛选与排序只作用于顶层记录**：数据管线是 `dataSource → 筛选 → 排序 → 展开`，`onFilter` 不会递归 `children`。父节点命中时，它的全部子节点都保留（即使子节点本身不匹配）；父节点不命中时，整棵子树一起被移除（即使有子节点匹配）。排序同理，只重排根节点，子节点之间的顺序不变。需要按层级筛选或排序时，在业务层先处理再传入。
 
-## 相关页面
+## API
 
-- [行选择](/guide/selection)
-- [展开行](/guide/expandable-rows)
-- [表格实例与定位](/guide/table-instance)
+`TRecord` 表示业务行类型。表格的完整配置见 [API Reference](/guide/api-reference)。
+
+### Props
+
+<!-- @api: props tree-table -->
+
+### RowSelection
+
+<!-- @api: row-selection tree-table -->
+
+## 主题
+
+树节点的展开、加载和重试样式可通过实例 `ui` 或全局 `theme.table.slots` 覆盖。调整颜色或尺寸时可使用下方 [CSS 变量](#css-变量)。覆盖顺序见[三层主题覆盖](/guide/theme-overrides)。
+
+### ui slots
+
+<!-- @api: ui tree-table -->
+
+### 预设默认值
+
+两套预设的默认 class 可用下方标签切换。默认预编译模式下 utility 的覆盖方式见[前缀与覆盖规则](/guide/theme-overrides#utility-前缀与覆盖规则)。
+
+<!-- @api: theme tree-table -->
+
+### CSS 变量
+
+表中列出亮色模式的默认值。暗色模式可通过 `.dark` 单独覆盖。
+
+<!-- @api: css-vars tree-table -->
 
 ## Type Declarations
 
@@ -122,3 +148,9 @@ const handleExpandedRowsChange: NonNullable<TableProps<OrgNode>['onExpandedRowsC
 <<< @/.vitepress/type-declarations/table.ts#RowSelection
 
 :::
+
+## 相关页面
+
+- [行选择](/guide/selection)
+- [展开行](/guide/expandable-rows)
+- [表格实例与定位](/guide/table-instance)

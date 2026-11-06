@@ -124,12 +124,41 @@ const customHeaderRow: NonNullable<TableProps<ReportRow>['customHeaderRow']> = (
 - 单元格或整行编辑也通过 bodyCell 组合；草稿、校验和提交由业务管理，完整示例见[编辑](/guide/editing)。
 - 如果同一类样式会反复出现，优先沉淀到主题和 ui，而不是在每张表里重复写 slot 模板。
 
-## 相关页面
+## API
 
-- [三层主题覆盖](/guide/theme-overrides)
-- [标题、页脚与摘要行](/guide/title-footer-summary)
-- [编辑](/guide/editing)
-- [分页](/guide/pagination)
+`TRecord` 表示业务行类型。表格的完整配置见 [API Reference](/guide/api-reference)。
+
+### Props
+
+<!-- @api: props api-wiring-and-slots -->
+
+### Column 字段
+
+<!-- @api: columns api-wiring-and-slots -->
+
+### Slots
+
+<!-- @api: slots api-wiring-and-slots -->
+
+## 主题
+
+自定义插槽提供内容，表格外层结构仍可通过实例 `ui` 或全局 `theme.table.slots` 覆盖 class。调整颜色或尺寸时可使用下方 [CSS 变量](#css-变量)。覆盖顺序见[三层主题覆盖](/guide/theme-overrides)。
+
+### ui slots
+
+<!-- @api: ui api-wiring-and-slots -->
+
+### 预设默认值
+
+两套预设的默认 class 可用下方标签切换。默认预编译模式下 utility 的覆盖方式见[前缀与覆盖规则](/guide/theme-overrides#utility-前缀与覆盖规则)。
+
+<!-- @api: theme api-wiring-and-slots -->
+
+### CSS 变量
+
+表中列出亮色模式的默认值。暗色模式可通过 `.dark` 单独覆盖。
+
+<!-- @api: css-vars api-wiring-and-slots -->
 
 ## Type Declarations
 
@@ -158,3 +187,10 @@ const customHeaderRow: NonNullable<TableProps<ReportRow>['customHeaderRow']> = (
 <<< @/.vitepress/type-declarations/table.ts#CustomFilterDropdownSlotProps
 
 :::
+
+## 相关页面
+
+- [三层主题覆盖](/guide/theme-overrides)
+- [标题、页脚与摘要行](/guide/title-footer-summary)
+- [编辑](/guide/editing)
+- [分页](/guide/pagination)

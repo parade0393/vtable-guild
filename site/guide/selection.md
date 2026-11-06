@@ -105,11 +105,45 @@ const rowSelection = computed<RowSelection<UserRow>>(() => ({
 - 如果某些行不可操作，优先通过 getCheckboxProps 禁用，而不是在点击后再回滚状态。
 - 树形联动适合权限树、组织架构和分组数据，不适合每行语义完全独立的表格。
 
-## 相关页面
+## API
 
-- [树形表格](/guide/tree-table)
-- [API Reference](/guide/api-reference)
-- [类型参考](/guide/type-reference)
+`TRecord` 表示业务行类型。下表只列与行选择相关的配置，全部 props 见 [API Reference](/guide/api-reference)。
+
+### Props
+
+<!-- @api: props selection -->
+
+### RowSelection
+
+<!-- @api: row-selection selection -->
+
+启用分页后，表头全选和反选限定当前页；“全选所有”选择筛选后全部已加载的可选记录，见[分页与跨页选择](#分页与跨页选择)。
+
+### Events
+
+<!-- @api: events selection -->
+
+选择变化时 `extra.action` 为 `'select'`，`extra.currentDataSource` 为当前页展示数据。只关心选中项时，直接用 `rowSelection.onChange` 更简单。
+
+## 主题
+
+只改颜色时优先覆盖 [CSS 变量](#css-变量)；要改 class 时，用实例 `ui` 或全局 `theme.table.slots`。三种方式怎么选见[三层主题覆盖](/guide/theme-overrides)。
+
+### ui slots
+
+<!-- @api: ui selection -->
+
+### 预设默认值
+
+两套预设在上述 slot 上的默认 class，按 `createVTableGuild({ theme })` 的结构给出，复制后修改即可；覆盖值会通过 `cn()` 与默认值合并。element-plus 与 Element Plus 原版一致，选中行不改变背景。默认预编译模式下这些 utility 在运行时带 `vtg-` 前缀，覆盖规则见 [utility 前缀与覆盖规则](/guide/theme-overrides#utility-前缀与覆盖规则)。
+
+<!-- @api: theme selection -->
+
+### CSS 变量
+
+表中为亮色模式下的默认值，暗色模式在 `.dark` 下另行覆盖。弹层变量由批量选择菜单与筛选面板等表格弹层共用。
+
+<!-- @api: css-vars selection -->
 
 ## Type Declarations
 
@@ -132,3 +166,10 @@ const rowSelection = computed<RowSelection<UserRow>>(() => ({
 <<< @/.vitepress/type-declarations/table.ts#CellAdditionalProps
 
 :::
+
+## 相关页面
+
+- [树形表格](/guide/tree-table)
+- [批量操作提示条](/guide/selection-alert)
+- [API Reference](/guide/api-reference)
+- [类型参考](/guide/type-reference)

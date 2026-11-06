@@ -75,17 +75,9 @@ const columns = computed(() => [
 
 宿主 Select 的值类型以其自身协议为准。例如 Ant Design Vue Select 不接受布尔 value；布尔字典接入时，业务应使用可逆的控件值映射，提交时恢复原始类型。不要将 `false` 与 `'false'`、`1` 与 `'1'` 合并成同一个字典 key。
 
-| 入口                                                                                                                      | 参数与返回                                                                            |
-| ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `createTableDictionary({ key, request, cacheTime?, maxEntries? })`                                                        | cacheTime 默认 300000ms，0 关闭结果缓存；maxEntries 默认 50，至少 1，活跃请求不被淘汰 |
-| `dictionary.load(params, { keyword, signal, force? })`                                                                    | 可供非组件调用；返回独立的结果快照，失败/取消会拒绝                                   |
-| `dictionary.invalidate()`                                                                                                 | 清空实例缓存                                                                          |
-| `useTableDictionary({ dictionary, params?, selectedOptions?, defaultKeyword?, debounceTime?, manualRequest?, onError? })` | params/selectedOptions 支持值、ref、getter；默认立即请求；debounceTime 默认 0         |
-| `options / valueEnum / filters / complete`                                                                                | 只读派生数据；完整与局部结果的区别见上文                                              |
-| `keyword / loading / error`                                                                                               | 当前关键词和请求状态                                                                  |
-| `search(keyword)`                                                                                                         | 更新关键词并按防抖请求；返回 `Promise<boolean>`                                       |
-| `reload()`                                                                                                                | 立即重载当前查询，返回 `Promise<boolean>`                                             |
-| `cancel()`                                                                                                                | 取消本订阅，保留当前候选项与标签                                                      |
+### 字典与订阅
+
+<!-- @api: reference dictionary-api -->
 
 composable 的 search/reload 在成功时返回 true，失败、取消或卸载时返回 false；失败同时更新 error 并调用 onError。onError 自身抛错时将该异常存入 error，返回的 Promise 仍正常结束。
 `manualRequest` 只跳过首次请求，后续依赖参数变化仍加载。请在 setup 或 effectScope 中创建以便自动清理。
@@ -93,4 +85,30 @@ composable 的 search/reload 在成功时返回 true，失败、取消或卸载�
 公开类型包括 `TableDictionaryOption`、`TableDictionaryResult`、`TableDictionaryContext`、`TableDictionaryRequest`、
 `CreateTableDictionaryOptions`、`TableDictionary`、`UseTableDictionaryOptions`、`UseTableDictionaryReturn`。
 
+### VTable Column 字段
+
+<!-- @api: columns dictionary -->
+
+## 主题
+
+字典提供选项和标签数据。字典标签在表格中以枚举状态展示时，使用下列 table slots 和 CSS 变量；查询区和编辑控件的外观由对应组件决定。
+
+### ui slots
+
+<!-- @api: ui dictionary -->
+
+### 预设默认值
+
+<!-- @api: theme dictionary -->
+
+### CSS 变量
+
+<!-- @api: css-vars dictionary -->
+
+## Type Declarations
+
+::: details 查看类型声明
+
 <<< @/.vitepress/type-declarations/features.ts#DictionaryProtocol
+
+:::

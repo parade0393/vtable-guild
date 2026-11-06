@@ -55,11 +55,7 @@ const query = useTableQuery<FormValues, Params>({
 
 ## 重置约定
 
-| 操作            | 草稿           | 已提交参数   | 请求与表格状态                                                                                 |
-| --------------- | -------------- | ------------ | ---------------------------------------------------------------------------------------------- |
-| `resetFields()` | 恢复初始默认值 | 保留         | 不请求                                                                                         |
-| `submit()`      | 保留           | 转换当前草稿 | 调用 `onSubmit`；连接 `table.submit` 后回第一页，保留排序和筛选                                |
-| `reset()`       | 恢复初始默认值 | 转换默认值   | 调用 `onReset`，未提供时调用 `onSubmit`；连接 `table.reset(params)` 后回第一页并清空排序、筛选 |
+<!-- @api: reference query-reset -->
 
 `reset()` 不改变展开状态、行选择、树节点展开或列偏好，这些由业务按场景处理。`defaultValues` 在创建时取快照，后续外部修改不会改变重置基线。
 
@@ -69,13 +65,14 @@ const query = useTableQuery<FormValues, Params>({
 
 ## API
 
-| 选项                       | 说明                                                   |
-| -------------------------- | ------------------------------------------------------ |
-| `defaultValues`            | 必填，表单默认值与重置基线                             |
-| `fieldTransforms`          | 按表单字段配置转换，返回请求参数片段                   |
-| `transform`                | 字段转换后的整体参数转换                               |
-| `onSubmit` / `onReset`     | 接收转换参数与本次表单快照，可返回 Promise             |
-| `defaultCollapsed`         | 默认 `true`                                            |
-| `collapsed` / `onCollapse` | 可选的共享 Ref 与状态变化回调；传入 Ref 时优先于默认值 |
+<!-- @api: reference query-options -->
 
 返回 `draft`、`submitted`、`params`、`collapsed`、`submitting`、`error`，以及 `submit()`、`reset()`、`resetFields()`、`toggleCollapsed()`。需要校验时，先调用宿主表单的 validate，成功后再调用 `submit()`。
+
+## Type Declarations
+
+::: details 查看类型声明
+
+<<< @/.vitepress/type-declarations/features.ts#QueryProtocol
+
+:::

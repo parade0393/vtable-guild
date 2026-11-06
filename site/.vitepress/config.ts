@@ -1,7 +1,11 @@
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { defineConfig } from 'vitepress'
+import { apiDirectivesPlugin, expandApiDirectives } from './utils/expandApiDirectives'
 import { expandCodeSnippets } from './utils/expandCodeSnippets'
+
+// dev / build 都经 `pnpm --filter @vtable-guild/site` 在 site 目录下运行。
+const siteRoot = process.cwd()
 
 // 导航 / 侧边栏与 locale 相关，分别挂在各 locale 的 themeConfig 下；
 // sitemap/head/构建选项与 locale 无关，留在顶层。
@@ -93,9 +97,6 @@ const zhTheme = {
     ],
   },
   socialLinks: [{ icon: 'github', link: 'https://github.com/parade0393/vtable-guild' }],
-  search: {
-    provider: 'local' as const,
-  },
   outline: {
     level: [2, 3] as [number, number],
   },
@@ -130,9 +131,6 @@ const enTheme = {
     ],
   },
   socialLinks: [{ icon: 'github', link: 'https://github.com/parade0393/vtable-guild' }],
-  search: {
-    provider: 'local' as const,
-  },
   outline: {
     level: [2, 3] as [number, number],
   },
@@ -163,6 +161,10 @@ export default defineConfig({
     ['meta', { property: 'og:site_name', content: 'vtable-guild' }],
     ['meta', { name: 'twitter:card', content: 'summary' }],
   ],
+  // VitePress 从顶层主题配置读取搜索提供方并为各语言生成索引。
+  themeConfig: {
+    search: { provider: 'local' },
+  },
   locales: {
     root: {
       label: '中文',
@@ -180,6 +182,9 @@ export default defineConfig({
       themeConfig: enTheme,
     },
   },
+  markdown: {
+    config: apiDirectivesPlugin(siteRoot),
+  },
   vite: {
     ssr: {
       // 强制让 Vite 打包工作区包，而不是交给 Node 外部化——
@@ -191,7 +196,6 @@ export default defineConfig({
     // ---- llms.txt / llms-full.txt ----
     // Agent（Claude Code / Codex 等）不浏览 VitePress 站点，只抓纯文本。
     // 构建时把全部文档页的 markdown 原文汇总成两个 LLM 友好文件写进 outDir。
-    const siteRoot = process.cwd()
     const outDir = siteConfig.outDir
     const siteUrl = 'https://parade0393.github.io/vtable-guild'
     interface DocPage {
@@ -234,7 +238,7 @@ export default defineConfig({
 
     // 展开示例和类型声明，供 llms-full.txt 使用。
     const expandDemoSyntax = (body: string): string => {
-      body = expandCodeSnippets(body, siteRoot)
+      body = expandApiDirectives(expandCodeSnippets(body, siteRoot), siteRoot)
 
       // 移除 <Demo ...> / </Demo> 组件标签（VitePress 自定义组件，agent 无法解析）
       // 但保留对应的 demo 文件引用（已经被上面的 <<< 展开）。

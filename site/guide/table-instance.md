@@ -34,3 +34,19 @@ await table.value?.scrollTo({ top: 0, left: 0 })
 <<< @/demos/tree-table/lazy.vue
 
 </Demo>
+
+## API
+
+通过模板 ref 获取 `TableInstance` 后，可以调用以下方法。
+
+### 实例方法
+
+<!-- @api: reference instance-methods -->
+
+## Type Declarations
+
+::: details 查看类型声明
+
+<<< @/.vitepress/type-declarations/features.ts#TableInstanceProtocol
+
+:::

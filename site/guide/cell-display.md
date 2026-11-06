@@ -86,3 +86,49 @@ const columns: TableColumnsType<Order> = [
 
 相关类型 `ColumnCopyable`、`ColumnValueEnum`、`ColumnValueEnumItem`、`ColumnValueStatus`、`TableTooltipConfig`
 均从 `@vtable-guild/vtable-guild` 导入。
+
+## API
+
+`TRecord` 表示业务行类型。表格的完整配置见 [API Reference](/guide/api-reference)。
+
+### Props
+
+<!-- @api: props cell-display -->
+
+### Column 字段
+
+<!-- @api: columns cell-display -->
+
+### Slots
+
+<!-- @api: slots cell-display -->
+
+## 主题
+
+复制按钮、表头说明和枚举标签的 class 可通过实例 `ui` 或全局 `theme.table.slots` 覆盖。调整颜色或尺寸时可使用下方 [CSS 变量](#css-变量)。覆盖顺序见[三层主题覆盖](/guide/theme-overrides)。
+
+### ui slots
+
+<!-- @api: ui cell-display -->
+
+### 预设默认值
+
+两套预设的默认 class 可用下方标签切换。默认预编译模式下 utility 的覆盖方式见[前缀与覆盖规则](/guide/theme-overrides#utility-前缀与覆盖规则)。
+
+<!-- @api: theme cell-display -->
+
+### CSS 变量
+
+表中列出亮色模式的默认值。暗色模式可通过 `.dark` 单独覆盖。
+
+<!-- @api: css-vars cell-display -->
+
+## Type Declarations
+
+::: details 查看类型声明
+
+<<< @/.vitepress/type-declarations/table.ts#ColumnType
+
+<<< @/.vitepress/type-declarations/table.ts#TransformCellText
+
+:::

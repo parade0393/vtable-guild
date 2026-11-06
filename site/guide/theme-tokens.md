@@ -23,43 +23,21 @@
 2. 需要改 slot 的 class 结构，用全局 `theme` 或实例级 `ui`
 3. 需要改内容结构，再用 Vue slot
 
+表中的预设值对应亮色模式。若暗色模式覆盖了变量，页面会使用暗色值。
+
 ## 核心视觉变量
 
-| 变量名                             | 作用                                    |
-| ---------------------------------- | --------------------------------------- |
-| `--vtg-table-bg`                   | 表格主体背景，对应 `table`、`td` 等区域 |
-| `--vtg-table-header-bg`            | 表头、标题、页脚、摘要行背景            |
-| `--vtg-table-header-color`         | 表头文字颜色                            |
-| `--vtg-table-text-color`           | 正文文字颜色                            |
-| `--vtg-table-border-color`         | 表格边框和单元格分隔线                  |
-| `--vtg-table-header-split-color`   | antdv 风格表头分割线                    |
-| `--vtg-table-header-sort-hover-bg` | 可排序表头 hover 背景                   |
-| `--vtg-table-header-sort-bg`       | 已激活排序的列表头背景                  |
-| `--vtg-table-body-sort-bg`         | 已激活排序的列单元格背景                |
+<!-- @api: theme-reference tokens-core -->
 
 ## 字段标签变量
 
 `valueType: 'tag'` 与渲染器返回 `presentation: 'tag'` 使用相同 token。状态色沿用 `--vtg-cell-success / warning / error` 与 `--color-primary`。
 
-| 变量                            | 作用                           |
-| ------------------------------- | ------------------------------ |
-| `--vtg-cell-tag-radius`         | 标签圆角                       |
-| `--vtg-cell-tag-padding-inline` | 标签横向内边距                 |
-| `--vtg-cell-tag-font-size`      | 标签字号                       |
-| `--vtg-cell-tag-line-height`    | 标签行高                       |
-| `--vtg-cell-tag-bg`             | 标签背景，默认从当前状态色混合 |
-| `--vtg-cell-tag-border`         | 标签边框色                     |
+<!-- @api: theme-reference tokens-tags -->
 
 ## 行状态变量
 
-| 变量名                                 | 作用                                                                |
-| -------------------------------------- | ------------------------------------------------------------------- |
-| `--vtg-table-row-hover-bg`             | `hoverable` 行 hover 背景                                           |
-| `--vtg-table-row-striped-bg`           | `striped` 斑马纹背景，**仅 element-plus 预设生效**（见下）          |
-| `--vtg-table-row-selected-bg`          | 选中行背景                                                          |
-| `--vtg-table-row-selected-hover-bg`    | 选中行 hover 背景                                                   |
-| `--vtg-table-row-drop-indicator-color` | 行拖拽排序的放置指示线颜色（见 [行拖拽排序](/guide/row-drag-sort)） |
-| `--vtg-table-expanded-row-bg`          | 展开行内容背景，当前主题实现里带有默认 fallback                     |
+<!-- @api: theme-reference tokens-row-states -->
 
 > [!WARNING]
 > `--vtg-table-row-striped-bg` 只有 element-plus 预设读取。**默认的 antdv 预设把斑马纹背景写死在
@@ -72,38 +50,15 @@
 
 ## 排版与间距变量
 
-| 变量名                               | 作用                           |
-| ------------------------------------ | ------------------------------ |
-| `--vtg-table-font-family`            | 表格字体族                     |
-| `--vtg-table-font-size`              | 表格字号                       |
-| `--vtg-table-line-height`            | 表格行高                       |
-| `--vtg-table-cell-padding-inline-lg` | `size='large'` 的横向 padding  |
-| `--vtg-table-cell-padding-block-lg`  | `size='large'` 的纵向 padding  |
-| `--vtg-table-cell-padding-inline-md` | `size='middle'` 的横向 padding |
-| `--vtg-table-cell-padding-block-md`  | `size='middle'` 的纵向 padding |
-| `--vtg-table-cell-padding-inline-sm` | `size='small'` 的横向 padding  |
-| `--vtg-table-cell-padding-block-sm`  | `size='small'` 的纵向 padding  |
+<!-- @api: theme-reference tokens-spacing -->
 
 ## 筛选面板变量
 
-| 变量名                                   | 作用                                                             |
-| ---------------------------------------- | ---------------------------------------------------------------- |
-| `--vtg-table-filter-dropdown-max-height` | 筛选面板选项区的最大高度，超出后内部滚动。未声明时回退到 `264px` |
-
-antdv 预设不声明这个变量，走 `264px` 回退值；element-plus 预设声明为 `280px`。
+<!-- @api: theme-reference tokens-filter -->
 
 ## 空态与加载变量
 
-| 变量名                                  | 作用                 |
-| --------------------------------------- | -------------------- |
-| `--vtg-table-loading-overlay-bg`        | loading 遮罩层背景   |
-| `--vtg-table-empty-margin-block`        | 空态上下外边距       |
-| `--vtg-table-empty-image-height`        | 空态图形高度         |
-| `--vtg-table-empty-image-margin-bottom` | 空态图形与文字间距   |
-| `--vtg-table-empty-image-opacity`       | 空态图形透明度       |
-| `--vtg-table-empty-border-color`        | antdv 空态插画边框色 |
-| `--vtg-table-empty-shadow-color`        | antdv 空态插画阴影色 |
-| `--vtg-table-empty-content-color`       | antdv 空态插画填充色 |
+<!-- @api: theme-reference tokens-empty-loading -->
 
 > [!NOTE]
 > 空态插画相关变量主要用于当前内置空态视觉，尤其是 antdv 预设。若你只关心空态文案或布局，通常改 `empty`、`emptyWrapper`、`emptyText` 这些 slot 会更直接。
@@ -144,69 +99,48 @@ antdv 预设不声明这个变量，走 `264px` 回退值；element-plus 预设�
 - 统一改 slot class 结构：用全局 `theme`
 - 只改某一张表：用 `ui`
 
-## 相关页面
-
-- [三层主题覆盖](/guide/theme-overrides)
-- [ui Slot 参考](/guide/ui-slots-reference)
-- [预设与语言](/guide/presets-and-locales)
-
 ## 分页 tokens
 
-双预设支持 `--vtg-pagination-size`、`size-sm`、`gap`、`margin`、`radius`、`input-width`、`border`、`bg`、`active-bg`、`active-color`、`active-border`、`popup-z`、`popup-shadow`（均带 `--vtg-pagination-` 前缀）。颜色引用语义 tokens，自动跟随暗色模式。
+颜色引用语义 tokens，自动跟随暗色模式。
 
-Element Plus 预设另提供 `font-size`、`font-size-sm`、`page-gap`、`control-gap`、`select-width` 和 `select-width-sm`，分别控制分页字号、页码与跳页间距及选择器宽度。
+<!-- @api: theme-reference tokens-pagination -->
 
 ## 表格弹层 tokens
 
 筛选、批量选择、列设置、密度和每页条数共用以下外观变量。背景沿用 `--color-surface`。
 
-| 变量名                             | 作用       | antdv 默认值 | element-plus 默认值 |
-| ---------------------------------- | ---------- | ------------ | ------------------- |
-| `--vtg-table-popup-radius`         | 圆角       | `6px`        | `2px`               |
-| `--vtg-table-popup-border`         | 边框       | 无           | `1px` 浅色实线      |
-| `--vtg-table-popup-padding-block`  | 垂直内边距 | `4px`        | `5px`               |
-| `--vtg-table-popup-padding-inline` | 水平内边距 | `4px`        | `0px`               |
-| `--vtg-table-popup-shadow`         | 阴影       | 三层阴影     | 浅色阴影            |
-
-弹层共用 `--vtg-table-popup-motion-duration` 和 `--vtg-table-popup-motion-easing`。默认时长为
-`150ms`，缓动为 `cubic-bezier(0.645, 0.045, 0.355, 1)`。
+<!-- @api: theme-reference tokens-popup -->
 
 ## 工具栏与列设置 tokens
 
 两套预设都支持下列变量。颜色、字体族、正文大小与复选框沿用已有语义和组件 tokens，可配合 `theme.toolbar.slots`、`theme.columnSettings.slots` 或实例 `ui` 调整。
 
-| 变量名                            | 作用                   | antdv 默认值                    | element-plus 默认值             |
-| --------------------------------- | ---------------------- | ------------------------------- | ------------------------------- |
-| `--vtg-toolbar-title-font-size`   | 工具栏标题字号         | `16px`                          | `16px`                          |
-| `--vtg-toolbar-title-font-weight` | 工具栏标题字重         | `500`                           | `500`                           |
-| `--vtg-column-settings-width`     | 列设置面板宽度         | `224px`                         | `280px`                         |
-| `--vtg-column-settings-radius`    | 列设置与密度浮层圆角   | `var(--vtg-table-popup-radius)` | `var(--vtg-table-popup-radius)` |
-| `--vtg-column-settings-icon-size` | 工具栏与列设置图标大小 | `16px`                          | `16px`                          |
-| `--vtg-column-settings-z`         | 列设置与密度浮层层级   | `1050`                          | `2000`                          |
-| `--vtg-column-settings-shadow`    | 浮层阴影               | `var(--vtg-table-popup-shadow)` | `var(--vtg-table-popup-shadow)` |
+<!-- @api: theme-reference tokens-toolbar -->
 
 业务导出、新增等按钮由项目 UI 库提供，使用该 UI 库的样式配置。工具栏负责按钮区布局，使用方式见 [工具栏与业务扩展](/guide/toolbar)。
 
 ## 编辑控件
 
-| 变量                           | 含义               | antdv / element-plus |
-| ------------------------------ | ------------------ | -------------------- |
-| `--vtg-editor-error-gap`       | 控件与错误文字间距 | `2px / 2px`          |
-| `--vtg-editor-error-font-size` | 错误字号           | `14px / 12px`        |
-| `--vtg-editor-radius`          | 编辑控件轮廓圆角   | `6px / 4px`          |
+<!-- @api: theme-reference tokens-editor -->
 
-查询区的栅格、标签宽度、操作间距和轻量布局使用 `--vtg-query-*` 变量，详见 [Schema 查询区](/guide/schema-query)。
+## Schema 查询区
+
+布局变量控制栅格、标签宽度、操作间距和轻量模式。用法见 [Schema 查询区](/guide/schema-query)。
+
+<!-- @api: theme-reference tokens-query -->
+
+## 批量操作提示条
+
+<!-- @api: theme-reference tokens-selection-alert -->
 
 ## 字段进度
 
-| 变量                            | 含义           | 默认值                                             |
-| ------------------------------- | -------------- | -------------------------------------------------- |
-| `--vtg-cell-progress-min-width` | 最小宽度       | `100px`                                            |
-| `--vtg-cell-progress-max-width` | 最大宽度       | `320px`                                            |
-| `--vtg-cell-progress-height`    | 轨道高度       | `6px`                                              |
-| `--vtg-cell-progress-radius`    | 轨道圆角       | `100px`                                            |
-| `--vtg-cell-progress-gap`       | 轨道与文本间距 | `8px`                                              |
-| `--vtg-cell-progress-font-size` | 文本字号       | `12px`                                             |
-| `--vtg-cell-progress-trail`     | 轨道背景       | Ant 为正文色 6%，Element Plus 为 `--color-default` |
+<!-- @api: theme-reference tokens-progress -->
 
 填充色复用 `--color-primary` 与单元格状态色变量；成功 / 错误图标跟随状态色。
+
+## 相关页面
+
+- [三层主题覆盖](/guide/theme-overrides)
+- [ui Slot 参考](/guide/ui-slots-reference)
+- [预设与语言](/guide/presets-and-locales)

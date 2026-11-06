@@ -74,14 +74,7 @@ await orders.submit({ keyword: 'invoice' })
 
 ## 刷新、提交、重置与取消
 
-| 方法                      | 行为                                                                                                          |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `reload(resetPageIndex?)` | 立即刷新；相同参数已有请求正在执行时复用，否则重新请求。传 `true` 先回第 1 页，不等待防抖时间。               |
-| `submit(params?)`         | 替换已提交查询，回第 1 页并强制请求；相同参数重复提交也请求，未传字段回退到 defaultParams。                   |
-| `reset(params?)`          | 无参恢复 defaultParams；传参替换已提交查询。均清空请求排序与筛选，回第 1 页并强制请求；额外 params 继续生效。 |
-| `cancel()`                | 取消待执行和进行中的请求，同时暂停自动刷新；保留现有数据、页码与错误。                                        |
-| `pause()`                 | 暂停自动刷新，并取消正在进行的自动请求；业务手动请求可以继续完成。                                            |
-| `resume(immediate?)`      | 恢复自动刷新；传 true 立即后台刷新。首次手动加载之前不发请求。                                                |
+<!-- @api: reference request-methods -->
 
 异步方法在本次请求结束、被新请求替代或取消后完成。请求失败通过 `error` 与 `onError` 暴露，方法不会因为 HTTP 失败而拒绝，
 适合直接连接刷新事件。`reset(params)` 中未传入的字段仍按参数合并顺序回退到 `defaultParams`。`reset()` / `reset(params)` 改变请求状态；若需要表头图标同步复位，将返回的 `sort`、`filters` 绑定到受控列配置，如上方示例。
@@ -127,24 +120,9 @@ onError 自身抛错时将该异常存入 error；请求 Promise 仍正常结束
 
 ## API
 
-| 选项                    | 说明                                                                                |
-| ----------------------- | ----------------------------------------------------------------------------------- |
-| `request`               | 必传的异步函数，参数为分页查询、排序、筛选及 `{ signal }`。                         |
-| `defaultParams`         | 初始已提交查询，也是无参 reset 的恢复值与参数合并的默认值。                         |
-| `params`                | 普通对象、ref 或 getter；优先于已提交查询，变化后自动请求。                         |
-| `initialPagination`     | 初始 current、pageSize、total；默认 1、10、0。                                      |
-| `pagination`            | 分页器的展示选项，例如 showSizeChanger、showTotal；请求状态与事件由组合式函数管理。 |
-| `manualRequest`         | 跳过首次请求，默认 false。                                                          |
-| `debounceTime`          | 查询和表格事件的请求防抖毫秒数，默认 0；reload 不防抖。                             |
-| `polling`               | 间隔或结果回调，支持 ref；默认关闭，最小 2000ms。                                   |
-| `revalidateOnFocus`     | 页面恢复可见时刷新，支持 ref/getter，默认 false。                                   |
-| `pollingWhenHidden`     | 隐藏页面继续轮询，默认 false。                                                      |
-| `pollingOnError`        | 失败后继续轮询，默认 false。                                                        |
-| `resetOnPageSizeChange` | 修改页大小时回首页，默认 true。                                                     |
-| `beforeSearchSubmit`    | 转换合并后的查询参数。                                                              |
-| `postData`              | 转换返回的行数组。                                                                  |
-| `onLoad`                | 成功接收数据后回调，参数为处理后的 data 和原 response。                             |
-| `onError`               | 最新请求失败后回调，参数为 Error。                                                  |
+### useTableRequest 选项
+
+<!-- @api: reference request-options -->
 
 返回 `dataSource`、`loading`、`refreshing`、`paused`、`error`、`pagination`、`query`、`sort`、`filters`、`manual` 以及上方方法和 `onChange`。
 在模板里先解构需要的 ref；嵌套在普通对象中的 ref 不会在所有模板表达式里自动解包。
@@ -152,3 +130,27 @@ onError 自身抛错时将该异常存入 error；请求 Promise 仍正常结束
 `TableRequest`、`TableRequestParams`、`TableRequestSort`、`TableRequestContext`、`TableRequestResult`、`TableRequestPolling`。
 
 通用请求缓存、自动重试退避等仍由业务请求方案按需组合；`pollingOnError` 只控制下一轮轮询，不是通用重试引擎。
+
+### VTable Props
+
+<!-- @api: props remote-data -->
+
+### VTable Events
+
+<!-- @api: events remote-data -->
+
+## 主题
+
+`useTableRequest` 管理请求状态。下方样式用于消费该状态的 VTable 加载与空态，可用实例 `ui` 或全局 `theme.table.slots` 覆盖。
+
+### ui slots
+
+<!-- @api: ui remote-data -->
+
+### 预设默认值
+
+<!-- @api: theme remote-data -->
+
+### CSS 变量
+
+<!-- @api: css-vars remote-data -->

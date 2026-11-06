@@ -74,3 +74,15 @@ edit.add(undefined, { position: 'bottom', mode: 'source' })
 这些能力仅覆盖客户端持有的记录：远程分页未加载的行无法校验；嵌套树节点插入由业务处理；服务端批量原子性、撤销历史和电子表格导航不包含在此协议中。
 
 双预设完整演示位于 playground 的 `/#/pro-schema`，包含主表单、校验错误定位、保存失败保留、首尾新增和虚拟表体。
+
+## API
+
+<!-- @api: reference detail-form-api -->
+
+## Type Declarations
+
+::: details 查看类型声明
+
+<<< @/.vitepress/type-declarations/features.ts#EditingProtocol
+
+:::

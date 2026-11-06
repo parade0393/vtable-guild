@@ -96,47 +96,29 @@ const pagination: TablePaginationConfig = {
 
 `#paginationItem` 的参数类型为 `TablePaginationSlotProps`，包含只读的生效状态：
 
-| 字段                             | 类型                                       | 说明                                              |
-| -------------------------------- | ------------------------------------------ | ------------------------------------------------- |
-| `name`                           | `string`                                   | 对应 `{ slot: '名称' }` 中的名称                  |
-| `current` / `pageSize` / `total` | `number`                                   | 当前页、每页条数、记录总数                        |
-| `pageCount`                      | `number`                                   | 总页数，与内置页码控件一致                        |
-| `range`                          | `readonly [number, number]`                | 当前页范围，与 `showTotal` 相同，从 1 开始        |
-| `disabled`                       | `boolean`                                  | 分页是否禁用；业务按钮自行绑定此值                |
-| `position`                       | `Exclude<TablePaginationPosition, 'none'>` | 当前分页器的实际位置，如 `topLeft`、`bottomRight` |
-| `region`                         | `'inline' \| 'left' \| 'right'`            | 数组布局或左右分区中的所在区域                    |
+<!-- @api: reference pagination-slot-props -->
 
 选择数量等业务状态直接引用父组件数据。上下文不包含刷新、翻页或请求函数；业务操作自行处理，不会自动触发分页事件。上下同时显示分页器时，同名扩展点在每个分页器中各渲染一次，并获得各自的 `position`。
 
 布局类型 `TablePaginationBuiltinLayoutItem`、`TablePaginationLayoutItem`、`TablePaginationLayout` 及 `TablePaginationSlotProps` 均可从 `@vtable-guild/vtable-guild` 导入。
 
-## 配置参考
+## API
 
-| 配置                                         | 类型 / 默认值                                                                                   | 说明                                                                        |
-| -------------------------------------------- | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| `current` / `defaultCurrent`                 | `number` / `1`                                                                                  | 受控页码 / 初始页码                                                         |
-| `pageSize` / `defaultPageSize`               | `number` / `10`                                                                                 | 受控页大小 / 初始页大小                                                     |
-| `total`                                      | `number`                                                                                        | 正整数时指定总数，否则使用处理后根记录数                                    |
-| `disabled`                                   | `boolean` / `false`                                                                             | 禁用分页交互，仍进行数据切片                                                |
-| `hideOnSinglePage`                           | `boolean` / `false`                                                                             | 单页时隐藏控件；总数为 0 时不显示分页器                                     |
-| `showSizeChanger`                            | `boolean`                                                                                       | 默认总数大于 50 时显示                                                      |
-| `totalBoundaryShowSizeChanger`               | `number` / `50`                                                                                 | 自动显示页大小切换器的阈值                                                  |
-| `pageSizeOptions`                            | `(string \| number)[]` / `['10','20','50','100']`                                               | 页大小选项；当前值不在其中时仍显示当前值                                    |
-| `buildOptionText`                            | `(option: { value: string \| number }) => VNodeChild`                                           | 自定义页大小选项                                                            |
-| `showQuickJumper`                            | `boolean \| { goButton?: VNodeChild }`                                                          | Enter 或失焦提交；提供 Go 按钮时失焦不提交                                  |
-| `showTotal`                                  | `(total: number, range: [number, number]) => VNodeChild`                                        | 范围从 1 开始；空数据范围为 `[0, 0]`                                        |
-| `size`                                       | `'default' \| 'small'`                                                                          | 未传时跟随表格尺寸                                                          |
-| `simple` / `showLessItems`                   | `boolean` / `false`                                                                             | 简洁输入模式 / 缩小页码窗口                                                 |
-| `pagerCount`                                 | `number`                                                                                        | 5–21 的奇数整数；显式指定页码数量，优先于 `showLessItems`                   |
-| `responsive`                                 | `boolean` / `false`                                                                             | 未指定尺寸时，小于 576px 使用紧凑尺寸                                       |
-| `itemRender`                                 | `(item: { page: number; type: PaginationItemType; originalElement: VNodeChild }) => VNodeChild` | type 为 `page / prev / next / jump-prev / jump-next`                        |
-| `position`                                   | `TablePaginationPosition[]` / `['bottomRight']`                                                 | 顶部或底部的 Left / Center / Right；`['none']` 隐藏控件但保留分页           |
-| `layout`                                     | `TablePaginationLayout`                                                                         | 有序数组或 `{ left, right }`；未传时保留预设默认布局，show 系列继续控制显隐 |
-| `locale`                                     | `Partial<VTableGuildPaginationLocale>`                                                          | 分页文案覆盖                                                                |
-| `class` / `style`                            | `string` / `CSSProperties`                                                                      | 分页区域样式                                                                |
-| `onChange`                                   | `(page: number, pageSize: number) => void`                                                      | 翻页、页大小改变、筛选重置时调用                                            |
-| `onShowSizeChange`                           | `(current: number, size: number) => void`                                                       | 页大小改变时调用                                                            |
-| `'onUpdate:current'` / `'onUpdate:pageSize'` | `(value: number) => void`                                                                       | 受控字段更新通知                                                            |
+### Props
+
+<!-- @api: props pagination -->
+
+### Events
+
+<!-- @api: events pagination -->
+
+### Slots
+
+<!-- @api: slots pagination -->
+
+### 配置参考
+
+<!-- @api: reference pagination-config -->
 
 位置支持 `topLeft`、`topCenter`、`topRight`、`bottomLeft`、`bottomCenter`、`bottomRight` 和 `none`。每个区域最多一个分页器，使用数组中首个匹配项。
 
@@ -179,6 +161,22 @@ Element Plus 原生 `pager-count` 的合法值校验仅在开发环境告警，�
 `simple`、Go 按钮、`itemRender` 等统一扩展仍可使用。Element 原生字符串 `layout` 应迁移为上述数组或左右区域对象，`currentPage` / `pageSizes` 分别对应 `current` / `pageSizeOptions`。
 
 不支持 Ant 内部的 `selectComponentClass`、`selectPrefixCls` 和 `prefixCls`；使用本项目的主题、`classPrefix` 与表级 `getPopupContainer`。首版不导出独立 Pagination 组件。
+
+下表列出分页器和页大小菜单的样式入口。通过全局 `theme.pagination` 覆盖 class，实例级样式使用 `pagination.class` 或 `pagination.style`。
+
+### ui slots
+
+<!-- @api: ui pagination -->
+
+### 预设默认值
+
+代码列出可直接覆盖的 slots 和 variants。分页器处于简洁模式且被禁用时，预设还会为跳页控件应用组合样式。
+
+<!-- @api: theme pagination -->
+
+### CSS 变量
+
+<!-- @api: css-vars pagination -->
 
 ## 事件与其他功能
 

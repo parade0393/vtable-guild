@@ -40,35 +40,39 @@ description: 使用 VTableSelectionAlert 展示跨页已选数量、清空受控
 
 ## API
 
-| Prop              | 类型 / 默认值                              | 说明                                  |
-| ----------------- | ------------------------------------------ | ------------------------------------- |
-| `selectedRowKeys` | `readonly Key[]`，必传                     | 受控的已选键，数量只根据它计算        |
-| `selectedRows`    | `readonly TRecord[]`                       | 业务当前拥有的已选记录，可以少于 keys |
-| `alwaysShow`      | `boolean` / `false`                        | 零选中时仍显示提示条                  |
-| `showClear`       | `boolean` / `true`                         | 是否显示默认清空入口                  |
-| `disabled`        | `boolean` / `false`                        | 禁用内置操作，向业务插槽传递禁用状态  |
-| `loading`         | `boolean` / `false`                        | 批量操作加载状态，也会禁用清空        |
-| `locale`          | `Partial<VTableGuildSelectionAlertLocale>` | 实例文案覆盖                          |
-| `ui` / `class`    | slot class 映射 / `string`                 | 实例样式覆盖                          |
+### VTableSelectionAlert Props
+
+<!-- @api: reference selection-alert-props -->
 
 事件：`update:selectedRowKeys(keys)`、`clear(previousKeys, availableRows)`。
 
 `info` 替换左侧数量文本；`showClear` 控制的默认清空入口与 `actions` 业务按钮一起放在右侧操作区。两者接收 `TableSelectionAlertSlotProps<TRecord>`：
 
-| 字段              | 类型                 | 说明                             |
-| ----------------- | -------------------- | -------------------------------- | --- | -------- |
-| `selectedRowKeys` | `readonly Key[]`     | 已选键的快照                     |
-| `selectedRows`    | `readonly TRecord[]` | 可用记录的快照                   |
-| `count`           | `number`             | keys 数量                        |
-| `disabled`        | `boolean`            | `disabled                        |     | loading` |
-| `loading`         | `boolean`            | 当前加载状态                     |
-| `clear`           | `() => void`         | 与默认清空入口相同的受控更新请求 |
+<!-- @api: reference selection-alert-slot-props -->
+
+### VTable 行选择配置
+
+<!-- @api: props selection-alert -->
 
 ## 主题与语言
 
-全局使用 `theme.selectionAlert.slots`，实例使用 `ui`。两套预设共享 `root`、`info`、`text`、`clear`、`option`、`actions`。外观对齐 React ProTable 现行提示条：中性浅底、无边框、三级灰文字，数量不做强调。可以通过 `--vtg-selection-alert-radius`、`--vtg-selection-alert-bg`、`--vtg-selection-alert-padding-inline`、`--vtg-selection-alert-padding-block` 调整外观。
+全局使用 `theme.selectionAlert.slots`，实例使用 `ui`。
 
 文案跟随全局语言，支持 `localeOverrides.selectionAlert` 和实例 `locale`。`selected` 文案里的 `{count}` 替换为已选数量，`label` 是区域名称，`clear` 是清空按钮文本。
+
+以下 class 和 CSS 变量控制提示条的布局、文案和清空入口。
+
+### ui slots
+
+<!-- @api: ui selection-alert -->
+
+### 预设默认值
+
+<!-- @api: theme selection-alert -->
+
+### CSS 变量
+
+<!-- @api: css-vars selection-alert -->
 
 ## Type Declarations
 

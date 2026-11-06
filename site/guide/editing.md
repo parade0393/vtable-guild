@@ -28,29 +28,7 @@ const edit = useTableEdit<Member>({
 })
 ```
 
-| 配置                       | 说明                                                                                            |
-| -------------------------- | ----------------------------------------------------------------------------------------------- |
-| `rowKey`                   | 必填，记录字段名或返回 `string / number` 的函数，不使用行索引                                   |
-| `mode`                     | `'single'`（默认）或 `'multiple'`；单行模式已有草稿时 `start / add` 返回 `false`                |
-| `clone`                    | 可选完整记录复制函数；默认复制普通对象、数组及 Date，含可变类实例时自行提供                     |
-| `validate(draft, context)` | 同步或异步返回 `{ message?, fields? }`；返回 `void` 或空错误对象继续保存                        |
-| `onSave(draft, context)`   | 校验通过后调用；可返回服务端规范化记录或 `void`，由业务更新 `dataSource`；返回 `false` 保留草稿 |
-| `onCancel(draft, context)` | 可选同步或异步取消处理；返回 `false` 保留草稿，拒绝时记录 `'cancel'` 错误                       |
-| `onError(error, key)`      | 校验、保存和取消失败通知；同时可从 `errors` 读取行错误                                          |
-
 `context` 包含 `key / original / isNew / signal`。新增行的 `original` 为 `undefined`；已有记录在输入和保存期间保持相同行键，新增行可在保存结果中使用服务端分配的新键。
-
-| 状态或方法                       | 说明                                                                                    |
-| -------------------------------- | --------------------------------------------------------------------------------------- |
-| `editableKeys`                   | 只读编辑行键数组；通过 `start / add / cancel / save` 变更                               |
-| `savingKeys / cancellingKeys`    | 保存（含校验）和取消中的行键集合，可用于禁用编辑器或显示 loading                        |
-| `errors`                         | 行键到 `{ type, message, fields?, cause? }` 的映射                                      |
-| `newRecords`                     | 未保存新增行的草稿副本，组合到 `dataSource` 的首部或尾部                                |
-| `start(record) / add(record)`    | 创建已有记录或新增记录的草稿，重复行键返回 `false`                                      |
-| `isEditing(key) / getDraft(key)` | 查询编辑状态及隔离的草稿副本                                                            |
-| `setDraft(key, patch)`           | 合并部分字段，或通过 `(draft) => record` 更新嵌套字段；清除旧错误                       |
-| `save(key)`                      | 返回 `Promise<Record \| undefined>`；成功返回记录并结束编辑，失败或失效返回 `undefined` |
-| `cancel(key) / cancelAll()`      | 返回取消结果的 Promise；成功取消后清理草稿和错误                                        |
 
 输入期间只调用 `setDraft()`，不要直接改写源数据或 `getDraft()` 的返回值。保存期间相同行的重复调用复用同一 Promise，不会重复调用 `onSave`。取消或更新草稿会中止旧任务，过期的成功或失败不能关闭新草稿；组件作用域销毁会清理全部任务。异步业务回调仍须传递并检查 `signal`，防止已经取消的请求写回业务数据。
 
@@ -108,17 +86,43 @@ const edit = useTableEdit<Member>({
 
 虚拟滚动只保留可视区附近的行。编辑中的单元格离开可视区后，编辑器组件可能被卸载；草稿只要按稳定行键存储就不会串到其他记录，但业务仍需明确离屏时是自动提交、取消，还是保留草稿等待该行再次出现。
 
-## 相关页面
+## API
 
-- [自定义行与插槽](/guide/api-wiring-and-slots)
-- [虚拟滚动](/guide/virtualization)
-- [API Reference](/guide/api-reference)
+### useTableEdit 配置
+
+<!-- @api: reference editing-options -->
+
+### useTableEdit 状态与方法
+
+<!-- @api: reference editing-state -->
+
+### VTable Props
+
+<!-- @api: props editing -->
+
+## 主题
+
+以下样式由列级 `VTableEditCell` 使用。通过 `bodyCell` 自行渲染的编辑控件使用宿主 UI 库样式，见[列级编辑与宿主控件](/guide/editable-columns)。
+
+### ui slots
+
+<!-- @api: ui editing -->
+
+### 预设默认值
+
+<!-- @api: theme editing -->
+
+### CSS 变量
+
+<!-- @api: css-vars editing -->
 
 ## Type Declarations
 
 编辑使用公开的 `bodyCell` 插槽及列字段路径类型，`TRecord` 表示业务行类型。列配置为相关字段节选；`MergedColumnFields` 是文档辅助接口，不是包导出，完整列配置和插槽声明见[类型参考](/guide/type-reference)。
 
 ::: details 查看类型声明
+
+<<< @/.vitepress/type-declarations/features.ts#EditingProtocol
 
 <<< @/.vitepress/type-declarations/table.ts#Key
 
@@ -131,3 +135,9 @@ const edit = useTableEdit<Member>({
 <<< @/.vitepress/type-declarations/table.ts#TableSlotsDecl
 
 :::
+
+## 相关页面
+
+- [自定义行与插槽](/guide/api-wiring-and-slots)
+- [虚拟滚动](/guide/virtualization)
+- [API Reference](/guide/api-reference)

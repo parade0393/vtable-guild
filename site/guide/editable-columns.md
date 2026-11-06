@@ -150,4 +150,40 @@ const extendedControls: TableControls = {
 
 外部主表单一次提交、纯校验全部草稿、新增首尾与数量限制见 [明细表单](/guide/detail-form)。
 
+## API
+
+### Column 字段
+
+<!-- @api: columns editable-columns -->
+
+### useTableEditable 配置
+
+<!-- @api: reference editable-options -->
+
+### TableColumnEditor
+
+<!-- @api: reference editable-editor-fields -->
+
+## 主题
+
+使用实例 `ui` 或全局 `theme.table.slots` 调整编辑区域。宿主控件的外观沿用其 UI 库。
+
+### ui slots
+
+<!-- @api: ui editable-columns -->
+
+### 预设默认值
+
+<!-- @api: theme editable-columns -->
+
+### CSS 变量
+
+<!-- @api: css-vars editable-columns -->
+
+## Type Declarations
+
+::: details 查看类型声明
+
 <<< @/.vitepress/type-declarations/features.ts#EditingProtocol
+
+:::
