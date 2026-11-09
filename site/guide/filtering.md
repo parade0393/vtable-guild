@@ -93,6 +93,48 @@ const handleChange: NonNullable<VTableEventProps<UserRow>['onChange']> = (filter
 
 自定义面板的参数使用 `CustomFilterDropdownSlotProps<UserRow>`：`setSelectedKeys` 接收筛选值数组，`confirm` 和 `clearFilters` 的可选参数分别控制确认与关闭行为。完整签名见页末声明。
 
+### 面板里的下拉与日期选择
+
+ant-design-vue / antdv-next 的 `a-select`、`a-date-picker`，以及 Element Plus 的 `el-select`、`el-date-picker`，默认把自己的下拉挂到 `document.body`。表格会把这些下拉里的点击当作面板外部点击，选中选项的同时筛选面板也会关闭。把嵌套弹层渲染到面板内部即可：ant-design-vue / antdv-next 设置 `getPopupContainer`，Element Plus 设置 `:teleported="false"`。
+
+```vue
+<script setup lang="ts">
+// 沿用上面的 UserRow 与 dataSource，status 列改为 customFilterDropdown: true。
+const statusOptions = [
+  { label: 'Active', value: 'active' },
+  { label: 'Paused', value: 'paused' },
+]
+// 下拉挂到触发器的父元素，也就是筛选面板内部。
+const insidePanel = (trigger: HTMLElement) => trigger.parentElement ?? document.body
+</script>
+
+<template>
+  <VTable row-key="key" :columns="columns" :data-source="dataSource">
+    <template #customFilterDropdown="{ selectedKeys, setSelectedKeys, confirm, clearFilters }">
+      <!-- 嵌套下拉在面板内展开，min-height 为它预留空间 -->
+      <div style="padding: 8px; width: 200px; min-height: 160px">
+        <!-- Element Plus：<el-select :teleported="false" ...> -->
+        <a-select
+          :value="selectedKeys[0]"
+          :options="statusOptions"
+          :get-popup-container="insidePanel"
+          style="width: 100%"
+          @update:value="(value) => setSelectedKeys(value == null ? [] : [String(value)])"
+        />
+        <a-button size="small" @click="clearFilters()">重置</a-button>
+        <a-button size="small" type="primary" @click="confirm()">确定</a-button>
+      </div>
+    </template>
+  </VTable>
+</template>
+```
+
+嵌套下拉随后在面板内定位，超出面板的部分会被面板的滚动区域裁剪，所以示例给面板内容设置了 `min-height`。请按选项数量调整高度，或减小下拉高度（如 `a-select` 的 `list-height`）。
+
+### 外部点击的判定
+
+筛选面板、行选择菜单、列设置与密度菜单、每页条数下拉共用同一套弹层逻辑。自 2.9.0-alpha.5 起，弹层在 `document` 的捕获阶段监听 `mousedown` / `touchstart` 来判断外部点击；外部控件里的 `stopPropagation()`（如 `@mousedown.stop`）发生在判定之后，拦不住它，打开的弹层照样关闭。更早的版本在冒泡阶段监听，阻止冒泡可以让弹层保持打开，升级时请留意这类写法。需要和面板配合操作的控件请放进面板内部；筛选面板也可以改用受控的 `filterDropdownOpen`：外部点击只会触发 `onFilterDropdownOpenChange(false)`，是否关闭由你决定。
+
 ## 什么时候用受控模式
 
 以下场景建议直接用 filteredValue：
