@@ -5,15 +5,9 @@ description: 使用 VTableColumnSettings 配置列显隐、固定与顺序，通
 
 # 列显示与列顺序
 
-「列设置」是最常见的列管理诉求：让用户勾选想看的列、按自己的习惯排列字段顺序。VTable
-把这两件事拆成两个受控属性——列级 `visible` 控制是否显示，表级 `columnOrder` 控制显示顺序，
-显示状态本身由你的应用持有（便于持久化到 localStorage 或用户偏好）。
+`VTableColumnSettings` 为表格提供列显隐、固定、拖拽排序和密度切换。面板与表格绑定同一份 `columns` 和 `size`：面板只发出更新，生效状态由你的应用持有。
 
 ## 列设置面板
-
-需要同时提供标题、导出按钮、刷新和全屏时，使用可组合的 [VTableToolbar 工具栏](/guide/toolbar)。它复用下方列设置能力，并通过插槽支持业务操作。
-
-`VTableColumnSettings` 提供列显隐、固定左右、顶层拖拽换序、三档密度和重置。交互布局对齐 React ProTable：密度图标打开独立下拉菜单，齿轮图标打开列设置浮层，顶部提供“列展示”全选框与“重置”。它是独立组件，可放进表格的 `title` 插槽或外部工具栏，与表格绑定同一份 `columns`、`size`：
 
 <Demo src="column-display/settings">
 
@@ -21,41 +15,52 @@ description: 使用 VTableColumnSettings 配置列显隐、固定与顺序，通
 
 </Demo>
 
-`v-model:columns` 接收新的列数组，`v-model:size` 接收 `'large' | 'middle' | 'small'`。面板不修改输入对象，也不维护另一份生效状态；父组件不接受更新时，界面保持传入值。未传 `size` 时跟随表格主题的默认密度（Ant 为 `large`，Element Plus 为 `middle`，也读取 `theme.table.defaultVariants.size`）；要让切换生效，仍需将更新后的 `size` 绑定到表格。
+`v-model:columns` 接收新的列数组；`v-model:size` 接收 `'large' | 'middle' | 'small'`，未传时跟随表格主题的默认密度。两者都要同时传给表格才会生效。面板可放进表格的 `title` 插槽或外部工具栏；需要标题、导出、刷新和全屏时，使用 [VTableToolbar 工具栏](/guide/toolbar)。
 
-- 分组列可整组隐藏；隐藏父组时子项暂时禁用，子列原有的显隐状态保留。面板允许隐藏全部业务列，入口仍保留在 `title` 中。
-- `EXPAND_COLUMN` / `SELECTION_COLUMN` 原样保留，不出现在面板中。`responsive` 仍由表格处理：勾选表示 `visible !== false`，不保证当前断点下显示。
-- “列展示”支持全选、取消全选和半选状态，批量操作覆盖分组及子列。
-- 重置只恢复组件首次接收到的列显隐，密度独立选择。列宽、顺序、固定状态、排序或筛选均保留。动态新增列以首次出现的显隐为默认，删除的列不会被重新加入。
-- 为列和分组设置稳定、同级唯一的 `key`。未提供时使用 `dataIndex`，再缺省则使用位置；无稳定标识的列重排后不能保证默认值对应原列。跨分组移动视为新列。需要重新建立默认基线时，可改变组件的 Vue `key` 重新挂载。
-- 普通 `title` 用作选项标签；函数式标题不会被面板调用，默认显示 `key` / `dataIndex`。通过 `#columnLabel="{ column }"` 提供易读标签，避免在选项标签内放置交互控件。
-- `hideInSetting: true` 让列及其子列不出现在设置面板，也不参与面板全选或重置。它不改变表格中的显示状态。
-- `disable: true` 锁定显隐、固定与顺序；对象形式可分别设置 `checkbox`、`fixed`、`order`。分组中有锁定显隐的子列时，整组不能隐藏，但其他可编辑子列仍可独立调整；组自身禁用显隐时，其子项也不可更改。
-- 固定操作将顶层列或整个分组移到左侧、中央或右侧，并保持固定列处于两端。分组固定会同步所有叶子列；有禁止固定的子列时整组固定操作禁用。
-- 拖动整行（或行前的手柄）可调整同一固定区域内的顶层顺序，分组整组移动，不允许子列跨组移动。拖拽中源行显示主题色描边，目标行按悬停位置的中线显示带圆点的上 / 下插入线，落点即插入位置。禁用顺序的列是移动边界，其他列不能拖动跨过它；跨固定区域请使用固定操作。选择列、展开列哨兵的位置保留。
-- 键盘可操作现有按钮与复选框，Escape 关闭并回到入口，Tab 离开面板时关闭。
+面板只调整顶层列：拖动可在同一固定区域内换序，跨区域使用固定按钮，分组整体移动。顺序直接写回 `columns`，不要再给表格传 [`columnOrder`](#列顺序-columnorder)，否则它会覆盖面板的顺序。“重置”只恢复显隐；要同时恢复顺序和固定，使用 [`useColumnState().reset()`](#保存用户偏好)。
 
-### 固定与顺序
+### 列配置
 
-默认显示固定入口和拖拽手柄。`options.fixed: false` 隐藏固定入口，`options.draggable: false` 关闭拖拽。`options.density` 与 `options.setting` 继续分别控制密度和列设置入口。
+- 为列和分组设置稳定、同级唯一的 `key`，缺省时依次使用 `dataIndex`、位置。没有稳定标识的列重排后，重置可能对应到错误的列。
+- 函数式 `title` 不会被面板调用，默认显示 `key` / `dataIndex`；可通过 `#columnLabel="{ column }"` 提供标签。
+- `hideInSetting: true` 让列及其子列不出现在面板中，也不参与全选和重置，不影响表格显示。
+- `disable: true` 锁定显隐、固定与顺序；对象形式可分别锁定 `checkbox`、`fixed`、`order`。锁定顺序的列是拖拽边界，其他列不能越过它。
 
-列设置修改 `columns` 数组顺序，不额外维护 `columnOrder`。绑定表格时请让同一份 `columns` 持有生效顺序；如果同时传入 `columnOrder`，表格仍会按该属性覆盖显示顺序。
+::: details 更多行为细节
 
-现有“重置”只恢复初始显隐，保持顺序、固定与密度不变。需要恢复全部列偏好时，可使用下方 `useColumnState().reset()`。
+- 隐藏分组时，子项暂时禁用，子列原有的显隐状态保留；分组中有锁定显隐的子列时，整组不能隐藏。面板允许隐藏全部业务列。
+- 固定分组会同步所有叶子列；子列中有禁止固定的列时，整组不能固定。固定后的列会移到对应一端。
+- `EXPAND_COLUMN` / `SELECTION_COLUMN` 不出现在面板中，位置保持不变。
+- 勾选表示 `visible !== false`；带 `responsive` 的列在当前断点下仍可能不显示。
+- 重置的基线是面板首次接收到的显隐，在面板挂载前载入的偏好也会成为基线。动态新增的列以首次出现时为准，已删除的列不会被重新加入。需要重建基线时，改变面板的 Vue `key` 重新挂载。
+- 列宽、排序和筛选不受面板操作影响。
+- 可用键盘操作按钮与复选框，Escape 关闭并回到入口，Tab 移出面板时关闭。
+
+:::
+
+### 操作没有生效？
+
+| 现象                               | 原因                                              | 处理                                                   |
+| ---------------------------------- | ------------------------------------------------- | ------------------------------------------------------ |
+| 切换密度后，选中项和行高都不变     | 密度是受控的，没有绑定 `size`                     | 面板使用 `v-model:size`，并把同一个值传给表格的 `size` |
+| 勾选、固定或拖拽后，面板没有变化   | 没有接收面板发出的 `columns` 更新                 | 面板使用 `v-model:columns`，并把同一份列传给表格       |
+| 拖拽后面板顺序变了，表格顺序没有变 | 同时传了 `columnOrder`，它会覆盖 `columns` 的顺序 | 移除 `columnOrder`，把初始顺序写在 `columns` 里        |
+| 固定后，滚动时看不出效果           | 表格没有横向滚动                                  | 让 `scroll.x` 大于容器宽度，或缩小容器后再看           |
+| 点击“重置”后，顺序和固定没有恢复   | “重置”只恢复显隐                                  | 使用 `useColumnState().reset()`                        |
 
 ### 面板 API
 
 <!-- @api: reference column-settings-props -->
 
-事件：`update:columns(columns)`、`update:size(size)`、`reset()`。重置依次发出列更新和 `reset`；选择密度后关闭菜单，选中项保持受控。面板本身不会触发表格的 `change` 事件或发起请求。
+`options` 控制入口：`density: false`、`setting: false` 分别隐藏密度和列设置入口，`fixed: false` 隐藏固定按钮，`draggable: false` 关闭拖拽。
 
-面板的实例 `ui`、全局样式及弹层尺寸见[主题](#主题)。
+事件：`update:columns(columns)`、`update:size(size)`、`reset()`。面板不会触发表格的 `change` 事件。
 
-中英文文案跟随全局或 ConfigProvider 的 `locale`，支持 `localeOverrides.columnSettings` 和实例 `locale`。旧语言包无需补字段。
+文案跟随全局或 ConfigProvider 的 `locale`，可通过 `localeOverrides.columnSettings` 或实例 `locale` 覆盖。样式见[主题](#主题)。
 
-### 保存用户偏好
+## 保存用户偏好
 
-`useColumnState` 将列定义与用户偏好组合成可写的 `columns`，可以直接同时绑定 `VTable` 和 `VTableColumnSettings`。它只保存稳定路径、显隐、顶层固定位置和顺序，原列上的 renderer、sorter 等函数始终来自源定义。
+只在当前页面调整列时，用 `ref` 持有列即可。需要刷新后保留偏好、按用户[保存到服务端](#保存到服务端)，或列定义会随语言、权限变化时，使用 `useColumnState`：它把源列定义和用户偏好合成可写的 `columns`，同时绑定给表格和面板。源定义更新后，已记录的偏好会叠加到新定义上。
 
 <Demo src="column-display/preferences">
 
@@ -71,17 +76,56 @@ const { columns, state, setState, reset, restore, save } = useColumnState(baseCo
 })
 ```
 
-- `baseColumns` 接受数组、ref 或 getter，负责列结构和业务配置。对返回 `columns` 的赋值只记录设置偏好，不回写源列定义。
-- `state` 是生效状态的只读 computed，键为基于列 `key` / `dataIndex` 生成的路径。可将其保存到业务服务，再通过 `defaultValue` 或 `setState` 恢复；不要依赖路径字符串的内部拼接形式。
-- `setState` 替换用户偏好，忽略非法字段。新增列采用其源定义，删除列不会因恢复而重建；同一路径再次出现时重置仍使用首次记录的默认值。
-- `reset` 恢复首次记录的显隐、固定与顺序，以及显式 `defaultValue`；不恢复列宽、密度、排序、筛选和已删除列。它与面板只恢复显隐的 `reset` 含义不同。
-- 配置 `storageKey` 后状态变化自动保存，`save` 可手动触发。组件内在 `onMounted` 恢复存储；服务端不读取浏览器存储。`storageType` 支持 `localStorage` 或 `sessionStorage`，也可传入具有 `getItem / setItem / removeItem` 的 `storage` 适配器。
-- `version` 默认 `1`；存储版本不一致时使用源定义与默认偏好。存储不可用、JSON 错误通过可选 `onError(error)` 报告，不妨碍表格渲染。
-- 锁定规则同样约束恢复后的偏好；更新源定义中的锁定配置后，旧存储不能隐藏或移动受保护的列。
+- `baseColumns` 接受数组、ref 或 getter。对 `columns` 的赋值只记录偏好，不回写源定义；renderer、sorter 等始终来自源定义。
+- `state` 是只读的生效偏好，按列 `key` / `dataIndex` 生成的路径索引，可原样保存，再通过 `setState` 恢复。不要依赖路径字符串的拼接格式。
+- `setState` 替换偏好并忽略非法字段；新增列使用源定义，已删除的列不会被恢复。
+- `defaultValue` 是业务给定的默认偏好，`reset` 会恢复到它，因此不要用它载入用户已保存的偏好。
+- `reset` 恢复首次记录的显隐、固定、顺序和 `defaultValue`，不恢复列宽、密度、排序和筛选。
+- 锁定规则同样约束恢复的偏好，旧存储不能隐藏或移动受保护的列。
 
-#### 由业务自行保存
+### 存储、版本与恢复
 
-持久化由业务选择时机和存储位置。只保存列 key、显隐和密度，不要序列化整个列配置，否则函数式 renderer、排序器等会丢失。例如，平铺列可在父组件里订阅状态：
+- 配置 `storageKey` 后，偏好变化时自动写入存储，并在 `onMounted` 时读取，服务端渲染时不读取。`storageType` 可选 `localStorage` / `sessionStorage`，也可传入实现同步 `getItem / setItem / removeItem` 的 `storage`。未配置 `storageKey` 时不读写任何存储。
+- `version` 默认为 `1`，随偏好一起写入。读取时版本不一致，会忽略已保存的偏好，按源定义和 `defaultValue` 显示。
+- 源定义增删列不需要升级 `version`：新增列使用源定义，删除的列被忽略。但已保存偏好的用户会看到新增列排在所在固定区域的末尾。希望新列出现在定义的位置，或修改了默认的显隐、固定、顺序并希望所有人看到新默认时，再升级 `version`；升级会丢弃所有用户已保存的偏好。
+- `restore` 从存储重新读取偏好，挂载时已自动调用一次；没有存储或版本不一致时保持当前偏好。其他标签页修改了同一份偏好时，可在 `window` 的 `storage` 事件中调用它同步。
+- `save` 把当前偏好写入存储。偏好变化和 `reset` 都会自动保存，通常不需要手动调用；升级 `version` 后，旧数据要等到用户下次修改偏好才会被覆盖，想立即覆盖时可调用一次。
+- 存储不可用或 JSON 错误通过 `onError(error)` 报告，不影响渲染。
+
+### 保存到服务端
+
+`storage` 适配器是同步接口，不适合异步请求。保存到服务端时不配置 `storageKey`，用 `setState` 载入、监听 `state` 保存，版本由业务自行携带：
+
+```ts
+const COLUMN_VERSION = 1
+const { columns, state, setState, reset } = useColumnState(baseColumns)
+
+let stop: (() => void) | undefined
+onMounted(async () => {
+  try {
+    const saved = await api.getColumnPreference('system-user')
+    if (saved?.version === COLUMN_VERSION) setState(saved.state)
+  } finally {
+    // 载入后再开始监听，避免把刚读到的偏好原样写回
+    stop = watch(
+      state,
+      debounce((value) => {
+        api.saveColumnPreference('system-user', { version: COLUMN_VERSION, state: value })
+      }, 500),
+      { deep: true },
+    )
+  }
+})
+onUnmounted(() => stop?.())
+```
+
+偏好载入前表格按源定义显示；不希望出现切换时，可在载入完成后再渲染表格。面板的“重置”和 `reset()` 都会改变 `state`，同样会被保存。
+
+### 由业务自行保存
+
+不使用 `useColumnState` 时，只保存列 key、显隐和密度等可序列化的值，不要序列化整个列配置，否则函数式 renderer、sorter 会丢失。读取时先校验结构、列 key 和密度值，再合并回列定义；分组、固定、顺序和版本需要自行处理。
+
+::: details 平铺列的显隐保存示例
 
 ```ts
 watch([columns, size], ([currentColumns, currentSize]) => {
@@ -98,11 +142,11 @@ watch([columns, size], ([currentColumns, currentSize]) => {
 })
 ```
 
-加载偏好时校验 JSON 结构、列 key 和密度值，再合并到业务列定义；分组列需按稳定路径递归保存和恢复。SSR 场景在客户端读取存储。若在挂载面板之前载入偏好，“恢复默认”会以载入后的状态为基线；若需要回到业务初始配置，先挂载面板，再在 `onMounted` 恢复偏好。
+:::
 
-## 手动列管理示例
+## 不使用面板时
 
-用勾选框切换列的显隐，用 ‹ › 按钮调整列顺序。
+面板基于两个表格属性：列级 `visible` 控制是否显示，表级 `columnOrder` 控制显示顺序。也可以直接使用它们自行实现列管理，下面用勾选框切换显隐，用 ‹ › 按钮调整顺序：
 
 <Demo src="column-display/basic">
 
@@ -110,10 +154,9 @@ watch([columns, size], ([currentColumns, currentSize]) => {
 
 </Demo>
 
-## 列显示 visible
+### 列显示 visible
 
-在列上设置 `visible: false`，该列从表头和表体中移除。它是受控属性：显示与否完全由外部
-字段决定，需要恢复显示时把 `visible` 改回来（或删掉这个字段）即可。
+在列上设置 `visible: false`，该列从表头和表体中移除。它是受控属性：需要恢复显示时把 `visible` 改回来，或删掉这个字段。
 
 ```ts
 import type { TableColumnsType } from '@vtable-guild/vtable-guild'
@@ -133,16 +176,13 @@ const columns: TableColumnsType<UserRow> = [
 ]
 ```
 
-关键行为：
-
-- 隐藏只作用于显示层。列上已激活的排序/筛选状态**不会**被丢弃——隐藏一个正在排序的列，
-  行序仍受它影响；重新显示后排序依旧生效。
+- 隐藏只作用于显示层。列上已激活的排序 / 筛选状态**不会**被丢弃：隐藏一个正在排序的列，行序仍受它影响；重新显示后排序依旧生效。
 - 分组列 `visible: false` 时整组隐藏；组内子列全部被隐藏时，整个空组也会被移除。
 - 可以与 `responsive` 组合：两者任一不满足，列都不显示。
 
-## 列顺序 columnOrder
+### 列顺序 columnOrder
 
-`columnOrder` 的类型是 `Key[]`，其中 `Key = string | number`，表达列的显示顺序：
+`columnOrder` 的类型是 `Key[]`，其中 `Key = string | number`。与列设置面板一起使用时不要传它。
 
 ```vue
 <template>
