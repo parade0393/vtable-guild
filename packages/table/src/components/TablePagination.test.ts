@@ -386,9 +386,14 @@ describe('table pagination integration', () => {
       },
     )
     it.each([
-      { locale: 'zh-CN', text: '全选所有', selections: true as const },
-      { locale: 'en-US', text: 'Select all data', selections: [SELECTION_ALL] },
-    ])('labels the all-loaded action in $locale', async ({ locale, text, selections }) => {
+      { locale: 'zh-CN', label: '选择操作', text: '全选所有', selections: true as const },
+      {
+        locale: 'en-US',
+        label: 'Selection options',
+        text: 'Select all data',
+        selections: [SELECTION_ALL],
+      },
+    ])('labels the all-loaded action in $locale', async ({ locale, label, text, selections }) => {
       const onChange = vi.fn()
       const w = mount(VTable, {
         attachTo: document.body,
@@ -404,7 +409,7 @@ describe('table pagination integration', () => {
       wrappers.push(w)
       await w.get('thead [role="checkbox"]').trigger('click')
       expect(onChange.mock.lastCall?.[0]).toHaveLength(10)
-      await w.get('[aria-label="Selection options"]').trigger('mouseenter')
+      await w.get(`[aria-label="${label}"]`).trigger('mouseenter')
       const item = [...document.body.querySelectorAll('li')].find(
         (node) => node.textContent === text,
       )!

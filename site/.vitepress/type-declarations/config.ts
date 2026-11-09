@@ -379,6 +379,8 @@ export interface VTableGuildTableSelectionLocale {
   selectAll: string
   selectInvert: string
   selectNone: string
+  /** 表头批量选择菜单入口的无障碍名称；可选，旧语言包无需补齐。 */
+  selectionsTriggerAriaLabel?: string
 }
 // #endregion VTableGuildTableSelectionLocale
 

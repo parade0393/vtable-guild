@@ -74,11 +74,12 @@ export default defineComponent({
           data-vtg-preset={preset.value}
           class={styles.root()}
         >
-          <div class={styles.info()}>
+          {/* One live region announces count changes from the default text and the #info slot. */}
+          <div role="status" aria-live="polite" class={styles.info()}>
             {slots.info ? (
               slots.info(scope)
             ) : (
-              <span role="status" aria-live="polite" class={styles.text()}>
+              <span class={styles.text()}>
                 {locale.value.selected.replace('{count}', String(count))}
               </span>
             )}

@@ -24,7 +24,7 @@ import SortButton from './SortButton'
 import FilterIcon from './FilterIcon'
 import FilterDropdown from './FilterDropdown'
 import SelectionCheckbox from './SelectionCheckbox'
-import SelectionDropdown from './SelectionDropdown'
+import SelectionDropdown, { type SelectionDropdownExposed } from './SelectionDropdown'
 import TablePopup from './TablePopup'
 import { getColumnFilters } from '../utils/valueEnum'
 import ResizeHandle from './ResizeHandle'
@@ -339,20 +339,35 @@ export default defineComponent({
     })
 
     const selectionDropdownVisible = ref(false)
+    // Set once the keyboard opens or enters the menu, cleared when it closes.
+    const selectionKeyboardActive = ref(false)
     const selectionAnchorRef = ref<HTMLElement | null>(null)
+    const selectionDropdownRef = ref<SelectionDropdownExposed | null>(null)
 
     let selectionHoverTimer: ReturnType<typeof setTimeout> | null = null
 
+    // Hover and click only open the menu: a touch tap fires mouseenter before click, so a
+    // toggle would close the menu it has just opened.
     function openSelectionDropdown() {
       if (selectionHoverTimer) clearTimeout(selectionHoverTimer)
       selectionDropdownVisible.value = true
     }
 
+    function handleSelectionTriggerKeydown(event: KeyboardEvent) {
+      if (event.key !== 'Enter' && event.key !== ' ' && event.key !== 'ArrowDown') return
+      event.preventDefault()
+      event.stopPropagation()
+      selectionKeyboardActive.value = true
+      // A hover-opened menu is already mounted, so the popup's initial focus will not run again.
+      if (selectionDropdownVisible.value) selectionDropdownRef.value?.focusFirstItem()
+      openSelectionDropdown()
+    }
+
     function scheduleCloseSelectionDropdown() {
       if (selectionHoverTimer) clearTimeout(selectionHoverTimer)
-      selectionHoverTimer = setTimeout(() => {
-        selectionDropdownVisible.value = false
-      }, 100)
+      // The pointer leaving must not pull a keyboard-driven menu away from focus.
+      if (selectionKeyboardActive.value) return
+      selectionHoverTimer = setTimeout(closeSelectionDropdown, 100)
     }
 
     function cancelCloseSelectionDropdown() {
@@ -362,6 +377,7 @@ export default defineComponent({
     function closeSelectionDropdown() {
       if (selectionHoverTimer) clearTimeout(selectionHoverTimer)
       selectionDropdownVisible.value = false
+      selectionKeyboardActive.value = false
     }
 
     const sortAreaHovered = ref(false)
@@ -526,6 +542,7 @@ export default defineComponent({
         const titleNode = columnTitle ? (
           <span class={tableContext.vtgClass?.('ml-2')}>{columnTitle}</span>
         ) : null
+        const selectionsLabel = tableLocale?.selection?.selectionsTriggerAriaLabel ?? '选择操作'
 
         return (
           <th
@@ -559,8 +576,13 @@ export default defineComponent({
                     )}
                     onMouseenter={openSelectionDropdown}
                     onMouseleave={scheduleCloseSelectionDropdown}
+                    onClick={openSelectionDropdown}
+                    onKeydown={handleSelectionTriggerKeydown}
                     role="button"
-                    aria-label="Selection options"
+                    tabindex={0}
+                    aria-label={selectionsLabel}
+                    aria-haspopup="menu"
+                    aria-expanded={selectionDropdownVisible.value}
                   >
                     <DownOutlinedIcon />
                   </span>
@@ -572,9 +594,12 @@ export default defineComponent({
 
             {!hideSelectAll && hasSelections && (
               <SelectionDropdown
+                ref={selectionDropdownRef}
                 items={selectionItems}
                 anchorElement={selectionAnchorRef.value}
                 visible={selectionDropdownVisible.value}
+                label={selectionsLabel}
+                focusOnOpen={selectionKeyboardActive.value}
                 onClose={closeSelectionDropdown}
                 onMouseenter={cancelCloseSelectionDropdown}
                 onMouseleave={scheduleCloseSelectionDropdown}

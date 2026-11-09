@@ -82,7 +82,8 @@ export default defineComponent({
         props.expandable && (props.expanded ? symbolExpandedClass : symbolCollapsedClass),
       )
 
-      const locale = isTree ? tableContext.locale?.value.tree : undefined
+      // Detail rows share the tree labels: built-in locales phrase them as expand / collapse row.
+      const locale = tableContext.locale?.value.tree
       const iconNode = props.loading ? (
         <span class={subThemeSlots?.loadingSpinner()} aria-hidden="true">
           <ReloadOutlinedIcon />

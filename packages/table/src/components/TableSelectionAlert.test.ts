@@ -86,6 +86,32 @@ describe.each(['antdv', 'element-plus'] as const)('%s selection alert', (preset)
     expect(wrapper.get('button').attributes('disabled')).toBeDefined()
   })
 
+  it.each([
+    { name: 'default text', slots: {}, text: (count: number) => `${count} selected` },
+    {
+      name: 'custom #info slot',
+      slots: {
+        info: (scope: TableSelectionAlertSlotProps<object>) => h('strong', `Batch ${scope.count}`),
+      },
+      text: (count: number) => `Batch ${count}`,
+    },
+  ])('announces count changes from the $name in one live region', async ({ slots, text }) => {
+    const wrapper = mount(VTableSelectionAlert, {
+      props: { selectedRowKeys: [1] },
+      slots,
+      global: { plugins: [createVTableGuild({ themePreset: preset, locale: 'en-US' })] },
+    })
+    wrappers.push(wrapper)
+    const status = () => wrapper.get('[role="status"]')
+    expect(wrapper.findAll('[aria-live]')).toHaveLength(1)
+    expect(status().attributes('aria-live')).toBe('polite')
+    expect(status().text()).toBe(text(1))
+    await wrapper.setProps({ selectedRowKeys: [1, 2] })
+    expect(status().text()).toBe(text(2))
+    // The clear action stays outside the announced region.
+    expect(status().find('button').exists()).toBe(false)
+  })
+
   it('combines locale and theme overrides and keeps older language bundles valid', async () => {
     const wrapper = mount(VTableSelectionAlert, {
       props: { selectedRowKeys: [1], ui: { root: 'local-alert' }, locale: { clear: 'Reset keys' } },

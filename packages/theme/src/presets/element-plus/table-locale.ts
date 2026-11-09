@@ -27,6 +27,7 @@ export const elementPlusTableLocale = {
     selectAll: '全选所有',
     selectInvert: '反选当页',
     selectNone: '清空所有',
+    selectionsTriggerAriaLabel: '选择操作',
   },
 } as const satisfies VTableGuildTableLocale
 
@@ -56,5 +57,6 @@ export const elementPlusTableEnUSLocale = {
     selectAll: 'Select all data',
     selectInvert: 'Invert current page',
     selectNone: 'Clear all',
+    selectionsTriggerAriaLabel: 'Selection options',
   },
 } as const satisfies VTableGuildTableLocale

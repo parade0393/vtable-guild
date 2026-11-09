@@ -1169,12 +1169,13 @@ describe('VTable', () => {
             selectAll: 'Select visible',
             selectInvert: 'Invert visible',
             selectNone: 'Clear selected',
+            selectionsTriggerAriaLabel: 'Bulk selection',
           },
         },
       },
     })
 
-    await wrapper.get('[aria-label="Selection options"]').trigger('mouseenter')
+    await wrapper.get('[aria-label="Bulk selection"]').trigger('mouseenter')
     await nextTick()
 
     const selectionItems = Array.from(document.body.querySelectorAll('li')).map((item) =>
@@ -1239,8 +1240,8 @@ describe('VTable', () => {
       // body row: first non-data cell is the expand trigger at index 1
       const firstRow = wrapper.findAll('tbody tr')[0]
       const cells = firstRow.findAll('td')
-      // Expand-icon column is at second visible position
-      expect(cells[1].find('button[aria-label="Expand row"]').exists()).toBe(true)
+      // Expand-icon column is at second visible position (default zh-CN label)
+      expect(cells[1].find('button[aria-label="展开行"]').exists()).toBe(true)
 
       wrapper.unmount()
     })

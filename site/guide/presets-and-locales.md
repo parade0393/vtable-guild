@@ -87,6 +87,7 @@ app.use(
             selectAll: 'Select all',
             selectInvert: 'Invert selection',
             selectNone: 'Clear selection',
+            selectionsTriggerAriaLabel: 'Selection options',
           },
         },
       },
@@ -96,6 +97,8 @@ app.use(
 ```
 
 如果你只想覆盖少量字段，优先使用 localeOverrides，不必重写整套 locale。
+
+`selection.selectionsTriggerAriaLabel` 是表头批量选择菜单入口的无障碍名称（读屏软件朗读的按钮名称），内置 `选择操作` / `Selection options`。它是可选字段，旧语言包无需补齐，缺省时沿用内置文案。
 
 ## 局部作用域切换
 
