@@ -65,9 +65,17 @@ const query = useTableQuery<FormValues, Params>({
 
 ## API
 
+`TValues` 是表单值类型，`TParams` 是请求参数类型，默认与 `TValues` 相同。
+
+### useTableQuery 选项
+
 <!-- @api: reference query-options -->
 
-返回 `draft`、`submitted`、`params`、`collapsed`、`submitting`、`error`，以及 `submit()`、`reset()`、`resetFields()`、`toggleCollapsed()`。需要校验时，先调用宿主表单的 validate，成功后再调用 `submit()`。
+### useTableQuery 返回值
+
+<!-- @api: reference query-return -->
+
+需要校验时，先调用宿主表单的 validate，成功后再调用 `submit()`。
 
 ## Type Declarations
 

@@ -31,6 +31,7 @@ export const tableProps = [
   {
     name: 'showSorterTooltip',
     type: 'boolean | TableTooltipConfig',
+    typeHref: '/guide/cell-display#tabletooltipconfig',
     default: '`antdv` 为 `true`，`element-plus` 为 `false`',
     description: '表级排序提示配置，可被列级 `showSorterTooltip` 覆盖。',
     features: ['sorting'],
@@ -91,6 +92,7 @@ export const columnFields = [
   {
     name: 'showSorterTooltip',
     type: 'boolean | TableTooltipConfig',
+    typeHref: '/guide/cell-display#tabletooltipconfig',
     default: '继承表级配置',
     description: '列级排序提示开关与配置。',
     features: ['sorting'],

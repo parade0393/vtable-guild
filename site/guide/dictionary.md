@@ -75,9 +75,29 @@ const columns = computed(() => [
 
 宿主 Select 的值类型以其自身协议为准。例如 Ant Design Vue Select 不接受布尔 value；布尔字典接入时，业务应使用可逆的控件值映射，提交时恢复原始类型。不要将 `false` 与 `'false'`、`1` 与 `'1'` 合并成同一个字典 key。
 
-### 字典与订阅
+### createTableDictionary 选项
 
-<!-- @api: reference dictionary-api -->
+`createTableDictionary(options)` 创建一个字典实例。
+
+<!-- @api: reference dictionary-create-options -->
+
+### 字典实例
+
+<!-- @api: reference dictionary-instance -->
+
+### useTableDictionary 选项
+
+<!-- @api: reference dictionary-use-options -->
+
+### useTableDictionary 返回值
+
+<!-- @api: reference dictionary-return -->
+
+### TableDictionaryOption
+
+`options` 和 `selectedOptions` 的元素。
+
+<!-- @api: reference dictionary-option -->
 
 composable 的 search/reload 在成功时返回 true，失败、取消或卸载时返回 false；失败同时更新 error 并调用 onError。onError 自身抛错时将该异常存入 error，返回的 Promise 仍正常结束。
 `manualRequest` 只跳过首次请求，后续依赖参数变化仍加载。请在 setup 或 effectScope 中创建以便自动清理。

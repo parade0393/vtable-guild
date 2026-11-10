@@ -88,11 +88,15 @@ const edit = useTableEdit<Member>({
 
 ## API
 
-### useTableEdit 配置
+### useTableEdit 选项
+
+`context` 为 `{ key, original, isNew, signal }`。用于主表单明细的 `dataSource`、`onChange`、`createRecord`、`maxRows` 见[明细表单](/guide/detail-form#api)。
 
 <!-- @api: reference editing-options -->
 
-### useTableEdit 状态与方法
+### useTableEdit 返回值
+
+全量校验与提交快照相关的 `records`、`validateAll`、`getValues` 等见[明细表单](/guide/detail-form#api)。
 
 <!-- @api: reference editing-state -->
 

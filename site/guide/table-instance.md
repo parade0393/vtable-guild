@@ -11,15 +11,7 @@ const found = await table.value?.scrollTo({ key: 'order-20', align: 'top' })
 await table.value?.scrollTo({ top: 0, left: 0 })
 ```
 
-将 `ref="table"` 绑定到 `VTable`，普通表体与虚拟表体使用同一接口。
-
-| 参数           | 含义                                                               |
-| -------------- | ------------------------------------------------------------------ |
-| `key`          | 稳定的行 key，优先于 index 和 top，支持数字 0 与空字符串           |
-| `index`        | 当前页可见行的零基索引；树形数据展开后按可见扁平行计数             |
-| `top` / `left` | 像素位置；浏览器与虚拟列表将其限制在可滚动范围内                   |
-| `align`        | `top` / `bottom` / `auto`，默认 `top`；auto 只在目标超出视口时移动 |
-| `offset`       | 行定位相对目标位置的像素偏移                                       |
+将 `ref="table"` 绑定到 `VTable`，普通表体与虚拟表体使用同一接口。参数见 [TableScrollToOptions](#tablescrolltooptions)。
 
 返回 `Promise<boolean>`：成功找到可滚动容器和目标时为 true；未挂载、参数无效、目标不存在时为 false。虚拟列表对不定行高使用已有测量与纠偏机制；Promise 表示已提交定位，不承诺后续异步图片加载后的最终像素位置。
 
@@ -42,6 +34,12 @@ await table.value?.scrollTo({ top: 0, left: 0 })
 ### 实例方法
 
 <!-- @api: reference instance-methods -->
+
+### TableScrollToOptions
+
+`scrollTo` 的参数。`key`、`index`、`top`、`left` 至少提供一个。
+
+<!-- @api: reference scroll-to-options -->
 
 ## Type Declarations
 

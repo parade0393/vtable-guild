@@ -106,6 +106,14 @@ const footer: NonNullable<TableProps<ScoreRow>['footer']> = () => '数据更新�
 
 <!-- @api: reference summary -->
 
+#### VTableSummary Props
+
+<!-- @api: reference summary-props -->
+
+#### VTableSummary.Cell Props
+
+<!-- @api: reference summary-cell-props -->
+
 ## 主题
 
 标题、页脚和摘要区域的 class 可通过实例 `ui` 或全局 `theme.table.slots` 覆盖。调整颜色或尺寸时可使用下方 [CSS 变量](#css-变量)。覆盖顺序见[三层主题覆盖](/guide/theme-overrides)。

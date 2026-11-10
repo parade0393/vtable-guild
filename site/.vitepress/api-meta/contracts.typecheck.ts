@@ -1,4 +1,5 @@
 import type * as Public from '@vtable-guild/vtable-guild'
+import type * as ConfigDocs from '../type-declarations/config'
 import type * as Docs from '../type-declarations/features'
 import type { referenceApiTables } from './reference-api'
 import type { columnFields, rowSelectionFields } from './table'
@@ -148,4 +149,50 @@ export type ComponentApiContracts = [
       keyof Public.TableSelectionAlertSlotProps
     >
   >,
+]
+
+type Names<K extends keyof ReferenceTables> = TableNames<ReferenceTables[K]>
+type ObjectForm<T> = Exclude<NonNullable<T>, boolean | string>
+
+/** 配置项子表、组合式函数的选项与返回值表与公开类型逐项对应。 */
+export type ProtocolApiContracts = [
+  Assert<Equal<Names<'loading-config'>, keyof ObjectForm<Public.TableProps['loading']>>>,
+  Assert<Equal<Names<'scroll-config'>, keyof NonNullable<Public.TableProps['scroll']>>>,
+  Assert<Equal<Names<'sticky-config'>, keyof Public.TableSticky>>,
+  Assert<Equal<Names<'copyable-config'>, keyof ObjectForm<Public.ColumnCopyable>>>,
+  Assert<Equal<Names<'tooltip-config'>, keyof Public.TableTooltipConfig>>,
+  Assert<Equal<Names<'instance-methods'>, keyof Public.TableInstance>>,
+  Assert<Equal<Names<'scroll-to-options'>, keyof Public.TableScrollToOptions>>,
+  Assert<Equal<Names<'summary-props'>, keyof ConfigDocs.VTableSummaryProps>>,
+  Assert<Equal<Names<'summary-cell-props'>, keyof ConfigDocs.VTableSummaryCellProps>>,
+  Assert<Equal<Names<'pagination-config'>, keyof Public.TablePaginationConfig>>,
+  Assert<Equal<Names<'pagination-slot-props'>, keyof Public.TablePaginationSlotProps>>,
+  Assert<Equal<Names<'query-options'>, keyof Public.UseTableQueryOptions<object>>>,
+  Assert<Equal<Names<'query-return'>, keyof Public.UseTableQueryReturn<object>>>,
+  Assert<
+    Equal<
+      Names<'editing-options'> | Names<'detail-form-options'>,
+      keyof Public.UseTableEditOptions<object>
+    >
+  >,
+  Assert<
+    Equal<
+      Names<'editing-state'> | Names<'detail-form-return'>,
+      keyof Public.UseTableEditReturn<object>
+    >
+  >,
+  Assert<Equal<Names<'request-options'>, keyof Public.UseTableRequestOptions<object>>>,
+  Assert<
+    Equal<
+      Names<'request-return'> | Names<'request-methods'>,
+      keyof Public.UseTableRequestReturn<object>
+    >
+  >,
+  Assert<
+    Equal<Names<'dictionary-create-options'>, keyof Public.CreateTableDictionaryOptions<object>>
+  >,
+  Assert<Equal<Names<'dictionary-instance'>, keyof Public.TableDictionary>>,
+  Assert<Equal<Names<'dictionary-use-options'>, keyof Public.UseTableDictionaryOptions<object>>>,
+  Assert<Equal<Names<'dictionary-return'>, keyof Public.UseTableDictionaryReturn>>,
+  Assert<Equal<Names<'dictionary-option'>, keyof Public.TableDictionaryOption>>,
 ]

@@ -65,9 +65,25 @@ import {
 
 <!-- @api: reference props-layout -->
 
+#### loading {#loading}
+
+`loading` 传对象时的配置项。
+
+<!-- @api: reference loading-config -->
+
 ### 滚动与定位
 
 <!-- @api: reference props-scroll -->
+
+#### scroll {#scroll}
+
+<!-- @api: reference scroll-config -->
+
+#### sticky {#sticky}
+
+`sticky` 传对象时的配置项；`true` 等同 `{}`。
+
+<!-- @api: reference sticky-config -->
 
 ### 主题与语言
 
@@ -85,11 +101,7 @@ import {
 
 <!-- @api: reference columns-cell-display -->
 
-`loading` 对象额外支持 `delay?: number`（毫秒）与 `wrapperClassName?: string`；延迟期间关闭加载会取消展示。
-
-列级 `copyable?: ColumnCopyable<TRecord>` 支持开关或 `{ text, onCopy, onError }`；`text` 可为字符串或返回字符串 / Promise 的上下文回调。
-列级 `tooltip?: string | TableTooltipConfig` 提供表头说明；表级与列级 `showSorterTooltip` 支持 boolean 或同一配置对象。
-配置项包括 `title`、`placement`、`mouseEnterDelay`、`mouseLeaveDelay`、`color`、`arrow` 和 `class`。
+`copyable` 与 `tooltip` 的对象配置见[单元格展示](/guide/cell-display#api)；表级与列级 `showSorterTooltip` 使用同一个 [`TableTooltipConfig`](/guide/cell-display#tabletooltipconfig)。
 
 列级 `valueEnum?: ColumnValueEnum` 支持对象或 Map，值为文本或 `{ text, status }`，status 可为 success、warning、error、processing、default。
 `filters: true` 从枚举生成筛选项。`filters: false` 不提供默认筛选项。`onFilter: false` 跳过本地过滤，`onFilter: true` 使用等值匹配。
@@ -201,6 +213,14 @@ import {
 
 <!-- @api: reference summary -->
 
+### VTableSummary Props
+
+<!-- @api: reference summary-props -->
+
+### VTableSummary.Cell Props
+
+<!-- @api: reference summary-cell-props -->
+
 ## 相关页面
 
 - [类型参考](/guide/type-reference)
@@ -210,7 +230,7 @@ import {
 
 ## Pagination
 
-`pagination?: false | TablePaginationConfig`，默认关闭，传 `{}` 启用。[完整配置与示例](/guide/pagination)。`scroll.scrollToFirstRowOnChange?: boolean` 控制排序、筛选、分页后的纵向复位，启用分页时默认 true，其他场景默认保持原行为。
+`pagination?: false | TablePaginationConfig`，默认关闭，传 `{}` 启用。配置项见[分页配置参考](/guide/pagination#配置参考)，翻页后是否回到第一行由 [`scroll.scrollToFirstRowOnChange`](#scroll) 控制。
 
 ## Type Declarations
 
