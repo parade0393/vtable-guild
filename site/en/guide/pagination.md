@@ -94,45 +94,78 @@ Place `{ slot: 'selection' }` in the layout and branch on `name` in `#pagination
 
 `#paginationItem` receives `TablePaginationSlotProps`, a readonly view of effective state:
 
-| Field                            | Type                                       | Meaning                                                                    |
-| -------------------------------- | ------------------------------------------ | -------------------------------------------------------------------------- |
-| `name`                           | `string`                                   | Name from `{ slot: 'name' }`                                               |
-| `current` / `pageSize` / `total` | `number`                                   | Current page, page size and record count                                   |
-| `pageCount`                      | `number`                                   | Page count used by the built-in pager                                      |
-| `range`                          | `readonly [number, number]`                | One-based page range, matching `showTotal`                                 |
-| `disabled`                       | `boolean`                                  | Whether pagination is disabled; bind this to application buttons as needed |
-| `position`                       | `Exclude<TablePaginationPosition, 'none'>` | Actual pager position, such as `topLeft` or `bottomRight`                  |
-| `region`                         | `'inline' \| 'left' \| 'right'`            | Region containing the extension                                            |
+| Field       | Type                                       | Description                                                                 |
+| ----------- | ------------------------------------------ | --------------------------------------------------------------------------- |
+| `name`      | `string`                                   | Name from `{ slot: 'name' }`.                                               |
+| `current`   | `number`                                   | Current page.                                                               |
+| `pageSize`  | `number`                                   | Page size.                                                                  |
+| `total`     | `number`                                   | Record count.                                                               |
+| `pageCount` | `number`                                   | Page count used by the built-in pager.                                      |
+| `range`     | `readonly [number, number]`                | One-based page range, matching `showTotal`.                                 |
+| `disabled`  | `boolean`                                  | Whether pagination is disabled; bind this to application buttons as needed. |
+| `position`  | `Exclude<TablePaginationPosition, 'none'>` | Actual pager position, such as `topLeft` or `bottomRight`.                  |
+| `region`    | `'inline' \| 'left' \| 'right'`            | Region containing the extension.                                            |
 
 Read application state, such as selected keys, directly from the parent. The context does not contain refresh, navigation or request methods; application actions do not automatically emit pagination events. When top and bottom pagers are both visible, each renders its own instance of an extension with the appropriate `position`.
 
 Import `TablePaginationBuiltinLayoutItem`, `TablePaginationLayoutItem`, `TablePaginationLayout` and `TablePaginationSlotProps` from `@vtable-guild/vtable-guild`.
 
-## Configuration
+## API
 
-| Field                                       | Type / default                                                                                  | Purpose                                                                                      |
-| ------------------------------------------- | ----------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `current`, `defaultCurrent`                 | `number` / 1                                                                                    | Controlled / initial page                                                                    |
-| `pageSize`, `defaultPageSize`               | `number` / 10                                                                                   | Controlled / initial size                                                                    |
-| `total`                                     | `number`                                                                                        | Positive explicit total, otherwise processed root count                                      |
-| `disabled`, `hideOnSinglePage`              | `boolean` / false                                                                               | Disable interaction / hide one-page controls; total zero hides the pager                     |
-| `showSizeChanger`                           | `boolean`                                                                                       | Defaults to total > 50                                                                       |
-| `totalBoundaryShowSizeChanger`              | `number` / 50                                                                                   | Threshold for automatic size changer                                                         |
-| `pageSizeOptions`                           | `(string \| number)[]`                                                                          | Defaults to `['10','20','50','100']`; current size remains available                         |
-| `buildOptionText`                           | `(option: { value: string \| number }) => VNodeChild`                                           | Custom option content                                                                        |
-| `showQuickJumper`                           | `boolean \| { goButton?: VNodeChild }`                                                          | Submit on Enter/blur; with a Go button, blur does not submit                                 |
-| `showTotal`                                 | `(total: number, range: [number, number]) => VNodeChild`                                        | One-based range; empty range is `[0, 0]`                                                     |
-| `size`                                      | `'default' \| 'small'`                                                                          | Follows table size when omitted                                                              |
-| `simple`, `showLessItems`                   | `boolean` / false                                                                               | Input pager / smaller page window                                                            |
-| `pagerCount`                                | `number`                                                                                        | Odd integer 5–21; overrides `showLessItems`                                                  |
-| `responsive`                                | `boolean` / false                                                                               | Compact size below 576px unless size is explicit                                             |
-| `itemRender`                                | `(item: { page: number; type: PaginationItemType; originalElement: VNodeChild }) => VNodeChild` | Types: page, prev, next, jump-prev, jump-next                                                |
-| `position`                                  | `TablePaginationPosition[]`                                                                     | Default `['bottomRight']`; top/bottom Left/Center/Right or none                              |
-| `layout`                                    | `TablePaginationLayout`                                                                         | Ordered array or `{ left, right }`; omitted keeps preset defaults; show switches still apply |
-| `locale`, `class`, `style`                  | `Partial<VTableGuildPaginationLocale>`, `string`, `CSSProperties`                               | Text and presentation overrides                                                              |
-| `onChange`                                  | `(page: number, pageSize: number) => void`                                                      | Navigation, size changes and filter resets                                                   |
-| `onShowSizeChange`                          | `(current: number, size: number) => void`                                                       | Size changes                                                                                 |
-| `'onUpdate:current'`, `'onUpdate:pageSize'` | `(value: number) => void`                                                                       | Controlled state update notifications                                                        |
+### Props
+
+| Prop         | Type                             | Default | Description                                                                                                                                                      |
+| ------------ | -------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pagination` | `false \| TablePaginationConfig` | `false` | Pass `{}` to enable local or remote pagination; see [configuration](#configuration).                                                                             |
+| `scroll`     | `object`                         | -       | Horizontal and vertical scrolling. `scrollToFirstRowOnChange` controls the vertical reset after paging; see the [scroll config](/en/guide/api-reference#scroll). |
+| `manual`     | `boolean \| TableManualConfig`   | `false` | `true` skips local sorting, filtering and pagination slicing; the object form sets `sort`, `filter` and `pagination` separately.                                 |
+
+### Events
+
+| Event    | Payload                                                                                                      | Description                                                                                                                                                 |
+| -------- | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `change` | `(filters: TableFiltersInfo, sorter: VTableSorterResult<TRecord>, extra: TableChangeExtra<TRecord>) => void` | Unified event after sorting, filtering, selection and pagination; `extra.action` is `'paginate'` for page changes and `extra.pagination` carries the state. |
+
+### Slots
+
+| Slot             | Payload type                                           | Description                                           |
+| ---------------- | ------------------------------------------------------ | ----------------------------------------------------- |
+| `paginationItem` | [`TablePaginationSlotProps`](#pagination-slot-context) | Content at `{ slot: 'name' }` in `pagination.layout`. |
+
+### Configuration
+
+Fields of the `pagination` object (`TablePaginationConfig`).
+
+| Field                          | Type                                                                                            | Default            | Description                                                                                                                   |
+| ------------------------------ | ----------------------------------------------------------------------------------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| `current`                      | `number`                                                                                        | -                  | Controlled page.                                                                                                              |
+| `defaultCurrent`               | `number`                                                                                        | `1`                | Initial page.                                                                                                                 |
+| `pageSize`                     | `number`                                                                                        | -                  | Controlled page size.                                                                                                         |
+| `defaultPageSize`              | `number`                                                                                        | `10`               | Initial page size.                                                                                                            |
+| `total`                        | `number`                                                                                        | -                  | Record count; when omitted or not a positive integer, the processed root record count is used.                                |
+| `disabled`                     | `boolean`                                                                                       | `false`            | Disable pagination interaction; slicing still applies.                                                                        |
+| `hideOnSinglePage`             | `boolean`                                                                                       | `false`            | Hide the pager when there is one page; a total of zero always hides it.                                                       |
+| `showSizeChanger`              | `boolean`                                                                                       | -                  | Show the page-size changer; when unset it appears once the total exceeds the threshold in the next row.                       |
+| `totalBoundaryShowSizeChanger` | `number`                                                                                        | `50`               | Total above which the size changer appears automatically.                                                                     |
+| `pageSizeOptions`              | `(string \| number)[]`                                                                          | 10, 20, 50, 100    | Page-size options; the current size remains available even if it is not listed.                                               |
+| `buildOptionText`              | `(option: { value: string \| number }) => VNodeChild`                                           | -                  | Custom content for page-size options.                                                                                         |
+| `showQuickJumper`              | `boolean \| { goButton?: VNodeChild }`                                                          | `false`            | Quick jumper. Submits on Enter or blur; with `goButton`, blur does not submit.                                                |
+| `showTotal`                    | `(total: number, range: [number, number]) => VNodeChild`                                        | -                  | Show the total; the range is one-based and `[0, 0]` for empty data.                                                           |
+| `size`                         | `'default' \| 'small'`                                                                          | follows table size | Pager size.                                                                                                                   |
+| `simple`                       | `boolean`                                                                                       | `false`            | Simple mode with an input instead of the page list.                                                                           |
+| `showLessItems`                | `boolean`                                                                                       | `false`            | Use a smaller page window.                                                                                                    |
+| `pagerCount`                   | `number`                                                                                        | -                  | Number of page buttons, an odd integer from 5 to 21; overrides `showLessItems`. See [page window](#page-window).              |
+| `responsive`                   | `boolean`                                                                                       | `false`            | Use the compact size below 576px unless `size` is set.                                                                        |
+| `itemRender`                   | `(item: { page: number; type: PaginationItemType; originalElement: VNodeChild }) => VNodeChild` | -                  | Custom page and navigation buttons; `type` is `page`, `prev`, `next`, `jump-prev` or `jump-next`.                             |
+| `position`                     | `TablePaginationPosition[]`                                                                     | bottom right       | Pager positions, `['bottomRight']` by default; top and bottom can both be used. `['none']` hides the pager but keeps slicing. |
+| `layout`                       | `TablePaginationLayout`                                                                         | preset layout      | Ordered array or `{ left, right }`; see [composable layouts](#composable-layouts-and-content-slots).                          |
+| `locale`                       | `object`                                                                                        | -                  | Pagination text overrides; fields are listed in [Type Declarations](#type-declarations).                                      |
+| `class`                        | `string`                                                                                        | -                  | Class for the pagination area.                                                                                                |
+| `style`                        | `CSSProperties`                                                                                 | -                  | Inline style for the pagination area.                                                                                         |
+| `onChange`                     | `(page: number, pageSize: number) => void`                                                      | -                  | Called on navigation, page-size changes and page resets caused by filtering.                                                  |
+| `onShowSizeChange`             | `(current: number, size: number) => void`                                                       | -                  | Called when the page size changes.                                                                                            |
+| `onUpdate:current`             | `(current: number) => void`                                                                     | -                  | Update notification for the controlled page.                                                                                  |
+| `onUpdate:pageSize`            | `(pageSize: number) => void`                                                                    | -                  | Update notification for the controlled page size.                                                                             |
 
 Only the first matching position in each top/bottom region is used. `position: ['none']` hides controls but retains slicing; `pagination: false` disables both.
 
