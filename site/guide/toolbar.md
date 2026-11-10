@@ -23,7 +23,15 @@ description: 使用 VTableToolbar 组合刷新、密度、列设置与全屏，�
 
 ## 搜索、筛选与视图切换
 
-`search` 开启一体式关键词输入与右侧搜索图标按钮，默认高度 32px，通过 `v-model:searchValue` 管理输入草稿，`search(value)` 事件表示提交。输入变化只发 `update:searchValue`，不会自动提交或刷新。输入框内的清空图标依次发 `update:searchValue('')` 与 `clearSearch`，不额外发出 `search`，业务可在 `clearSearch` 中提交空查询，避免同一操作产生两次请求。
+`search` 开启一体式关键词输入与右侧搜索图标按钮，默认高度 32px。只关心提交结果时监听 `search` 即可：按 Enter、点击搜索按钮或清空图标都会触发，参数是提交的关键词，清空时为空字符串。
+
+```vue
+<VTableToolbar search @search="keyword = $event" />
+```
+
+输入草稿默认由组件持有，输入变化不会自动提交或刷新。需要在外部读取或修改草稿时（例如“重置”按钮同时清空输入框），用 `v-model:search-value` 接管；此时输入框显示的始终是传入的值。
+
+清空图标依次触发 `update:searchValue('')`、`clearSearch` 和 `search('')`。空关键词的请求放在 `search` 中处理；`clearSearch` 只用于区分“清空”这一操作，不要在两个事件里重复请求。
 
 `#filter` 放入业务已有的筛选控件；默认与操作按钮同排，`multipleLine` 将它放进第二行。`#extra` 始终使用独立整行，可组合 Tabs、批量提示条或其他业务内容。状态、页码与选择是否随视图切换而重置由业务决定。
 
@@ -33,10 +41,10 @@ description: 使用 VTableToolbar 组合刷新、密度、列设置与全屏，�
 
 </Demo>
 
-`#search` 可以完全替换内置搜索控件。它与其他工具栏插槽共用 `searchValue`、`updateSearchValue(value)`、`submitSearch(value?)`、`clearSearch()`。`loading` 期间可以修改搜索草稿，提交和清空暂时禁用；`disabled` 同时禁用输入和操作。按 Enter 提交时会避开输入法组合状态。
+`#search` 可以完全替换内置搜索控件。它与其他工具栏插槽共用 `searchValue`、`updateSearchValue(value)`、`submitSearch(value?)`、`clearSearch()`，草稿同样可以不绑定。`loading` 期间可以修改搜索草稿，提交和清空暂时禁用；`disabled` 同时禁用输入和操作。按 Enter 提交时会避开输入法组合状态。
 
 ```vue
-<VTableToolbar v-model:search-value="keyword" search @search="submitQuery">
+<VTableToolbar @search="submitQuery">
   <template #search="{ searchValue, updateSearchValue, submitSearch, disabled }">
     <a-input-search
       :value="searchValue"
@@ -57,7 +65,7 @@ description: 使用 VTableToolbar 组合刷新、密度、列设置与全屏，�
   v-model:columns="columns"
   v-model:size="size"
   title="订单列表"
-  :options="{ reload: false, fullScreen: false }"
+  :options="{ reload: false, density: false }"
 >
   <template #actions="{ disabled }">
     <a-button :disabled="disabled" @click="exportOrders">导出 Excel</a-button>
@@ -77,23 +85,78 @@ description: 使用 VTableToolbar 组合刷新、密度、列设置与全屏，�
 </VTableToolbar>
 ```
 
-## 状态与全屏
+## 状态
 
 - `columns`、`size` 与表格共用，使用 `v-model` 接受更新。未传 `columns` 时隐藏列设置；未传 `size` 时读取表格主题的默认密度。
 - 刷新只触发 `reload`。请求期间由业务设置 `loading`，刷新按钮显示加载状态并防止重复点击，密度和列设置仍可使用。
 - `disabled` 禁用内置操作。自定义按钮通过插槽参数读取 `disabled`、`loading` 并决定禁用规则。
-- 启用 `options.fullScreen` 时传入 `fullscreenTarget: () => HTMLElement | null`，让工具栏和表格一起进入浏览器全屏。缺少目标或浏览器 API 时按钮禁用。浏览器确认变化后发出 `fullscreenChange`，按 Escape 退出也会同步；请求失败发出 `fullscreenError`。
-- 全屏时列设置浮层默认挂载到全屏目标内。若通过 `columnSettings.getPopupContainer` 自定义容器，应返回全屏目标的后代元素。
+
+## 全屏
+
+工具栏放在 `VTable` 的 `title` 或 `footer` 插槽里时，开启 `options.fullScreen` 即可，整张表格（含标题、分页）进入浏览器全屏：
+
+```vue
+<VTable :columns="columns" :data-source="rows">
+  <template #title>
+    <VTableToolbar :options="{ fullScreen: true }" />
+  </template>
+</VTable>
+```
+
+需要把查询表单等表格以外的内容一起全屏，或工具栏不在表格插槽内时，用 `fullscreenTarget` 指定元素，它优先于所在表格：
+
+```vue
+<div ref="page">
+  <QueryForm />
+  <VTableToolbar :options="{ fullScreen: true }" :fullscreen-target="() => page" />
+  <VTable :columns="columns" :data-source="rows" />
+</div>
+```
+
+- 全屏的表格使用 `--vtg-table-bg` 作为背景，内容超出屏幕时可滚动。自定义目标的背景、内边距和滚动由业务通过 `:fullscreen` 设置。
+- 没有可用目标或浏览器不支持全屏时按钮禁用；工具栏既不在表格内又没有传 `fullscreenTarget` 时，开发环境会给出告警。
+- 浏览器确认变化后触发 `fullscreenChange`，按 Escape 退出也会同步；请求被拒绝时触发 `fullscreenError`。
+- 全屏时筛选菜单、列设置、页大小菜单和提示文字默认挂载到全屏元素内。通过 `getPopupContainer` 自定义容器时，应返回全屏元素的后代。
 
 ## API
 
+`TRecord` 表示业务行类型。
+
+### Props
+
 <!-- @api: reference toolbar-props -->
 
-`options` 支持 `reload`、`density`、`setting`、`fullScreen` 布尔开关，并将 `fixed`、`draggable` 传递给列设置面板，分别控制固定位置和拖拽排序入口。
+### options
 
-事件：`update:columns(columns)`、`update:size(size)`、`reset()`、`reload()`、`fullscreenChange(active)`、`fullscreenError(error)`、`update:searchValue(value)`、`search(value)`、`clearSearch()`。重置沿用列设置面板的行为，只恢复初始列显隐。
+内置工具的开关。`fixed`、`draggable` 传递给列设置面板。
 
-插槽：`title`、`actions`、`settings`、`search`、`filter`、`extra` 接收 `TableToolbarSlotProps<TRecord>`；`columnLabel` 接收 `{ column }`，用于自定义列设置选项的标签。`search` 替换搜索控件，`filter` 用于筛选，`extra` 用于全宽扩展内容。
+<!-- @api: reference toolbar-options -->
+
+### search
+
+`search` 传对象时的配置项；传 `true` 使用默认值。
+
+<!-- @api: reference toolbar-search-config -->
+
+### columnSettings
+
+传给内嵌列设置面板的配置，字段含义与 [`VTableColumnSettings`](/guide/column-display#面板-api) 的同名属性一致。
+
+<!-- @api: reference toolbar-column-settings -->
+
+### Events
+
+<!-- @api: reference toolbar-events -->
+
+### Slots
+
+<!-- @api: reference toolbar-slots -->
+
+### Slot Props
+
+除 `columnLabel` 外，所有插槽都接收 `TableToolbarSlotProps<TRecord>`。
+
+<!-- @api: reference toolbar-slot-props -->
 
 ## 主题与语言
 

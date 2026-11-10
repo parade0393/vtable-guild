@@ -29,7 +29,7 @@ import {
 
 ## Toolbar and column settings
 
-Compose the standalone `VTableToolbar` in `VTable`'s `#title` slot and share `v-model:columns` and `v-model:size` with the table. Reload, density and column settings are enabled by default. Full screen requires `options.fullScreen` and an explicit `fullscreenTarget`. Reload only emits an event; the application manages requests and `loading`.
+Compose the standalone `VTableToolbar` in `VTable`'s `#title` slot and share `v-model:columns` and `v-model:size` with the table. Reload, density and column settings are enabled by default. Full screen is enabled with `options.fullScreen` and targets the surrounding table; pass `fullscreenTarget` to include content outside it. Reload only emits an event; the application manages requests and `loading`.
 
 Use `#actions` to add export or create buttons and `#settings` to replace the built-in tools. `options: false` keeps these business slots available. See [toolbar and business extensions](/guide/toolbar) (Chinese) for complete props, events, slot types and a working CSV export example.
 

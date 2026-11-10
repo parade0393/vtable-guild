@@ -41,6 +41,10 @@ type NamesForKind<Kind extends TableApiKind> = TableNames<
   Extract<ReferenceTables[keyof ReferenceTables], { kind: Kind }>
 >
 type EventName<K> = K extends `on${infer Name}` ? Uncapitalize<Name> : never
+/** 泛型组件的事件名：从 props 的 `onXxx` 监听器还原，排除 VNode 生命周期钩子。 */
+type ComponentEventName<C> = C extends (props: infer P, ...args: never[]) => unknown
+  ? Exclude<EventName<keyof P>, `vnode${string}`>
+  : never
 
 /** 独立参考页的条目名称与公开类型同步。 */
 export type ReferenceApiContracts = [
@@ -66,6 +70,82 @@ export type ReferenceApiContracts = [
     Equal<
       TableNames<ReferenceTables['editable-editor-fields']>,
       keyof Public.TableColumnEditor<object>
+    >
+  >,
+]
+
+/** 独立组件页的属性、配置项、事件、插槽表与公开类型逐项对应。 */
+export type ComponentApiContracts = [
+  Assert<Equal<TableNames<ReferenceTables['toolbar-props']>, keyof Public.TableToolbarProps>>,
+  Assert<Equal<TableNames<ReferenceTables['toolbar-options']>, keyof Public.TableToolbarOptions>>,
+  Assert<
+    Equal<
+      TableNames<ReferenceTables['toolbar-search-config']>,
+      keyof Public.TableToolbarSearchConfig
+    >
+  >,
+  Assert<
+    Equal<
+      TableNames<ReferenceTables['toolbar-column-settings']>,
+      keyof NonNullable<Public.TableToolbarProps['columnSettings']>
+    >
+  >,
+  Assert<
+    Equal<
+      TableNames<ReferenceTables['toolbar-events']>,
+      ComponentEventName<typeof Public.VTableToolbar>
+    >
+  >,
+  Assert<Equal<TableNames<ReferenceTables['toolbar-slots']>, keyof Public.TableToolbarSlots>>,
+  Assert<
+    Equal<TableNames<ReferenceTables['toolbar-slot-props']>, keyof Public.TableToolbarSlotProps>
+  >,
+  Assert<
+    Equal<
+      TableNames<ReferenceTables['column-settings-props']>,
+      keyof Public.TableColumnSettingsProps
+    >
+  >,
+  Assert<
+    Equal<
+      TableNames<ReferenceTables['column-settings-options']>,
+      keyof Public.TableColumnSettingsOptions
+    >
+  >,
+  Assert<
+    Equal<
+      TableNames<ReferenceTables['column-settings-events']>,
+      ComponentEventName<typeof Public.VTableColumnSettings>
+    >
+  >,
+  Assert<
+    Equal<
+      TableNames<ReferenceTables['column-settings-slots']>,
+      keyof Public.TableColumnSettingsSlots
+    >
+  >,
+  Assert<
+    Equal<
+      TableNames<ReferenceTables['selection-alert-props']>,
+      keyof Public.TableSelectionAlertProps
+    >
+  >,
+  Assert<
+    Equal<
+      TableNames<ReferenceTables['selection-alert-events']>,
+      ComponentEventName<typeof Public.VTableSelectionAlert>
+    >
+  >,
+  Assert<
+    Equal<
+      TableNames<ReferenceTables['selection-alert-slots']>,
+      keyof Public.TableSelectionAlertSlots
+    >
+  >,
+  Assert<
+    Equal<
+      TableNames<ReferenceTables['selection-alert-slot-props']>,
+      keyof Public.TableSelectionAlertSlotProps
     >
   >,
 ]
