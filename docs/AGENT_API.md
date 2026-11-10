@@ -54,7 +54,7 @@ import {
 - `VTableSelectionAlert` 使用受控 `selectedRowKeys` 统计跨页数量，清空只请求更新。已选 keys 不代表已获得全部 records。见[批量操作](../site/guide/selection-alert.md)。
 - 列 `copyable / tooltip / valueEnum` 与表格 `columnEmptyText` 提供复制、说明、枚举和空值显示。`filters: true` 从枚举生成筛选项，`onFilter: false` 关闭本地筛选。见[单元格展示](../site/guide/cell-display.md)。
 - `useColumnState` 可保存显隐、固定与顶层顺序；列的 `hideInSetting / disable` 控制设置入口。面板 reset 仍只恢复显隐，helper.reset 恢复全部偏好。见[列设置](../site/guide/column-display.md)。
-- 工具栏支持 `search`、受控 `searchValue`、`search / clearSearch` 事件以及 `search / filter / extra` 插槽；业务决定视图切换时的页码与选择状态。
+- 工具栏支持 `search`、可选受控的 `searchValue`（不传时组件持有草稿）、`search / clearSearch` 事件以及 `search / filter / extra` 插槽；`search(value)` 在回车、点击搜索和清空时触发，清空时 `value` 为 `''`；业务决定视图切换时的页码与选择状态。
 - `loading` 对象支持 `delay`（毫秒）和 `wrapperClassName`；`showSorterTooltip` 支持独立的 tooltip 配置对象（延迟单位秒）。
 
 ### P2：ProTable 查询、编辑与字段协议
@@ -149,7 +149,7 @@ const dataSource: UserRow[] = [
 - `options` 默认开启 `reload`、`density`、`setting`；`fullScreen` 默认关闭。`options: false` 关闭内置工具，保留业务插槽；未传 `columns` 时隐藏列设置。
 - `#actions` 追加业务按钮；`#settings` 完全替换内置工具。`title` / `actions` / `settings` 共享 `TableToolbarSlotProps`，包含 `columns`、`size`、`loading`、`disabled`、`fullscreen`、`fullscreenAvailable`、`reload()`、`toggleFullscreen()`；`#columnLabel` 自定义列选项标签。
 - 刷新只发出 `reload`，业务管理请求与 `loading`。`disabled` 禁用内置操作，自定义按钮按插槽状态设置禁用规则。
-- 全屏需开启 `options.fullScreen` 并传 `fullscreenTarget: () => HTMLElement | null | undefined`。浏览器确认后触发 `fullscreenChange`；失败触发 `fullscreenError`。列设置浮层默认挂到全屏目标内。
+- 全屏只需开启 `options.fullScreen`：工具栏在 `VTable` 的 `title` / `footer` 插槽内时默认以表格根元素为目标；在表格外或要带上其他内容时传 `fullscreenTarget: () => HTMLElement | null | undefined`（优先）。浏览器确认后触发 `fullscreenChange`；失败触发 `fullscreenError`。全屏时表格内的浮层与 tooltip 默认挂到全屏元素内。
 - `VTableColumnSettings` 可单独使用，必传受控 `v-model:columns`，可选 `v-model:size`，用 `options.density` / `options.setting` 分别控制两个入口。两者的 `reset` 只恢复初始列显隐；重置不改变列宽、密度、固定、顺序、排序或筛选。面板现支持固定位置与顶层分组拖拽，配置见列设置指南。
 - 全局样式使用 `theme.toolbar.slots` / `theme.columnSettings.slots`，实例使用各自 `ui`。语言使用 `localeOverrides.toolbar` / `localeOverrides.columnSettings`，支持仅覆盖少量字段。
 

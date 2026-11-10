@@ -3,6 +3,8 @@ import { h, nextTick } from 'vue'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createVTableGuild, type VTableGuildOptions } from '@vtable-guild/core'
 import { resolveToolbarThemePreset } from '@vtable-guild/theme'
+import { resetDevWarnedForTest } from '../../../core/src/utils/devWarn'
+import VTable from './VTable.vue'
 import VTableToolbar from './VTableToolbar.vue'
 import type { TableToolbarSlotProps } from '../types/toolbar'
 import type { ColumnsType } from '../types'
@@ -21,6 +23,7 @@ afterEach(() => {
   }
   vi.useRealTimers()
   vi.restoreAllMocks()
+  resetDevWarnedForTest()
   document.body.innerHTML = ''
 })
 
@@ -202,14 +205,68 @@ describe.each(['antdv', 'element-plus'] as const)('%s toolbar', (preset) => {
     await button(wrapper, 'Clear search').trigger('click')
     expect(wrapper.emitted('update:searchValue')?.at(-1)).toEqual([''])
     expect(wrapper.emitted('clearSearch')).toEqual([[]])
-    expect(wrapper.emitted('search')).toHaveLength(2)
+    expect(wrapper.emitted('search')).toEqual([['Grace'], ['Grace'], ['']])
+    expect(wrapper.props('searchValue')).toBe('Grace')
+    expect(input.element.value).toBe('Grace')
     expect(wrapper.emitted('reload')).toBeUndefined()
     expect(wrapper.get('button').attributes('type')).toBe('button')
     await wrapper.setProps({ loading: true })
     await input.trigger('keydown', { key: 'Enter' })
-    expect(wrapper.emitted('search')).toHaveLength(2)
+    await button(wrapper, 'Clear search').trigger('click')
+    expect(wrapper.emitted('search')).toHaveLength(3)
+    expect(wrapper.emitted('clearSearch')).toHaveLength(1)
     await wrapper.setProps({ disabled: true })
     expect(input.attributes('disabled')).toBeDefined()
+  })
+
+  it('keeps its own search draft when searchValue is not bound', async () => {
+    const submitted = vi.fn()
+    const { wrapper } = create(preset)
+    await wrapper.setProps({ search: true, onSearch: submitted })
+    const input = wrapper.get('input')
+    expect(button(wrapper, 'Clear search')).toBeUndefined()
+    await input.setValue('Grace')
+    expect(input.element.value).toBe('Grace')
+    expect(wrapper.emitted('update:searchValue')).toEqual([['Grace']])
+    expect(submitted).not.toHaveBeenCalled()
+    await input.trigger('keydown', { key: 'Enter' })
+    await button(wrapper, 'Search').trigger('click')
+    expect(submitted.mock.calls).toEqual([['Grace'], ['Grace']])
+    await button(wrapper, 'Clear search').trigger('click')
+    expect(input.element.value).toBe('')
+    expect(submitted.mock.calls.at(-1)).toEqual([''])
+    expect(wrapper.emitted('clearSearch')).toEqual([[]])
+    expect(button(wrapper, 'Clear search')).toBeUndefined()
+
+    // Binding the value later hands the draft back to the parent.
+    await input.setValue('Ada')
+    await wrapper.setProps({ searchValue: 'Lin' })
+    expect(input.element.value).toBe('Lin')
+    await input.setValue('Hopper')
+    await input.trigger('keydown', { key: 'Enter' })
+    expect(submitted.mock.calls.at(-1)).toEqual(['Lin'])
+  })
+
+  it('passes the uncontrolled draft to a replaced search control', async () => {
+    const wrapper = mount(VTableToolbar<Record<string, unknown>>, {
+      props: { options: false },
+      slots: {
+        search: (scope: TableToolbarSlotProps) => [
+          h('input', {
+            value: scope.searchValue,
+            onInput: (event: Event) =>
+              scope.updateSearchValue((event.target as HTMLInputElement).value),
+          }),
+          h('button', { onClick: () => scope.submitSearch() }, 'Go'),
+        ],
+      },
+      global: { plugins: [createVTableGuild({ themePreset: preset })] },
+    })
+    wrappers.push(wrapper)
+    await wrapper.get('input').setValue('custom')
+    expect(wrapper.get('input').element.value).toBe('custom')
+    await button(wrapper, 'Go').trigger('click')
+    expect(wrapper.emitted('search')).toEqual([['custom']])
   })
 
   it('renders replaceable search, inline or second-row filters, and view tabs without built-ins', async () => {
@@ -265,10 +322,9 @@ it('supports complete settings replacement, custom titles and typed business slo
   expect(wrapper.findAll('button')).toHaveLength(2)
 })
 
-function fullscreenApi() {
+function fullscreenApi(target: HTMLElement = document.createElement('section')) {
   let current: Element | null = null
-  const target = document.createElement('section')
-  document.body.append(target)
+  if (!target.isConnected) document.body.append(target)
   function change(element: Element | null) {
     current = element
     document.dispatchEvent(new Event('fullscreenchange'))
@@ -284,6 +340,7 @@ function fullscreenApi() {
 it('enters the explicit target and tracks native exits, without exiting another fullscreen element', async () => {
   const api = fullscreenApi()
   const { wrapper } = create('antdv')
+  api.target.append(wrapper.element)
   await wrapper.setProps({ options: { fullScreen: true }, fullscreenTarget: () => api.target })
   api.change(document.createElement('div'))
   await nextTick()
@@ -297,7 +354,9 @@ it('enters the explicit target and tracks native exits, without exiting another 
   expect(api.target.contains(overlay('dialog').element)).toBe(true)
   api.change(null)
   await nextTick()
-  expect(document.querySelector('[role="dialog"]')).toBeNull()
+  // Leaving full screen keeps the open panel and moves it back to the body.
+  expect(api.target.contains(overlay('dialog').element)).toBe(false)
+  await overlay('dialog').trigger('keydown', { key: 'Escape' })
   expect(button(wrapper, 'Full screen').attributes('aria-pressed')).toBe('false')
   expect(wrapper.emitted('fullscreenChange')).toEqual([[true], [false]])
   await button(wrapper, 'Full screen').trigger('click')
@@ -321,6 +380,83 @@ it('disables unavailable fullscreen and reports rejected requests without optimi
   expect(wrapper.emitted('fullscreenChange')).toBeUndefined()
   expect(button(wrapper, 'Full screen').attributes('aria-pressed')).toBe('false')
   expect(button(wrapper, 'Full screen').attributes('disabled')).toBeUndefined()
+})
+
+function tableWithToolbar(slot: 'title' | 'footer', toolbarProps: Record<string, unknown> = {}) {
+  const wrapper = mount(VTable<Record<string, unknown>>, {
+    attachTo: document.body,
+    props: {
+      columns: [
+        {
+          key: 'name',
+          title: 'Name',
+          dataIndex: 'name',
+          filters: [{ text: 'Ada', value: 'Ada' }],
+          onFilter: (value: unknown, record: Record<string, unknown>) => record.name === value,
+        },
+      ],
+      dataSource: [{ key: 1, name: 'Ada' }],
+    },
+    slots: {
+      [slot]: () =>
+        h(VTableToolbar<Record<string, unknown>>, {
+          columns,
+          options: { fullScreen: true },
+          ...toolbarProps,
+        }),
+    },
+    global: { plugins: [createVTableGuild({ locale: 'en-US' })] },
+  })
+  wrappers.push(wrapper)
+  return wrapper
+}
+
+it.each(['title', 'footer'] as const)(
+  'uses the surrounding table as the fullscreen target from its %s slot',
+  async (slot) => {
+    const wrapper = tableWithToolbar(slot)
+    const root = wrapper.element as HTMLElement
+    const api = fullscreenApi(root)
+    await nextTick()
+    const toolbar = wrapper.getComponent({ name: 'VTableToolbar' })
+    expect(button(wrapper, 'Full screen').attributes('disabled')).toBeUndefined()
+    await button(wrapper, 'Full screen').trigger('click')
+    await flushPromises()
+    expect(api.request).toHaveBeenCalledOnce()
+    expect(toolbar.emitted('fullscreenChange')).toEqual([[true]])
+    expect(button(wrapper, 'Exit full screen').attributes('aria-pressed')).toBe('true')
+
+    // Popups stay visible by mounting inside the fullscreen element.
+    await button(wrapper, 'Column settings').trigger('click')
+    expect(root.contains(overlay('dialog').element)).toBe(true)
+
+    await button(wrapper, 'Exit full screen').trigger('click')
+    await flushPromises()
+    expect(api.exit).toHaveBeenCalledOnce()
+    expect(toolbar.emitted('fullscreenChange')).toEqual([[true], [false]])
+  },
+)
+
+it('prefers an explicit fullscreen target over the surrounding table', async () => {
+  const outer = document.createElement('main')
+  const api = fullscreenApi(outer)
+  const wrapper = tableWithToolbar('title', { fullscreenTarget: () => outer })
+  const tableRequest = vi.fn()
+  Object.defineProperty(wrapper.element, 'requestFullscreen', { value: tableRequest })
+  await nextTick()
+  await button(wrapper, 'Full screen').trigger('click')
+  await flushPromises()
+  expect(api.request).toHaveBeenCalledOnce()
+  expect(tableRequest).not.toHaveBeenCalled()
+})
+
+it('warns in development when fullscreen has no target to fall back to', async () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+  const { wrapper } = create('antdv')
+  await wrapper.setProps({ options: { fullScreen: true } })
+  expect(button(wrapper, 'Full screen').attributes('disabled')).toBeDefined()
+  expect(warn).toHaveBeenCalledOnce()
+  expect(warn.mock.calls[0]![0]).toContain('fullscreenTarget')
 })
 
 it('keeps identical theme slot keys across presets', () => {

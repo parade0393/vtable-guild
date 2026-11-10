@@ -1451,6 +1451,7 @@ export default defineComponent({
     })
 
     provide<TableContext>(TABLE_CONTEXT_KEY, {
+      rootElement: () => layoutRootRef.value,
       renderers: computed(() => props.renderers),
       isTreeLoading: lazyTree.isLoading,
       getTreeLoadError: lazyTree.getError,

@@ -9,6 +9,7 @@ import {
   type HTMLAttributes,
   type PropType,
 } from 'vue'
+import { getFullscreenContainer } from '@vtable-guild/core'
 import { getPopupPositionStyle, getPopupVerticalBoundary } from '../utils/popupPosition'
 
 export default defineComponent({
@@ -124,8 +125,13 @@ export default defineComponent({
         const trigger = anchor
         let active = true
         let observer: ResizeObserver | undefined
-        container.value = getContainer?.(anchor) ?? document.body
-        reposition()
+        // 未指定容器时：触发元素在浏览器全屏元素内就挂到该元素，否则 body 上的浮层不可见。
+        function mount() {
+          container.value =
+            getContainer?.(trigger) ?? getFullscreenContainer(trigger) ?? document.body
+          reposition()
+        }
+        mount()
 
         function outside(event: Event) {
           const target = event.target as Node
@@ -143,6 +149,7 @@ export default defineComponent({
         if (props.closeOnFocusOutside) document.addEventListener('focusin', outside)
         window.addEventListener('resize', reposition)
         window.addEventListener('scroll', reposition, true)
+        document.addEventListener('fullscreenchange', mount)
         onCleanup(() => {
           active = false
           observer?.disconnect()
@@ -152,6 +159,7 @@ export default defineComponent({
           document.removeEventListener('focusin', outside)
           window.removeEventListener('resize', reposition)
           window.removeEventListener('scroll', reposition, true)
+          document.removeEventListener('fullscreenchange', mount)
         })
         await nextTick()
         if (!active) return

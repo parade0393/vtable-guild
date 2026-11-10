@@ -10,7 +10,7 @@ import {
   type PropType,
   type SlotsType,
 } from 'vue'
-import { Input, Tooltip, useTheme, VTABLE_GUILD_INJECTION_KEY } from '@vtable-guild/core'
+import { devWarn, Input, Tooltip, useTheme, VTABLE_GUILD_INJECTION_KEY } from '@vtable-guild/core'
 import {
   FullscreenExitOutlinedIcon,
   FullscreenOutlinedIcon,
@@ -24,6 +24,7 @@ import {
   toolbarZhCN,
 } from '@vtable-guild/theme'
 import TableColumnSettings from './TableColumnSettings'
+import { TABLE_CONTEXT_KEY } from '../context'
 import type { ColumnsType } from '../types'
 import type { TableColumnSettingsSize } from '../types/column-settings'
 import type { TableToolbarProps, TableToolbarSlots, TableToolbarSlotProps } from '../types/toolbar'
@@ -42,7 +43,7 @@ export default defineComponent({
     },
     loading: Boolean,
     search: { type: [Boolean, Object] as PropType<TableToolbarProps['search']>, default: false },
-    searchValue: { type: String, default: '' },
+    searchValue: { type: String, default: undefined },
     multipleLine: Boolean,
     disabled: Boolean,
     fullscreenTarget: Function as PropType<TableToolbarProps['fullscreenTarget']>,
@@ -65,6 +66,7 @@ export default defineComponent({
   slots: Object as SlotsType<TableToolbarSlots>,
   setup(props, { emit, slots }) {
     const context = inject(VTABLE_GUILD_INJECTION_KEY, null)
+    const tableContext = inject(TABLE_CONTEXT_KEY, null)
     const preset = computed(() => context?.themePreset ?? 'antdv')
     const { slots: styles } = useTheme(
       'toolbar',
@@ -100,25 +102,18 @@ export default defineComponent({
     const mounted = ref(false)
     const fullscreenElement = shallowRef<Element | null>(null)
     const fullscreenPending = ref(false)
+    // 显式目标优先；放在 VTable 的 title / footer 插槽内时默认使用所在表格的根元素。
+    function fullscreenTarget() {
+      return props.fullscreenTarget ? props.fullscreenTarget() : tableContext?.rootElement?.()
+    }
     const fullscreen = computed(
-      () => !!fullscreenElement.value && fullscreenElement.value === props.fullscreenTarget?.(),
+      () => !!fullscreenElement.value && fullscreenElement.value === fullscreenTarget(),
     )
     const fullscreenAvailable = computed(
       () =>
         mounted.value &&
-        typeof props.fullscreenTarget?.()?.requestFullscreen === 'function' &&
+        typeof fullscreenTarget()?.requestFullscreen === 'function' &&
         typeof document.exitFullscreen === 'function',
-    )
-    function bodyPopupContainer() {
-      return document.body
-    }
-    function fullscreenPopupContainer() {
-      return props.fullscreenTarget?.() ?? document.body
-    }
-    const popupContainer = computed(
-      () =>
-        props.columnSettings?.getPopupContainer ??
-        (fullscreen.value ? fullscreenPopupContainer : bodyPopupContainer),
     )
     function syncFullscreen() {
       fullscreenElement.value = document.fullscreenElement
@@ -128,6 +123,21 @@ export default defineComponent({
       syncFullscreen()
       document.addEventListener('fullscreenchange', syncFullscreen)
     })
+    watch(
+      () =>
+        mounted.value &&
+        options.value.fullScreen &&
+        !props.fullscreenTarget &&
+        !tableContext?.rootElement,
+      (missing) => {
+        if (missing) {
+          devWarn(
+            'toolbar-fullscreen-target',
+            '[VTableToolbar] options.fullScreen 需要全屏目标：把工具栏放进 VTable 的 title / footer 插槽，或传入 fullscreenTarget。',
+          )
+        }
+      },
+    )
     onBeforeUnmount(() => {
       if (mounted.value) document.removeEventListener('fullscreenchange', syncFullscreen)
     })
@@ -136,16 +146,29 @@ export default defineComponent({
     function reload() {
       if (!props.disabled && !props.loading) emit('reload')
     }
+    // 搜索草稿：传入 searchValue 时受控，否则由组件持有，search 事件始终带上当前输入。
+    const innerSearchValue = ref(props.searchValue ?? '')
+    watch(
+      () => props.searchValue,
+      (value) => {
+        if (value !== undefined) innerSearchValue.value = value
+      },
+    )
+    const searchValue = computed(() => props.searchValue ?? innerSearchValue.value)
     function updateSearchValue(value: string) {
-      if (!props.disabled) emit('update:searchValue', value)
+      if (props.disabled) return
+      innerSearchValue.value = value
+      emit('update:searchValue', value)
     }
-    function submitSearch(value = props.searchValue) {
+    function submitSearch(value = searchValue.value) {
       if (!props.disabled && !props.loading) emit('search', value)
     }
     function clearSearch() {
       if (props.disabled || props.loading) return
-      emit('update:searchValue', '')
+      updateSearchValue('')
       emit('clearSearch')
+      // 清空即提交空关键词，业务只监听 search 就能拿到最终值。
+      emit('search', '')
     }
     function renderSearch(scope: TableToolbarSlotProps) {
       if (slots.search) return slots.search(scope)
@@ -156,7 +179,7 @@ export default defineComponent({
           <span class={styles.searchField()} data-disabled={props.disabled ? '' : undefined}>
             <Input
               bare
-              value={props.searchValue}
+              value={searchValue.value}
               placeholder={config?.placeholder ?? locale.value.searchPlaceholder}
               aria-label={config?.placeholder ?? locale.value.searchPlaceholder}
               disabled={props.disabled}
@@ -169,7 +192,7 @@ export default defineComponent({
                 }
               }}
             />
-            {config?.clearable !== false && props.searchValue && (
+            {config?.clearable !== false && searchValue.value && (
               <button
                 type="button"
                 class={styles.searchClear()}
@@ -208,7 +231,7 @@ export default defineComponent({
     }
     async function toggleFullscreen() {
       if (props.disabled || fullscreenPending.value || !fullscreenAvailable.value) return
-      const target = props.fullscreenTarget?.()
+      const target = fullscreenTarget()
       if (!target) return
       fullscreenPending.value = true
       try {
@@ -243,7 +266,6 @@ export default defineComponent({
           {(showColumns || showDensity) && (
             <TableColumnSettings
               {...props.columnSettings}
-              getPopupContainer={popupContainer.value}
               columns={props.columns ?? []}
               size={size.value}
               options={{
@@ -294,7 +316,7 @@ export default defineComponent({
         fullscreenAvailable: fullscreenAvailable.value,
         reload,
         toggleFullscreen,
-        searchValue: props.searchValue,
+        searchValue: searchValue.value,
         updateSearchValue,
         submitSearch,
         clearSearch,
