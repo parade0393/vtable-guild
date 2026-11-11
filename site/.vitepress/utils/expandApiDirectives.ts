@@ -4,6 +4,7 @@ import type { MarkdownRenderer } from 'vitepress'
 import type { ThemeConfig, ThemePresetName } from '@vtable-guild/vtable-guild'
 import { featureApi } from '../api-meta/feature-api'
 import { referenceApiTables } from '../api-meta/reference-api'
+import { referenceApiTablesEn } from '../api-meta/reference-api.en'
 import {
   columnFields,
   rowSelectionFields,
@@ -22,7 +23,10 @@ import type {
   ApiEntry,
   CssVarEntry,
   DocFeature,
+  DocLang,
   DocTable,
+  EventEntry,
+  ReferenceApiTable,
   TableApiKind,
   VueSlotEntry,
 } from '../api-meta/types'
@@ -50,12 +54,50 @@ function ofFeature<T extends { features: readonly DocFeature[] }>(
   return entries.filter((entry) => entry.features.includes(feature))
 }
 
-function apiRow(entry: ApiEntry): string[] {
+// ---- 语言 ----
+
+const TEXT = {
+  zh: {
+    props: ['Prop', '类型', '默认值', '说明'],
+    fields: ['字段', '类型', '默认值', '说明'],
+    events: ['事件', '参数', '说明'],
+    slots: ['Slot', '参数类型', '说明'],
+    ui: ['Slot', '说明'],
+    uiScoped: ['主题配置', 'Slot', '说明'],
+    cssVars: ['变量', '作用'],
+    notRead: '不读取',
+    undeclared: '未声明',
+    fallback: (value: string) => `未声明，回退 ${value}`,
+  },
+  en: {
+    props: ['Prop', 'Type', 'Default', 'Description'],
+    fields: ['Field', 'Type', 'Default', 'Description'],
+    events: ['Event', 'Payload', 'Description'],
+    slots: ['Slot', 'Payload type', 'Description'],
+    ui: ['Slot', 'Description'],
+    uiScoped: ['Theme config', 'Slot', 'Description'],
+    cssVars: ['Variable', 'Purpose'],
+    notRead: 'not read',
+    undeclared: 'undeclared',
+    fallback: (value: string) => `undeclared, falls back to ${value}`,
+  },
+} as const
+
+/** 英文页的站内链接指向英文页面；锚点由各自页面的标题决定，不在这里改写。 */
+function localizeHref(href: string | undefined, lang: DocLang): string | undefined {
+  return lang === 'en' ? href?.replace(/^\/(guide|comparison)\//, '/en/$1/') : href
+}
+
+const describe = (entry: { description: string; descriptionEn: string }, lang: DocLang) =>
+  cell(lang === 'en' ? entry.descriptionEn : entry.description)
+
+function apiRow(entry: ApiEntry, lang: DocLang): string[] {
+  const fallback = lang === 'en' ? (entry.defaultEn ?? entry.default) : entry.default
   return [
     code(entry.name),
-    linkedCode(entry.type, entry.typeHref),
-    entry.default ? cell(entry.default) : '-',
-    cell(entry.description),
+    linkedCode(entry.type, localizeHref(entry.typeHref, lang)),
+    fallback ? cell(fallback) : '-',
+    describe(entry, lang),
   ]
 }
 
@@ -71,55 +113,66 @@ function apiSource<T extends { name: string; features: readonly DocFeature[] }>(
   }
 }
 
-const apiSources = {
-  props: apiSource(['Prop', '类型', '默认值', '说明'], tableProps, apiRow),
-  columns: apiSource(['字段', '类型', '默认值', '说明'], columnFields, apiRow),
-  'row-selection': apiSource(['字段', '类型', '默认值', '说明'], rowSelectionFields, apiRow),
-  events: apiSource(['事件', '参数', '说明'], tableEvents, (entry) => [
-    code(entry.name),
-    code(entry.params),
-    cell(entry.description),
-  ]),
-  slots: apiSource<VueSlotEntry>(['Slot', '参数类型', '说明'], vueSlots, (entry) => [
-    code(entry.name),
-    linkedCode(entry.params, entry.paramsHref),
-    cell(entry.description),
-  ]),
-}
-
-const apiReference = new Map<string, DocTable>()
-const apiRows = new Map<TableApiKind, Map<string, readonly string[]>>()
-
-for (const [id, reference] of Object.entries(referenceApiTables)) {
-  const { headers, rows } = reference
-  const kind = 'kind' in reference ? reference.kind : undefined
-  if (!kind) {
-    apiReference.set(id, reference)
-    continue
+/** 一种语言下的全部 API 表：功能页按字段名取行，参考页按表 id 取整表。 */
+function buildCatalog(lang: DocLang, tables: Record<string, ReferenceApiTable>) {
+  const text = TEXT[lang]
+  const sources = {
+    props: apiSource(text.props, tableProps, (entry: ApiEntry) => apiRow(entry, lang)),
+    columns: apiSource(text.fields, columnFields, (entry: ApiEntry) => apiRow(entry, lang)),
+    'row-selection': apiSource(text.fields, rowSelectionFields, (entry: ApiEntry) =>
+      apiRow(entry, lang),
+    ),
+    events: apiSource(text.events, tableEvents, (entry: EventEntry) => [
+      code(entry.name),
+      code(entry.params),
+      describe(entry, lang),
+    ]),
+    slots: apiSource(text.slots, vueSlots, (entry: VueSlotEntry) => [
+      code(entry.name),
+      linkedCode(entry.params, localizeHref(entry.paramsHref, lang)),
+      describe(entry, lang),
+    ]),
   }
-  const catalog = apiRows.get(kind) ?? new Map<string, readonly string[]>()
-  const resolved = rows.map((row) => {
-    const name = row[0].replace(/^`|`$/g, '')
-    const resolvedRow = row.length === 1 ? apiSources[kind].rows.get(name) : row
-    if (!resolvedRow) throw new Error(`Unknown API field ${name} in ${id}`)
-    if (catalog.has(name)) throw new Error(`Duplicate API field ${name} in ${kind}`)
-    catalog.set(name, resolvedRow)
-    return resolvedRow
-  })
-  apiRows.set(kind, catalog)
-  apiReference.set(id, { headers, rows: resolved })
+
+  const reference = new Map<string, DocTable>()
+  const rowsByKind = new Map<TableApiKind, Map<string, readonly string[]>>()
+  for (const [id, table] of Object.entries(tables)) {
+    const { headers, rows, kind } = table
+    if (!kind) {
+      reference.set(id, table)
+      continue
+    }
+    const catalog = rowsByKind.get(kind) ?? new Map<string, readonly string[]>()
+    const resolved = rows.map((row) => {
+      const name = row[0].replace(/^`|`$/g, '')
+      const resolvedRow = row.length === 1 ? sources[kind].rows.get(name) : row
+      if (!resolvedRow) throw new Error(`Unknown API field ${name} in ${id} (${lang})`)
+      if (catalog.has(name)) throw new Error(`Duplicate API field ${name} in ${kind} (${lang})`)
+      catalog.set(name, resolvedRow)
+      return resolvedRow
+    })
+    rowsByKind.set(kind, catalog)
+    reference.set(id, { headers, rows: resolved })
+  }
+
+  function featureTable(kind: TableApiKind, feature: DocFeature): string | null {
+    const source = sources[kind]
+    const names = featureApi[feature]?.[kind] ?? source.namesFor(feature)
+    if (!names.length) return null
+    const rows = names.map((name) => {
+      const row = rowsByKind.get(kind)?.get(name)
+      if (!row) throw new Error(`Unknown ${kind} field ${name} for ${feature} (${lang})`)
+      return row
+    })
+    return table(source.headers, rows)
+  }
+
+  return { reference, featureTable, themeReference: themeReferenceTables(lang) }
 }
 
-function featureApiTable(kind: TableApiKind, feature: DocFeature): string | null {
-  const source = apiSources[kind]
-  const names = featureApi[feature]?.[kind] ?? source.namesFor(feature)
-  if (!names.length) return null
-  const rows = names.map((name) => {
-    const row = apiRows.get(kind)?.get(name)
-    if (!row) throw new Error(`Unknown ${kind} field ${name} for ${feature}`)
-    return row
-  })
-  return table(source.headers, rows)
+const catalogs: Record<DocLang, ReturnType<typeof buildCatalog>> = {
+  zh: buildCatalog('zh', referenceApiTables),
+  en: buildCatalog('en', referenceApiTablesEn),
 }
 
 function featureSurfaces(feature: DocFeature) {
@@ -237,18 +290,19 @@ export function readPresetCssVars(siteRoot: string, preset: ThemePresetName): Ma
   return vars
 }
 
-function cssVarTable(entries: readonly CssVarEntry[], siteRoot: string): string {
+function cssVarTable(entries: readonly CssVarEntry[], siteRoot: string, lang: DocLang): string {
+  const text = TEXT[lang]
   return table(
-    ['变量', '作用', ...PRESETS],
+    [...text.cssVars, ...PRESETS],
     entries.map((entry) => [
       code(entry.name),
-      cell(entry.description),
+      describe(entry, lang),
       ...PRESETS.map((preset) => {
-        if (entry.presets && !entry.presets.includes(preset)) return '不读取'
+        if (entry.presets && !entry.presets.includes(preset)) return text.notRead
         const value = readPresetCssVars(siteRoot, preset).get(entry.name)
         if (value) return code(value)
         const fallback = entry.presetFallbacks?.[preset] ?? entry.fallback
-        return fallback ? `未声明，回退 ${code(fallback)}` : '未声明'
+        return fallback ? text.fallback(code(fallback)) : text.undeclared
       }),
     ]),
   )
@@ -256,13 +310,17 @@ function cssVarTable(entries: readonly CssVarEntry[], siteRoot: string): string 
 
 // ---- 指令 ----
 
-const renderers: Record<string, (feature: DocFeature, siteRoot: string) => string | null> = {
-  props: (feature) => featureApiTable('props', feature),
-  columns: (feature) => featureApiTable('columns', feature),
-  'row-selection': (feature) => featureApiTable('row-selection', feature),
-  events: (feature) => featureApiTable('events', feature),
-  slots: (feature) => featureApiTable('slots', feature),
-  ui: (feature) => {
+const renderers: Record<
+  string,
+  (feature: DocFeature, siteRoot: string, lang: DocLang) => string | null
+> = {
+  props: (feature, _siteRoot, lang) => catalogs[lang].featureTable('props', feature),
+  columns: (feature, _siteRoot, lang) => catalogs[lang].featureTable('columns', feature),
+  'row-selection': (feature, _siteRoot, lang) =>
+    catalogs[lang].featureTable('row-selection', feature),
+  events: (feature, _siteRoot, lang) => catalogs[lang].featureTable('events', feature),
+  slots: (feature, _siteRoot, lang) => catalogs[lang].featureTable('slots', feature),
+  ui: (feature, _siteRoot, lang) => {
     const surfaces = featureSurfaces(feature)
     if (!surfaces.length) return null
     const scoped = surfaces.some(({ key }) => key !== 'table')
@@ -270,19 +328,18 @@ const renderers: Record<string, (feature: DocFeature, siteRoot: string) => strin
       slots.map(([name, meta]) => [
         ...(scoped ? [code(`theme.${key}`)] : []),
         code(name),
-        cell(meta.description),
+        describe(meta, lang),
       ]),
     )
-    return table(scoped ? ['主题配置', 'Slot', '说明'] : ['Slot', '说明'], rows)
+    return table(scoped ? TEXT[lang].uiScoped : TEXT[lang].ui, rows)
   },
   theme: themeBlock,
-  'css-vars': (feature, siteRoot) => {
+  'css-vars': (feature, siteRoot, lang) => {
     const entries = ofFeature(tableCssVars, feature)
-    return entries.length ? cssVarTable(entries, siteRoot) : null
+    return entries.length ? cssVarTable(entries, siteRoot, lang) : null
   },
 }
 
-const themeReference = new Map<string, DocTable>(Object.entries(themeReferenceTables))
 const cssReference = new Map<string, readonly CssVarEntry[]>(Object.entries(themeCssVarGroups))
 
 /**
@@ -290,14 +347,17 @@ const cssReference = new Map<string, readonly CssVarEntry[]>(Object.entries(them
  *
  * 在 markdown-it 解析前展开，页面、本地搜索与 llms-full.txt 拿到的是同一份内容。
  * 指令写错或没有匹配条目时直接抛错，避免页面上静默缺一张表。
+ * `lang` 决定表头与说明的语言；同一条指令在中英文页面里写法相同。
  */
-export function expandApiDirectives(body: string, siteRoot: string): string {
+export function expandApiDirectives(body: string, siteRoot: string, lang: DocLang = 'zh'): string {
   return body.replace(DIRECTIVE, (_match, kind: string, feature: string) => {
     if (kind === 'reference' || kind === 'theme-reference') {
-      const reference = (kind === 'reference' ? apiReference : themeReference).get(feature)
+      const catalog = catalogs[lang]
+      const reference =
+        kind === 'reference' ? catalog.reference.get(feature) : catalog.themeReference[feature]
       if (reference) return table(reference.headers, reference.rows)
       const css = kind === 'theme-reference' && cssReference.get(feature)
-      if (css) return cssVarTable(css, siteRoot)
+      if (css) return cssVarTable(css, siteRoot, lang)
       throw new Error(`Unknown @api ${kind} table: ${feature}`)
     }
     if (!Object.prototype.hasOwnProperty.call(renderers, kind)) {
@@ -306,10 +366,15 @@ export function expandApiDirectives(body: string, siteRoot: string): string {
     if (!docFeatures.includes(feature as DocFeature)) {
       throw new Error(`Unknown @api feature: ${feature}`)
     }
-    const output = renderers[kind](feature as DocFeature, siteRoot)
+    const output = renderers[kind](feature as DocFeature, siteRoot, lang)
     if (output === null) throw new Error(`@api: ${kind} ${feature} has no entries`)
     return output
   })
+}
+
+/** 页面相对路径在 `en/` 下的是英文页。 */
+export function docLangOf(relativePath: string | undefined): DocLang {
+  return relativePath?.replace(/\\/g, '/').startsWith('en/') ? 'en' : 'zh'
 }
 
 /**
@@ -319,6 +384,7 @@ export function expandApiDirectives(body: string, siteRoot: string): string {
 export function apiDirectivesPlugin(siteRoot: string) {
   return (md: MarkdownRenderer) => {
     const parse = md.parse.bind(md)
-    md.parse = (src, env) => parse(expandApiDirectives(src, siteRoot), env)
+    md.parse = (src, env) =>
+      parse(expandApiDirectives(src, siteRoot, docLangOf(env?.relativePath)), env)
   }
 }

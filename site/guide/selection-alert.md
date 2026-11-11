@@ -40,13 +40,25 @@ description: 使用 VTableSelectionAlert 展示跨页已选数量、清空受控
 
 ## API
 
-### VTableSelectionAlert Props
+`TRecord` 表示业务行类型。
+
+### Props
 
 <!-- @api: reference selection-alert-props -->
 
-事件：`update:selectedRowKeys(keys)`、`clear(previousKeys, availableRows)`。
+### Events
 
-`info` 替换左侧数量文本；`showClear` 控制的默认清空入口与 `actions` 业务按钮一起放在右侧操作区。两者接收 `TableSelectionAlertSlotProps<TRecord>`：
+<!-- @api: reference selection-alert-events -->
+
+### Slots
+
+`showClear` 控制的默认清空入口与 `actions` 一起放在右侧操作区。
+
+<!-- @api: reference selection-alert-slots -->
+
+### Slot Props
+
+`info` 和 `actions` 都接收 `TableSelectionAlertSlotProps<TRecord>`。
 
 <!-- @api: reference selection-alert-slot-props -->
 

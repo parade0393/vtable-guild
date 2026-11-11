@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { createMarkdownRenderer } from 'vitepress'
@@ -12,13 +12,50 @@ import {
 } from '../api-meta/table'
 import { tableCssVars, themeSurfaces } from '../api-meta/theme'
 import { docFeatures } from '../api-meta/types'
-import { apiDirectivesPlugin, expandApiDirectives, readPresetCssVars } from './expandApiDirectives'
+import {
+  apiDirectivesPlugin,
+  docLangOf,
+  expandApiDirectives,
+  readPresetCssVars,
+} from './expandApiDirectives'
 
 const siteRoot = existsSync(join(process.cwd(), 'guide'))
   ? process.cwd()
   : join(process.cwd(), 'site')
 
 const docs = [...docFeatures, 'api-reference', 'ui-slots-reference', 'theme-tokens']
+
+const CJK = /[一-鿿]/
+
+/** 中文页面清单（相对 site 根）；英文页在 `en/` 下同路径。 */
+const pages = [
+  'index.md',
+  ...['guide', 'comparison'].flatMap((folder) =>
+    readdirSync(join(siteRoot, folder))
+      .filter((name) => name.endsWith('.md'))
+      .map((name) => `${folder}/${name}`),
+  ),
+]
+
+/** 页面骨架：标题层级、`@api` 指令、示例与代码引用，按出现顺序排列。 */
+function outline(markdown: string): string[] {
+  const items: string[] = []
+  let fence: string | null = null
+  for (const line of markdown.split(/\r?\n/)) {
+    const mark = /^\s*(`{3,}|~{3,})/.exec(line)
+    if (mark) {
+      if (!fence) fence = mark[1][0]
+      else if (mark[1][0] === fence) fence = null
+      continue
+    }
+    if (fence) continue
+    const heading = /^(#{1,6})\s/.exec(line)
+    if (heading) items.push(`h${heading[1].length}`)
+    else if (/^<!--[ \t]*@api:/.test(line) || /^<<< /.test(line)) items.push(line.trim())
+    else if (/^<Demo\b/.test(line)) items.push(line.trim())
+  }
+  return items
+}
 
 describe('API metadata directives', () => {
   it('keeps metadata names unique within each table', () => {
@@ -141,6 +178,61 @@ describe('API metadata directives', () => {
     }
   })
 
+  it('renders English headers, descriptions and page links for English pages', () => {
+    const output = expandApiDirectives(
+      [
+        '<!-- @api: columns sorting -->',
+        '<!-- @api: events sorting -->',
+        '<!-- @api: ui sorting -->',
+        '<!-- @api: css-vars filtering -->',
+        '<!-- @api: theme-reference table-variants -->',
+      ].join('\n\n'),
+      siteRoot,
+      'en',
+    )
+    expect(output).toContain('| Field | Type | Default | Description |')
+    expect(output).toContain(
+      '| `sorter` | [`ColumnSorter<TRecord>`](/en/guide/type-reference#columnsorter)',
+    )
+    expect(output).toContain('| Event | Payload | Description |')
+    expect(output).toContain('| Slot | Description |')
+    expect(output).toContain('| Variable | Purpose | antdv | element-plus |')
+    expect(output).toContain('undeclared, falls back to `264px`')
+    expect(output).toContain('| Variant | Values | Default | Affected slots |')
+    expect(output).not.toMatch(CJK)
+  })
+
+  it('keeps the Chinese output when no language is given', () => {
+    const directive = '<!-- @api: columns sorting -->'
+    expect(expandApiDirectives(directive, siteRoot)).toBe(
+      expandApiDirectives(directive, siteRoot, 'zh'),
+    )
+    expect(expandApiDirectives(directive, siteRoot)).toContain('| 字段 | 类型 | 默认值 | 说明 |')
+  })
+
+  it('treats pages under en/ as English', () => {
+    expect(docLangOf('en/guide/sorting.md')).toBe('en')
+    expect(docLangOf('en\\guide\\sorting.md')).toBe('en')
+    expect(docLangOf('guide/sorting.md')).toBe('zh')
+    expect(docLangOf('guide/en/sorting.md')).toBe('zh')
+    expect(docLangOf(undefined)).toBe('zh')
+  })
+
+  it.each(docs)('expands every directive on en/%s without Chinese text', (page) => {
+    const markdown = readFileSync(join(siteRoot, 'en', 'guide', `${page}.md`), 'utf8')
+    const directives = markdown.match(/^<!--[ \t]*@api:.*-->[ \t]*$/gm) ?? []
+    expect(directives.length).toBeGreaterThan(0)
+    const output = expandApiDirectives(directives.join('\n\n'), siteRoot, 'en')
+    expect(output).not.toContain('<!-- @api:')
+    expect(output.split('\n').filter((line) => CJK.test(line))).toEqual([])
+  })
+
+  it.each(pages)('en/%s mirrors the structure of the Chinese page', (page) => {
+    const zh = readFileSync(join(siteRoot, page), 'utf8')
+    const en = readFileSync(join(siteRoot, 'en', page), 'utf8')
+    expect(outline(en)).toEqual(outline(zh))
+  })
+
   it('uses the component theme namespace for presets outside VTable', () => {
     const toolbar = expandApiDirectives('<!-- @api: theme toolbar -->', siteRoot)
     expect(toolbar).toContain('    toolbar: {')
@@ -161,5 +253,12 @@ describe('API metadata directives', () => {
     expect(html).toContain('vp-code-group')
     expect(html).toContain('tdSelected')
     expect(html).not.toContain('@api')
+
+    const english = renderer.render('<!-- @api: ui sorting -->', {
+      path: join(siteRoot, 'en/guide/sorting.md'),
+      relativePath: 'en/guide/sorting.md',
+    })
+    expect(english).toContain('<th>Description</th>')
+    expect(english).not.toMatch(CJK)
   })
 })

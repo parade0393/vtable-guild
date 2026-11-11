@@ -36,6 +36,8 @@ export const docFeatures = [
 ] as const
 
 export type DocFeature = (typeof docFeatures)[number]
+/** 文档语言。英文页（`site/en/**`）的 `@api` 指令输出英文表头与 `*En` 说明。 */
+export type DocLang = 'zh' | 'en'
 export type TableApiKind = 'props' | 'columns' | 'row-selection' | 'events' | 'slots'
 
 export interface DocTable {
@@ -55,8 +57,12 @@ export interface ApiEntry<TName extends string = string> {
   typeHref?: string
   /** 默认值文本；以反引号包裹的值原样输出，其余按普通文本输出。缺省渲染为 `-`。 */
   default?: string
+  /** 英文默认值文本；`default` 含中文时提供，缺省沿用 `default`。 */
+  defaultEn?: string
   /** markdown 说明文本。 */
   description: string
+  /** 英文说明；站内链接写 `/en/guide/...`。 */
+  descriptionEn: string
   features: readonly DocFeature[]
 }
 
@@ -64,6 +70,7 @@ export interface EventEntry<TName extends string = string> {
   name: TName
   params: string
   description: string
+  descriptionEn: string
   features: readonly DocFeature[]
 }
 
@@ -72,17 +79,20 @@ export interface VueSlotEntry<TName extends string = string> {
   params: string
   paramsHref?: string
   description: string
+  descriptionEn: string
   features: readonly DocFeature[]
 }
 
 export interface UiSlotMeta {
   description: string
+  descriptionEn: string
   features: readonly DocFeature[]
 }
 
 export interface CssVarEntry {
   name: `--${string}`
   description: string
+  descriptionEn: string
   features: readonly DocFeature[]
   /** 预设未声明时组件使用的回退值。 */
   fallback?: string

@@ -1,6 +1,7 @@
 import {
   defineComponent,
   ref,
+  shallowRef,
   computed,
   watch,
   onMounted,
@@ -12,6 +13,7 @@ import {
   nextTick,
 } from 'vue'
 import { useTheme } from '../composables/useTheme'
+import { getFullscreenContainer } from '../utils/fullscreen'
 import type { ThemeConfig, SlotProps } from '../utils/types'
 
 /**
@@ -74,7 +76,17 @@ export default defineComponent({
     const visible = computed(() => (isControlled.value ? props.open : internalOpen.value))
 
     const pos = ref({ top: 0, left: 0 })
+    type Placement = 'top' | 'bottom' | 'left' | 'right'
+    const opposite = { top: 'bottom', bottom: 'top', left: 'right', right: 'left' } as const
+    // 实际方向：首选方向放不下而对侧放得下时翻转，例如全屏后贴着屏幕顶边的工具栏。
+    const placement = ref<Placement>(props.placement)
+    // body 之外的挂载容器：触发元素处于浏览器全屏元素内时，body 上的浮层不可见。
+    const container = shallowRef<HTMLElement | null>(null)
     let rafId: number | null = null
+
+    function syncContainer() {
+      container.value = getFullscreenContainer(triggerRef.value)
+    }
 
     function updatePosition() {
       const trigger = triggerRef.value
@@ -83,14 +95,36 @@ export default defineComponent({
 
       const rect = trigger.getBoundingClientRect()
       const tipRect = tooltip.getBoundingClientRect()
-      const scrollX = window.scrollX
-      const scrollY = window.scrollY
+      // 绝对定位的原点：body 下是文档，容器下是容器的 padding box。
+      const origin = container.value
+      const originRect = origin?.getBoundingClientRect()
+      const scrollX =
+        origin && originRect
+          ? origin.scrollLeft - originRect.left - origin.clientLeft
+          : window.scrollX
+      const scrollY =
+        origin && originRect ? origin.scrollTop - originRect.top - origin.clientTop : window.scrollY
 
       let top = 0
       let left = 0
       const gap = 8
 
-      switch (props.placement) {
+      const available = {
+        top: rect.top,
+        bottom: window.innerHeight - rect.bottom,
+        left: rect.left,
+        right: window.innerWidth - rect.right,
+      }
+      const preferred = props.placement
+      const size = preferred === 'top' || preferred === 'bottom' ? tipRect.height : tipRect.width
+      // size 为 0 表示尚未完成布局，保持首选方向。
+      const flip =
+        size > 0 &&
+        available[preferred] < size + gap &&
+        available[opposite[preferred]] >= size + gap
+      placement.value = flip ? opposite[preferred] : preferred
+
+      switch (placement.value) {
         case 'top':
           top = rect.top + scrollY - tipRect.height - gap
           left = rect.left + scrollX + rect.width / 2 - tipRect.width / 2
@@ -122,14 +156,21 @@ export default defineComponent({
       })
     }
 
+    function handleFullscreenChange() {
+      syncContainer()
+      nextTick(() => scheduleUpdatePosition())
+    }
+
     function bindViewportListeners() {
       window.addEventListener('resize', scheduleUpdatePosition)
       window.addEventListener('scroll', scheduleUpdatePosition, true)
+      document.addEventListener('fullscreenchange', handleFullscreenChange)
     }
 
     function unbindViewportListeners() {
       window.removeEventListener('resize', scheduleUpdatePosition)
       window.removeEventListener('scroll', scheduleUpdatePosition, true)
+      document.removeEventListener('fullscreenchange', handleFullscreenChange)
     }
 
     function clearTimers() {
@@ -169,6 +210,7 @@ export default defineComponent({
 
     watch(visible, (v) => {
       if (v) {
+        syncContainer()
         bindViewportListeners()
         nextTick(() => scheduleUpdatePosition())
       } else {
@@ -178,7 +220,8 @@ export default defineComponent({
 
     watch(
       () => props.placement,
-      () => {
+      (value) => {
+        placement.value = value
         if (visible.value) {
           nextTick(() => scheduleUpdatePosition())
         }
@@ -187,6 +230,7 @@ export default defineComponent({
 
     onMounted(() => {
       if (visible.value) {
+        syncContainer()
         bindViewportListeners()
         nextTick(() => scheduleUpdatePosition())
       }
@@ -207,7 +251,7 @@ export default defineComponent({
       const verticalBase = 14
       const verticalHeight = 8
 
-      switch (props.placement) {
+      switch (placement.value) {
         case 'top':
           return {
             bottom: '-7px',
@@ -254,7 +298,7 @@ export default defineComponent({
     const arrowOuterStyle = computed(() => {
       const color = props.color ?? 'var(--vtg-tooltip-arrow-outer-color, var(--vtg-tooltip-bg))'
 
-      switch (props.placement) {
+      switch (placement.value) {
         case 'top':
           return {
             left: '0',
@@ -301,7 +345,7 @@ export default defineComponent({
     const arrowInnerStyle = computed(() => {
       const color = props.color ?? 'var(--vtg-tooltip-bg)'
 
-      switch (props.placement) {
+      switch (placement.value) {
         case 'top':
           return {
             left: '1px',
@@ -381,7 +425,7 @@ export default defineComponent({
       return (
         <>
           {triggerNode}
-          <Teleport to="body">
+          <Teleport to={container.value ?? 'body'}>
             <Transition
               enterActiveClass="vtg-tooltip-enter-active"
               leaveActiveClass="vtg-tooltip-leave-active"

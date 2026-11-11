@@ -29,7 +29,17 @@ const businessButton = computed(() =>
 )
 const columns = shallowRef<TableColumnsType<Member>>([
   { key: 'name', title: '姓名', dataIndex: 'name', width: 150 },
-  { key: 'city', title: '城市', dataIndex: 'city', width: 120 },
+  {
+    key: 'city',
+    title: '城市',
+    dataIndex: 'city',
+    width: 120,
+    filters: [
+      { text: '杭州', value: '杭州' },
+      { text: '上海', value: '上海' },
+    ],
+    onFilter: (value, record) => record.city === value,
+  },
   { key: 'status', title: '状态', dataIndex: 'status', visible: false, width: 120 },
 ])
 const rows = shallowRef<Member[]>([
@@ -47,7 +57,6 @@ const configurable = computed(() =>
   columns.value.filter((column): column is ColumnType<Member> => typeof column !== 'symbol'),
 )
 const size = ref<TableColumnSettingsSize>('middle')
-const target = ref<HTMLElement | null>(null)
 const nativeTarget = ref<HTMLElement | null>(null)
 const loading = ref(false)
 const disabled = ref(false)
@@ -213,7 +222,7 @@ function exportCsv(data: Member[], currentColumns: TableColumnsType<Member>) {
       </article>
       <article>
         <h3>VTableToolbar · 当前预设与自定义按钮</h3>
-        <div ref="target" class="toolbar-page-target">
+        <div class="toolbar-page-target">
           <VTable :columns="columns" :size="size" :data-source="rows" :loading="loading" bordered>
             <template #title="{ data }">
               <VTableToolbar
@@ -223,7 +232,6 @@ function exportCsv(data: Member[], currentColumns: TableColumnsType<Member>) {
                 :loading="loading"
                 :disabled="disabled"
                 :options="hideTools ? false : { fullScreen: true }"
-                :fullscreen-target="() => target"
                 @reload="reload"
                 @fullscreen-error="fullscreenError = String($event)"
               >

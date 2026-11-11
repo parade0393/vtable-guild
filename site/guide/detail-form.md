@@ -77,7 +77,15 @@ edit.add(undefined, { position: 'bottom', mode: 'source' })
 
 ## API
 
-<!-- @api: reference detail-form-api -->
+明细表单使用 `useTableEdit` / `useTableEditable` 的以下选项和返回值，其余见[编辑](/guide/editing#api)。
+
+### 选项
+
+<!-- @api: reference detail-form-options -->
+
+### 返回值
+
+<!-- @api: reference detail-form-return -->
 
 ## Type Declarations
 

@@ -127,6 +127,46 @@ describe('popup placement', () => {
   })
 })
 
+describe('popup container in browser fullscreen', () => {
+  function fullscreen(element: Element | null) {
+    Object.defineProperty(document, 'fullscreenElement', { configurable: true, value: element })
+    document.dispatchEvent(new Event('fullscreenchange'))
+  }
+  afterEach(() => Reflect.deleteProperty(document, 'fullscreenElement'))
+
+  it('mounts inside the fullscreen element that contains the trigger, and follows exits', async () => {
+    const container = host()
+    const anchor = document.createElement('button')
+    container.append(anchor)
+    fullscreen(container)
+    const { panel } = await popup({ anchor })
+    expect(container.contains(panel)).toBe(true)
+    expect(panel.style.position).toBe('absolute')
+
+    fullscreen(null)
+    await nextTick()
+    const moved = document.querySelector<HTMLElement>('.vtg-table-popup')!
+    expect(container.contains(moved)).toBe(false)
+    expect(moved.style.position).toBe('fixed')
+  })
+
+  it('keeps body for triggers outside the fullscreen element and an explicit container', async () => {
+    const container = host()
+    const other = host()
+    fullscreen(other)
+    const outside = await popup()
+    expect(other.contains(outside.panel)).toBe(false)
+    expect(outside.panel.style.position).toBe('fixed')
+    outside.wrapper.unmount()
+    wrappers.delete(outside.wrapper)
+
+    const anchor = document.createElement('button')
+    other.append(anchor)
+    const explicit = await popup({ anchor, getPopupContainer: () => container })
+    expect(container.contains(explicit.panel)).toBe(true)
+  })
+})
+
 describe('popup Escape handling', () => {
   it.each(['panel', 'trigger'])(
     'dismisses from the %s before outer dialogs receive Escape',

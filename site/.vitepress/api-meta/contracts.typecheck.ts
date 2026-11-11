@@ -1,6 +1,8 @@
 import type * as Public from '@vtable-guild/vtable-guild'
+import type * as ConfigDocs from '../type-declarations/config'
 import type * as Docs from '../type-declarations/features'
 import type { referenceApiTables } from './reference-api'
+import type { referenceApiTablesEn } from './reference-api.en'
 import type { columnFields, rowSelectionFields } from './table'
 import type { TableApiKind } from './types'
 
@@ -41,6 +43,10 @@ type NamesForKind<Kind extends TableApiKind> = TableNames<
   Extract<ReferenceTables[keyof ReferenceTables], { kind: Kind }>
 >
 type EventName<K> = K extends `on${infer Name}` ? Uncapitalize<Name> : never
+/** 泛型组件的事件名：从 props 的 `onXxx` 监听器还原，排除 VNode 生命周期钩子。 */
+type ComponentEventName<C> = C extends (props: infer P, ...args: never[]) => unknown
+  ? Exclude<EventName<keyof P>, `vnode${string}`>
+  : never
 
 /** 独立参考页的条目名称与公开类型同步。 */
 export type ReferenceApiContracts = [
@@ -68,4 +74,148 @@ export type ReferenceApiContracts = [
       keyof Public.TableColumnEditor<object>
     >
   >,
+]
+
+/** 独立组件页的属性、配置项、事件、插槽表与公开类型逐项对应。 */
+export type ComponentApiContracts = [
+  Assert<Equal<TableNames<ReferenceTables['toolbar-props']>, keyof Public.TableToolbarProps>>,
+  Assert<Equal<TableNames<ReferenceTables['toolbar-options']>, keyof Public.TableToolbarOptions>>,
+  Assert<
+    Equal<
+      TableNames<ReferenceTables['toolbar-search-config']>,
+      keyof Public.TableToolbarSearchConfig
+    >
+  >,
+  Assert<
+    Equal<
+      TableNames<ReferenceTables['toolbar-column-settings']>,
+      keyof NonNullable<Public.TableToolbarProps['columnSettings']>
+    >
+  >,
+  Assert<
+    Equal<
+      TableNames<ReferenceTables['toolbar-events']>,
+      ComponentEventName<typeof Public.VTableToolbar>
+    >
+  >,
+  Assert<Equal<TableNames<ReferenceTables['toolbar-slots']>, keyof Public.TableToolbarSlots>>,
+  Assert<
+    Equal<TableNames<ReferenceTables['toolbar-slot-props']>, keyof Public.TableToolbarSlotProps>
+  >,
+  Assert<
+    Equal<
+      TableNames<ReferenceTables['column-settings-props']>,
+      keyof Public.TableColumnSettingsProps
+    >
+  >,
+  Assert<
+    Equal<
+      TableNames<ReferenceTables['column-settings-options']>,
+      keyof Public.TableColumnSettingsOptions
+    >
+  >,
+  Assert<
+    Equal<
+      TableNames<ReferenceTables['column-settings-events']>,
+      ComponentEventName<typeof Public.VTableColumnSettings>
+    >
+  >,
+  Assert<
+    Equal<
+      TableNames<ReferenceTables['column-settings-slots']>,
+      keyof Public.TableColumnSettingsSlots
+    >
+  >,
+  Assert<
+    Equal<
+      TableNames<ReferenceTables['selection-alert-props']>,
+      keyof Public.TableSelectionAlertProps
+    >
+  >,
+  Assert<
+    Equal<
+      TableNames<ReferenceTables['selection-alert-events']>,
+      ComponentEventName<typeof Public.VTableSelectionAlert>
+    >
+  >,
+  Assert<
+    Equal<
+      TableNames<ReferenceTables['selection-alert-slots']>,
+      keyof Public.TableSelectionAlertSlots
+    >
+  >,
+  Assert<
+    Equal<
+      TableNames<ReferenceTables['selection-alert-slot-props']>,
+      keyof Public.TableSelectionAlertSlotProps
+    >
+  >,
+]
+
+type Names<K extends keyof ReferenceTables> = TableNames<ReferenceTables[K]>
+type ObjectForm<T> = Exclude<NonNullable<T>, boolean | string>
+
+/** 配置项子表、组合式函数的选项与返回值表与公开类型逐项对应。 */
+export type ProtocolApiContracts = [
+  Assert<Equal<Names<'loading-config'>, keyof ObjectForm<Public.TableProps['loading']>>>,
+  Assert<Equal<Names<'scroll-config'>, keyof NonNullable<Public.TableProps['scroll']>>>,
+  Assert<Equal<Names<'sticky-config'>, keyof Public.TableSticky>>,
+  Assert<Equal<Names<'copyable-config'>, keyof ObjectForm<Public.ColumnCopyable>>>,
+  Assert<Equal<Names<'tooltip-config'>, keyof Public.TableTooltipConfig>>,
+  Assert<Equal<Names<'instance-methods'>, keyof Public.TableInstance>>,
+  Assert<Equal<Names<'scroll-to-options'>, keyof Public.TableScrollToOptions>>,
+  Assert<Equal<Names<'summary-props'>, keyof ConfigDocs.VTableSummaryProps>>,
+  Assert<Equal<Names<'summary-cell-props'>, keyof ConfigDocs.VTableSummaryCellProps>>,
+  Assert<Equal<Names<'pagination-config'>, keyof Public.TablePaginationConfig>>,
+  Assert<Equal<Names<'pagination-slot-props'>, keyof Public.TablePaginationSlotProps>>,
+  Assert<Equal<Names<'query-options'>, keyof Public.UseTableQueryOptions<object>>>,
+  Assert<Equal<Names<'query-return'>, keyof Public.UseTableQueryReturn<object>>>,
+  Assert<
+    Equal<
+      Names<'editing-options'> | Names<'detail-form-options'>,
+      keyof Public.UseTableEditOptions<object>
+    >
+  >,
+  Assert<
+    Equal<
+      Names<'editing-state'> | Names<'detail-form-return'>,
+      keyof Public.UseTableEditReturn<object>
+    >
+  >,
+  Assert<Equal<Names<'request-options'>, keyof Public.UseTableRequestOptions<object>>>,
+  Assert<
+    Equal<
+      Names<'request-return'> | Names<'request-methods'>,
+      keyof Public.UseTableRequestReturn<object>
+    >
+  >,
+  Assert<
+    Equal<Names<'dictionary-create-options'>, keyof Public.CreateTableDictionaryOptions<object>>
+  >,
+  Assert<Equal<Names<'dictionary-instance'>, keyof Public.TableDictionary>>,
+  Assert<Equal<Names<'dictionary-use-options'>, keyof Public.UseTableDictionaryOptions<object>>>,
+  Assert<Equal<Names<'dictionary-return'>, keyof Public.UseTableDictionaryReturn>>,
+  Assert<Equal<Names<'dictionary-option'>, keyof Public.TableDictionaryOption>>,
+]
+
+type ReferenceTablesEn = typeof referenceApiTablesEn
+// 英文表由两个文件展开合并，展开后的属性不再是 readonly；映射时统一去掉修饰符再比较。
+type RowNames<T> = {
+  -readonly [K in keyof T]: T[K] extends { rows: readonly (readonly string[])[] }
+    ? T[K]['rows'][number][0]
+    : never
+}
+type Kinds<T> = { -readonly [K in keyof T]: T[K] extends { kind: infer Kind } ? Kind : undefined }
+type ColumnCounts<T> = {
+  -readonly [K in keyof T]: T[K] extends { headers: readonly unknown[] }
+    ? T[K]['headers']['length']
+    : never
+}
+
+/** 英文参考表与中文参考表的表 id、每张表的行名、列数和类别一致。 */
+export type ReferenceApiEnContracts = [
+  Assert<Equal<keyof ReferenceTablesEn, keyof ReferenceTables>>,
+  Assert<Equal<RowNames<ReferenceTablesEn>, RowNames<ReferenceTables>>>,
+  Assert<Equal<Kinds<ReferenceTablesEn>, Kinds<ReferenceTables>>>,
+  Assert<Equal<ColumnCounts<ReferenceTablesEn>, ColumnCounts<ReferenceTables>>>,
 ]

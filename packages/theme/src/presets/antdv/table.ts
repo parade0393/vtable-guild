@@ -27,6 +27,9 @@ export const antdvTableTheme = {
       'font-[family-name:var(--vtg-table-font-family)]',
       'text-[length:var(--vtg-table-font-size)]',
       'leading-[var(--vtg-table-line-height)]',
+      // 浏览器全屏（VTableToolbar 的 options.fullScreen）：全屏元素默认透明并显示黑色
+      // backdrop，内容超出视口时也不会滚动。
+      '[&:fullscreen]:overflow-auto [&:fullscreen]:bg-[color:var(--vtg-table-bg)]',
     ].join(' '),
     wrapper: 'w-full overflow-auto',
     // ---- scroll.y: 'auto' 自动高度布局 ----

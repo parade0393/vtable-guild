@@ -78,6 +78,55 @@ describe('Tooltip', () => {
     expect(tooltip()).toBeNull()
   })
 
+  it('mounts inside the fullscreen element that contains its trigger', async () => {
+    const container = document.createElement('section')
+    document.body.append(container)
+    container.append(wrapper.get('span').element)
+    Object.defineProperty(document, 'fullscreenElement', { configurable: true, value: container })
+    try {
+      await wrapper.get('span').trigger('mouseenter')
+      await advance()
+      expect(container.contains(tooltip())).toBe(true)
+
+      Object.defineProperty(document, 'fullscreenElement', { configurable: true, value: null })
+      document.dispatchEvent(new Event('fullscreenchange'))
+      await nextTick()
+      expect(tooltip()).not.toBeNull()
+      expect(container.contains(tooltip())).toBe(false)
+    } finally {
+      Reflect.deleteProperty(document, 'fullscreenElement')
+      container.remove()
+    }
+  })
+
+  it('flips to the opposite side only when the preferred side lacks room', async () => {
+    const frames: FrameRequestCallback[] = []
+    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) =>
+      frames.push(callback),
+    )
+    vi.stubGlobal('cancelAnimationFrame', () => {})
+    try {
+      const trigger = wrapper.get('span')
+      const show = async (rect: DOMRect) => {
+        trigger.element.getBoundingClientRect = () => rect
+        await wrapper.setProps({ open: true })
+        const element = tooltip() as HTMLElement
+        element.getBoundingClientRect = () => new DOMRect(0, 0, 44, 34)
+        await nextTick()
+        frames.splice(0).forEach((frame) => frame(0))
+        await nextTick()
+        const top = parseFloat((tooltip() as HTMLElement).style.top)
+        await wrapper.setProps({ open: false })
+        return top
+      }
+      // 17px above the trigger cannot hold a 34px tooltip plus its 8px gap.
+      expect(await show(new DOMRect(100, 17, 24, 24))).toBe(17 + 24 + 8)
+      expect(await show(new DOMRect(100, 400, 24, 24))).toBe(400 - 34 - 8)
+    } finally {
+      vi.unstubAllGlobals()
+    }
+  })
+
   it('keeps explicit visibility controlled regardless of pointer events', async () => {
     const trigger = wrapper.get('span')
     await wrapper.setProps({ open: true })

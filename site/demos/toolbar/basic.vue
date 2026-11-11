@@ -20,7 +20,6 @@ const rows: Member[] = [
   { key: 3, name: '周野', city: '深圳', status: '休假' },
 ]
 const size = ref<TableColumnSettingsSize>('middle')
-const target = ref<HTMLElement | null>(null)
 const loading = ref(false)
 const refreshes = ref(0)
 const csv = ref('')
@@ -61,7 +60,7 @@ function exportCsv(data: Member[], currentColumns: TableColumnsType<Member>) {
 </script>
 
 <template>
-  <div ref="target" class="toolbar-demo">
+  <div class="toolbar-demo">
     <VTable :columns="columns" :size="size" :data-source="rows" :loading="loading" bordered>
       <template #title="{ data }">
         <VTableToolbar
@@ -70,7 +69,6 @@ function exportCsv(data: Member[], currentColumns: TableColumnsType<Member>) {
           title="团队成员"
           :loading="loading"
           :options="{ fullScreen: true }"
-          :fullscreen-target="() => target"
           @reload="reload"
         >
           <template #actions="{ columns: currentColumns, disabled }">
@@ -85,16 +83,6 @@ function exportCsv(data: Member[], currentColumns: TableColumnsType<Member>) {
 </template>
 
 <style scoped>
-.toolbar-demo {
-  position: relative;
-  background: var(--color-surface);
-}
-
-.toolbar-demo:fullscreen {
-  padding: 24px;
-  overflow: auto;
-}
-
 .toolbar-demo-csv {
   max-width: 100%;
   overflow: auto;

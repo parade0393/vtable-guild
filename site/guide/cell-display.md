@@ -99,6 +99,18 @@ const columns: TableColumnsType<Order> = [
 
 <!-- @api: columns cell-display -->
 
+### copyable
+
+`copyable` 传对象时的配置项；传 `true` 复制单元格文本。
+
+<!-- @api: reference copyable-config -->
+
+### TableTooltipConfig
+
+列的 `tooltip`、表级和列级 `showSorterTooltip` 传对象时的配置项。
+
+<!-- @api: reference tooltip-config -->
+
 ### Slots
 
 <!-- @api: slots cell-display -->

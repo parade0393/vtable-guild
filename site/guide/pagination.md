@@ -118,6 +118,8 @@ const pagination: TablePaginationConfig = {
 
 ### 配置参考
 
+`pagination` 对象（`TablePaginationConfig`）的字段。
+
 <!-- @api: reference pagination-config -->
 
 位置支持 `topLeft`、`topCenter`、`topRight`、`bottomLeft`、`bottomCenter`、`bottomRight` 和 `none`。每个区域最多一个分页器，使用数组中首个匹配项。

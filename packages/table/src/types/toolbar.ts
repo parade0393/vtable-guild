@@ -27,13 +27,18 @@ export interface TableToolbarProps<TRecord extends object = Record<string, unkno
   /** Defaults to reload, density and column settings; full screen is opt-in. */
   options?: false | TableToolbarOptions
   loading?: boolean
-  /** Search is opt-in. Search text is controlled by searchValue. */
+  /** Search is opt-in. The search event always carries the submitted keyword. */
   search?: boolean | TableToolbarSearchConfig
+  /** Controls the input draft when provided; omit it to let the toolbar keep the draft. */
   searchValue?: string
   /** Put the filter slot in a full-width second row. The extra slot always gets its own row. */
   multipleLine?: boolean
   /** Disables built-in actions. Custom slots receive this state. */
   disabled?: boolean
+  /**
+   * Element that enters full screen. Defaults to the root of the VTable whose title or footer
+   * slot renders this toolbar.
+   */
   fullscreenTarget?: () => HTMLElement | null | undefined
   columnSettings?: Pick<
     TableColumnSettingsProps<TRecord>,

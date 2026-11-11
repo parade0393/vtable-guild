@@ -140,6 +140,8 @@ export interface SubThemeSlots {
  * 所有后代组件（TableCell、TableHeaderCell 等）通过 inject 获取。
  */
 export interface TableContext {
+  /** 表格根元素（含 title、footer 与分页），供 title / footer 内的工具栏作为默认全屏目标。 */
+  rootElement?: () => HTMLElement | null
   renderers?: ComputedRef<TableFieldRenderers<Record<string, unknown>> | undefined>
   isTreeLoading?: (key: Key) => boolean
   getTreeLoadError?: (key: Key) => Error | undefined

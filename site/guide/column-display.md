@@ -50,13 +50,25 @@ description: 使用 VTableColumnSettings 配置列显隐、固定与顺序，通
 
 ### 面板 API
 
+`VTableColumnSettings` 的属性、事件和插槽。`TRecord` 表示业务行类型。
+
+#### Props {#column-settings-props}
+
 <!-- @api: reference column-settings-props -->
 
-`options` 控制入口：`density: false`、`setting: false` 分别隐藏密度和列设置入口，`fixed: false` 隐藏固定按钮，`draggable: false` 关闭拖拽。
+#### options {#column-settings-options}
 
-事件：`update:columns(columns)`、`update:size(size)`、`reset()`。面板不会触发表格的 `change` 事件。
+<!-- @api: reference column-settings-options -->
 
-文案跟随全局或 ConfigProvider 的 `locale`，可通过 `localeOverrides.columnSettings` 或实例 `locale` 覆盖。样式见[主题](#主题)。
+#### Events {#column-settings-events}
+
+面板不会触发表格的 `change` 事件。
+
+<!-- @api: reference column-settings-events -->
+
+#### Slots {#column-settings-slots}
+
+<!-- @api: reference column-settings-slots -->
 
 ## 保存用户偏好
 

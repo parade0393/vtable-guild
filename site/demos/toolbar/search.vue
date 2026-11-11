@@ -20,7 +20,6 @@ const rows: Order[] = [
   { key: 2, name: '苏晚', city: '上海', status: 'done' },
   { key: 3, name: '周野', city: '杭州', status: 'pending' },
 ]
-const searchValue = ref('')
 const submittedKeyword = ref('')
 const view = ref<'all' | Order['status']>('all')
 const city = ref('')
@@ -44,13 +43,11 @@ const views = [
   <VTable :columns="columns" :data-source="filteredRows">
     <template #title>
       <VTableToolbar
-        v-model:search-value="searchValue"
         title="订单列表"
         :search="{ placeholder: '按姓名查询' }"
         :options="{ density: false, setting: false }"
         multiple-line
         @search="submittedKeyword = $event"
-        @clear-search="submittedKeyword = ''"
         @reload="refreshes++"
       >
         <template #filter>

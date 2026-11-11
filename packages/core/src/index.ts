@@ -11,6 +11,7 @@ export {
 } from './utils/classPrefix'
 export { optionalProp, requiredProp, optionalBoolProp, optionalStringProp } from './utils/props'
 export { devWarn } from './utils/devWarn'
+export { getFullscreenContainer } from './utils/fullscreen'
 import type {
   DeepPartial,
   LocaleName,

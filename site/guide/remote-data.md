@@ -124,8 +124,13 @@ onError 自身抛错时将该异常存入 error；请求 Promise 仍正常结束
 
 <!-- @api: reference request-options -->
 
-返回 `dataSource`、`loading`、`refreshing`、`paused`、`error`、`pagination`、`query`、`sort`、`filters`、`manual` 以及上方方法和 `onChange`。
+### useTableRequest 返回值
+
+除下表的状态外，还返回[刷新、提交、重置与取消](#刷新、提交、重置与取消)中的方法。
 在模板里先解构需要的 ref；嵌套在普通对象中的 ref 不会在所有模板表达式里自动解包。
+
+<!-- @api: reference request-return -->
+
 配置与返回类型均从 `@vtable-guild/vtable-guild` 导入：`UseTableRequestOptions`、`UseTableRequestReturn`、
 `TableRequest`、`TableRequestParams`、`TableRequestSort`、`TableRequestContext`、`TableRequestResult`、`TableRequestPolling`。
 
