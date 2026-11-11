@@ -1,5 +1,13 @@
 # @vtable-guild/vtable-guild
 
+## 2.9.0-alpha.6
+
+### Minor Changes
+
+- [`67cffb8`](https://github.com/parade0393/vtable-guild/commit/67cffb88f354ed8c25ab0ea32f36256a1141cc08) Thanks [@parade0393](https://github.com/parade0393)! - Improve column settings with full-row drag reordering, before/after insertion indicators, and configurable drag-state theme slots and spacing for both presets.
+
+  Add keyboard navigation, focus management, menu semantics, and localized labels to bulk selection controls. Localize detail-row expand buttons and preserve selection announcements when using a custom selection alert info slot.
+
 ## 2.9.0-alpha.5
 
 ### Patch Changes
