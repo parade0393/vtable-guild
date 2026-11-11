@@ -2,6 +2,7 @@ import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { defineConfig } from 'vitepress'
 import { apiDirectivesPlugin, expandApiDirectives } from './utils/expandApiDirectives'
+import type { DocLang } from './api-meta/types'
 import { expandCodeSnippets } from './utils/expandCodeSnippets'
 
 // dev / build 都经 `pnpm --filter @vtable-guild/site` 在 site 目录下运行。
@@ -102,11 +103,12 @@ const zhTheme = {
   },
 }
 
-// 英文站先只挂已翻译页面；后续页面翻译完成后再往 sidebar 里追加。
+// 英文站与中文站页面一一对应；新增页面时两边的 sidebar 一起加。
 const enTheme = {
   nav: [
     { text: 'Home', link: '/en/' },
     { text: 'Guide', link: '/en/guide/' },
+    { text: 'Comparison', link: '/en/comparison/' },
     { text: 'API', link: '/en/guide/api-reference' },
     { text: 'Playground', link: '/play/', target: '_blank' },
     { text: 'Benchmarks', link: '/perf/', target: '_blank' },
@@ -118,14 +120,72 @@ const enTheme = {
         text: 'Getting started',
         items: [
           { text: 'Overview', link: '/en/guide/' },
+          { text: 'Why vtable-guild', link: '/en/guide/why' },
           { text: 'Getting started', link: '/en/guide/getting-started' },
+          { text: 'Installation and usage', link: '/en/guide/installation' },
+          { text: 'Migrating from ant-design-vue', link: '/en/guide/migration-from-antd' },
+          { text: 'Package imports and styles', link: '/en/guide/package-consumption' },
+        ],
+      },
+      {
+        text: 'Features',
+        items: [
+          { text: 'Sorting', link: '/en/guide/sorting' },
+          { text: 'Pagination', link: '/en/guide/pagination' },
+          { text: 'Remote data and requests', link: '/en/guide/remote-data' },
+          { text: 'Query submission', link: '/en/guide/query' },
+          { text: 'Filtering', link: '/en/guide/filtering' },
+          { text: 'Row selection', link: '/en/guide/selection' },
+          { text: 'Selection alert', link: '/en/guide/selection-alert' },
+          { text: 'Cell display and enums', link: '/en/guide/cell-display' },
+          { text: 'Remote dictionaries', link: '/en/guide/dictionary' },
+          { text: 'Field renderers', link: '/en/guide/cell-render' },
+          { text: 'Expandable rows', link: '/en/guide/expandable-rows' },
+          { text: 'Tree table', link: '/en/guide/tree-table' },
+          { text: 'Table instance', link: '/en/guide/table-instance' },
+          { text: 'Fixed columns', link: '/en/guide/fixed-columns' },
+          { text: 'Virtual scrolling', link: '/en/guide/virtualization' },
+          { text: 'Column resizing', link: '/en/guide/column-resize' },
+          { text: 'Column display and order', link: '/en/guide/column-display' },
+          { text: 'Toolbar', link: '/en/guide/toolbar' },
+          { text: 'Row drag sorting', link: '/en/guide/row-drag-sort' },
+          { text: 'Grouped headers and merged cells', link: '/en/guide/grouped-and-merged-cells' },
+          { text: 'Title, footer and summary', link: '/en/guide/title-footer-summary' },
+          { text: 'Custom rows and slots', link: '/en/guide/api-wiring-and-slots' },
+          { text: 'Editing', link: '/en/guide/editing' },
+          { text: 'Schema query', link: '/en/guide/schema-query' },
+          { text: 'Column editors', link: '/en/guide/editable-columns' },
+          { text: 'Detail forms', link: '/en/guide/detail-form' },
+        ],
+      },
+      {
+        text: 'Theming',
+        items: [
+          { text: 'Three-layer theme overrides', link: '/en/guide/theme-overrides' },
+          { text: 'Table CSS variables', link: '/en/guide/theme-tokens' },
+          { text: 'ui slot reference', link: '/en/guide/ui-slots-reference' },
+          { text: 'Presets and locales', link: '/en/guide/presets-and-locales' },
         ],
       },
       {
         text: 'Reference',
         items: [
+          { text: 'Design rationale', link: '/en/guide/architecture' },
           { text: 'API Reference', link: '/en/guide/api-reference' },
-          { text: 'Pagination', link: '/en/guide/pagination' },
+          { text: 'Type reference', link: '/en/guide/type-reference' },
+        ],
+      },
+      {
+        text: 'AI tools',
+        items: [{ text: 'LLMs.txt', link: '/en/guide/llms-txt' }],
+      },
+    ],
+    '/en/comparison/': [
+      {
+        text: 'Comparison',
+        items: [
+          { text: 'Feature comparison', link: '/en/comparison/' },
+          { text: 'Enhancements and extras', link: '/en/comparison/enhancements' },
         ],
       },
     ],
@@ -237,8 +297,8 @@ export default defineConfig({
       meta.title || /^#\s+(.+)$/m.exec(body)?.[1]?.trim() || file
 
     // 展开示例和类型声明，供 llms-full.txt 使用。
-    const expandDemoSyntax = (body: string): string => {
-      body = expandApiDirectives(expandCodeSnippets(body, siteRoot), siteRoot)
+    const expandDemoSyntax = (body: string, lang: DocLang): string => {
+      body = expandApiDirectives(expandCodeSnippets(body, siteRoot), siteRoot, lang)
 
       // 移除 <Demo ...> / </Demo> 组件标签（VitePress 自定义组件，agent 无法解析）
       // 但保留对应的 demo 文件引用（已经被上面的 <<< 展开）。
@@ -268,6 +328,7 @@ export default defineConfig({
         title: 'vtable-guild',
       },
       { dir: join(siteRoot, 'en', 'guide'), urlPrefix: 'en/guide', lang: 'en' },
+      { dir: join(siteRoot, 'en', 'comparison'), urlPrefix: 'en/comparison', lang: 'en' },
     ]
     const pages: DocPage[] = []
 
@@ -281,7 +342,7 @@ export default defineConfig({
           url: `${siteUrl}/${url}`,
           title: title ?? titleFrom(meta, body, rel),
           description: meta.description || '',
-          body: expandDemoSyntax(body),
+          body: expandDemoSyntax(body, lang),
           lang,
         })
       }
@@ -294,7 +355,7 @@ export default defineConfig({
       title: 'vtable-guild',
       description:
         home.meta.description || '面向 ant-design-vue 和 element-plus 用户的高性能表格替换方案。',
-      body: expandDemoSyntax(home.body),
+      body: expandDemoSyntax(home.body, 'zh'),
       lang: 'zh',
     })
 
@@ -306,7 +367,7 @@ export default defineConfig({
       '',
       '> 面向 ant-design-vue 和 element-plus 用户的高性能 Vue 表格组件：内置纵向/横向虚拟滚动、固定列、行拖拽排序与三层主题系统。API 与 ant-design-vue Table 对齐。',
       '',
-      'Chinese-first docs with partial English coverage. 文档站为中文主导向，英文覆盖入门与 API。',
+      'Docs are available in Chinese and English with the same pages. 文档提供中文与英文两个版本，页面一一对应。',
       '',
       '## 中文文档',
       '',

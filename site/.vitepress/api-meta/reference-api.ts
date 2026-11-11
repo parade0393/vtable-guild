@@ -160,7 +160,7 @@ export const referenceApiTables = {
         '`y`',
         '`number \\| string`',
         '-',
-        "表体的最大高度，提供后表头固定。`'auto'` 表示填满父容器的剩余高度，需要父容器有确定高度，见[虚拟滚动](/guide/virtualization#自动高度-scrolly-auto)。",
+        "表体的最大高度，提供后表头固定。`'auto'` 表示填满父容器的剩余高度，需要父容器有确定高度，见[虚拟滚动](/guide/virtualization#自动高度-scroll-y-auto)。",
       ],
       [
         '`scrollToFirstRowOnChange`',

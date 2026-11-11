@@ -2,6 +2,7 @@ import type * as Public from '@vtable-guild/vtable-guild'
 import type * as ConfigDocs from '../type-declarations/config'
 import type * as Docs from '../type-declarations/features'
 import type { referenceApiTables } from './reference-api'
+import type { referenceApiTablesEn } from './reference-api.en'
 import type { columnFields, rowSelectionFields } from './table'
 import type { TableApiKind } from './types'
 
@@ -195,4 +196,26 @@ export type ProtocolApiContracts = [
   Assert<Equal<Names<'dictionary-use-options'>, keyof Public.UseTableDictionaryOptions<object>>>,
   Assert<Equal<Names<'dictionary-return'>, keyof Public.UseTableDictionaryReturn>>,
   Assert<Equal<Names<'dictionary-option'>, keyof Public.TableDictionaryOption>>,
+]
+
+type ReferenceTablesEn = typeof referenceApiTablesEn
+// 英文表由两个文件展开合并，展开后的属性不再是 readonly；映射时统一去掉修饰符再比较。
+type RowNames<T> = {
+  -readonly [K in keyof T]: T[K] extends { rows: readonly (readonly string[])[] }
+    ? T[K]['rows'][number][0]
+    : never
+}
+type Kinds<T> = { -readonly [K in keyof T]: T[K] extends { kind: infer Kind } ? Kind : undefined }
+type ColumnCounts<T> = {
+  -readonly [K in keyof T]: T[K] extends { headers: readonly unknown[] }
+    ? T[K]['headers']['length']
+    : never
+}
+
+/** 英文参考表与中文参考表的表 id、每张表的行名、列数和类别一致。 */
+export type ReferenceApiEnContracts = [
+  Assert<Equal<keyof ReferenceTablesEn, keyof ReferenceTables>>,
+  Assert<Equal<RowNames<ReferenceTablesEn>, RowNames<ReferenceTables>>>,
+  Assert<Equal<Kinds<ReferenceTablesEn>, Kinds<ReferenceTables>>>,
+  Assert<Equal<ColumnCounts<ReferenceTablesEn>, ColumnCounts<ReferenceTables>>>,
 ]

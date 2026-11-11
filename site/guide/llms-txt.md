@@ -18,7 +18,7 @@ description: 了解 vtable-guild 的 llms.txt 与 llms-full.txt，以及如何�
     <div class="llms-hero__meta">
       <span>自动生成</span>
       <span>纯 Markdown</span>
-      <span>中文主导 · English partial</span>
+      <span>中文 · English</span>
     </div>
   </section>
 </div>
@@ -93,7 +93,7 @@ https://parade0393.github.io/vtable-guild/llms.txt
 
 ## 它是怎样生成的？
 
-站点构建结束时会收录首页、`site/guide/`、`site/comparison/`、`site/en/` 顶层页面及 `site/en/guide/` 下的 Markdown。生成器展开页面引用的 Vue 示例和类型声明，把完整正文写入构建产物；`docs/` 维护文档不合并到全文中。
+站点构建结束时会收录首页、`site/guide/`、`site/comparison/`、`site/en/` 顶层页面及 `site/en/guide/`、`site/en/comparison/` 下的 Markdown。生成器展开页面引用的 Vue 示例和类型声明，把完整正文写入构建产物；`docs/` 维护文档不合并到全文中。
 
 ```bash
 pnpm --filter @vtable-guild/site build

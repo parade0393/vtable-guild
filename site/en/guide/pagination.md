@@ -1,12 +1,12 @@
 # Pagination
 
-Opt in with `:pagination="{}"`. Omitted or `false` preserves the existing unpaginated behavior. Configuration follows Ant Design Vue 4.2.6, while the table keeps `change(filters, sorter, extra)`.
+Enable it with `:pagination="{}"`. It is off by default: when omitted or `false`, the table keeps showing all the data. The configuration follows ant-design-vue 4.2.6, while `change` keeps this library's three-argument signature.
 
-## Local and controlled data
+## Local pagination
 
-The pipeline is filter → sort → paginate root records → expand trees → render. Children and expanded detail rows do not consume additional page slots. Provide a stable `rowKey` for selection and expansion.
+The component filters and sorts first, then paginates by root records, and finally expands tree nodes. Children and expanded content do not consume additional page slots. Configure a stable `rowKey` to keep selection and expansion state across pages.
 
-This demo also enables row selection: the header checkbox selects the current page, while “Select all data” selects all loaded, selectable records after filtering. Change pages and inspect the selected count and checkboxes to compare their scope.
+The demo also enables row selection: the header checkbox selects the current page, while the "Select all data" menu item selects all loaded, selectable records after filtering. After changing pages, check the selection scope through the selected count and the checkbox states.
 
 <Demo src="pagination/basic">
 
@@ -14,17 +14,9 @@ This demo also enables row selection: the header checkbox selects the current pa
 
 </Demo>
 
-Control `current` and `pageSize` independently, or initialize internal state once with `defaultCurrent` (1) and `defaultPageSize` (10). Props are never mutated. Parent components must accept requested changes. Both pagers share state.
-
-<Demo src="pagination/controlled">
-
-<<< @/demos/pagination/controlled.vue
-
-</Demo>
-
 ## Pagination-only callback
 
-If you only need pagination, use `TablePaginationConfig.onChange`. Its arguments are `(page: number, pageSize: number)`; you do not need table filters or sorter parameters. The complete example below provides its callback type through `NonNullable<TablePaginationConfig['onChange']>`.
+If you only need pagination, use `TablePaginationConfig.onChange` directly. Its arguments are `(page: number, pageSize: number)`; you do not need to handle the table's filters or sorter. Below is a complete controlled pagination example that gets its parameter types through `NonNullable<TablePaginationConfig['onChange']>`.
 
 <Demo src="pagination/callback">
 
@@ -32,15 +24,25 @@ If you only need pagination, use `TablePaginationConfig.onChange`. Its arguments
 
 </Demo>
 
-## Remote data
+## Controlled pagination
 
-Pass one page plus `total`. If processed data length is below total and does not exceed pageSize, it is rendered without another slice. A length between pageSize and total warns and uses local slicing. A missing or invalid positive integer total falls back to the processed root count.
+`current` and `pageSize` can be controlled independently. When omitted, internal state is used, and `defaultCurrent` and `defaultPageSize` initialize it only once. The parent component must accept the new state in the callback; the component never mutates the configuration object. The top and bottom pagers share the same state.
 
-Manage requests in your application, or use the optional [useTableRequest helper](/guide/remote-data). Keep total during loading and reject stale responses with request IDs or AbortController.
+<Demo src="pagination/controlled">
 
-`sorter: true` still sorts locally by default. For server sorting also pass `:manual="{ sort: true }"`. Enable `manual.filter` to preserve filter state and controls while skipping local filtering. `manual.pagination` skips pagination slicing and uses the explicit total; `manual: true` enables all three. The request helper returns a ready-to-bind `manual` object with all three enabled.
+<<< @/demos/pagination/controlled.vue
 
-The remote demo enables `preserveSelectedRowKeys` and displays the selected count and record names across pages. Select a row, select another on a different page, then return to verify the first selection. “Select all data” only affects loaded records and never fetches other pages.
+</Demo>
+
+## Remote pagination
+
+Pass the records of the current page plus the full `total`. When the processed record count is below `total` and does not exceed `pageSize`, the data is not sliced again. When the record count is greater than `pageSize` but below `total`, the table warns and slices locally. When no positive integer `total` is provided, it falls back to the root record count after filtering and sorting.
+
+Requests can be managed by application code, or you can use [useTableRequest request management](/en/guide/remote-data). When you manage them yourself, keep the total during loading, and use request sequence numbers or AbortController to prevent stale responses from overwriting the new page.
+
+`sorter: true` still sorts locally by default. For server-side sorting, also pass `:manual="{ sort: true }"`; for server-side filtering, pass `manual.filter: true`, which keeps the filter controls and state while skipping local computation. Passing `manual.pagination: true` skips pagination slicing and uses the explicit `total`; `manual: true` enables all three. The `manual` returned by `useTableRequest` already enables all three, so you can bind it directly.
+
+The demo below enables `preserveSelectedRowKeys` and shows the selected count and record names across pages. Select a record, change pages and select more, then return to the original page to check the checkbox state. "Select all data" only affects loaded data and does not request other pages.
 
 <Demo src="pagination/remote">
 
@@ -50,7 +52,7 @@ The remote demo enables `preserveSelectedRowKeys` and displays the selected coun
 
 ## Composable layouts and content slots
 
-Both presets accept the same `pagination.layout` API. An ordered array arranges a single group; `{ left, right }` places content on either side of the pagination row:
+`pagination.layout` uses the same API under both presets. An ordered array determines the order of the controls; `{ left, right }` places content on the left and right sides of the pagination row:
 
 ```ts
 import type { TablePaginationConfig } from '@vtable-guild/vtable-guild'
@@ -65,15 +67,15 @@ const pagination: TablePaginationConfig = {
   },
 }
 
-// To reorder a single group:
+// To reorder a single group only:
 // layout: ['sizes', 'prev', 'pager', 'next', 'total']
 ```
 
-Built-in items are `total`, `sizes`, `prev`, `pager`, `next` and `jumper`. `pager` contains numbered pages and ellipsis jump buttons, or the current-page input and page count in `simple` mode. Previous and next buttons are separate items. Element's comma-delimited strings, `'->'` and bare `'slot'` are not accepted.
+The built-in items are `total`, `sizes`, `prev`, `pager`, `next` and `jumper`. `pager` contains the numbered pages and the ellipsis jump buttons, or the current-page input and the page count in `simple` mode; the previous and next buttons are controlled by `prev` and `next` respectively. Element's native comma-separated strings, `'->'` and bare `'slot'` are not part of this library's layout syntax.
 
-Arrays retain the top/bottom position and Left/Center/Right alignment from `position`. A split layout fills the pagination row: `position` selects only top or bottom, while `left` and `right` determine internal alignment. An omitted side stays empty. Both regions can wrap, with the right region still aligned right after wrapping. Use `pagerCount`, `simple` or application content styles for very narrow containers.
+Array layouts keep using the top / bottom position and the Left / Center / Right alignment from `position`. A left-right layout fills the pagination row: `position` only decides top or bottom, and the content inside aligns by `left` / `right`; when only one side is passed, the other side is not filled in automatically. Both regions can wrap, and the right region stays right-aligned after wrapping. In very narrow containers, control the width with `pagerCount`, `simple` or the styles of your application content.
 
-Place `{ slot: 'selection' }` in the layout and branch on `name` in `#paginationItem`. This demo supports reordered, split, top/bottom and narrow layouts. Selection belongs to the parent, and refresh updates the current page's Revision through application code. The callback counter verifies that refreshing or changing layouts does not emit pagination changes.
+Put `{ slot: 'selection' }` in the layout, then tell the content apart with `name` in `#paginationItem`. The demo below supports switching between reordering, left-right regions, top and bottom pagers and a narrow container: the selection state is maintained by the parent component, refresh calls an application function and updates the Revision of the current page, and the counter lets you check that refreshing and switching layouts do not trigger pagination callbacks.
 
 <Demo src="pagination/layout">
 
@@ -83,103 +85,58 @@ Place `{ slot: 'selection' }` in the layout and branch on `name` in `#pagination
 
 ### Layout and visibility rules
 
-- Omit `layout` to preserve each preset's existing order and visibility behavior. Explicit layouts render only the listed items.
-- `showTotal`, `showSizeChanger` and `showQuickJumper` still control visibility. Including `sizes` does not override `showSizeChanger: false`; including `jumper` does not enable quick jumping. The size changer retains its existing total threshold when its switch is omitted.
-- `simple` still hides `total` and `sizes`; `jumper` only renders an explicitly configured Go button. Omitting `pager` also removes a Go button that would have no input to submit.
-- Changing layouts preserves the current page, page size and data slice, and emits no pagination callbacks or table `change` events. `itemRender` and `buildOptionText` retain their behavior.
-- `pagination: false`, `position: ['none']`, an effective total of zero or an applicable `hideOnSinglePage` hide both pagination and extension content. Empty arrays, empty objects, empty regions and entirely hidden content leave no empty containers; pagination state and slicing remain active for empty layouts. Put actions that must remain available with empty data in `title`, `footer` or an external toolbar.
-- Duplicate built-in items and slot names retain their first occurrence, visiting left before right. Invalid items, blank names and extensions without `#paginationItem` are skipped with development warnings. Invalid top-level or region types, or unknown fields other than `left` / `right` in a region object, warn and fall back to the entire default layout. `{}` remains a valid empty layout. A slot intentionally returning empty content leaves no wrapper and produces no warning.
+- When `layout` is omitted, each preset keeps its original order and visibility behavior; an explicit layout renders only the listed items and does not append controls automatically.
+- `showTotal`, `showSizeChanger` and `showQuickJumper` still control visibility. Listing `sizes` does not override `showSizeChanger: false`, and listing `jumper` does not enable quick jumping automatically. When its switch is not specified, `sizes` still uses the existing total threshold.
+- `simple` still hides `total` and `sizes`, and `jumper` shows only a configured Go button. When `pager` is omitted, a Go button with no input to submit is not kept.
+- Switching layouts dynamically does not change the page, the page size or the data slice, and triggers neither pagination events nor the table-level `change` event. `itemRender` and `buildOptionText` keep working.
+- When pagination is off, `position: ['none']` is set, the effective total is 0 or `hideOnSinglePage` applies, the pager and the application slots are hidden together. With `layout: []`, `layout: {}`, empty regions or all content hidden, no empty container is kept, but pagination state and data slicing still apply. A refresh action that must remain available with empty data should go in `title`, `footer` or an external toolbar.
+- Duplicate built-in items and extension points with the same name keep only their first occurrence (left before right). Invalid items, blank slot names and extension points without `#paginationItem` are skipped with a warning in development; a wrong top-level or region type, or unknown fields other than `left` / `right` in the region object, warn and fall back to the default layout as a whole. `{}` is still a valid empty layout. When a slot deliberately returns empty content, no placeholder is left and no warning is shown.
 
-### Pagination slot context
+### Pagination content slot
 
-`#paginationItem` receives `TablePaginationSlotProps`, a readonly view of effective state:
+The parameter type of `#paginationItem` is `TablePaginationSlotProps`, which contains the readonly effective state:
 
-| Field       | Type                                       | Description                                                                 |
-| ----------- | ------------------------------------------ | --------------------------------------------------------------------------- |
-| `name`      | `string`                                   | Name from `{ slot: 'name' }`.                                               |
-| `current`   | `number`                                   | Current page.                                                               |
-| `pageSize`  | `number`                                   | Page size.                                                                  |
-| `total`     | `number`                                   | Record count.                                                               |
-| `pageCount` | `number`                                   | Page count used by the built-in pager.                                      |
-| `range`     | `readonly [number, number]`                | One-based page range, matching `showTotal`.                                 |
-| `disabled`  | `boolean`                                  | Whether pagination is disabled; bind this to application buttons as needed. |
-| `position`  | `Exclude<TablePaginationPosition, 'none'>` | Actual pager position, such as `topLeft` or `bottomRight`.                  |
-| `region`    | `'inline' \| 'left' \| 'right'`            | Region containing the extension.                                            |
+<!-- @api: reference pagination-slot-props -->
 
-Read application state, such as selected keys, directly from the parent. The context does not contain refresh, navigation or request methods; application actions do not automatically emit pagination events. When top and bottom pagers are both visible, each renders its own instance of an extension with the appropriate `position`.
+Application state such as the selected count references the parent component's data directly. The context does not contain refresh, paging or request functions; application actions are handled by you and do not trigger pagination events automatically. When pagers are shown at both the top and the bottom, an extension point with the same name renders once in each pager and receives its own `position`.
 
-Import `TablePaginationBuiltinLayoutItem`, `TablePaginationLayoutItem`, `TablePaginationLayout` and `TablePaginationSlotProps` from `@vtable-guild/vtable-guild`.
+The layout types `TablePaginationBuiltinLayoutItem`, `TablePaginationLayoutItem`, `TablePaginationLayout` and `TablePaginationSlotProps` can all be imported from `@vtable-guild/vtable-guild`.
 
 ## API
 
 ### Props
 
-| Prop         | Type                             | Default | Description                                                                                                                                                      |
-| ------------ | -------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pagination` | `false \| TablePaginationConfig` | `false` | Pass `{}` to enable local or remote pagination; see [configuration](#configuration).                                                                             |
-| `scroll`     | `object`                         | -       | Horizontal and vertical scrolling. `scrollToFirstRowOnChange` controls the vertical reset after paging; see the [scroll config](/en/guide/api-reference#scroll). |
-| `manual`     | `boolean \| TableManualConfig`   | `false` | `true` skips local sorting, filtering and pagination slicing; the object form sets `sort`, `filter` and `pagination` separately.                                 |
+<!-- @api: props pagination -->
 
 ### Events
 
-| Event    | Payload                                                                                                      | Description                                                                                                                                                 |
-| -------- | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `change` | `(filters: TableFiltersInfo, sorter: VTableSorterResult<TRecord>, extra: TableChangeExtra<TRecord>) => void` | Unified event after sorting, filtering, selection and pagination; `extra.action` is `'paginate'` for page changes and `extra.pagination` carries the state. |
+<!-- @api: events pagination -->
 
 ### Slots
 
-| Slot             | Payload type                                           | Description                                           |
-| ---------------- | ------------------------------------------------------ | ----------------------------------------------------- |
-| `paginationItem` | [`TablePaginationSlotProps`](#pagination-slot-context) | Content at `{ slot: 'name' }` in `pagination.layout`. |
+<!-- @api: slots pagination -->
 
-### Configuration
+### Configuration reference
 
 Fields of the `pagination` object (`TablePaginationConfig`).
 
-| Field                          | Type                                                                                            | Default            | Description                                                                                                                   |
-| ------------------------------ | ----------------------------------------------------------------------------------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| `current`                      | `number`                                                                                        | -                  | Controlled page.                                                                                                              |
-| `defaultCurrent`               | `number`                                                                                        | `1`                | Initial page.                                                                                                                 |
-| `pageSize`                     | `number`                                                                                        | -                  | Controlled page size.                                                                                                         |
-| `defaultPageSize`              | `number`                                                                                        | `10`               | Initial page size.                                                                                                            |
-| `total`                        | `number`                                                                                        | -                  | Record count; when omitted or not a positive integer, the processed root record count is used.                                |
-| `disabled`                     | `boolean`                                                                                       | `false`            | Disable pagination interaction; slicing still applies.                                                                        |
-| `hideOnSinglePage`             | `boolean`                                                                                       | `false`            | Hide the pager when there is one page; a total of zero always hides it.                                                       |
-| `showSizeChanger`              | `boolean`                                                                                       | -                  | Show the page-size changer; when unset it appears once the total exceeds the threshold in the next row.                       |
-| `totalBoundaryShowSizeChanger` | `number`                                                                                        | `50`               | Total above which the size changer appears automatically.                                                                     |
-| `pageSizeOptions`              | `(string \| number)[]`                                                                          | 10, 20, 50, 100    | Page-size options; the current size remains available even if it is not listed.                                               |
-| `buildOptionText`              | `(option: { value: string \| number }) => VNodeChild`                                           | -                  | Custom content for page-size options.                                                                                         |
-| `showQuickJumper`              | `boolean \| { goButton?: VNodeChild }`                                                          | `false`            | Quick jumper. Submits on Enter or blur; with `goButton`, blur does not submit.                                                |
-| `showTotal`                    | `(total: number, range: [number, number]) => VNodeChild`                                        | -                  | Show the total; the range is one-based and `[0, 0]` for empty data.                                                           |
-| `size`                         | `'default' \| 'small'`                                                                          | follows table size | Pager size.                                                                                                                   |
-| `simple`                       | `boolean`                                                                                       | `false`            | Simple mode with an input instead of the page list.                                                                           |
-| `showLessItems`                | `boolean`                                                                                       | `false`            | Use a smaller page window.                                                                                                    |
-| `pagerCount`                   | `number`                                                                                        | -                  | Number of page buttons, an odd integer from 5 to 21; overrides `showLessItems`. See [page window](#page-window).              |
-| `responsive`                   | `boolean`                                                                                       | `false`            | Use the compact size below 576px unless `size` is set.                                                                        |
-| `itemRender`                   | `(item: { page: number; type: PaginationItemType; originalElement: VNodeChild }) => VNodeChild` | -                  | Custom page and navigation buttons; `type` is `page`, `prev`, `next`, `jump-prev` or `jump-next`.                             |
-| `position`                     | `TablePaginationPosition[]`                                                                     | bottom right       | Pager positions, `['bottomRight']` by default; top and bottom can both be used. `['none']` hides the pager but keeps slicing. |
-| `layout`                       | `TablePaginationLayout`                                                                         | preset layout      | Ordered array or `{ left, right }`; see [composable layouts](#composable-layouts-and-content-slots).                          |
-| `locale`                       | `object`                                                                                        | -                  | Pagination text overrides; fields are listed in [Type Declarations](#type-declarations).                                      |
-| `class`                        | `string`                                                                                        | -                  | Class for the pagination area.                                                                                                |
-| `style`                        | `CSSProperties`                                                                                 | -                  | Inline style for the pagination area.                                                                                         |
-| `onChange`                     | `(page: number, pageSize: number) => void`                                                      | -                  | Called on navigation, page-size changes and page resets caused by filtering.                                                  |
-| `onShowSizeChange`             | `(current: number, size: number) => void`                                                       | -                  | Called when the page size changes.                                                                                            |
-| `onUpdate:current`             | `(current: number) => void`                                                                     | -                  | Update notification for the controlled page.                                                                                  |
-| `onUpdate:pageSize`            | `(pageSize: number) => void`                                                                    | -                  | Update notification for the controlled page size.                                                                             |
+<!-- @api: reference pagination-config -->
 
-Only the first matching position in each top/bottom region is used. `position: ['none']` hides controls but retains slicing; `pagination: false` disables both.
+Supported positions are `topLeft`, `topCenter`, `topRight`, `bottomLeft`, `bottomCenter`, `bottomRight` and `none`. Each region holds at most one pager and uses the first matching item in the array.
 
-### Page window
+### Page button count
 
-`pagerCount` includes the first and last numbered pages, excluding ellipses and previous/next buttons. All pages appear when the total page count is smaller. When explicitly set, both presets use the Element Plus page-window algorithm, and ellipses jump `pagerCount - 2` pages.
+`pagerCount` includes the first and last numbered pages and excludes the ellipses and the previous / next buttons; when there are fewer pages in total, all of them are shown. When it is set explicitly, both presets use the Element Plus pager algorithm, and the ellipses jump `pagerCount - 2` pages backward or forward.
 
 ```vue
 <VTable :pagination="{ pagerCount: 9 }" />
 ```
 
-`pagerCount` takes precedence over `showLessItems`. When omitted, each preset retains its existing default/compact window and 5/3-page jumps. Only odd integers from 5 through 21 are accepted; invalid values warn during development and fall back to the omitted-value behavior. `simple` has no numbered page list and ignores both options. Changing the page window does not change the current page, page size or data slice, and emits no pagination events.
+`pagerCount` takes precedence over `showLessItems`. When it is not specified, each preset keeps its existing default / compact arrangement and 5 / 3-page jumps. Only odd integers from 5 to 21 are accepted; invalid values warn in development and fall back to the unspecified behavior. `simple` mode shows no page list and therefore ignores both options. Changing the page window dynamically does not change the current page, the page size or the data slice, and triggers no pagination events.
 
-Element Plus's native `pager-count` validation only warns during development; invalid values still participate in page-window calculations, so values outside the documented range may appear to work in its Playground. VTable Guild falls back to the omitted-value behavior in all environments and warns during development.
+Element Plus's native `pager-count` validation only warns in development; invalid values still take part in the pager calculation, so you may see out-of-range values take effect in its Playground. VTable Guild falls back to the unspecified rules for invalid values in every environment and warns in development.
+
+## Advanced configuration and theming
 
 <Demo src="pagination/advanced">
 
@@ -187,42 +144,64 @@ Element Plus's native `pager-count` validation only warns during development; in
 
 </Demo>
 
-## Events, migration and integration
+Customize with `theme.pagination.slots` / `variants` and the `--vtg-pagination-*` tokens; both presets support them. A global locale pack can contain an optional `pagination` group, or you can use `localeOverrides.pagination`; the per-instance `pagination.locale` overrides last. Existing locale packs do not need new fields.
 
-The table `change` event receives `(filters: TableFiltersInfo, sorter: VTableSorterResult<Row>, extra: TableChangeExtra<Row>)`. These differ from the pagination-only callback above. Its optional `extra.pagination` contains `current`, `pageSize` and `total`. Use the public callback type to infer all three parameters:
+The layout structure can be customized through `theme.pagination.slots.layout`, `left`, `right` and `extension`; the spacing between the two regions and between extension points reuses `--vtg-pagination-gap`. Consecutive previous / pager / next items still use the existing `pages` slot and keep each preset's navigation spacing.
+
+The ellipsis jump text can be customized through the optional locale fields `prev_pages` / `next_pages`; `{count}` in the template is replaced with the actual jump distance, for example `prev_pages: 'Previous {count} pages'`. Jumps of 3 / 5 pages keep using the existing `prev_3` / `next_3` and `prev_5` / `next_5` fields. The button's title and aria-label use the same text.
+
+### Element Plus preset
+
+Pagination configuration and events keep using the Ant-style API above, and the two presets share the same default visibility rules and page-size options. After switching to `element-plus`, the pagination visuals and interaction follow Element Plus:
+
+- Page buttons sit next to each other with no gap, and the current page is bold with no border; when `layout` is omitted, the total, page-size select, pager and jumper are arranged in that order.
+- When `pagerCount` is not specified, the native 7-page window is used, and `showLessItems: true` maps to a 5-page window; the ellipses jump 5 / 3 pages backward or forward respectively.
+- The quick-jump input shows the current page; Enter or blur submits and restores the effective page, and decimals keep only their integer part; when a Go button is configured, submission still happens through the button or Enter.
+- The Chinese jump text is "前往", and English does not show the `Page` after the input; per-instance locale overrides still apply.
+- Default pagination buttons are 32px, and `size: 'small'` is 24px with a 12px font size; when no pagination size is specified, a `small` table maps to compact pagination, and `middle` / `large` map to default pagination.
+
+Shared extensions such as `simple`, the Go button and `itemRender` remain available. Element's native string `layout` should be migrated to the array or left-right region object described above; `currentPage` / `pageSizes` correspond to `current` / `pageSizeOptions` respectively.
+
+Ant's internal `selectComponentClass`, `selectPrefixCls` and `prefixCls` are not supported; use this project's theme, `classPrefix` and the table-level `getPopupContainer`. The first version does not export a standalone Pagination component.
+
+The table below lists the styling entry points of the pager and the page-size menu. Override classes through the global `theme.pagination`; for per-instance styles use `pagination.class` or `pagination.style`.
+
+### ui slots
+
+<!-- @api: ui pagination -->
+
+### Preset defaults
+
+The code lists the slots and variants you can override directly. When the pager is in simple mode and disabled, the presets also apply compound styles to the jump control.
+
+<!-- @api: theme pagination -->
+
+### CSS variables
+
+<!-- @api: css-vars pagination -->
+
+## Events and other features
+
+The arguments of the table's `change` are `(filters: TableFiltersInfo, sorter: VTableSorterResult<Row>, extra: TableChangeExtra<Row>)`, which differ from the pagination-only callback above. `extra.pagination?: TablePaginationState` contains `current`, `pageSize` and `total`. Use the public callback type to infer all the parameters automatically:
 
 <<< @/.vitepress/type-declarations/examples.typecheck.ts#PaginationChangeExample
 
-- Keep `change(filters, sorter, extra)`. Enabled pagination adds `extra.pagination: { current, pageSize, total }`. Handle the new `extra.action === 'paginate'` in exhaustive switches.
-- Pagination and size changes emit one table event. Filtering requests page 1 with one `filter` event. Sorting retains the page. Size changes keep the page or clamp to the last page.
-- Controlled values remain owned by the parent; callbacks report requested values. External updates do not emit events. Shrinking data clamps the effective page; refetch an adjusted remote page in application code if needed.
-- For sort/filter/paginate, `currentDataSource` contains processed data before pagination, limited to loaded records remotely. Selection retains its existing displayed-data semantics.
-- Header select-all, invert and Shift selection affect the current page. The “Select all data” menu affects all loaded records. `preserveSelectedRowKeys` retains remote keys and previously loaded selected records.
-- Title/footer receive displayed page data. Row dragging remains within the page and returns the entire input dataSource. Tree expansion, virtual scrolling and automatic height are supported.
-- Enabled pagination defaults to scrolling to the first row on sort/filter/paginate while keeping the horizontal offset. Set `scroll.scrollToFirstRowOnChange: false` to opt out. Unpaginated tables retain their old default.
-- When migrating from Ant, opt in explicitly and read the original first callback argument from `extra.pagination`.
+- The argument order of `change(filters, sorter, extra)` is unchanged. With pagination enabled, every action carries `extra.pagination`; when it is not enabled, the field is not added. `'paginate'` is a new action, so exhaustive checks need this branch.
+- Changing the page and changing the page size each trigger one table event; filtering returns to page 1 and triggers only `'filter'`. Sorting keeps the page; a page-size change keeps the page and clamps it to the last page when necessary.
+- For sorting, filtering and pagination, `currentDataSource` is the processed data before pagination; in remote scenarios it contains only loaded records. `select` keeps its existing displayed-data semantics.
+- When the data shrinks, the effective page clamps to the last page, and external prop updates do not trigger events in return. If a new request is needed after the remote total shrinks, application code is responsible for it.
+- Header select-all, invert and Shift range selection are limited to the current page; the "Select all data" menu item selects all loaded records. Remote cross-page selection uses `preserveSelectedRowKeys` and does not request unloaded pages.
+- `title` / `footer` receive the displayed data of the current page. Dragging happens only within the current page but returns the complete input `dataSource`.
+- The pager does not scroll horizontally with the body. `scroll.y: 'auto'` automatically reserves space for the top and bottom pagers and is compatible with virtual scrolling.
+- With pagination enabled, paginating / filtering / sorting scrolls back to the top of the body by default and keeps the horizontal position. Turn it off with `scroll.scrollToFirstRowOnChange: false`; without pagination, the existing scroll behavior is kept by default.
 
-## Themes and locales
-
-Both presets use `theme.pagination` slots/variants and `--vtg-pagination-*` tokens: size, size-sm, gap, margin, radius, input-width, border, bg, active-bg, active-color, active-border, popup-z and popup-shadow. Semantic colors follow dark mode. Style generation supports prebuilt CSS and Tailwind 3/4 with custom class prefixes.
-
-Customize layout structure with `theme.pagination.slots.layout`, `left`, `right` and `extension`. Regions and extensions reuse `--vtg-pagination-gap`. Consecutive previous/page/next items retain the existing `pages` slot and each preset's navigation spacing.
-
-The `element-plus` preset retains the same Ant-style configuration, callbacks, visibility defaults and page-size options. It uses contiguous, borderless page buttons with a bold active page; without `layout`, the order is total, sizes, pages, jumper. With `pagerCount` omitted, its page window follows Element Plus (7, or 5 with `showLessItems`), with 5/3-page jumps. The quick-jump input shows the current page, truncates decimals on submission, and restores the effective page after Enter or blur; an explicit Go button retains the existing submission rules. Chinese uses “前往”; English omits the trailing “Page”. Default buttons are 32px; small buttons are 24px with 12px text. Without an explicit pagination size, small tables use small pagination, while middle/large tables use default pagination. `simple`, Go buttons and `itemRender` remain supported extensions.
-
-To migrate Element's string `layout`, use the array or region object described above. Its `currentPage` and `pageSizes` correspond to `current` and `pageSizeOptions`.
-
-Existing locale packs remain valid. Add an optional global `pagination` group or `localeOverrides.pagination`; table `pagination.locale` takes final precedence. Locale keys include items_per_page, jump_to, jump_to_confirm, page, prev_page, next_page, prev_3/next_3, prev_5/next_5, navigation and page_size.
-
-Optional `prev_pages` / `next_pages` locale templates use `{count}` for the actual ellipsis jump distance, for example `prev_pages: 'Previous {count} pages'`. Jumps of 3 or 5 pages continue to use the existing `prev_3` / `next_3` and `prev_5` / `next_5` keys. Each jump button uses the same text for its title and aria-label.
-
-Ant internal `selectComponentClass`, `selectPrefixCls` and `prefixCls` are unsupported. Use the existing theme system, `classPrefix` and table `getPopupContainer`. A standalone Pagination component is not exported.
+When migrating from Ant, read what used to be the first argument of the four-argument callback from `extra.pagination` instead; pass a pagination object explicitly to enable the feature.
 
 ## Type Declarations
 
-Import these types from `@vtable-guild/vtable-guild`. `TRecord` is the business row type; Vue rendering types such as `VNodeChild` come from `vue`. Column, sorter and other supporting declarations are indexed in the [type reference](/guide/type-reference) (Chinese).
+The following types are all imported from `@vtable-guild/vtable-guild`. `TRecord` is your application's row type; Vue rendering types such as `VNodeChild` are imported from `vue`. For the column, sorter and base types that the declarations depend on, see the [Type reference](/en/guide/type-reference).
 
-::: details Show type declarations
+::: details View type declarations
 
 <<< @/.vitepress/type-declarations/table.ts#TablePaginationConfig
 

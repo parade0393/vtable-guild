@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, ref, shallowRef, watchEffect } from 'vue'
-import { withBase } from 'vitepress'
+import { useData, withBase } from 'vitepress'
 
 const props = withDefaults(
   defineProps<{
@@ -55,6 +55,29 @@ const playgroundUrl = computed(() => {
   return `${playgroundBase}${separator}demo=${encodeURIComponent(props.src)}`
 })
 
+const { lang } = useData()
+const text = computed(() =>
+  lang.value.startsWith('en')
+    ? {
+        missing: 'Demo not found: ',
+        loading: 'Loading demo…',
+        edit: 'Edit in Playground',
+        copy: 'Copy code',
+        copied: 'Copied',
+        show: 'Show code',
+        hide: 'Hide code',
+      }
+    : {
+        missing: '找不到 demo：',
+        loading: '加载示例…',
+        edit: '在 Playground 中编辑',
+        copy: '复制代码',
+        copied: '已复制',
+        show: '展开源码',
+        hide: '收起源码',
+      },
+)
+
 const expanded = ref(false)
 const copied = ref(false)
 let copyTimer: ReturnType<typeof setTimeout> | undefined
@@ -75,24 +98,24 @@ async function copySource() {
 <template>
   <div class="vtg-demo">
     <p v-if="missing" class="vtg-demo__missing">
-      找不到 demo：<code>site/demos/{{ src }}.vue</code>
+      {{ text.missing }}<code>site/demos/{{ src }}.vue</code>
     </p>
 
     <div v-else class="vtg-demo__preview vp-raw" :style="{ minHeight: `${minHeight}px` }">
       <ClientOnly>
         <component :is="DemoComponent" v-if="DemoComponent" />
         <template #fallback>
-          <div class="vtg-demo__skeleton">加载示例…</div>
+          <div class="vtg-demo__skeleton">{{ text.loading }}</div>
         </template>
       </ClientOnly>
     </div>
 
     <div class="vtg-demo__actions">
       <a class="vtg-demo__action" :href="playgroundUrl" target="_blank" rel="noreferrer">
-        在 Playground 中编辑
+        {{ text.edit }}
       </a>
       <button class="vtg-demo__action" type="button" @click="copySource">
-        {{ copied ? '已复制' : '复制代码' }}
+        {{ copied ? text.copied : text.copy }}
       </button>
       <button
         class="vtg-demo__action vtg-demo__action--toggle"
@@ -100,7 +123,7 @@ async function copySource() {
         :aria-expanded="expanded"
         @click="expanded = !expanded"
       >
-        {{ expanded ? '收起源码' : '展开源码' }}
+        {{ expanded ? text.hide : text.show }}
         <svg
           class="vtg-demo__chevron"
           :class="{ 'vtg-demo__chevron--up': expanded }"

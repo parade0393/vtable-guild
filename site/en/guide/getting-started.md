@@ -1,13 +1,13 @@
 ---
 title: Getting started
-description: Install and initialize vtable-guild in a Vue 3 + Vite project and render your first high-performance table within minutes, with ant-design-vue and element-plus theme presets.
+description: Install and initialize vtable-guild in a Vue 3 + Vite project and get your first high-performance table running within minutes, with both the ant-design-vue and element-plus theme presets.
 ---
 
 # Getting started
 
 This page does one thing: get your first vtable-guild table running in an existing Vue 3 + Vite project as quickly as possible.
 
-If you are already using ant-design-vue or element-plus, finish the initialization here first, then continue with the migration and theming pages (currently Chinese-only).
+If you already use ant-design-vue or element-plus, finish the initialization here first, then read the migration and theming pages according to your project.
 
 ## Requirements
 
@@ -15,13 +15,28 @@ If you are already using ant-design-vue or element-plus, finish the initializati
 - pnpm `>=10.28.0`
 - Vue `^3.5.0`
 - Vite `^5` or newer
+- For TypeScript projects, pinning to `5.9.3` is recommended; `6.0.3` has also been verified
 
 ## Install
 
-The component does not require Tailwind CSS in the host project. Install the package:
+::: warning TypeScript version limit
+The `vue-tsc` toolchain verified by this project and the online Playground do not currently support TypeScript 7 or above. Use the verified TypeScript `5.9.3` or `6.0.3` first, and avoid installing `typescript@latest` directly.
+
+The combination verified in a real project is Vue `3.5.26` and `vue-tsc 3.2.2`, together with the two TypeScript versions above. Type checking of plain `.ts` components passes under TS 7, but the existing `vue-tsc` cannot load its new compiler; other TS 7 Vue toolchains are not yet supported by this project. Earlier TypeScript versions also need separate verification.
+
+The online Playground is pinned to TypeScript `5.9.3`. It relies on a browser-loadable JS compiler and standard library declarations, so it cannot use the TS 7 native compiler today; this limit has nothing to do with the component's JavaScript runtime.
+:::
+
+The component itself does not require the host project to install Tailwind CSS. First install the package:
 
 ```bash
 pnpm add @vtable-guild/vtable-guild
+```
+
+When a TypeScript project needs to install or adjust its type checking tools, use the verified combination:
+
+```bash
+pnpm add -D -E typescript@5.9.3 vue-tsc@3.2.2
 ```
 
 ## Configure the style entry
@@ -30,7 +45,7 @@ vtable-guild supports three style modes: `prebuilt`, `tailwind3` and `tailwind4`
 
 ### prebuilt
 
-If your project does not use Tailwind CSS, import the prebuilt stylesheet entry directly.
+When the project does not use Tailwind CSS, import the full prebuilt style entry directly.
 
 For example, in `src/main.css`:
 
@@ -38,11 +53,11 @@ For example, in `src/main.css`:
 @import '@vtable-guild/vtable-guild/css/style';
 ```
 
-This entry ships pre-generated utilities for the library's internal styles. You do not need to install Tailwind CSS, configure `@tailwindcss/vite`, or scan this library's sources.
+This entry already pre-generates the utilities the library needs internally. Using it requires no Tailwind CSS installation, no `@tailwindcss/vite` configuration and no scanning of this library's sources.
 
 ### tailwind3
 
-If your project uses Tailwind CSS 3, use the Tailwind 3 entry and add the library's preset to your Tailwind config:
+When the project uses Tailwind CSS 3, use the Tailwind 3 entry and add the library preset to the Tailwind config:
 
 ```js
 import vtableGuildTailwind3Preset from '@vtable-guild/vtable-guild/tailwind3-preset'
@@ -71,7 +86,7 @@ app.use(createVTableGuild({ cssMode: 'tailwind3' }))
 
 ### tailwind4
 
-If your project uses Tailwind CSS 4, use the Tailwind 4 entry:
+When the project uses Tailwind CSS 4, use the Tailwind 4 entry:
 
 ```bash
 pnpm add -D tailwindcss @tailwindcss/vite
@@ -101,11 +116,11 @@ app.use(createVTableGuild({ cssMode: 'tailwind4' }))
 - the default `antdv` preset
 - the `element-plus` preset
 - theme tokens
-- the base styles required by the components
+- the base styles the components need at runtime
 
 Switching presets requires no extra CSS.
 
-In prebuilt mode the library's internal utility classes are emitted with the `vtg-` prefix. In Tailwind 3/4 modes internal classes stay unprefixed. See [package consumption](/guide/package-consumption) (Chinese) for the full rules.
+In prebuilt mode the library's internal utility classes are emitted with the `vtg-` prefix. In Tailwind 3/4 modes internal classes stay unprefixed. See [Package imports and styles](/en/guide/package-consumption) for the full rules.
 
 ## Initialize the plugin
 
@@ -126,7 +141,7 @@ app.use(createVTableGuild())
 app.mount('#app')
 ```
 
-The default preset is `antdv`. To switch to the element-plus look, set `themePreset`:
+The default preset is `antdv`. To switch to the element-plus look, just set `themePreset` to `element-plus`:
 
 ```ts
 app.use(
@@ -177,13 +192,13 @@ const dataSource: UserRow[] = [
 
 ## Where to go next
 
-- To estimate migration cost: read [migrating from ant-design-vue](/guide/migration-from-antd) (Chinese)
-- To unify the visual system: [three-layer theme overrides](/guide/theme-overrides) and [Table CSS variables](/guide/theme-tokens) (Chinese)
-- To inspect the full API: the [English API Reference](/en/guide/api-reference)
+- To estimate the cost of replacing your table, continue with [Migrating from ant-design-vue](/en/guide/migration-from-antd)
+- To unify the visual system, continue with [Three-layer theme overrides](/en/guide/theme-overrides) and [Table CSS variables](/en/guide/theme-tokens)
+- To confirm the differentiating capabilities, continue with the [Feature comparison](/en/comparison/)
 
 ## Type Declarations
 
-These are the complete plugin and column declarations used on this page. Referenced types and component props are available in the [type reference](/guide/type-reference) (Chinese).
+These are the plugin and column configuration declarations used on this page. The types they reference and the complete component props are in the [type reference](/en/guide/type-reference).
 
 ::: details Type Declarations
 
