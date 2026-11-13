@@ -78,6 +78,7 @@ const handleChange: NonNullable<VTableEventProps<Row>['onChange']> = (_filters, 
     :columns="columns"
     :data-source="data"
     :pagination="pagination"
+    :manual="{ pagination: true }"
     :loading="loading"
     :row-selection="rowSelection"
     @change="handleChange"

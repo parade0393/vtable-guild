@@ -863,7 +863,7 @@ export const referenceApiTablesEnFeatures = {
         '`manualRequest`',
         '`boolean`',
         '`false`',
-        'Skip the first request; later submissions, param changes and reloads send requests as usual.',
+        "Skip only the first automatic request; later table events, submissions, param changes and reloads send requests as usual. Independent of the component's `manual` switch for local computation.",
       ],
       [
         '`debounceTime`',
@@ -918,7 +918,7 @@ export const referenceApiTablesEnFeatures = {
       [
         '`dataSource`',
         '`ShallowRef<TRecord[]>`',
-        "Data of the current page; bind it to the table's `dataSource`.",
+        "Records returned by `request`, after `postData` when provided. May contain one page or the complete result set; the Hook does not slice them. Bind to the table's `dataSource`.",
       ],
       [
         '`loading`',
@@ -939,7 +939,7 @@ export const referenceApiTablesEnFeatures = {
       [
         '`pagination`',
         '`ComputedRef<TablePaginationConfig>`',
-        "Controlled pagination config; bind it to the table's `pagination`, with no need to pass `onChange`.",
+        "Controlled pagination config for the fully remote setup, used with the table's `change` → `onChange` binding. Do not also bind requests to `pagination.onChange`. Use a separate config for local pagination.",
       ],
       ['`query`', '`ComputedRef<Partial<TParams>>`', 'Submitted query.'],
       ['`sort`', '`ComputedRef<TableRequestSort>`', 'Sort used by the request.'],
@@ -947,12 +947,12 @@ export const referenceApiTablesEnFeatures = {
       [
         '`manual`',
         '`Readonly<Required<TableManualConfig>>`',
-        "Bind it to the table's `manual`; turns off local sorting, filtering and pagination slicing.",
+        'A fixed, frozen plain object `{ sort: true, filter: true, pagination: true }`, not a ref. An optional preset for a fully remote table, equivalent to `:manual="true"`; it does not control requests.',
       ],
       [
         '`onChange`',
         "`VTableEventProps<TRecord>['onChange']`",
-        "Bind it to the table's `change` event; turns page changes, sorting and filtering into requests.",
+        "Turns paging, sorting and filtering events into requests, ignoring selection events. Changing the component's `manual` does not change this behavior; mixed modes need application event routing. See [Choosing a processing mode](/en/guide/remote-data#processing-modes).",
       ],
     ],
   },

@@ -1367,7 +1367,7 @@ export const referenceApiTables = {
         '`manualRequest`',
         '`boolean`',
         '`false`',
-        '跳过首次请求；之后的提交、参数变化和刷新照常请求。',
+        '仅跳过首次自动请求；之后的表格事件、提交、参数变化和刷新照常请求。与组件的 `manual` 本地计算开关无关。',
       ],
       ['`debounceTime`', '`number`', '`0`', '查询变化和表格事件的防抖毫秒数；`reload` 不防抖。'],
       [
@@ -1399,7 +1399,11 @@ export const referenceApiTables = {
   'request-return': {
     headers: ['属性', '类型', '说明'],
     rows: [
-      ['`dataSource`', '`ShallowRef<TRecord[]>`', '当前页数据，绑定表格的 `dataSource`。'],
+      [
+        '`dataSource`',
+        '`ShallowRef<TRecord[]>`',
+        '`request` 返回的记录，有 `postData` 时取其处理结果。可以是当页或完整结果集；Hook 不对数据切片。绑定表格的 `dataSource`。',
+      ],
       [
         '`loading`',
         '`Readonly<Ref<boolean>>`',
@@ -1411,7 +1415,7 @@ export const referenceApiTables = {
       [
         '`pagination`',
         '`ComputedRef<TablePaginationConfig>`',
-        '受控分页配置，绑定表格的 `pagination`，不需要再传 `onChange`。',
+        '全远程接法的受控分页配置，配合表格的 `change` → `onChange` 使用；不要额外给 `pagination.onChange` 绑定请求。本地分页使用独立配置。',
       ],
       ['`query`', '`ComputedRef<Partial<TParams>>`', '已提交的查询。'],
       ['`sort`', '`ComputedRef<TableRequestSort>`', '请求使用的排序。'],
@@ -1419,12 +1423,12 @@ export const referenceApiTables = {
       [
         '`manual`',
         '`Readonly<Required<TableManualConfig>>`',
-        '绑定表格的 `manual`，关闭本地排序、筛选和分页切片。',
+        '固定、冻结的普通对象 `{ sort: true, filter: true, pagination: true }`，不是 ref。可选的全远程表格预设，效果同 `:manual="true"`；不控制请求。',
       ],
       [
         '`onChange`',
         "`VTableEventProps<TRecord>['onChange']`",
-        '绑定表格的 `change` 事件，把翻页、排序和筛选转成请求。',
+        '将翻页、排序和筛选事件转为请求，忽略选择事件。更改组件的 `manual` 不会改变此行为；混合模式需业务事件分流，见[处理模式选择](/guide/remote-data#processing-modes)。',
       ],
     ],
   },

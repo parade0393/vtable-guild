@@ -55,11 +55,13 @@ Lazy loading requires stable row keys. Concurrent requests for the same node are
 
 <!-- @api: reference props-manual -->
 
-The corresponding header state, filter controls and `change(filters, sorter, extra)` keep working. `sorter: true` on its own still means local default sorting, so enable `manual.sort` as well for server-side sorting.
-Pass an explicit `total` for remote pagination; `manual.pagination` turns off local slicing, which suits servers that already return the current page of records.
+`manual` only decides which local computations to skip; omitted object fields are treated as `false`. It neither sends nor prevents network requests. Header state, filter controls and `change(filters, sorter, extra)` keep working. `sorter: true` on its own still means local default sorting, so enable `manual.sort` as well for server-side sorting.
 
-The optional [useTableRequest](/en/guide/remote-data) returns data, loading, error, controlled pagination, manual and a single onChange entry, and provides submit, reset, reload and cancel.
-If you only need to manage requests yourself, you can also pass the data and state directly; `manual` never issues a network request on its own.
+The table can paginate a complete result set locally: pass all records and `pagination: { defaultPageSize: 10 }`, leave `manual.pagination` off, and do not connect paging events to a request function. For remote pagination, pass an explicit `total` and enable `manual.pagination` to skip local slicing and display the page returned by the server.
+
+The optional [useTableRequest](/en/guide/remote-data) provides requests, loading state and refresh methods. The standard fully remote setup binds its `manual`, `pagination` and `onChange` together. The returned `manual` is a fixed, frozen plain object `{ sort: true, filter: true, pagination: true }`, not a ref; it is equivalent to `:manual="true"`. `onChange` turns sorting, filtering and paging into requests. Overriding the component's `manual` does not change this request behavior, and the Hook currently has no per-operation request switches.
+
+For local processing after loading the complete result set, use only the Hook's data, loading and refresh capabilities, with separate local pagination and column state. Mixed modes require application code to route requests by `extra.action` and keep sorting, filtering and pagination state in sync. See [Choosing a processing mode](/en/guide/remote-data#processing-modes) for complete examples.
 
 ### Visuals and layout
 

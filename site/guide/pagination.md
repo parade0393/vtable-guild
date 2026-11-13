@@ -6,6 +6,10 @@
 
 组件先筛选、排序，再按根记录分页，最后展开树节点。子节点和展开内容不占额外分页名额。请配置稳定的 `rowKey`，以保持跨页选择和展开状态。
 
+数据可以来自静态数组，也可以来自一次性返回全量的接口。例如接口返回 20 条、`defaultPageSize: 10` 时，组件自动分成两页；只要不把翻页事件接到请求函数，切页就不会重新请求。见[全量加载后本地处理](/guide/remote-data#local-data)，示例同时展示本地排序、筛选和请求次数。
+
+本地分页通常不传 `total`，让组件根据筛选后的记录数计算。使用 `useTableRequest` 取数时，也可以只绑定其数据和加载状态，另设本地分页配置，而不绑定 Hook 的 `pagination`、`manual`、`onChange`。完整接法见[选择数据处理方式](/guide/remote-data#processing-modes)。
+
 示例同时开启行选择：表头复选框选择当页，“全选所有”菜单选择筛选后全部已加载的可选记录。翻页后可通过已选数量和复选框状态检查选择范围。
 
 <Demo src="pagination/basic">
@@ -36,11 +40,17 @@
 
 ## 远程分页
 
-传入当前页记录和完整 `total`。当处理后记录数小于 `total` 且不超过 `pageSize` 时，不再切片。记录数大于 `pageSize` 却小于 `total` 时，会告警并按本地方式切片。未提供正整数 `total` 时，回退到筛选、排序后的根记录数。
+传入当前页记录、完整 `total`，并显式设置 `:manual="{ pagination: true }"`。组件使用服务端总数（包括 `0`），不再次切片；翻页是否请求由业务事件处理决定。仅传 `total` 并不是网络请求开关。
 
 请求可由业务代码管理，也可使用 [useTableRequest 请求管理](/guide/remote-data)。自行管理时，加载期间保留总数，并使用请求序号或 AbortController 防止旧响应覆盖新页。
 
-`sorter: true` 默认仍会本地排序。服务端排序应额外传 `:manual="{ sort: true }"`；服务端筛选传 `manual.filter: true`，保留筛选入口与状态并跳过本地计算。传 `manual.pagination: true` 会跳过分页切片，使用显式 `total`；`manual: true` 同时开启三项。`useTableRequest` 返回的 `manual` 已开启三项，直接绑定即可。
+`sorter: true` 默认仍会本地排序。如果排序、筛选也交给服务端，使用 `:manual="{ pagination: true, sort: true, filter: true }"` 或 `:manual="true"`。对象中省略的字段按 `false` 处理。全远程接法可以绑定 `useTableRequest` 返回的 `manual`；混合模式还需[按操作连接请求](/guide/remote-data#mixed-data)。
+
+::: details 未显式开启 manual.pagination 时的兼容行为
+未开启 `manual.pagination` 时，当处理后记录数小于 `total` 且不超过 `pageSize`，组件兼容当页数据，不再切片；记录数大于 `pageSize` 却小于 `total` 时，会告警并按本地方式切片。此模式未提供正整数 `total` 时，回退到筛选、排序后的根记录数。显式开启 `manual.pagination` 时，合法的 `total: 0` 会直接保留，不采用上述回退。
+
+新的远程分页接法建议显式配置 `manual.pagination`，避免依赖数据长度推断处理方式。
+:::
 
 下面的示例启用 `preserveSelectedRowKeys`，展示跨页已选数量和记录名称。可先选中一条记录，翻页继续选择，再返回原页检查勾选状态。“全选所有”仅作用于已加载数据，不会请求其他页。
 

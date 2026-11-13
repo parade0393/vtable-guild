@@ -51,6 +51,8 @@ const dataSource: UserRow[] = [
 </template>
 ```
 
+A `filters: [...]` array provides choices; local filtering also needs `onFilter`, as in the example above. Listing choices alone does not match records automatically. You can also use `onFilter: true` for built-in matching, or `filters: true` to generate choices from `valueEnum` and match them.
+
 ## Controlled and uncontrolled
 
 - defaultFilteredValue only takes effect on the first render and suits simple default filtering.
@@ -149,7 +151,13 @@ Using filteredValue directly is recommended in the following scenarios:
 
 `filterResetToDefaultFilteredValue: true` makes reset restore `defaultFilteredValue`; otherwise it clears. When a custom panel calls `clearFilters()`, it submits the reset result once and requests the panel to close. To reset only the draft and keep the panel, pass `clearFilters({ confirm: false, closeDropdown: false })`. `confirm({ closeDropdown: false })` submits and keeps the panel.
 
-`filters: true` on a column generates filter items from valueEnum; `onFilter: false` or the table's `manual.filter` skips local computation while keeping the filter UI and events. For a complete example see [Cell display and enums](./cell-display.md).
+## Remote filtering and mixed processing {#remote-filtering}
+
+The table's `manual.filter: true` skips local filtering while keeping the controls, state and events. Application code updates remote conditions and requests when `extra.action === 'filter'`. A column's `onFilter: false` also skips its local computation. Neither setting sends a request.
+
+`filteredValue` determines who owns the filter state; `manual.filter` determines whether local filtering runs. They are independent: controlled state does not automatically disable local filtering, and application code must still update `filteredValue` for an external reset.
+
+See [Choose where data is processed](/en/guide/remote-data#processing-modes) and [Remote filtering with local sorting and pagination](/en/guide/remote-data#mixed-data). Local filtering with remote pagination only affects the loaded page; for the complete data set, see the [full-data example](/en/guide/remote-data#local-data). For `valueEnum` and automatic choices, see [Cell display and enums](./cell-display.md).
 
 ## API
 

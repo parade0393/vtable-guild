@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, ref, shallowRef, watchEffect } from 'vue'
+import { computed, defineAsyncComponent, provide, ref, shallowRef, watchEffect } from 'vue'
 import { useData, withBase } from 'vitepress'
 
 const props = withDefaults(
@@ -56,6 +56,8 @@ const playgroundUrl = computed(() => {
 })
 
 const { lang } = useData()
+// Demos can follow the site language without importing VitePress in copied examples.
+provide('vtg-demo-lang', lang)
 const text = computed(() =>
   lang.value.startsWith('en')
     ? {

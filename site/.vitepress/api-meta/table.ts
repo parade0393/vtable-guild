@@ -58,9 +58,9 @@ export const tableProps = [
     type: 'boolean | TableManualConfig',
     default: '`false`',
     description:
-      '`true` 跳过本地排序、筛选和分页切片；对象形式分别设置 `sort`、`filter`、`pagination`。表头状态和 `change` 事件继续工作，见[远程数据](/guide/remote-data)。',
+      '`true` 跳过本地排序、筛选和分页切片；对象形式分别设置 `sort`、`filter`、`pagination`，省略字段为 `false`。只控制本地计算，不发起或阻止请求；表头状态和 `change` 事件继续工作，见[处理模式选择](/guide/remote-data#processing-modes)。',
     descriptionEn:
-      '`true` skips local sorting, filtering and pagination slicing; the object form sets `sort`, `filter` and `pagination` separately. Header state and the `change` event keep working; see [Remote data and requests](/en/guide/remote-data).',
+      '`true` skips local sorting, filtering and pagination slicing; the object form sets `sort`, `filter` and `pagination` separately, with omitted fields treated as `false`. Controls local computation only; it neither sends nor prevents requests. Header state and the `change` event keep working; see [Choosing a processing mode](/en/guide/remote-data#processing-modes).',
     features: ['sorting', 'filtering'],
   },
   {

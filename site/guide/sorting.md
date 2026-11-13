@@ -102,6 +102,8 @@ const handleChange: NonNullable<VTableEventProps<ScoreRow>['onChange']> = (_filt
 排序入口、单列与多列状态和 `change` 事件继续工作；业务在 `extra.action === 'sort'` 时重新查询。
 也可以使用 [useTableRequest](/guide/remote-data)，统一管理服务端排序、筛选、分页和刷新。
 
+需要本地排序配合远程筛选或分页时，见[选择数据处理方式](/guide/remote-data#processing-modes)与[混合示例](/guide/remote-data#mixed-data)。只把 `manual.sort` 改为 `false` 不会阻止已绑定的 Hook `onChange` 请求；事件连接和排序状态也需要按处理方式配置。
+
 ## 多列排序
 
 当多个字段都需要参与排序时，使用 multiple 指定优先级。数值越大，优先级越高。

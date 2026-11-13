@@ -6,6 +6,10 @@ Enable it with `:pagination="{}"`. It is off by default: when omitted or `false`
 
 The component filters and sorts first, then paginates by root records, and finally expands tree nodes. Children and expanded content do not consume additional page slots. Configure a stable `rowKey` to keep selection and expansion state across pages.
 
+Data can come from a static array or an API that returns all records at once. For example, 20 records with `defaultPageSize: 10` automatically produce two pages. Page changes do not request again unless their events are connected to a request function. See [Load all records, then process locally](/en/guide/remote-data#local-data) for local sorting, filtering and a request counter.
+
+Local pagination usually omits `total`, letting the component use the filtered record count. When loading through `useTableRequest`, you can bind only its data and loading state and provide independent local pagination, without the Hook's `pagination`, `manual` or `onChange`. See [Choose where data is processed](/en/guide/remote-data#processing-modes) for the complete setups.
+
 The demo also enables row selection: the header checkbox selects the current page, while the "Select all data" menu item selects all loaded, selectable records after filtering. After changing pages, check the selection scope through the selected count and the checkbox states.
 
 <Demo src="pagination/basic">
@@ -36,11 +40,17 @@ If you only need pagination, use `TablePaginationConfig.onChange` directly. Its 
 
 ## Remote pagination
 
-Pass the records of the current page plus the full `total`. When the processed record count is below `total` and does not exceed `pageSize`, the data is not sliced again. When the record count is greater than `pageSize` but below `total`, the table warns and slices locally. When no positive integer `total` is provided, it falls back to the root record count after filtering and sorting.
+Pass the current page's records and full `total`, and explicitly set `:manual="{ pagination: true }"`. The component uses the server total, including `0`, without slicing again. Application event handling decides whether a page change sends a request; `total` alone is not a network request switch.
 
 Requests can be managed by application code, or you can use [useTableRequest request management](/en/guide/remote-data). When you manage them yourself, keep the total during loading, and use request sequence numbers or AbortController to prevent stale responses from overwriting the new page.
 
-`sorter: true` still sorts locally by default. For server-side sorting, also pass `:manual="{ sort: true }"`; for server-side filtering, pass `manual.filter: true`, which keeps the filter controls and state while skipping local computation. Passing `manual.pagination: true` skips pagination slicing and uses the explicit `total`; `manual: true` enables all three. The `manual` returned by `useTableRequest` already enables all three, so you can bind it directly.
+`sorter: true` still sorts locally by default. If the server also sorts and filters, use `:manual="{ pagination: true, sort: true, filter: true }"` or `:manual="true"`. Omitted fields in the object are treated as `false`. Fully remote setups can bind the `manual` returned by `useTableRequest`; mixed setups also need to [connect requests by action](/en/guide/remote-data#mixed-data).
+
+::: details Compatibility when manual.pagination is not explicitly enabled
+Without `manual.pagination`, when the processed record count is below `total` and does not exceed `pageSize`, the component accepts current-page data without slicing again. When the record count exceeds `pageSize` but is below `total`, it warns and slices locally. In this mode, a missing positive integer `total` falls back to the processed root record count. With `manual.pagination` explicitly enabled, a valid `total: 0` is preserved without that fallback.
+
+For new remote pagination setups, explicitly configure `manual.pagination` instead of relying on record counts to infer how data is processed.
+:::
 
 The demo below enables `preserveSelectedRowKeys` and shows the selected count and record names across pages. Select a record, change pages and select more, then return to the original page to check the checkbox state. "Select all data" only affects loaded data and does not request other pages.
 

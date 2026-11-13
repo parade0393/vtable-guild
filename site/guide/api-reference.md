@@ -55,11 +55,13 @@ import {
 
 <!-- @api: reference props-manual -->
 
-对应的表头状态、筛选控件和 `change(filters, sorter, extra)` 继续工作。`sorter: true` 本身仍表示本地默认排序，服务端排序应同时开启 `manual.sort`。
-远程分页显式传 `total`；`manual.pagination` 关闭本地切片，适合服务器已经返回当页记录的场景。
+`manual` 只决定跳过哪些本地计算，对象中省略的字段按 `false` 处理；它不会发起或阻止网络请求。表头状态、筛选控件和 `change(filters, sorter, extra)` 继续工作。`sorter: true` 本身仍表示本地默认排序，服务端排序应同时开启 `manual.sort`。
 
-可选的 [useTableRequest](/guide/remote-data) 返回数据、loading、error、受控 pagination、manual 和单入口 onChange，并提供 submit、reset、reload、cancel。
-仅需自行管理请求时，也可以直接传入数据和状态；`manual` 不会自动发起网络请求。
+全量数据可以由表格本地分页：传入完整记录和 `pagination: { defaultPageSize: 10 }`，不启用 `manual.pagination`，也不把翻页事件接到请求函数。远程分页则显式传 `total`，启用 `manual.pagination` 跳过本地切片，展示服务器返回的当页记录。
+
+可选的 [useTableRequest](/guide/remote-data) 提供请求、加载状态和刷新等能力。标准全远程接法将其 `manual`、`pagination` 和 `onChange` 一起绑定：返回的 `manual` 是固定、冻结的普通对象 `{ sort: true, filter: true, pagination: true }`，不是 ref；效果同 `:manual="true"`。`onChange` 负责把排序、筛选和翻页转成请求。覆盖组件的 `manual` 不会改变这个请求行为，Hook 当前也没有按项控制请求的选项。
+
+全量加载后本地处理时，可以只取 Hook 的数据、加载和刷新能力，使用独立的本地分页及列状态。混合模式由业务根据 `extra.action` 分流请求，并同步管理排序、筛选和分页状态。完整接法见[处理模式选择](/guide/remote-data#processing-modes)。
 
 ### 视觉与布局
 

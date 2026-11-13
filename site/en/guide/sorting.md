@@ -102,6 +102,8 @@ Reuse the `ScoreRow` above and bind `@change="handleChange"` on the table. `VTab
 The sort controls, the single-column and multi-column state and the `change` event keep working; your application queries again when `extra.action === 'sort'`.
 You can also use [useTableRequest](/en/guide/remote-data) to manage server-side sorting, filtering, pagination and refreshing in one place.
 
+For local sorting with remote filtering or pagination, see [Choose where data is processed](/en/guide/remote-data#processing-modes) and the [mixed example](/en/guide/remote-data#mixed-data). Setting only `manual.sort` to `false` does not stop a connected Hook `onChange` from requesting; event connections and sort state must also match the chosen setup.
+
 ## Multi-column sorting
 
 When several fields need to take part in sorting, use multiple to set the priority. The larger the number, the higher the priority.

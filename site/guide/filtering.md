@@ -51,6 +51,8 @@ const dataSource: UserRow[] = [
 </template>
 ```
 
+`filters: [...]` 提供候选项，本地筛选还需要像上例一样提供 `onFilter`；只列出候选项不会自动匹配记录。也可用 `onFilter: true` 启用内建匹配，或通过 `filters: true` 从 `valueEnum` 生成选项并匹配。
+
 ## 受控与非受控
 
 - defaultFilteredValue 只在首次渲染时生效，适合简单默认筛选。
@@ -149,7 +151,13 @@ const insidePanel = (trigger: HTMLElement) => trigger.parentElement ?? document.
 
 `filterResetToDefaultFilteredValue: true` 让重置恢复 `defaultFilteredValue`，否则清空。自定义面板调用 `clearFilters()` 时提交一次重置结果，并请求关闭面板。要仅重置草稿并保留面板，传入 `clearFilters({ confirm: false, closeDropdown: false })`。`confirm({ closeDropdown: false })` 可提交并保留面板。
 
-列 `filters: true` 可从 valueEnum 生成筛选项；`onFilter: false` 或表格 `manual.filter` 可跳过本地计算，保留筛选 UI 和事件。完整示例见[单元格展示](./cell-display.md)。
+## 服务端筛选与混合处理 {#remote-filtering}
+
+表格 `manual.filter: true` 跳过本地筛选，保留筛选入口、状态和事件；业务在 `extra.action === 'filter'` 时更新远程条件并请求。列级 `onFilter: false` 也可跳过该列的本地计算。它们都不负责发送请求。
+
+`filteredValue` 决定筛选状态由谁维护，`manual.filter` 决定是否执行本地计算，两者独立。使用受控状态并不会自动关闭本地筛选；需要外部重置时，业务仍应更新 `filteredValue`。
+
+见[选择数据处理方式](/guide/remote-data#processing-modes)与[远程筛选、本地排序和分页示例](/guide/remote-data#mixed-data)。如果保留远程分页再做本地筛选，范围只有已加载的当前页；全量数据的本地筛选见[全量加载示例](/guide/remote-data#local-data)。`valueEnum` 与自动选项的完整示例见[单元格展示](./cell-display.md)。
 
 ## API
 
