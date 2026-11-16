@@ -15,6 +15,7 @@
   "changesets": [
     "bright-tables-ring",
     "center-antdv-header-titles",
+    "compact-query-controls",
     "enterprise-table-capabilities",
     "pro-table-p2-protocols",
     "reactive-slots-public-icons",
