@@ -45,9 +45,11 @@ const controls = createElementPlusTableControls({
 
 These two factories only receive the components you pass in and do not import the UI library. The application imports the host component styles. The built-in wired types are `text / select / enum / digit / money / date / dateRange / dateTime / dateTimeRange / time`; queries and editing can share the same registry.
 
+`editor.valueType` uses the extensible [`TableControlValueType`](/en/guide/type-reference#tablecontrolvaluetype). See [Schema query control types](/en/guide/schema-query#control-value-types) for the complete built-in type table, common configuration, custom registration and differences from display types.
+
 Date controls use formatted strings by default: `YYYY-MM-DD` for date, `YYYY-MM-DD HH:mm:ss` for dateTime and `HH:mm:ss` for time. Range types return an array of the two ends. Override this through `fieldProps.valueFormat`; set it explicitly to undefined to use the host's native date objects. Converting between the date object protocols of different UI libraries is up to the application.
 
-The control value of Select uses an internal encoding, and the string, number or boolean identity is restored on update, so `false`, `'false'`, `1` and `'1'` are never confused. Clearing returns undefined; multiple selection receives an array. Other value protocols such as `labelInValue` need a custom renderer.
+The control value of Select uses an internal encoding, and the string, number or boolean identity is restored on update, so `false`, `'false'`, `1` and `'1'` are never confused. Clearing a single select normalizes the host's empty value to `undefined`. Multiple-select arrays are decoded item by item, so clearing to `[]` preserves the empty array. If the host instead returns a non-array empty value, it is normalized to `undefined`. Other value protocols such as `labelInValue` need a custom renderer.
 
 ## Configuration and wiring
 

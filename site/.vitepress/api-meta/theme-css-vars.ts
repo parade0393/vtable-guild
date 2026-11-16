@@ -573,12 +573,26 @@ export const themeCssVarGroups: Readonly<Record<string, readonly CssVarEntry[]>>
     ),
     token(
       '--vtg-query-light-field-width',
-      '轻量字段宽度',
-      'Lightweight field width',
+      '轻量字段整体宽度，包含标签与控件；默认按内容排列',
+      'Entire lightweight field width, including label and control; follows content by default',
       ['schema-query'],
       {
-        fallback: '240px',
+        fallback: 'auto',
       },
+    ),
+    token(
+      '--vtg-query-light-control-width',
+      '轻量模式普通控件默认宽度',
+      'Default width of regular controls in light mode',
+      ['schema-query'],
+      { fallback: '200px' },
+    ),
+    token(
+      '--vtg-query-light-range-width',
+      '轻量模式 dateRange / dateTimeRange 控件默认宽度',
+      'Default dateRange / dateTimeRange control width in light mode',
+      ['schema-query'],
+      { fallback: '320px' },
     ),
     token(
       '--vtg-query-action-gap',

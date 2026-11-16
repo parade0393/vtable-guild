@@ -1,35 +1,40 @@
 import type { ThemeConfig, ThemePresetName } from '@vtable-guild/core'
 
-/** ProTable QueryFilter layout; host controls retain their own UI library styling. */
+/** Compact query controls by default; form opts into a responsive grid. */
 export const queryTheme = {
   slots: {
     root: 'flex min-w-0 flex-wrap items-start gap-x-[var(--vtg-query-column-gap,24px)] gap-y-[var(--vtg-query-row-gap,16px)] rounded-[var(--vtg-query-radius,6px)] bg-[color:var(--color-surface)] p-[var(--vtg-query-padding,24px)] font-[family-name:var(--font-family-base)] text-[length:var(--vtg-table-font-size)] text-[color:var(--color-on-surface)]',
-    fields:
-      'grid min-w-[min(100%,calc(var(--vtg-query-field-min-width,240px)*2_+_var(--vtg-query-column-gap,24px)))] flex-1 gap-x-[var(--vtg-query-column-gap,24px)] gap-y-[var(--vtg-query-row-gap,16px)] [grid-template-columns:repeat(auto-fit,minmax(min(100%,var(--vtg-query-field-min-width,240px)),1fr))]',
+    fields: '',
     field: 'flex min-w-0 items-start gap-[var(--vtg-query-label-gap,12px)]',
-    label:
-      'flex h-[var(--vtg-query-control-height,32px)] w-[var(--vtg-query-label-width,80px)] shrink-0 items-center justify-end',
-    control: 'min-w-0 flex-1 [&>*]:w-full',
+    label: 'flex h-[var(--vtg-query-control-height,32px)] shrink-0 items-center',
+    control: 'min-w-0',
     error:
       'mt-1 text-[color:var(--vtg-cell-error)] text-[length:var(--vtg-query-error-font-size,12px)]',
     actions:
-      'ml-auto flex min-h-[var(--vtg-query-control-height,32px)] max-w-full flex-wrap items-center justify-end gap-[var(--vtg-query-action-gap,8px)]',
+      'flex min-h-[var(--vtg-query-control-height,32px)] max-w-full flex-wrap items-center gap-[var(--vtg-query-action-gap,8px)]',
     feedback: 'w-full text-[color:var(--vtg-cell-error)]',
     collapse: 'inline-flex items-center gap-1',
   },
   variants: {
     layout: {
-      form: {},
+      form: {
+        fields:
+          'grid min-w-[min(100%,calc(var(--vtg-query-field-min-width,240px)*2_+_var(--vtg-query-column-gap,24px)))] flex-1 gap-x-[var(--vtg-query-column-gap,24px)] gap-y-[var(--vtg-query-row-gap,16px)] [grid-template-columns:repeat(auto-fit,minmax(min(100%,var(--vtg-query-field-min-width,240px)),1fr))]',
+        label: 'w-[var(--vtg-query-label-width,80px)] justify-end',
+        control: 'flex-1 [&>*]:w-full',
+        actions: 'ml-auto justify-end',
+      },
       light: {
         root: 'p-[var(--vtg-query-light-padding,16px)]',
-        fields:
-          'flex flex-wrap items-start gap-x-[var(--vtg-query-column-gap,24px)] gap-y-[var(--vtg-query-row-gap,16px)]',
-        field: 'w-[var(--vtg-query-light-field-width,240px)] max-w-full',
+        fields: 'contents',
+        field: 'w-[var(--vtg-query-light-field-width,auto)] max-w-full',
         label: 'w-auto justify-start',
+        control: 'flex-initial',
+        actions: 'ml-0 justify-start',
       },
     },
   },
-  defaultVariants: { layout: 'form' },
+  defaultVariants: { layout: 'light' },
 } as const satisfies ThemeConfig
 
 export const elementPlusQueryTheme = {

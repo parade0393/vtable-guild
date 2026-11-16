@@ -1,6 +1,6 @@
 # 查询提交与重置
 
-需要按 schema 或列配置生成控件与响应式布局时，使用可选的 [Schema 查询区](/guide/schema-query)。它复用本页的状态协议，并可先调用宿主表单校验。
+需要按 schema 或列配置生成查询控件时，使用可选的 [Schema 查询区](/guide/schema-query)。它默认提供 `light` 行内布局，也可显式选择 `form` 响应式栅格；复用本页的状态协议，并可先调用宿主表单校验。
 
 `useTableQuery` 为已有表单提供草稿、提交快照、字段转换与展开收起状态。输入框、日期范围和布局继续使用项目已经集成的 Ant Design Vue 或 Element Plus；组合式函数不会从 columns 自动生成表单。
 

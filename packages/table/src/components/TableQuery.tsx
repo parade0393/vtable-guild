@@ -31,7 +31,7 @@ export default defineComponent({
     rootTag: { type: String as PropType<TableQueryProps['rootTag']>, default: 'form' },
     fields: { type: Array as PropType<TableQueryProps['fields']>, required: true },
     controls: { type: Object as PropType<TableQueryProps['controls']>, required: true },
-    layout: { type: String as PropType<TableQueryProps['layout']>, default: 'form' },
+    layout: { type: String as PropType<TableQueryProps['layout']>, default: 'light' },
     autoSubmit: Boolean,
     debounceTime: { type: Number, default: 0 },
     hiddenPolicy: {
@@ -211,6 +211,7 @@ export default defineComponent({
         <Root
           {...attrs}
           class={styles.root()}
+          data-query-layout={props.layout}
           aria-label={locale.value.label}
           onSubmit={(event) => {
             event.preventDefault()
@@ -271,13 +272,20 @@ export default defineComponent({
                     }
                   : undefined,
               }
-              const renderer = props.controls[field.valueType ?? 'text'] ?? props.controls.text
+              const valueType = field.valueType ?? 'text'
+              const registered = Object.prototype.hasOwnProperty.call(props.controls, valueType)
+                ? props.controls[valueType]
+                : undefined
+              const renderer = registered ?? props.controls.text
               return (
                 <div key={field.name} class={styles.field()} data-query-field={field.name}>
                   <label class={styles.label()} for={controlId}>
                     {field.label ?? field.name}
                   </label>
-                  <div class={styles.control()}>
+                  <div
+                    class={styles.control()}
+                    data-query-value-type={registered ? valueType : 'text'}
+                  >
                     {slots.field?.({ field, values: props.query.draft.value, control }) ??
                       renderer?.(control)}
                     {error ? (

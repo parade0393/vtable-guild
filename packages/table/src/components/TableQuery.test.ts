@@ -27,6 +27,51 @@ afterEach(() => {
 })
 
 describe.each(['antdv', 'element-plus'] as const)('%s query schema', (preset) => {
+  it('falls back to text for unregistered keys, including inherited object names', () => {
+    const query = useTableQuery({ defaultValues: { keyword: '', legacy: '' } })
+    const wrapper = mount(TableQuery, {
+      props: {
+        query,
+        controls,
+        fields: [
+          { name: 'keyword', valueType: 'dateRange' },
+          { name: 'legacy', valueType: '__proto__' },
+        ],
+      },
+      global: { plugins: [createVTableGuild({ themePreset: preset })] },
+    })
+    wrappers.push(wrapper)
+    expect(wrapper.findAll('[data-query-value-type="text"] input')).toHaveLength(2)
+  })
+
+  it.each([
+    { layout: undefined, autoSubmit: undefined, expected: 0 },
+    { layout: undefined, autoSubmit: true, expected: 1 },
+    { layout: 'form' as const, autoSubmit: true, expected: 0 },
+  ])('submits according to the default light opt-in or explicit form: %j', async (options) => {
+    vi.useFakeTimers()
+    const onSubmit = vi.fn()
+    const query = useTableQuery({ defaultValues: { keyword: '' }, onSubmit })
+    const wrapper = mount(VTableQuery<{ keyword: string }>, {
+      props: {
+        query,
+        controls,
+        fields: [{ name: 'keyword' }],
+        layout: options.layout,
+        autoSubmit: options.autoSubmit,
+        debounceTime: 50,
+      },
+      global: { plugins: [createVTableGuild({ themePreset: preset })] },
+    })
+    wrappers.push(wrapper)
+    await wrapper.get('input').setValue('changed')
+    await vi.advanceTimersByTimeAsync(100)
+    expect(onSubmit).toHaveBeenCalledTimes(options.expected)
+    await wrapper.get('form').trigger('submit')
+    await flushPromises()
+    expect(onSubmit).toHaveBeenCalledTimes(options.expected + 1)
+  })
+
   it('makes search the default form action and keeps div actions out of the parent form', async () => {
     const onSubmit = vi.fn()
     const onReset = vi.fn()
@@ -130,6 +175,7 @@ describe.each(['antdv', 'element-plus'] as const)('%s query schema', (preset) =>
         ],
         collapsedCount: 1,
         hiddenPolicy: 'omit',
+        layout: 'form',
       },
       global: { plugins: [createVTableGuild({ themePreset: preset })] },
     })

@@ -195,6 +195,24 @@ export type {
 } from '@vtable-guild/vtable-guild'
 // #endregion QueryProtocol
 
+// #region TableBuiltinControlValueType
+export type TableBuiltinControlValueType =
+  | 'text'
+  | 'select'
+  | 'enum'
+  | 'digit'
+  | 'money'
+  | 'date'
+  | 'dateRange'
+  | 'dateTime'
+  | 'dateTimeRange'
+  | 'time'
+// #endregion TableBuiltinControlValueType
+
+// #region TableControlValueType
+export type TableControlValueType = TableBuiltinControlValueType | (string & Record<never, never>)
+// #endregion TableControlValueType
+
 // #region QuerySchemaProtocol
 export { VTableQuery, deriveTableQueryFields } from '@vtable-guild/vtable-guild'
 export type {

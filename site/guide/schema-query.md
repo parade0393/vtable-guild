@@ -11,13 +11,13 @@
 
 ## 注册已有 UI 库的控件
 
-应用已经安装的宿主组件传给适配工厂，组件库不会导入另一套 UI 库。首批控件包括 `text / select / digit / date / dateTime / dateRange / dateTimeRange / time`。
+应用已经安装的宿主组件传给适配工厂，组件库不会导入另一套 UI 库。两个工厂都注册下文列出的 10 种内置控件键。
 
 ```ts
 import { Input, Select, InputNumber, DatePicker, TimePicker } from 'ant-design-vue'
-import { createAntdvTableControls } from '@vtable-guild/vtable-guild'
+import { createAntdvTableControls, type TableControls } from '@vtable-guild/vtable-guild'
 
-const controls = createAntdvTableControls({
+const controls: TableControls = createAntdvTableControls({
   Input,
   Select,
   InputNumber,
@@ -29,6 +29,98 @@ const controls = createAntdvTableControls({
 
 Element Plus 使用 `createElementPlusTableControls({ Input: ElInput, Select: ElSelect, Option: ElOption, InputNumber: ElInputNumber, DatePicker: ElDatePicker, TimePicker: ElTimePicker })`。
 日期默认通过宿主 `valueFormat` 使用字符串，业务可通过 `fieldProps.valueFormat` 调整。查询与编辑可共享同一份注册表，但各自拥有字段规则与值转换。
+
+## 查询控件的 valueType {#control-value-types}
+
+`TableQueryField.valueType` 从 `controls` 注册表中选择控件，默认为 `text`。两个适配工厂都注册下表的 10 个内置键。字段类型由 [`TableControlValueType`](/guide/type-reference#tablecontrolvaluetype) 定义，内置键见 [`TableBuiltinControlValueType`](/guide/type-reference#tablebuiltincontrolvaluetype)。
+
+<!-- @api: reference control-value-types -->
+
+`enum` 与 `select` 使用同一个控件；`money` 使用数字输入框，不会自动添加货币符号、千分位或两位小数。`select / enum` 接收字段的 `options` 或 `dictionary`，并在更新时保留字符串、数字和布尔值的身份。单选清除时，宿主返回的空值归一为 `undefined`；多选值逐项还原，清空后的 `[]` 保留为空数组。宿主若返回非数组空值，则归一为 `undefined`。
+
+Ant Design Vue 范围类型需要向工厂传入 `RangePicker`，时间类型需要 `TimePicker`；Element Plus 选择框需要 `Option: ElOption`。日期和时间的清除值遵循宿主控件，可用 `fieldTransforms` 统一为接口要求的值。显式设置 `fieldProps.valueFormat: undefined` 时使用宿主原生日期值，而不是上表的格式化字符串。
+
+### 常用配置
+
+`fieldProps` 直接传给当前宿主控件，属性名称遵循该 UI 库。例如 Ant Design Vue 多选使用 `mode: 'multiple'`，Element Plus 使用 `multiple: true`。
+
+```ts
+import type { TableQueryField } from '@vtable-guild/vtable-guild'
+
+interface SearchValues {
+  username: string
+  status?: number
+  amount?: number
+  createdAt?: [string, string]
+}
+
+const fields: TableQueryField<SearchValues>[] = [
+  {
+    name: 'username',
+    label: '用户名',
+    valueType: 'text',
+    fieldProps: { placeholder: '请输入用户名', style: { width: '200px' } },
+  },
+  {
+    name: 'status',
+    label: '状态',
+    valueType: 'select',
+    options: [
+      { value: 1, label: '启用' },
+      { value: 0, label: '停用' },
+    ],
+    fieldProps: { style: { width: '120px' } },
+  },
+  { name: 'amount', label: '金额', valueType: 'money', fieldProps: { min: 0, precision: 2 } },
+  {
+    name: 'createdAt',
+    label: '创建日期',
+    valueType: 'dateRange',
+    fieldProps: { valueFormat: 'YYYY-MM-DD' },
+  },
+]
+```
+
+### 自定义注册与拼写错误
+
+`TableControlValueType` 保留内置键的补全，同时接受自定义字符串。自定义名称必须和注册表的键一致。工厂返回的注册表是只读的，使用展开语法创建新注册表：
+
+```ts
+import { h } from 'vue'
+import UserPicker from './UserPicker.vue'
+import type { TableControls, TableQueryField } from '@vtable-guild/vtable-guild'
+
+// controls 是上面工厂创建的内置注册表；本例 UserPicker 使用 modelValue 协议。
+const businessControls = {
+  ...controls,
+  userPicker: (context) =>
+    h(UserPicker, {
+      ...context.fieldProps,
+      id: context.id,
+      modelValue: context.value,
+      disabled: context.disabled || context.readonly,
+      'onUpdate:modelValue': context.onChange,
+    }),
+} satisfies TableControls
+
+const ownerFields: TableQueryField<{ owner?: string }>[] = [
+  { name: 'owner', label: '负责人', valueType: 'userPicker' },
+]
+```
+
+将 `businessControls` 传给 `VTableQuery` 的 `controls`。调用 `context.onChange(value)` 才会进入查询草稿、校验失效和自动提交协议；自定义控件应自行适配它的值、只读和搜索接口。
+
+未注册的名称（例如把 `select` 写成 `sleect`）会回退到 `controls.text`；如果连 `text` 也未注册，则没有默认控件可渲染。组件不会因为拼写错误而自动注册控件或抛出校验错误。开放的 `TableControlValueType` 也不会把任意字符串判为类型错误；如果某份配置只允许内置键，可以用 `satisfies TableBuiltinControlValueType` 限制它。
+
+### 与表格展示类型的区别
+
+| 配置位置                                           | 注册表      | 作用                                               |
+| -------------------------------------------------- | ----------- | -------------------------------------------------- |
+| `TableQueryField.valueType` / 列 `query.valueType` | `controls`  | 选择查询输入控件，使用 `TableControlValueType`     |
+| 列 `editor.valueType`                              | `controls`  | 选择编辑输入控件，与查询共享控件类型               |
+| 列 `valueType`                                     | `renderers` | 选择单元格展示方式，例如格式化金额、日期或渲染标签 |
+
+列展示的 `money` 可格式化金额，查询控件的 `money` 使用数字输入框。`deriveTableQueryFields` 会为具有非空 `valueEnum` 的列选用 `select`，为 `digit / money` 列选用 `digit`，保留日期和时间类型，其余类型使用 `text`。可用 `query.valueType` 覆盖派生结果，例如为展示 `date` 的列设置 `dateRange` 查询控件。
 
 ## 显式 schema 与列派生
 
@@ -61,7 +153,7 @@ const columns: TableQueryColumn<Values>[] = [
 const fields = deriveTableQueryFields(columns)
 ```
 
-表格的 `visible / responsive` 与查询是否显示无关；列 `query: false` 排除查询字段，`query.hidden` 决定查询可见性，`query.order` 决定查询顺序。因此表格 `date` 可以对应查询 `dateRange`。
+列用 `query: false` 排除查询字段，`query.hidden` 决定查询可见性，`query.order` 决定查询顺序。表格的 `visible / responsive` 只控制列的展示。
 也可用 helper 的第二参数按 name 覆盖配置或传 false 排除字段。嵌套数组 `dataIndex` 不自动推断查询参数，需显式 `query.name`；分组列递归展开，同名字段只保留第一个。
 
 `valueEnum` 仅将字符串标签自动派生为 select 选项，并保留 Map 的字符串、数字与布尔值身份；数字、布尔文本和 VNode 标签不自动转换，改用显式 options 或 field 插槽。
@@ -79,8 +171,12 @@ const fields = deriveTableQueryFields(columns)
 
 ```ts
 import type { TableQueryFieldSlotProps } from '@vtable-guild/vtable-guild'
-const FieldControl = ({ field, control }: TableQueryFieldSlotProps<Values>) =>
-  controls[field.valueType || 'text'](control)
+
+const FieldControl = ({ field, control }: TableQueryFieldSlotProps<Values>) => {
+  const valueType = field.valueType ?? 'text'
+  const render = Object.hasOwn(controls, valueType) ? controls[valueType] : controls.text
+  return render?.(control)
+}
 ```
 
 ```vue
@@ -90,6 +186,7 @@ const FieldControl = ({ field, control }: TableQueryFieldSlotProps<Values>) =>
     :query="query"
     :fields="fields"
     :controls="controls"
+    layout="form"
     :validate="() => form.validate().then(() => true)"
   >
     <template #field="{ field, control }">
@@ -117,7 +214,9 @@ const FieldControl = ({ field, control }: TableQueryFieldSlotProps<Values>) =>
 />
 ```
 
-普通 form 布局始终显式提交；light 布局默认也显式提交。只有 `layout="light"` 且 `autoSubmit` 为 true 时，控件更新才安排一次防抖提交。相同值的重复更新不提交，点击查询会取消待执行的防抖，点击重置会取消旧自动任务。
+`layout` 默认为 `light`，`autoSubmit` 默认为 `false`，因此省略两者时使用手动提交。`light` 布局开启 `autoSubmit` 后，控件值发生变化会安排一次防抖提交。手动查询或重置会取消待执行的自动提交。`form` 布局始终手动提交。
+
+从默认 `form` 的版本升级时，需要保留原栅格布局的页面应显式设置 `layout="form"`。若旧页面已传 `autoSubmit: true` 却省略了 `layout`，升级后控件更新会开始自动提交；继续手动查询时应移除 `autoSubmit`、设为 `false`，或显式使用 `form`。
 
 改变 layout、autoSubmit 或 disabled 会取消尚未执行的自动任务；重新开启不会补发旧任务，下一次控件更新才重新安排。
 直接修改 query.draft 不会自动请求；跨字段联动可先改多个字段，再显式调用组件 submit，避免联动链触发多次查询。组件 `submitted / reset` 事件只是结果通知，不要再在这些事件里调用请求。
@@ -159,7 +258,9 @@ const fields = [{ name: 'team', label: '团队', valueType: 'select', dictionary
 
 ## 主题与布局
 
-默认使用响应式栅格，轻量布局使用紧凑字段和可换行的操作区。
+默认 `light` 按标签和控件的实际宽度依次排列字段，操作按钮跟随字段，空间不足时换行。普通控件默认宽度为 `200px`，`dateRange / dateTimeRange` 默认为 `320px`；字段不再默认占据 `240px` 或拉伸以填满整行。显式 `layout="form"` 使用原有响应式栅格，标签定宽，控件填满字段，操作区靠右。
+
+单个控件可用 `fieldProps.style.width` 覆盖，例如上例状态选择框的 `120px`。`--vtg-query-light-control-width` 和 `--vtg-query-light-range-width` 调整默认控件宽度；已有 `--vtg-query-light-field-width` 仍控制标签与控件组成的整个字段，其默认值改为 `auto`。
 可通过实例 `ui` 或全局 `theme.query.slots` 覆盖；宿主控件本身由对应 UI 库控制样式。
 
 布局、校验反馈与操作区的默认 class 由预设提供。

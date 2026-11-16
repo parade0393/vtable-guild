@@ -119,7 +119,7 @@ Column-level `valueType?: string` selects `text / digit / money / date / dateTim
 
 ## Schema query and column editors
 
-`VTableQuery` takes `query / fields / controls` and reuses useTableQuery; `deriveTableQueryFields` derives fields from column definitions that carry query metadata. Regular queries submit explicitly, and the light layout submits with a debounce only when autoSubmit is enabled. Host forms plug in through validate; use `rootTag="div"` when wrapping an existing Form. See [Schema query](/en/guide/schema-query).
+`VTableQuery` connects to `useTableQuery` through `query / fields / controls`. Use `deriveTableQueryFields` to derive fields from column definitions. `layout` defaults to `light`, which supports debounced submission when `autoSubmit` is enabled. Use `validate` to run host form validation and `rootTag="div"` when wrapping an existing form. See [Schema query](/en/guide/schema-query).
 
 `useTableEditable` takes columns, controls and row-editing options, and connects the conditions, transforms, rules and dictionaries of `column.editor` to the same row draft. Templates bridge through `VTableEditCell`, and TSX can call renderEditor; when there is no editor content, the read-only fallback is kept. See [Column editors](/en/guide/editable-columns).
 

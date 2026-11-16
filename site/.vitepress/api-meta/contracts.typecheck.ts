@@ -50,6 +50,11 @@ type ComponentEventName<C> = C extends (props: infer P, ...args: never[]) => unk
 
 /** 独立参考页的条目名称与公开类型同步。 */
 export type ReferenceApiContracts = [
+  Assert<Equal<Docs.TableBuiltinControlValueType, Public.TableBuiltinControlValueType>>,
+  Assert<Equal<Docs.TableControlValueType, Public.TableControlValueType>>,
+  Assert<
+    Equal<TableNames<ReferenceTables['control-value-types']>, Public.TableBuiltinControlValueType>
+  >,
   Assert<Equal<NamesForKind<'props'>, keyof Public.TableProps>>,
   Assert<Equal<NamesForKind<'columns'>, keyof Public.ColumnType | 'children'>>,
   Assert<Equal<NamesForKind<'row-selection'>, keyof Public.RowSelection>>,

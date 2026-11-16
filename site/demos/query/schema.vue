@@ -23,7 +23,7 @@ interface Params {
   end: string
   internal: string
 }
-const light = ref(false)
+const light = ref(true)
 const autoSubmit = ref(false)
 const omitHidden = ref(false)
 const requests = ref(0)
@@ -129,7 +129,7 @@ function validate(values: Readonly<Values>) {
     :query="query"
     :fields="fields"
     :controls="controls"
-    :layout="light ? 'light' : 'form'"
+    :layout="light ? undefined : 'form'"
     :auto-submit="autoSubmit"
     :debounce-time="300"
     :collapsed-count="2"

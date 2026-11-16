@@ -1,6 +1,6 @@
 import type { MaybeRefOrGetter, VNodeChild } from 'vue'
 import type { ColumnType, ColumnsType, CustomRenderContext, Key } from './column'
-import type { TableControls, TableControlContext } from './controls'
+import type { TableControls, TableControlContext, TableControlValueType } from './controls'
 import type { TableDictionaryOption, TableDictionaryBinding } from './dictionary'
 import type { UseTableEditOptions, UseTableEditReturn } from './editing'
 
@@ -14,7 +14,8 @@ export interface TableEditableFieldContext<TRecord extends object> {
   isNew: boolean
 }
 export interface TableColumnEditor<TRecord extends object> {
-  valueType?: string
+  /** Select a built-in or custom host control; omission uses the column's inferred control. */
+  valueType?: TableControlValueType
   editable?: boolean | ((context: TableEditableFieldContext<TRecord>) => boolean)
   readonly?: boolean | ((context: TableEditableFieldContext<TRecord>) => boolean)
   disabled?: boolean | ((context: TableEditableFieldContext<TRecord>) => boolean)
@@ -41,7 +42,7 @@ export interface TableEditableCellContext<TRecord extends object> extends TableC
   key: Key
   column: ColumnType<TRecord>
   draft: TRecord
-  valueType: string
+  valueType: TableControlValueType
 }
 export interface UseTableEditableOptions<TRecord extends object> extends Omit<
   UseTableEditOptions<TRecord>,

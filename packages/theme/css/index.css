@@ -14,6 +14,21 @@
 @import './presets/element-plus.css';
 @import './transitions.css';
 
+/* Host controls define unlayered widths, so keep these rules outside Tailwind's utility layer. */
+[data-query-layout='light'] > * > [data-query-field] > [data-query-value-type] > * {
+  box-sizing: border-box;
+  width: var(--vtg-query-light-control-width, 200px);
+  max-width: 100%;
+}
+
+[data-query-layout='light']
+  > *
+  > [data-query-field]
+  > :is([data-query-value-type='dateRange'], [data-query-value-type='dateTimeRange'])
+  > * {
+  width: var(--vtg-query-light-range-width, 320px);
+}
+
 .vtg-table-popup {
   box-sizing: border-box;
   overflow: auto;

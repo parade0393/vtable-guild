@@ -344,6 +344,26 @@ Types for the controlled column configuration, density and custom label of `VTab
 
 <<< @/.vitepress/type-declarations/features.ts#QueryProtocol
 
+### TableBuiltinControlValueType
+
+All 10 built-in control keys registered by `createAntdvTableControls` and `createElementPlusTableControls`, shared by query schemas and column editors. See [Schema query control types](/en/guide/schema-query#control-value-types) for configuration, registration and fallback behavior.
+
+<<< @/.vitepress/type-declarations/features.ts#TableBuiltinControlValueType
+
+<!-- @api: reference control-value-types -->
+
+### TableControlValueType
+
+The extensible type used by query field `valueType`, column `query.valueType` and `editor.valueType`. Built-in keys have completion suggestions; custom strings require matching `controls` entries. This type intentionally accepts arbitrary strings and does not guarantee spelling checks. Use `TableBuiltinControlValueType` when only built-in keys are allowed.
+
+<<< @/.vitepress/type-declarations/features.ts#TableControlValueType
+
+### VTableQuery
+
+`TableQueryField<TValues>` defines fields by query draft keys, and `TableQueryColumn<TRecord, TValues>` derives query configuration from columns. `VTableQuery` defaults to compact `light` layout; use `layout="form"` explicitly for the grid. Auto-submit is off by default. See [Schema query](/en/guide/schema-query).
+
+<<< @/.vitepress/type-declarations/features.ts#QuerySchemaProtocol
+
 ### useTableEdit
 
 `UseTableEditOptions<TRecord>` defines the stable row key, single-row / multi-row mode, and the clone, validation, save and cancel callbacks. `TableEditContext` provides the original snapshot, the new-row flag and an AbortSignal; a failed validation returns `TableEditValidationErrors`, and errors are classified as `TableEditError`. The return value covers draft access, editing keys, saving state, added rows and more. See [Editing](/en/guide/editing).

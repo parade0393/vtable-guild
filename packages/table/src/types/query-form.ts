@@ -3,7 +3,7 @@ import type { QuerySlots } from '@vtable-guild/theme'
 import type { ColumnGroupType, ColumnType } from './column'
 import type { ColumnSentinel } from '../constants'
 import type { TableDictionaryOption, TableDictionaryBinding } from './dictionary'
-import type { TableControls, TableControlContext } from './controls'
+import type { TableControls, TableControlContext, TableControlValueType } from './controls'
 import type { UseTableQueryReturn } from './query'
 
 export interface TableQueryFieldContext<TValues extends object> {
@@ -15,7 +15,8 @@ export interface TableQueryFieldContext<TValues extends object> {
 export interface TableQueryField<TValues extends object = Record<string, unknown>> {
   name: keyof TValues & string
   label?: VNodeChild
-  valueType?: string
+  /** Select a registered host control; missing or unregistered keys fall back to text. */
+  valueType?: TableControlValueType
   order?: number
   hidden?: boolean | ((context: TableQueryFieldContext<TValues>) => boolean)
   disabled?: boolean | ((context: TableQueryFieldContext<TValues>) => boolean)
@@ -61,6 +62,7 @@ export interface TableQueryProps<
   rootTag?: 'form' | 'div'
   fields: readonly TableQueryField<TValues>[]
   controls: TableControls
+  /** Compact inline controls by default; form opts into a responsive grid. */
   layout?: 'form' | 'light'
   /** Explicit opt-in for light layout only. Form layout always waits for submit. */
   autoSubmit?: boolean

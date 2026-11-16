@@ -1530,6 +1530,21 @@ export const referenceApiTables = {
       ['`disabled`', '`boolean`', '-', '是否禁用该选项。'],
     ],
   },
+  'control-value-types': {
+    headers: ['valueType', '控件', '取值格式与常用配置'],
+    rows: [
+      ['`text`', '文本输入框', '文本；`placeholder / maxlength` 等宿主属性。'],
+      ['`select`', '选择框', '单值或多选数组；字段 `options / dictionary` 提供选项。'],
+      ['`enum`', '`select` 的别名', '与 `select` 完全相同。'],
+      ['`digit`', '数字输入框', '数字；用 `min / max / step / precision` 配置宿主控件。'],
+      ['`money`', '数字输入框', '与 `digit` 使用同一宿主组件；金额格式和精度需显式配置。'],
+      ['`date`', '日期选择器', '`YYYY-MM-DD` 字符串。'],
+      ['`dateTime`', '日期时间选择器', '`YYYY-MM-DD HH:mm:ss` 字符串。'],
+      ['`dateRange`', '日期范围选择器', '两个 `YYYY-MM-DD` 字符串组成的数组。'],
+      ['`dateTimeRange`', '日期时间范围选择器', '两个 `YYYY-MM-DD HH:mm:ss` 字符串组成的数组。'],
+      ['`time`', '时间选择器', '`HH:mm:ss` 字符串。'],
+    ],
+  },
   'schema-query-props': {
     headers: ['Prop', '类型', '默认值', '说明'],
     rows: [
@@ -1542,7 +1557,12 @@ export const referenceApiTables = {
       ['`rootTag`', "`'form' \\| 'div'`", "`'form'`", '宿主已有表单时使用 `div`。'],
       ['`fields`', '`readonly TableQueryField<TValues>[]`', '必填', '配置查询字段和控件。'],
       ['`controls`', '`TableControls`', '必填', '提供宿主 UI 控件映射。'],
-      ['`layout`', "`'form' \\| 'light'`", "`'form'`", '使用普通表单或轻量查询布局。'],
+      [
+        '`layout`',
+        "`'form' \\| 'light'`",
+        "`'light'`",
+        '默认紧凑行内查询；显式 `form` 使用响应式栅格。',
+      ],
       ['`autoSubmit`', '`boolean`', '`false`', '轻量模式下在控件更新后安排提交。'],
       ['`debounceTime`', '`number`', '`0`', '轻量模式自动提交的防抖时间，单位毫秒。'],
       [
@@ -1583,9 +1603,9 @@ export const referenceApiTables = {
       ['`label`', '`VNodeChild`', '-', '字段标签。'],
       [
         '`valueType`',
-        '`string`',
+        '[`TableControlValueType`](/guide/type-reference#tablecontrolvaluetype)',
         "`'text'`",
-        '从 `controls` 选择控件；未注册的类型使用 `text` 控件。',
+        '从 `controls` 选择内置或自定义控件；未注册的名称回退 `text`。完整内置类型见 [TableBuiltinControlValueType](/guide/type-reference#tablebuiltincontrolvaluetype)。',
       ],
       ['`order`', '`number`', '`0`', '字段排序值，小的在前。'],
       [
@@ -1654,7 +1674,7 @@ export const referenceApiTables = {
     rows: [
       [
         '`valueType`',
-        '`string`',
+        '[`TableControlValueType`](/guide/type-reference#tablecontrolvaluetype)',
         '按列推断',
         "选择注册的编辑控件。未设置时，列有 `valueEnum` 则为 `'select'`，否则取列的 `valueType`，都没有时为 `'text'`。",
       ],

@@ -11,13 +11,13 @@ It is a standalone, optional component that can sit above a table or be used on 
 
 ## Registering controls from your existing UI library
 
-Pass the host components your application has already installed to the adapter factory; the library does not import another UI library. The first batch of controls includes `text / select / digit / date / dateTime / dateRange / dateTimeRange / time`.
+Pass the host components your application has already installed to the adapter factory; the library does not import another UI library. Both factories register all 10 built-in control keys listed below.
 
 ```ts
 import { Input, Select, InputNumber, DatePicker, TimePicker } from 'ant-design-vue'
-import { createAntdvTableControls } from '@vtable-guild/vtable-guild'
+import { createAntdvTableControls, type TableControls } from '@vtable-guild/vtable-guild'
 
-const controls = createAntdvTableControls({
+const controls: TableControls = createAntdvTableControls({
   Input,
   Select,
   InputNumber,
@@ -29,6 +29,98 @@ const controls = createAntdvTableControls({
 
 Element Plus uses `createElementPlusTableControls({ Input: ElInput, Select: ElSelect, Option: ElOption, InputNumber: ElInputNumber, DatePicker: ElDatePicker, TimePicker: ElTimePicker })`.
 Dates use strings by default through the host `valueFormat`, which the application can adjust with `fieldProps.valueFormat`. Query and editing can share the same registry, but each has its own field rules and value transforms.
+
+## Query control valueType {#control-value-types}
+
+`TableQueryField.valueType` selects a control from the `controls` registry and defaults to `text`. Both adapter factories register the 10 built-in keys below. See [`TableControlValueType`](/en/guide/type-reference#tablecontrolvaluetype) for the field type and [`TableBuiltinControlValueType`](/en/guide/type-reference#tablebuiltincontrolvaluetype) for the built-in keys.
+
+<!-- @api: reference control-value-types -->
+
+`enum` uses the same control as `select`. `money` uses a number input and does not add a currency symbol, thousands separators or two decimal places automatically. `select / enum` use the field's `options` or `dictionary` and preserve string, number and boolean identities on update. Clearing a single select normalizes the host's empty value to `undefined`. Multiple-select arrays are decoded item by item, so clearing to `[]` preserves the empty array. If the host instead returns a non-array empty value, it is normalized to `undefined`.
+
+Ant Design Vue range controls require `RangePicker` and time controls require `TimePicker` in the factory input. Element Plus selects require `Option: ElOption`. Cleared date and time values follow the host control; normalize them with `fieldTransforms` when your API requires a different value. Explicitly setting `fieldProps.valueFormat: undefined` uses the host's native date values instead of the formatted strings listed above.
+
+### Common configuration
+
+`fieldProps` is passed directly to the host control and uses that UI library's prop names. For example, Ant Design Vue enables multiple selection with `mode: 'multiple'`, while Element Plus uses `multiple: true`.
+
+```ts
+import type { TableQueryField } from '@vtable-guild/vtable-guild'
+
+interface SearchValues {
+  username: string
+  status?: number
+  amount?: number
+  createdAt?: [string, string]
+}
+
+const fields: TableQueryField<SearchValues>[] = [
+  {
+    name: 'username',
+    label: 'Username',
+    valueType: 'text',
+    fieldProps: { placeholder: 'Enter a username', style: { width: '200px' } },
+  },
+  {
+    name: 'status',
+    label: 'Status',
+    valueType: 'select',
+    options: [
+      { value: 1, label: 'Enabled' },
+      { value: 0, label: 'Disabled' },
+    ],
+    fieldProps: { style: { width: '120px' } },
+  },
+  { name: 'amount', label: 'Amount', valueType: 'money', fieldProps: { min: 0, precision: 2 } },
+  {
+    name: 'createdAt',
+    label: 'Created',
+    valueType: 'dateRange',
+    fieldProps: { valueFormat: 'YYYY-MM-DD' },
+  },
+]
+```
+
+### Custom registration and spelling errors
+
+`TableControlValueType` provides built-in key suggestions while accepting custom strings. Each custom name must match a registry key. Factory registries are read-only, so create a new registry with object spread:
+
+```ts
+import { h } from 'vue'
+import UserPicker from './UserPicker.vue'
+import type { TableControls, TableQueryField } from '@vtable-guild/vtable-guild'
+
+// controls is the built-in registry above. This UserPicker uses the modelValue protocol.
+const businessControls = {
+  ...controls,
+  userPicker: (context) =>
+    h(UserPicker, {
+      ...context.fieldProps,
+      id: context.id,
+      modelValue: context.value,
+      disabled: context.disabled || context.readonly,
+      'onUpdate:modelValue': context.onChange,
+    }),
+} satisfies TableControls
+
+const ownerFields: TableQueryField<{ owner?: string }>[] = [
+  { name: 'owner', label: 'Owner', valueType: 'userPicker' },
+]
+```
+
+Pass `businessControls` as the `controls` prop of `VTableQuery`. Call `context.onChange(value)` to use the query draft, validation invalidation and auto-submit protocol. Adapt the custom control's value, read-only and search APIs explicitly.
+
+An unregistered name, such as `sleect` instead of `select`, falls back to `controls.text`. If `text` is also missing, there is no default control to render. The component does not automatically register a control or raise a validation error for a spelling mistake. The open `TableControlValueType` also accepts arbitrary strings; use `satisfies TableBuiltinControlValueType` when a configuration must accept built-in keys only.
+
+### Difference from cell display types
+
+| Configuration                                          | Registry    | Purpose                                                        |
+| ------------------------------------------------------ | ----------- | -------------------------------------------------------------- |
+| `TableQueryField.valueType` / column `query.valueType` | `controls`  | Selects a query input using `TableControlValueType`            |
+| Column `editor.valueType`                              | `controls`  | Selects an editing input with the same control types           |
+| Column `valueType`                                     | `renderers` | Selects a cell display, such as formatted money, dates or tags |
+
+The `money` display type formats an amount, and the `money` query control uses a number input. `deriveTableQueryFields` uses `select` for columns with a nonempty `valueEnum`, `digit` for `digit / money` columns, the same key for date and time types, and `text` for other types. Set `query.valueType` to override the result. For example, a column can display `date` and query with `dateRange`.
 
 ## Explicit schema and column derivation
 
@@ -66,7 +158,7 @@ const columns: TableQueryColumn<Values>[] = [
 const fields = deriveTableQueryFields(columns)
 ```
 
-The table's `visible / responsive` have nothing to do with whether a field shows in the query; `query: false` on a column excludes the query field, `query.hidden` decides the query visibility and `query.order` decides the query order. A table `date` can therefore map to a query `dateRange`.
+On a column, `query: false` excludes the query field, `query.hidden` controls its visibility, and `query.order` controls its order. The table's `visible / responsive` options control column display.
 You can also use the helper's second argument to override the config by name, or pass false to exclude a field. A nested array `dataIndex` does not infer the query param automatically and needs an explicit `query.name`; grouped columns are expanded recursively, and only the first field with a given name is kept.
 
 `valueEnum` derives select options automatically only from string labels, and preserves the string, number and boolean identity of Map keys; numeric, boolean and VNode labels are not converted automatically, so use explicit options or the field slot instead.
@@ -84,8 +176,12 @@ When `validate(values, { fields, action, signal })` returns false or throws, the
 
 ```ts
 import type { TableQueryFieldSlotProps } from '@vtable-guild/vtable-guild'
-const FieldControl = ({ field, control }: TableQueryFieldSlotProps<Values>) =>
-  controls[field.valueType || 'text'](control)
+
+const FieldControl = ({ field, control }: TableQueryFieldSlotProps<Values>) => {
+  const valueType = field.valueType ?? 'text'
+  const render = Object.hasOwn(controls, valueType) ? controls[valueType] : controls.text
+  return render?.(control)
+}
 ```
 
 ```vue
@@ -95,6 +191,7 @@ const FieldControl = ({ field, control }: TableQueryFieldSlotProps<Values>) =>
     :query="query"
     :fields="fields"
     :controls="controls"
+    layout="form"
     :validate="() => form.validate().then(() => true)"
   >
     <template #field="{ field, control }">
@@ -122,7 +219,9 @@ Query rules and editing rules are provided separately, and query fields do not i
 />
 ```
 
-The regular form layout always submits explicitly; the light layout also submits explicitly by default. Only when `layout="light"` and `autoSubmit` is true does a control update schedule one debounced submit. Repeated updates with the same value do not submit, clicking search cancels the pending debounce and clicking reset cancels the old automatic task.
+`layout` defaults to `light` and `autoSubmit` defaults to `false`, so omitting both keeps manual submission. With `autoSubmit` enabled in `light` layout, a change to a control's value schedules one debounced submit. Submitting manually or resetting cancels any pending automatic submit. The `form` layout always uses manual submission.
+
+When upgrading from a version that defaulted to `form`, set `layout="form"` explicitly on pages that need the previous grid layout. If a page already set `autoSubmit: true` but omitted `layout`, control updates will start submitting automatically after the upgrade. Remove `autoSubmit`, set it to `false`, or explicitly use `form` to keep manual submission.
 
 Changing layout, autoSubmit or disabled cancels automatic tasks that have not run yet; turning it back on does not replay the old task, and scheduling only resumes with the next control update.
 Modifying query.draft directly does not request automatically; for cross-field linkage, change several fields first and then call the component's submit explicitly, so that the linkage chain does not trigger several queries. The component's `submitted / reset` events are only result notifications; do not call the request again in these events.
@@ -164,7 +263,9 @@ The `actions` slot receives `{ submit, reset, submitting, collapsed, toggleColla
 
 ## Theming and layout
 
-The default is a responsive grid; the light layout uses compact fields and an action area that can wrap.
+The default `light` layout places fields at their label and control widths, with the action buttons following the fields. Fields and actions wrap when space runs out. Controls default to `200px`, and `dateRange / dateTimeRange` to `320px`. Fields no longer default to `240px` or stretch across the remaining row. An explicit `layout="form"` keeps the responsive grid, fixed-width labels, full-width controls and right-aligned actions.
+
+Override an individual control with `fieldProps.style.width`, such as the `120px` status select above. `--vtg-query-light-control-width` and `--vtg-query-light-range-width` configure default control widths. The existing `--vtg-query-light-field-width` still controls the entire label-and-control field; its default is now `auto`.
 Override it with the per-instance `ui` or the global `theme.query.slots`; the host controls themselves are styled by their own UI library.
 
 The default classes for the layout, validation feedback and action area are provided by the presets.

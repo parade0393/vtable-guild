@@ -1090,6 +1090,37 @@ export const referenceApiTablesEnFeatures = {
       ['`disabled`', '`boolean`', '-', 'Whether the option is disabled.'],
     ],
   },
+  'control-value-types': {
+    headers: ['valueType', 'Control', 'Value format and common configuration'],
+    rows: [
+      ['`text`', 'Text input', 'Text; host props such as `placeholder / maxlength`.'],
+      [
+        '`select`',
+        'Select',
+        'Single value or array; field `options / dictionary` supplies options.',
+      ],
+      ['`enum`', 'Alias of `select`', 'Identical to `select`.'],
+      [
+        '`digit`',
+        'Number input',
+        'Number; configure the host with `min / max / step / precision`.',
+      ],
+      [
+        '`money`',
+        'Number input',
+        'Same host as `digit`; configure money formatting and precision explicitly.',
+      ],
+      ['`date`', 'Date picker', 'A `YYYY-MM-DD` string.'],
+      ['`dateTime`', 'Date-time picker', 'A `YYYY-MM-DD HH:mm:ss` string.'],
+      ['`dateRange`', 'Date range picker', 'An array of two `YYYY-MM-DD` strings.'],
+      [
+        '`dateTimeRange`',
+        'Date-time range picker',
+        'An array of two `YYYY-MM-DD HH:mm:ss` strings.',
+      ],
+      ['`time`', 'Time picker', 'An `HH:mm:ss` string.'],
+    ],
+  },
   'schema-query-props': {
     headers: ['Prop', 'Type', 'Default', 'Description'],
     rows: [
@@ -1115,8 +1146,8 @@ export const referenceApiTablesEnFeatures = {
       [
         '`layout`',
         "`'form' \\| 'light'`",
-        "`'form'`",
-        'Use the regular form layout or the light query layout.',
+        "`'light'`",
+        'Compact inline queries by default; explicitly use `form` for a responsive grid.',
       ],
       [
         '`autoSubmit`',
@@ -1183,9 +1214,9 @@ export const referenceApiTablesEnFeatures = {
       ['`label`', '`VNodeChild`', '-', 'Field label.'],
       [
         '`valueType`',
-        '`string`',
+        '[`TableControlValueType`](/en/guide/type-reference#tablecontrolvaluetype)',
         "`'text'`",
-        'Selects the control from `controls`; unregistered types use the `text` control.',
+        'Selects a built-in or custom control from `controls`; unknown names fall back to `text`. See [TableBuiltinControlValueType](/en/guide/type-reference#tablebuiltincontrolvaluetype) for all built-in keys.',
       ],
       ['`order`', '`number`', '`0`', 'Sort order of the field; smaller values come first.'],
       [
@@ -1269,7 +1300,7 @@ export const referenceApiTablesEnFeatures = {
     rows: [
       [
         '`valueType`',
-        '`string`',
+        '[`TableControlValueType`](/en/guide/type-reference#tablecontrolvaluetype)',
         'inferred from column',
         "Selects a registered editing control. When unset, it is `'select'` if the column has `valueEnum`, otherwise the column's `valueType`, and `'text'` when neither exists.",
       ],

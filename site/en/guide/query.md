@@ -1,6 +1,6 @@
 # Query submission and reset
 
-When you need controls and a responsive layout generated from a schema or the column config, use the optional [Schema query](/en/guide/schema-query). It reuses the state protocol described on this page and can call the host form's validation first.
+When you need query controls generated from a schema or column config, use the optional [Schema query](/en/guide/schema-query). It defaults to inline `light` layout and supports an explicit `form` responsive grid. It reuses the state protocol described on this page and can call the host form's validation first.
 
 `useTableQuery` gives an existing form a draft, a submitted snapshot, field transforms and the expand / collapse state. Inputs, date ranges and layout keep using the Ant Design Vue or Element Plus your project already integrates; the composable does not generate a form from columns.
 

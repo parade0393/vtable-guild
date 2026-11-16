@@ -45,9 +45,11 @@ const controls = createElementPlusTableControls({
 
 这两个工厂只接收传入的组件，不导入 UI 库。由应用导入宿主组件样式。内置接线类型包括 `text / select / enum / digit / money / date / dateRange / dateTime / dateTimeRange / time`，查询和编辑可共享同一注册表。
 
+`editor.valueType` 使用可扩展的 [`TableControlValueType`](/guide/type-reference#tablecontrolvaluetype)。完整内置类型表、常用配置、自定义注册以及与展示类型的区别集中说明在 [Schema 查询控件类型](/guide/schema-query#control-value-types)。
+
 日期控件默认使用格式化字符串：date 为 `YYYY-MM-DD`，dateTime 为 `YYYY-MM-DD HH:mm:ss`，time 为 `HH:mm:ss`。范围类型返回两端数组。通过 `fieldProps.valueFormat` 覆盖；显式设为 undefined 可使用宿主原生日期对象。不同 UI 库的日期对象协议由应用转换。
 
-Select 的控件值使用内部编码，更新时恢复字符串、数字和布尔值身份，`false`、`'false'`、`1`、`'1'` 不会混同。清除返回 undefined；多选接收数组。`labelInValue` 等其他值协议需要自定义 renderer。
+Select 的控件值使用内部编码，更新时恢复字符串、数字和布尔值身份，`false`、`'false'`、`1`、`'1'` 不会混同。单选清除时，宿主返回的空值归一为 `undefined`；多选数组逐项还原，清空后的 `[]` 保留为空数组。宿主若返回非数组空值，则归一为 `undefined`。`labelInValue` 等其他值协议需要自定义 renderer。
 
 ## 配置与接入
 

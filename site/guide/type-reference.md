@@ -344,6 +344,26 @@ const handleChange: NonNullable<VTableEventProps<UserRow>['onChange']> = (
 
 <<< @/.vitepress/type-declarations/features.ts#QueryProtocol
 
+### TableBuiltinControlValueType
+
+`createAntdvTableControls` 和 `createElementPlusTableControls` 注册的全部 10 种内置控件键；查询 schema 与列编辑配置共用。详细配置、注册方式和回退行为见 [Schema 查询控件类型](/guide/schema-query#control-value-types)。
+
+<<< @/.vitepress/type-declarations/features.ts#TableBuiltinControlValueType
+
+<!-- @api: reference control-value-types -->
+
+### TableControlValueType
+
+查询字段 `valueType`、列 `query.valueType` 与 `editor.valueType` 使用的可扩展类型。内置键提供补全，自定义字符串需要注册对应的 `controls` 键。该类型刻意接受任意字符串，不保证拼写检查；只允许内置键时可使用 `TableBuiltinControlValueType`。
+
+<<< @/.vitepress/type-declarations/features.ts#TableControlValueType
+
+### VTableQuery
+
+`TableQueryField<TValues>` 按查询草稿键定义字段；`TableQueryColumn<TRecord, TValues>` 从列派生查询配置。`VTableQuery` 默认使用 `light` 紧凑布局；通过 `layout="form"` 显式选择栅格布局。默认不自动提交。详见 [Schema 查询区](/guide/schema-query)。
+
+<<< @/.vitepress/type-declarations/features.ts#QuerySchemaProtocol
+
 ### useTableEdit
 
 `UseTableEditOptions<TRecord>` 定义稳定行键、单行 / 多行模式、克隆、校验、保存与取消回调。`TableEditContext` 提供原始快照、新行标记和 AbortSignal；校验失败返回 `TableEditValidationErrors`，错误分类为 `TableEditError`。返回草稿访问、编辑 keys、保存状态与新增行等，详见 [编辑](/guide/editing)。

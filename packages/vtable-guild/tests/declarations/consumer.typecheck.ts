@@ -21,6 +21,12 @@ import {
   useTableQuery,
   useTableEditable,
   deriveTableQueryFields,
+  createAntdvTableControls,
+  createElementPlusTableControls,
+  type TableBuiltinControlValueType,
+  type TableControlValueType,
+  type TableControlComponents,
+  type TableColumnEditor,
   type TableQueryField,
   type TableInstance,
   type TableFieldRenderer,
@@ -80,6 +86,34 @@ interface Member {
   id: number
   name: string
 }
+
+// Built-in hints and custom control keys must survive the public declaration bundle.
+const _builtinControlValueType: TableBuiltinControlValueType = 'money'
+const _customControlValueType: TableControlValueType = 'memberPicker'
+const _customQueryField: TableQueryField<Member> = {
+  name: 'name',
+  valueType: _customControlValueType,
+}
+const _customColumnEditor: TableColumnEditor<Member> = { valueType: _customControlValueType }
+// Existing field-slot renderers can still look up a dynamically selected registry key.
+function _controlRegistryLookup(
+  components: TableControlComponents,
+  valueType: TableControlValueType,
+) {
+  const antdvControls = createAntdvTableControls(components)
+  const elementControls = createElementPlusTableControls(components)
+  return [
+    antdvControls[valueType],
+    elementControls[valueType],
+    antdvControls[_builtinControlValueType],
+  ]
+}
+// @ts-expect-error Custom keys must not widen the separate built-in key union.
+const _invalidBuiltinControl: TableBuiltinControlValueType = 'memberPicker'
+// @ts-expect-error Query control types reject non-string values through the published entry.
+const _invalidQueryControl: TableQueryField<Member> = { name: 'name', valueType: 1 }
+// @ts-expect-error Editor control types reject non-string values through the published entry.
+const _invalidEditorControl: TableColumnEditor<Member> = { valueType: 1 }
 
 const _schemaQuery = useTableQuery({ defaultValues: { name: '' } })
 type QueryProps = Parameters<typeof VTableQuery<{ name: string }>>[0]

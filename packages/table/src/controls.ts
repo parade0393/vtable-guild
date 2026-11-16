@@ -1,7 +1,13 @@
 import { h } from 'vue'
 import type { Component } from 'vue'
 import type { ColumnValue } from './types/presentation'
-import type { TableControlComponents, TableControlContext, TableControls } from './types/controls'
+import type {
+  TableBuiltinControlValueType,
+  TableControlComponents,
+  TableControlContext,
+  TableControlRenderer,
+  TableControls,
+} from './types/controls'
 
 function optionKey(value: ColumnValue) {
   return `${typeof value}:${String(value)}`
@@ -115,7 +121,7 @@ function createControls(host: TableControlComponents, element: boolean): TableCo
       if (!host.TimePicker) throw new Error('Time fields require TimePicker')
       return control(host.TimePicker, context, { valueFormat: 'HH:mm:ss' })
     },
-  })
+  } satisfies Record<TableBuiltinControlValueType, TableControlRenderer>)
 }
 
 export function createAntdvTableControls(components: TableControlComponents): TableControls {
