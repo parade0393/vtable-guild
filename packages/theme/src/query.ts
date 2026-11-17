@@ -1,9 +1,8 @@
 import type { ThemeConfig, ThemePresetName } from '@vtable-guild/core'
 
-/** Compact query controls by default; form opts into a responsive grid. */
 export const queryTheme = {
   slots: {
-    root: 'flex min-w-0 flex-wrap items-start gap-x-[var(--vtg-query-column-gap,24px)] gap-y-[var(--vtg-query-row-gap,16px)] rounded-[var(--vtg-query-radius,6px)] bg-[color:var(--color-surface)] p-[var(--vtg-query-padding,24px)] font-[family-name:var(--font-family-base)] text-[length:var(--vtg-table-font-size)] text-[color:var(--color-on-surface)]',
+    root: 'min-w-0 rounded-[var(--vtg-query-radius,6px)] bg-[color:var(--color-surface)] p-[var(--vtg-query-padding,24px)] font-[family-name:var(--font-family-base)] text-[length:var(--vtg-table-font-size)] text-[color:var(--color-on-surface)]',
     fields: '',
     field: 'flex min-w-0 items-start gap-[var(--vtg-query-label-gap,12px)]',
     label: 'flex h-[var(--vtg-query-control-height,32px)] shrink-0 items-center',
@@ -16,25 +15,17 @@ export const queryTheme = {
     collapse: 'inline-flex items-center gap-1',
   },
   variants: {
-    layout: {
-      form: {
-        fields:
-          'grid min-w-[min(100%,calc(var(--vtg-query-field-min-width,240px)*2_+_var(--vtg-query-column-gap,24px)))] flex-1 gap-x-[var(--vtg-query-column-gap,24px)] gap-y-[var(--vtg-query-row-gap,16px)] [grid-template-columns:repeat(auto-fit,minmax(min(100%,var(--vtg-query-field-min-width,240px)),1fr))]',
-        label: 'w-[var(--vtg-query-label-width,80px)] justify-end',
+    layoutType: {
+      QueryFilter: {
         control: 'flex-1 [&>*]:w-full',
-        actions: 'ml-auto justify-end',
+        actions: 'justify-end',
       },
-      light: {
+      LightFilter: {
         root: 'p-[var(--vtg-query-light-padding,16px)]',
-        fields: 'contents',
-        field: 'w-[var(--vtg-query-light-field-width,auto)] max-w-full',
-        label: 'w-auto justify-start',
-        control: 'flex-initial',
-        actions: 'ml-0 justify-start',
       },
     },
   },
-  defaultVariants: { layout: 'light' },
+  defaultVariants: { layoutType: 'QueryFilter' },
 } as const satisfies ThemeConfig
 
 export const elementPlusQueryTheme = {
@@ -58,6 +49,9 @@ export const queryZhCN = {
   reset: '重置',
   expand: '展开',
   collapse: '收起',
+  more: '更多筛选',
+  confirm: '确认',
+  clear: '清空',
   validationFailed: '请检查查询条件',
 } as const
 export const queryEnUS = {
@@ -66,5 +60,8 @@ export const queryEnUS = {
   reset: 'Reset',
   expand: 'Expand',
   collapse: 'Collapse',
+  more: 'More filters',
+  confirm: 'Confirm',
+  clear: 'Clear',
   validationFailed: 'Check query conditions',
 } as const

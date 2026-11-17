@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, h, ref } from 'vue'
+import { computed, h, inject, ref } from 'vue'
 import {
   Input,
   VTableQuery,
@@ -8,6 +8,7 @@ import {
   useTableQuery,
   type TableControls,
   type TableQueryField,
+  type TableQueryLocale,
 } from '@vtable-guild/vtable-guild'
 
 interface Values {
@@ -23,8 +24,54 @@ interface Params {
   end: string
   internal: string
 }
-const light = ref(true)
-const autoSubmit = ref(false)
+const lang = inject('vtg-demo-lang', ref('zh-CN'))
+const english = computed(() => lang.value.startsWith('en'))
+const labels = computed(() =>
+  english.value
+    ? {
+        keyword: 'Task',
+        status: 'Status',
+        active: 'In progress',
+        completed: 'Completed',
+        all: 'All statuses',
+        range: 'Date range',
+        start: 'Start date',
+        end: 'End date',
+        internal: 'Internal filter',
+        placeholder: 'Up to 12 characters',
+        invalid: 'Enter up to 12 characters',
+        narrow: 'Narrow container',
+        omit: 'Omit hidden fields on submit',
+      }
+    : {
+        keyword: '任务',
+        status: '状态',
+        active: '进行中',
+        completed: '已完成',
+        all: '全部状态',
+        range: '日期区间',
+        start: '开始日期',
+        end: '结束日期',
+        internal: '内部条件',
+        placeholder: '最多 12 个字符',
+        invalid: '任务名称最多 12 个字符',
+        narrow: '窄容器',
+        omit: '提交时省略隐藏字段',
+      },
+)
+const locale = computed<Partial<TableQueryLocale>>(() =>
+  english.value
+    ? {
+        label: 'Query',
+        submit: 'Search',
+        reset: 'Reset',
+        expand: 'Expand',
+        collapse: 'Collapse',
+        validationFailed: 'Validation failed',
+      }
+    : {},
+)
+const narrow = ref(false)
 const omitHidden = ref(false)
 const requests = ref(0)
 const errors = ref<Partial<Record<keyof Values, string>>>({})
@@ -33,15 +80,15 @@ const status = useTableDictionary({
     key: 'schema-demo-status',
     request: async () => ({
       options: [
-        { value: 1, label: '进行中' },
-        { value: 2, label: '已完成' },
+        { value: 1, label: labels.value.active },
+        { value: 2, label: labels.value.completed },
       ],
       complete: true,
     }),
   }),
 })
 const query = useTableQuery<Values, Params>({
-  defaultValues: { keyword: '', status: undefined, range: ['', ''], internal: '保留的隐藏条件' },
+  defaultValues: { keyword: '', status: undefined, range: ['', ''], internal: 'demo' },
   fieldTransforms: {
     range: ([start, end]) => ({ start: start || undefined, end: end || undefined }),
   },
@@ -55,13 +102,13 @@ const query = useTableQuery<Values, Params>({
 const fields = computed<TableQueryField<Values>[]>(() => [
   {
     name: 'keyword',
-    label: '任务名称',
+    label: labels.value.keyword,
     valueType: 'text',
-    fieldProps: { placeholder: '最多 12 个字符' },
+    fieldProps: { placeholder: labels.value.placeholder },
   },
-  { name: 'status', label: '状态', valueType: 'select', dictionary: status },
-  { name: 'range', label: '日期区间', valueType: 'dateRange' },
-  { name: 'internal', label: '内部条件', hidden: true },
+  { name: 'status', label: labels.value.status, valueType: 'select', dictionary: status },
+  { name: 'range', label: labels.value.range, valueType: 'dateRange', colSize: 2 },
+  { name: 'internal', label: labels.value.internal, hidden: true },
 ])
 // The documentation demo stays UI-library independent. Applications normally use the host factories.
 const controls: TableControls = {
@@ -69,6 +116,7 @@ const controls: TableControls = {
     h(Input, {
       ...context.fieldProps,
       id: context.id,
+      inputClass: 'schema-query-native',
       value: String(context.value ?? ''),
       disabled: context.disabled || context.readonly,
       'onUpdate:value': context.onChange,
@@ -87,7 +135,7 @@ const controls: TableControls = {
         },
       },
       [
-        h('option', { value: '' }, '全部状态'),
+        h('option', { value: '' }, labels.value.all),
         ...context.options.map((option) =>
           h('option', { value: String(option.value) }, option.label),
         ),
@@ -103,7 +151,7 @@ const controls: TableControls = {
           class: 'schema-query-native',
           value: (context.value as [string, string])[index],
           disabled: context.disabled || context.readonly,
-          'aria-label': index ? '结束日期' : '开始日期',
+          'aria-label': index ? labels.value.end : labels.value.start,
           onInput: (event: Event) => {
             const value = [...(context.value as [string, string])]
             value[index] = (event.target as HTMLInputElement).value
@@ -114,30 +162,30 @@ const controls: TableControls = {
     ),
 }
 function validate(values: Readonly<Values>) {
-  errors.value = values.keyword.length > 12 ? { keyword: '任务名称最多 12 个字符' } : {}
+  errors.value = values.keyword.length > 12 ? { keyword: labels.value.invalid } : {}
   return Object.keys(errors.value).length === 0
 }
 </script>
 
 <template>
   <div class="schema-query-settings">
-    <label><input v-model="light" type="checkbox" /> 轻量布局</label>
-    <label><input v-model="autoSubmit" type="checkbox" /> 轻量模式自动提交（300ms）</label>
-    <label><input v-model="omitHidden" type="checkbox" /> 省略隐藏条件</label>
+    <label><input v-model="narrow" type="checkbox" /> {{ labels.narrow }}</label>
+    <label><input v-model="omitHidden" type="checkbox" /> {{ labels.omit }}</label>
   </div>
-  <VTableQuery
-    :query="query"
-    :fields="fields"
-    :controls="controls"
-    :layout="light ? undefined : 'form'"
-    :auto-submit="autoSubmit"
-    :debounce-time="300"
-    :collapsed-count="2"
-    :hidden-policy="omitHidden ? 'omit' : 'preserve'"
-    :validate="validate"
-    :errors="errors"
-  />
-  <p role="status">请求 {{ requests }} 次；只有提交成功才更新参数：</p>
+  <div :style="{ maxWidth: narrow ? '400px' : undefined }">
+    <VTableQuery
+      :query="query"
+      :fields="fields"
+      :controls="controls"
+      :locale="locale"
+      :preserve="!omitHidden"
+      :validate="validate"
+      :errors="errors"
+    />
+  </div>
+  <p role="status">
+    {{ english ? `Requests: ${requests} · Submitted params` : `请求 ${requests} 次 · 已提交参数` }}
+  </p>
   <pre>{{ JSON.stringify(query.params.value ?? {}, null, 2) }}</pre>
 </template>
 
@@ -158,7 +206,7 @@ function validate(values: Readonly<Values>) {
 .schema-query-native {
   width: 100%;
   min-width: 0;
-  height: 32px;
+  height: var(--vtg-query-control-height, 32px);
   padding: 0 8px;
   color: var(--color-on-surface);
   background: var(--color-surface);

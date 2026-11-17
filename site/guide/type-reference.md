@@ -360,7 +360,7 @@ const handleChange: NonNullable<VTableEventProps<UserRow>['onChange']> = (
 
 ### VTableQuery
 
-`TableQueryField<TValues>` 按查询草稿键定义字段；`TableQueryColumn<TRecord, TValues>` 从列派生查询配置。`VTableQuery` 默认使用 `light` 紧凑布局；通过 `layout="form"` 显式选择栅格布局。默认不自动提交。详见 [Schema 查询区](/guide/schema-query)。
+`TableQueryField<TValues>` 按查询草稿键定义字段。`TableQueryColumn<TRecord, TValues>` 通过列的 `search` 提供派生配置。`VTableQuery` 默认使用响应式 `QueryFilter`，通过 `layoutType="LightFilter"` 切换为标签式筛选。详见 [Schema 查询区](/guide/schema-query)。
 
 <<< @/.vitepress/type-declarations/features.ts#QuerySchemaProtocol
 

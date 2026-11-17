@@ -31,8 +31,25 @@ export interface TableControlContext {
   id?: string
   name?: string
   mode: 'query' | 'edit'
+  /** Present when the renderer is used inside a LightFilter popup. */
+  lightFilter?: {
+    grouped: boolean
+    getPopupContainer: () => HTMLElement
+  }
 }
-export type TableControlRenderer = (context: TableControlContext) => VNodeChild
+
+export interface TableControlLightFilterOptions {
+  /** Selected value summary in the filter trigger. */
+  formatValue?: (context: TableControlContext) => VNodeChild
+  /** Submit changes immediately for standalone fields. Grouped edits always require confirmation. */
+  submitOnChange?: boolean
+  /** Defaults to true for standalone fields that submit immediately. */
+  closeOnChange?: boolean | ((context: TableControlContext) => boolean)
+}
+
+export type TableControlRenderer = ((context: TableControlContext) => VNodeChild) & {
+  lightFilter?: TableControlLightFilterOptions
+}
 export type TableControls = Readonly<Record<string, TableControlRenderer>>
 
 /** Pass components already installed by the host application. No UI library is imported here. */

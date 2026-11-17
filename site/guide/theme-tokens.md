@@ -125,7 +125,7 @@
 
 ## Schema 查询区
 
-布局变量控制栅格、标签宽度、操作间距和轻量模式。用法见 [Schema 查询区](/guide/schema-query)。
+查询区变量控制栅格间距、标签宽度、操作间距以及 LightFilter 标签和弹层。用法见 [Schema 查询区](/guide/schema-query)。
 
 <!-- @api: theme-reference tokens-query -->
 

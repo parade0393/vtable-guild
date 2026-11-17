@@ -123,7 +123,7 @@ Application buttons such as export and create are provided by your project's UI 
 
 ## Schema query area
 
-Layout variables control the grid, label width, action spacing and the lightweight (`light`) layout. See [Schema query](/en/guide/schema-query) for usage.
+Query variables control grid spacing, label width, action spacing, and LightFilter chips and popups. See [Schema query](/en/guide/schema-query) for usage.
 
 <!-- @api: theme-reference tokens-query -->
 

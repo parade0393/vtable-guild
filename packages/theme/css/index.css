@@ -14,19 +14,69 @@
 @import './presets/element-plus.css';
 @import './transitions.css';
 
-/* Host controls define unlayered widths, so keep these rules outside Tailwind's utility layer. */
-[data-query-layout='light'] > * > [data-query-field] > [data-query-value-type] > * {
+[data-query-grid] {
+  display: grid;
+  grid-template-columns: repeat(24, minmax(0, 1fr));
+  row-gap: var(--vtg-query-row-gap, 24px);
+  margin-inline: calc(var(--vtg-query-column-gap, 24px) / -2);
+  container-type: inline-size;
+}
+
+[data-query-grid] > :is([data-query-field], [data-query-actions]) {
   box-sizing: border-box;
-  width: var(--vtg-query-light-control-width, 200px);
+  min-width: 0;
+  padding-inline: calc(var(--vtg-query-column-gap, 24px) / 2);
+}
+
+[data-query-grid] > [data-query-field][hidden] {
+  display: none;
+}
+
+[data-query-grid] > [data-query-field] > label {
+  width: var(--vtg-query-label-width, 80px);
+  max-width: 50%;
+  justify-content: end;
+}
+
+[data-query-layout='inline'] > [data-query-grid] > [data-query-field] > label {
+  width: auto;
+}
+
+[data-query-layout='vertical'] > [data-query-grid] > [data-query-field] {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--vtg-query-vertical-label-gap, 4px);
+}
+
+[data-query-layout='vertical'] > [data-query-grid] > [data-query-field] > label {
+  width: auto;
+  max-width: none;
+  height: auto;
+  justify-content: start;
+}
+
+[data-query-layout='vertical'] > [data-query-grid] > [data-query-actions] {
+  align-self: end;
+}
+
+/* Host controls define unlayered widths. */
+[data-query-grid] [data-query-value-type] > * {
+  box-sizing: border-box;
+  width: 100%;
   max-width: 100%;
 }
 
-[data-query-layout='light']
-  > *
-  > [data-query-field]
-  > :is([data-query-value-type='dateRange'], [data-query-value-type='dateTimeRange'])
-  > * {
-  width: var(--vtg-query-light-range-width, 320px);
+[data-query-layout='vertical'] > [data-query-grid] > [data-query-split] {
+  position: relative;
+}
+
+[data-query-layout='vertical'] > [data-query-grid] > [data-query-split]::after {
+  position: absolute;
+  width: calc(100cqi - var(--vtg-query-column-gap, 24px));
+  inset-block-end: calc(var(--vtg-query-row-gap, 24px) / -2);
+  inset-inline-end: calc(var(--vtg-query-column-gap, 24px) / 2);
+  border-block-end: 1px dashed var(--vtg-query-split-color, var(--vtg-table-border-color));
+  content: '';
 }
 
 .vtg-table-popup {
@@ -44,6 +94,138 @@
   font-size: var(--vtg-table-font-size);
   line-height: var(--vtg-table-line-height);
   transform-origin: top center;
+}
+
+.vtg-light-filter {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: var(--vtg-query-light-gap, 8px);
+}
+
+.vtg-light-filter__chip {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: stretch;
+  border: 1px solid var(--vtg-query-light-border, transparent);
+  border-radius: var(--vtg-query-light-radius, var(--vtg-btn-border-radius));
+  background: var(--vtg-query-light-bg, transparent);
+  color: var(--color-on-surface);
+}
+
+.vtg-light-filter__chip:hover,
+.vtg-light-filter__chip:focus-within {
+  border-color: var(--vtg-query-light-hover-border, var(--color-primary));
+  background: var(--vtg-query-light-hover-bg, var(--color-surface-hover));
+}
+
+.vtg-light-filter__chip[data-active='true'] {
+  background: var(--vtg-query-light-active-bg, var(--vtg-table-row-selected-bg));
+  color: var(--vtg-query-light-active-color, var(--color-primary));
+}
+
+.vtg-light-filter__chip[data-invalid='true'] {
+  border-color: var(--vtg-cell-error);
+  color: var(--vtg-cell-error);
+}
+
+.vtg-light-filter__trigger,
+.vtg-light-filter__clear {
+  display: inline-flex;
+  min-width: 0;
+  min-height: var(--vtg-query-light-height, var(--vtg-query-control-height, 32px));
+  align-items: center;
+  padding: 0 var(--vtg-query-light-trigger-padding, 8px);
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  white-space: nowrap;
+}
+
+.vtg-light-filter__clear {
+  padding-inline-start: 0;
+}
+
+.vtg-light-filter__trigger:disabled,
+.vtg-light-filter__clear:disabled {
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+}
+
+.vtg-light-filter__trigger:focus-visible,
+.vtg-light-filter__clear:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+.vtg-light-filter__value {
+  overflow: hidden;
+  max-width: var(--vtg-query-light-summary-width, 244px);
+  text-overflow: ellipsis;
+}
+
+.vtg-light-filter__icon {
+  flex: none;
+  margin-inline-start: var(--vtg-query-light-icon-gap, 6px);
+  font-size: var(--vtg-query-light-icon-size, 10px);
+}
+
+.vtg-light-filter__collapse-icon {
+  width: var(--vtg-query-light-collapse-icon-size, 14px);
+  height: var(--vtg-query-light-collapse-icon-size, 14px);
+  flex: none;
+}
+
+.vtg-table-popup.vtg-light-filter__popup {
+  display: flex;
+  overflow: visible;
+  flex-direction: column;
+  padding: var(--vtg-query-light-popup-padding, 12px);
+}
+
+.vtg-light-filter__fields {
+  display: grid;
+  overflow: auto;
+  min-height: 0;
+  gap: var(--vtg-query-light-popup-gap, 12px);
+}
+
+.vtg-light-filter__field {
+  display: grid;
+  min-width: 0;
+  width: var(--vtg-query-light-control-width, 200px);
+  max-width: 100%;
+  gap: var(--vtg-query-light-label-gap, 4px);
+}
+
+.vtg-light-filter__field:is(
+  [data-query-value-type='dateRange'],
+  [data-query-value-type='dateTimeRange']
+) {
+  width: var(--vtg-query-light-range-width, 320px);
+}
+
+.vtg-light-filter__popup .vtg-light-filter__field > * {
+  box-sizing: border-box;
+  min-width: 0;
+  width: 100%;
+}
+
+.vtg-light-filter__error {
+  color: var(--vtg-cell-error);
+  font-size: var(--vtg-query-error-font-size, 12px);
+}
+
+.vtg-light-filter__footer {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-top: var(--vtg-query-light-popup-gap, 12px);
+  gap: var(--vtg-query-action-gap, 8px);
 }
 
 /* Hide native scrollbar — used by Scrollbar component */

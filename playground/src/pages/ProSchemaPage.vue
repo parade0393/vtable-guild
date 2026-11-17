@@ -34,7 +34,6 @@ import {
   createAntdvTableControls,
   createElementPlusTableControls,
   createTableDictionary,
-  deriveTableQueryFields,
   useTableDictionary,
   useTableEditable,
   useTableQuery,
@@ -43,7 +42,7 @@ import {
   type TableColumnType,
   type TableControlContext,
   type TableInstance,
-  type TableQueryField,
+  type TableQueryColumn,
   type TableQueryInstance,
 } from '@vtable-guild/vtable-guild'
 import { PLAYGROUND_CONTEXT_KEY } from '../playgroundContext'
@@ -69,9 +68,7 @@ interface SearchParams extends Omit<QueryValues, 'delivery'> {
   from: string | undefined
   to: string | undefined
 }
-type QueryColumn = TableColumnType<Detail> & {
-  query?: false | (Omit<TableQueryField<QueryValues>, 'name'> & { name?: keyof QueryValues })
-}
+type QueryColumn = TableColumnType<Detail> & TableQueryColumn<Detail, QueryValues>
 interface HostForm {
   validate: () => Promise<unknown>
   clearValidate?: () => void
@@ -107,7 +104,7 @@ const controls = computed(() =>
 const narrow = ref(false)
 const virtual = ref(false)
 const light = ref(false)
-const autoSubmit = ref(false)
+const collapseFilters = ref(false)
 const showAdvanced = ref(true)
 const omitHidden = ref(false)
 const requestCount = ref(0)
@@ -168,8 +165,8 @@ const columns = computed<QueryColumn[]>(() => [
       readonly: ({ draft }) => draft.locked,
       validate: (value) => (String(value ?? '').trim() ? undefined : '请输入明细名称'),
     },
-    query: {
-      order: 0,
+    search: {
+      order: 4,
       fieldProps: { placeholder: '名称可不填', allowClear: true, clearable: true },
     },
   },
@@ -185,8 +182,8 @@ const columns = computed<QueryColumn[]>(() => [
       onValueChange: (value, { draft }) => ({ quantity: value === 'service' ? 1 : draft.quantity }),
       validate: (value) => (value ? undefined : '请选择分类'),
     },
-    query: {
-      order: 1,
+    search: {
+      order: 3,
       valueType: 'select',
       dictionary: category,
       fieldProps: { placeholder: '全部分类', allowClear: true, clearable: true },
@@ -204,11 +201,12 @@ const columns = computed<QueryColumn[]>(() => [
       disabled: ({ draft }) => draft.category === 'service',
       validate: (value) => (Number(value) > 0 ? undefined : '数量必须大于 0'),
     },
-    query: {
+    search: {
       name: 'minQuantity',
       label: '最小数量',
       valueType: 'digit',
-      order: 3,
+      order: 1,
+      secondary: true,
       fieldProps: { min: 0 },
     },
   },
@@ -223,7 +221,7 @@ const columns = computed<QueryColumn[]>(() => [
       fieldProps: { min: 0, precision: 2 },
       validate: (value) => (Number(value) >= 0 ? undefined : '单价不能为负数'),
     },
-    query: false,
+    search: false,
   },
   {
     key: 'delivery',
@@ -237,7 +235,7 @@ const columns = computed<QueryColumn[]>(() => [
       transform: (value) => new Date(`${String(value)}T00:00:00Z`).getTime(),
       validate: (value) => (value ? undefined : '请选择交付日期'),
     },
-    query: { order: 2, valueType: 'dateRange', label: '交付区间' },
+    search: { order: 2, valueType: 'dateRange', label: '交付区间', colSize: 2 },
   },
   {
     key: 'memo',
@@ -245,7 +243,12 @@ const columns = computed<QueryColumn[]>(() => [
     dataIndex: ['note', 'memo'],
     width: 160,
     editor: { fieldProps: { placeholder: '补充说明' } },
-    query: { name: 'advancedNote', order: 4, label: '备注关键词', hidden: !showAdvanced.value },
+    search: {
+      name: 'advancedNote',
+      label: '备注关键词',
+      secondary: true,
+      hidden: !showAdvanced.value,
+    },
   },
   {
     key: 'total',
@@ -253,11 +256,10 @@ const columns = computed<QueryColumn[]>(() => [
     width: 130,
     align: 'right',
     customRender: ({ record }) => `¥${(record.quantity * record.unitPrice).toFixed(2)}`,
-    query: false,
+    search: false,
   },
-  { key: 'actions', title: '操作', width: 160, fixed: 'right', query: false },
+  { key: 'actions', title: '操作', width: 160, fixed: 'right', search: false },
 ])
-const fields = computed(() => deriveTableQueryFields<QueryValues, Detail>(columns.value))
 const applied = ref<Partial<SearchParams>>({})
 const query = useTableQuery<QueryValues, SearchParams>({
   defaultValues: {
@@ -413,14 +415,14 @@ void query.submit()
       <component :is="button" @click="light = !light">{{
         light ? '标准查询' : '轻量筛选'
       }}</component>
-      <component :is="button" @click="autoSubmit = !autoSubmit">{{
-        autoSubmit ? '关闭自动查询' : '开启自动查询（300ms）'
+      <component v-if="light" :is="button" @click="collapseFilters = !collapseFilters">{{
+        collapseFilters ? '显示常用筛选' : '合并到筛选弹层'
       }}</component>
       <component :is="button" @click="showAdvanced = !showAdvanced">{{
         showAdvanced ? '隐藏备注查询' : '显示备注查询'
       }}</component>
       <component :is="button" @click="omitHidden = !omitHidden">{{
-        omitHidden ? '隐藏字段：省略' : '隐藏字段：保留'
+        omitHidden ? '提交时省略隐藏字段' : '提交时保留隐藏字段'
       }}</component>
     </div>
     <section class="pro-schema-card pro-schema-query">
@@ -428,15 +430,13 @@ void query.submit()
         <VTableQuery
           ref="queryView"
           :query="query"
-          :fields="fields"
+          :columns="columns"
           :controls="controls"
           root-tag="div"
-          :layout="light ? 'light' : 'form'"
-          :auto-submit="autoSubmit"
-          :debounce-time="300"
-          :hidden-policy="omitHidden ? 'omit' : 'preserve'"
+          :layout-type="light ? 'LightFilter' : 'QueryFilter'"
+          :collapse="collapseFilters"
+          :preserve="!omitHidden"
           :validate="validateQuery"
-          :collapsed-count="3"
         >
           <template #field="{ field, control }">
             <component :is="hostFormItem" v-bind="itemName(field.name)">
@@ -447,7 +447,7 @@ void query.submit()
       </component>
       <p class="pro-schema-feedback">
         查询 {{ requestCount }} 次 · 字典 {{ dictionaryCount }} 次 ·
-        {{ light && autoSubmit ? '修改后自动查询' : '点击查询后生效' }}
+        {{ light ? '选定或确认筛选条件后生效' : '点击查询后生效' }}
       </p>
     </section>
     <section class="pro-schema-card">

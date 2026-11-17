@@ -119,8 +119,10 @@ const _schemaQuery = useTableQuery({ defaultValues: { name: '' } })
 type QueryProps = Parameters<typeof VTableQuery<{ name: string }>>[0]
 const _schemaProps: QueryProps = {
   query: _schemaQuery,
-  fields: [{ name: 'name' }],
+  columns: [{ dataIndex: 'name', search: { colSize: 2, secondary: true } }],
   controls: { text: () => null },
+  layoutType: 'QueryFilter',
+  layout: 'inline',
 }
 // @ts-expect-error A schema field must belong to the query values.
 const _invalidQueryField: TableQueryField<{ name: string }> = { name: 'missing' }
@@ -136,7 +138,7 @@ const _editorCell: EditCellProps = {
 }
 const _allDrafts: ReadonlyMap<string | number, Member> = _editable.getDrafts()
 const _derivedFields: TableQueryField<{ name: string }>[] = deriveTableQueryFields([
-  { dataIndex: 'name', query: { valueType: 'text' } },
+  { dataIndex: 'name', search: { valueType: 'text' } },
 ])
 createVTableGuild({ theme: { query: { slots: { fields: 'custom-grid' } } } })
 // @ts-expect-error Query theme augmentation must survive the published bundle.

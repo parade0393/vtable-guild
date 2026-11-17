@@ -676,8 +676,8 @@ const querySlots = componentSlots<QuerySlots>(
   {
     root: ['Schema 查询区根容器。', 'Schema query area root container.'],
     fields: [
-      '表单模式栅格或轻量模式字段容器。',
-      'Form mode grid or lightweight mode field container.',
+      'QueryFilter 栅格或 LightFilter 标签容器。',
+      'QueryFilter grid or LightFilter chip container.',
     ],
     field: ['单个查询字段布局。', 'Layout of a single query field.'],
     label: ['字段标签。', 'Field label.'],

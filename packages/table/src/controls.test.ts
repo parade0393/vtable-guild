@@ -77,4 +77,58 @@ describe.each([false, true])('host control adapter, element=%s', (element) => {
         ?.valueFormat,
     ).toBeUndefined()
   })
+
+  it('anchors native select and date popups inside LightFilter', () => {
+    const panel = document.createElement('div')
+    const getPopupContainer = () => panel
+    const grouped = context({ lightFilter: { grouped: true, getPopupContainer } })
+    const open = element ? 'automaticDropdown' : 'defaultOpen'
+    const container = element ? 'appendTo' : 'getPopupContainer'
+    const expectedContainer = element ? panel : getPopupContainer
+
+    expect((controls.select(grouped) as VNode).props?.[container]).toBe(expectedContainer)
+    expect((controls.dateRange(grouped) as VNode).props?.[container]).toBe(expectedContainer)
+    expect((controls.select(grouped) as VNode).props?.[open]).toBe(false)
+    const standalone = context({ lightFilter: { grouped: false, getPopupContainer } })
+    expect((controls.dateRange(standalone) as VNode).props?.[open]).toBe(true)
+  })
+
+  it('keeps multivalue selections open while closing standalone single selections', () => {
+    const policy = controls.select.lightFilter
+    expect(policy?.submitOnChange).toBe(true)
+    expect(controls.enum).toBe(controls.select)
+    const closeOnChange = policy?.closeOnChange
+    expect(typeof closeOnChange).toBe('function')
+    if (typeof closeOnChange !== 'function') throw new Error('Missing select close policy')
+
+    const multivalue = element ? [{ multiple: true }] : [{ mode: 'multiple' }, { mode: 'tags' }]
+    for (const fieldProps of multivalue) {
+      expect(closeOnChange(context({ fieldProps }))).toBe(false)
+    }
+    expect(closeOnChange(context())).toBe(true)
+  })
+
+  it.each(['time', 'dateTime', 'dateTimeRange'] as const)(
+    'stages %s updates for explicit LightFilter confirmation',
+    (valueType) => {
+      const onChange = vi.fn()
+      const value = valueType === 'dateTimeRange' ? ['start', 'end'] : 'selected'
+      const renderer = controls[valueType]
+      const vnode = renderer(context({ onChange })) as VNode
+
+      expect(renderer.lightFilter?.submitOnChange).not.toBe(true)
+      vnode.props?.[event](value)
+      expect(onChange).toHaveBeenCalledExactlyOnceWith(value)
+    },
+  )
+
+  it.each(['date', 'dateRange'] as const)(
+    'retains immediate standalone LightFilter submission for %s',
+    (valueType) => {
+      expect(controls[valueType].lightFilter).toMatchObject({
+        submitOnChange: true,
+        closeOnChange: true,
+      })
+    },
+  )
 })

@@ -119,7 +119,7 @@ import {
 
 ## Schema 查询与列编辑
 
-`VTableQuery` 通过 `query / fields / controls` 接入 `useTableQuery`，也可用 `deriveTableQueryFields` 从列定义派生查询字段。`layout` 默认为 `light`，开启 `autoSubmit` 后会防抖提交。通过 `validate` 接入宿主表单校验，包裹已有 Form 时使用 `rootTag="div"`。详见 [Schema 查询区](/guide/schema-query)。
+`VTableQuery` 接收 `useTableQuery` 状态、宿主控件注册表和 `fields` 或 `columns`。默认渲染响应式 `QueryFilter`，使用 `layoutType="LightFilter"` 可显示标签与弹层。通过 `validate` 接入宿主表单校验，放在已有 Form 内时使用 `rootTag="div"`。详见 [Schema 查询区](/guide/schema-query)。
 
 `useTableEditable` 接 columns、controls 和行编辑选项，将 `column.editor` 的条件、转换、规则和字典接入同一行草稿。模板通过 `VTableEditCell` 桥接，TSX 可调用 renderEditor；无编辑内容时保留只读回退。见 [列级编辑](/guide/editable-columns)。
 

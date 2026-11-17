@@ -12,12 +12,12 @@ export function deriveTableQueryFields<TValues extends object, TRecord extends o
   const names = new Set<string>()
   const visit = (items: readonly TableQueryColumn<TRecord, TValues>[]) => {
     for (const column of items) {
-      if (typeof column === 'symbol' || column.query === false) continue
+      if (typeof column === 'symbol' || column.search === false || column.hideInSearch) continue
       if ('children' in column) {
         visit(column.children)
         continue
       }
-      const config = column.query ?? {}
+      const config = column.search ?? {}
       const name =
         config.name ?? (typeof column.dataIndex === 'string' ? column.dataIndex : undefined)
       if (name === undefined) continue
@@ -54,5 +54,5 @@ export function deriveTableQueryFields<TValues extends object, TRecord extends o
     }
   }
   visit(columns)
-  return result.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+  return result.sort((a, b) => (b.order ?? 0) - (a.order ?? 0))
 }

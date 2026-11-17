@@ -44,7 +44,7 @@ const columns: TableQueryColumn<Values>[] = [
   {
     dataIndex: 'name',
     visible: false,
-    query: { name: 'range', valueType: 'dateRange', hidden: false },
+    search: { name: 'range', valueType: 'dateRange', hidden: false },
   },
 ]
 const query = useTableQuery<Values>({ defaultValues: { name: '' } })

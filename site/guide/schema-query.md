@@ -1,11 +1,44 @@
 # Schema 查询区与轻量筛选
 
-`VTableQuery` 负责字段、控件接线和查询区布局；[`useTableQuery`](/guide/query) 继续负责草稿、转换、提交和重置。
-它是独立的可选组件，可以放在表格上方，也可以用于只展示列表的页面。基础表格不会自动创建表单。
+`VTableQuery` 根据 `fields` 或 `columns` 生成查询控件，可放在表格上方或独立使用。[`useTableQuery`](/guide/query) 管理草稿、参数转换、提交和重置。
+
+| 模式        | 使用方式                             | 交互                                |
+| ----------- | ------------------------------------ | ----------------------------------- |
+| QueryFilter | 默认，或 `layout-type="QueryFilter"` | 响应式表单，点击查询或按 Enter 提交 |
+| LightFilter | `layout-type="LightFilter"`          | 标签展示已选值，点击打开筛选弹层    |
+
+## QueryFilter
+
+`layout` 支持 `horizontal`、`inline` 和 `vertical`。省略时，控件按查询区的实际宽度安排栅格与标签。
 
 <Demo src="query/schema">
 
 <<< @/demos/query/schema.vue
+
+</Demo>
+
+勾选“窄容器”可以观察同一份 schema 的布局变化。展开表单后可以编辑占两格的日期区间，并查看提交后的参数。
+
+| 查询区宽度      | 默认列数 | 默认标签方向 |
+| --------------- | -------- | ------------ |
+| 小于 513px      | 1        | 上方         |
+| 513px 至 700px  | 2        | 上方         |
+| 701px 至 1351px | 3        | 左侧         |
+| 1352px 及以上   | 4        | 左侧         |
+
+布局按 24 格计算，`span` 指定每列的格数，也接受断点对象，如 `{ xs: 24, md: 12, xl: 8 }`。`colSize` 指定字段占用几列，默认为 1。字段按 `order` 从大到小排列，相同值保留原有顺序。
+
+默认收起时先留出一列给操作区，再按顺序放入字段，至少显示第一个可见字段。`defaultColsNumber` 可以进一步限制首行字段，`defaultFormItemsNumber` 优先级更高，允许初次收起时就显示多行。通过 `defaultCollapsed` 修改初始状态，或使用 `v-model:collapsed` 控制当前状态。用 `:collapse-render="false"` 隐藏展开按钮。
+
+## LightFilter
+
+点击常用条件标签打开弹层。单选及 `date / dateRange` 控件选定后提交，文本、数字以及 `time / dateTime / dateTimeRange` 等包含时间的控件等待筛选弹层底部确认。多选更新后提交，同时保留弹层供继续选择；Ant Design Vue 的 `multiple / tags` 模式均如此。点击标签的清除按钮会立即提交。
+
+将字段设为 `secondary: true` 后，它会进入“更多筛选”。设置 `collapse` 可以把全部条件并入同一个弹层。弹层内的编辑在确认后一次提交，关闭弹层会丢弃尚未确认的修改。使用底部的清除按钮会清除这组条件并提交。`footerRender` 可自定义确认和清除操作，`getPopupContainer` 可指定弹层挂载位置。
+
+<Demo src="query/light-filter">
+
+<<< @/demos/query/light-filter.vue
 
 </Demo>
 
@@ -108,23 +141,23 @@ const ownerFields: TableQueryField<{ owner?: string }>[] = [
 ]
 ```
 
-将 `businessControls` 传给 `VTableQuery` 的 `controls`。调用 `context.onChange(value)` 才会进入查询草稿、校验失效和自动提交协议；自定义控件应自行适配它的值、只读和搜索接口。
+将 `businessControls` 传给 `VTableQuery` 的 `controls`。调用 `context.onChange(value)` 更新当前草稿。自定义控件可以设置 `renderer.lightFilter.formatValue(context)` 来渲染标签上的已选值。单字段弹层默认等待确认，可用 `submitOnChange` 开启实时提交，再通过 `closeOnChange` 控制提交后是否关闭弹层。控件内部还会打开选择菜单时，可使用 `context.lightFilter?.getPopupContainer` 将菜单挂在筛选弹层中。
 
 未注册的名称（例如把 `select` 写成 `sleect`）会回退到 `controls.text`；如果连 `text` 也未注册，则没有默认控件可渲染。组件不会因为拼写错误而自动注册控件或抛出校验错误。开放的 `TableControlValueType` 也不会把任意字符串判为类型错误；如果某份配置只允许内置键，可以用 `satisfies TableBuiltinControlValueType` 限制它。
 
 ### 与表格展示类型的区别
 
-| 配置位置                                           | 注册表      | 作用                                               |
-| -------------------------------------------------- | ----------- | -------------------------------------------------- |
-| `TableQueryField.valueType` / 列 `query.valueType` | `controls`  | 选择查询输入控件，使用 `TableControlValueType`     |
-| 列 `editor.valueType`                              | `controls`  | 选择编辑输入控件，与查询共享控件类型               |
-| 列 `valueType`                                     | `renderers` | 选择单元格展示方式，例如格式化金额、日期或渲染标签 |
+| 配置位置                                            | 注册表      | 作用                                               |
+| --------------------------------------------------- | ----------- | -------------------------------------------------- |
+| `TableQueryField.valueType` / 列 `search.valueType` | `controls`  | 选择查询输入控件，使用 `TableControlValueType`     |
+| 列 `editor.valueType`                               | `controls`  | 选择编辑输入控件，与查询共享控件类型               |
+| 列 `valueType`                                      | `renderers` | 选择单元格展示方式，例如格式化金额、日期或渲染标签 |
 
-列展示的 `money` 可格式化金额，查询控件的 `money` 使用数字输入框。`deriveTableQueryFields` 会为具有非空 `valueEnum` 的列选用 `select`，为 `digit / money` 列选用 `digit`，保留日期和时间类型，其余类型使用 `text`。可用 `query.valueType` 覆盖派生结果，例如为展示 `date` 的列设置 `dateRange` 查询控件。
+列展示的 `money` 可格式化金额，查询控件的 `money` 使用数字输入框。`deriveTableQueryFields` 会为具有非空 `valueEnum` 的列选用 `select`，为 `digit / money` 列选用 `digit`，保留日期和时间类型，其余类型使用 `text`。可用 `search.valueType` 覆盖派生结果，例如为展示 `date` 的列设置 `dateRange` 查询控件。
 
 ## 显式 schema 与列派生
 
-schema 的 `name` 对应查询草稿的顶层 key。`valueType` 选择控件，`fieldProps` 配置宿主属性；`fieldProps / hidden / disabled / readonly` 可用回调读取整份草稿。
+schema 的 `name` 对应查询草稿的顶层 key。`valueType` 选择控件，`fieldProps` 配置宿主属性；`fieldProps / hidden / disabled / readonly` 可用回调读取整份草稿。LightFilter 弹层内的这些回调包含尚未确认的编辑值，联动字段会立即显示或隐藏；确认时一次提交，关闭时丢弃编辑。
 
 ```ts
 import {
@@ -141,29 +174,29 @@ interface Values {
 const query = useTableQuery<Values>({ defaultValues: { name: '' }, onSubmit: request.submit })
 
 const columns: TableQueryColumn<Values>[] = [
-  { dataIndex: 'name', title: '名称', visible: false, query: { order: 1 } },
+  { dataIndex: 'name', title: '名称', visible: false, search: { order: 1 } },
   {
     dataIndex: 'range',
     title: '日期',
     valueType: 'date',
-    query: { valueType: 'dateRange', order: 2 },
+    search: { valueType: 'dateRange', order: 2 },
   },
-  { dataIndex: 'status', title: '状态', valueEnum: new Map([[1, '进行中']]), query: { order: 3 } },
+  { dataIndex: 'status', title: '状态', valueEnum: new Map([[1, '进行中']]), search: { order: 3 } },
 ]
 const fields = deriveTableQueryFields(columns)
 ```
 
-列用 `query: false` 排除查询字段，`query.hidden` 决定查询可见性，`query.order` 决定查询顺序。表格的 `visible / responsive` 只控制列的展示。
-也可用 helper 的第二参数按 name 覆盖配置或传 false 排除字段。嵌套数组 `dataIndex` 不自动推断查询参数，需显式 `query.name`；分组列递归展开，同名字段只保留第一个。
+可以将 `columns` 直接传给 `VTableQuery`，也可以传入 `fields` 使用显式 schema。列设置 `search: false` 或 `hideInSearch: true` 时跳过派生，`search.hidden` 控制字段可见性，`search.order` 控制顺序。表格的 `visible / responsive` 只控制列的展示。
+也可用 helper 的第二参数按 name 覆盖配置或传 false 排除字段。嵌套数组 `dataIndex` 不自动推断查询参数，需显式 `search.name`；分组列递归展开，同名字段只保留第一个。
 
 `valueEnum` 仅将字符串标签自动派生为 select 选项，并保留 Map 的字符串、数字与布尔值身份；数字、布尔文本和 VNode 标签不自动转换，改用显式 options 或 field 插槽。
 
 ## 隐藏、折叠与重置
 
-- `hiddenPolicy="preserve"` 是默认值。隐藏控件保留草稿，提交时仍包含该字段。
-- `hiddenPolicy="omit"` 只省略 schema 中 `hidden: true` 的字段。草稿和 submitted 快照仍保留字段，字段转换不会执行；整体 `transform` 是业务的最后一步，仍可显式产生其他参数。
-- 收起只改变布局，绝不会省略折叠区域中的条件。`collapsedCount` 默认 3，展开状态直接复用 `query.collapsed`，`:collapsible="false"` 显示所有未隐藏字段。
-- 重置先恢复 `defaultValues`，再按重置后的可见性与宿主校验执行 `query.reset()`；一次操作调用一次 `onReset`（缺省时为 onSubmit）。重置不会额外触发轻量自动提交。
+- 默认 `preserve: true` 将隐藏字段和已折叠的 QueryFilter 字段保留在提交参数中。
+- `:preserve="false"` 从请求参数中省略这些字段，草稿仍保留原值。省略的字段会跳过各自的 `fieldTransforms`。
+- 展开或收起 QueryFilter 只更新显示状态。LightFilter 的 `secondary` 条件在弹层外仍会参与查询。
+- QueryFilter 重置先恢复 `defaultValues`，按重置后的可见性执行宿主校验，然后调用一次 `onReset`。未提供 `onReset` 时使用 `onSubmit`。
 
 ## 宿主校验先于查询
 
@@ -186,7 +219,6 @@ const FieldControl = ({ field, control }: TableQueryFieldSlotProps<Values>) => {
     :query="query"
     :fields="fields"
     :controls="controls"
-    layout="form"
     :validate="() => form.validate().then(() => true)"
   >
     <template #field="{ field, control }">
@@ -201,27 +233,11 @@ const FieldControl = ({ field, control }: TableQueryFieldSlotProps<Values>) => {
 宿主 Form 包裹查询区时使用 `rootTag="div"`，避免嵌套原生 form。`errors` 可传按字段名索引的错误文字；宿主 FormItem 已展示错误时可由其负责反馈。
 查询规则与编辑规则分别提供，查询字段不会自动继承编辑的 required。具体规则、跨字段关系和校验消息继续由宿主表单或业务 validate 提供。
 
-## 轻量模式与单次提交
+## 查询状态与请求
 
-```vue
-<VTableQuery
-  :query="query"
-  :fields="fields"
-  :controls="controls"
-  layout="light"
-  auto-submit
-  :debounce-time="300"
-/>
-```
+通过 `useTableQuery({ onSubmit, onReset })` 连接请求。使用 `useTableRequest` 时，可分别接入 `request.submit` 和 `request.reset`。`submitted` 和 `reset` 事件用于读取操作结果。直接修改 `query.draft` 可以同步调整多个条件，再调用组件的 `submit()` 一次提交。
 
-`layout` 默认为 `light`，`autoSubmit` 默认为 `false`，因此省略两者时使用手动提交。`light` 布局开启 `autoSubmit` 后，控件值发生变化会安排一次防抖提交。手动查询或重置会取消待执行的自动提交。`form` 布局始终手动提交。
-
-从默认 `form` 的版本升级时，需要保留原栅格布局的页面应显式设置 `layout="form"`。若旧页面已传 `autoSubmit: true` 却省略了 `layout`，升级后控件更新会开始自动提交；继续手动查询时应移除 `autoSubmit`、设为 `false`，或显式使用 `form`。
-
-改变 layout、autoSubmit 或 disabled 会取消尚未执行的自动任务；重新开启不会补发旧任务，下一次控件更新才重新安排。
-直接修改 query.draft 不会自动请求；跨字段联动可先改多个字段，再显式调用组件 submit，避免联动链触发多次查询。组件 `submitted / reset` 事件只是结果通知，不要再在这些事件里调用请求。
-
-实例 `TableQueryInstance` 提供 `submit(): Promise<boolean>`、`reset(): Promise<boolean>` 与 `cancel()`。cancel 取消组件自动任务与宿主校验，不清理业务草稿；已经提交的服务端请求由 useTableRequest 负责取消。
+组件实例提供 `submit()`、`reset()` 和 `cancel()`。前两个方法返回 `Promise<boolean>`，`cancel()` 取消组件宿主校验，草稿可以继续编辑。已经发出的服务端请求由 `useTableRequest` 管理。
 
 ## 字典、依赖与业务控件
 
@@ -238,9 +254,9 @@ const fields = [{ name: 'team', label: '团队', valueType: 'select', dictionary
 ```
 
 依赖变化会刷新候选项，**不会自动清除业务选择**。需要清空下游条件时由业务明确修改草稿；即使选项尚未加载也不应凭空清掉已有值。`options` 显式配置优先于 dictionary 的候选项。
-`controls` 是表级的只读注册表；添加键即可注册业务控件。`field` 插槽收到 `{ field, values, control }`，调用 `control.onChange(value)` 进入同一更新/防抖协议，`control.onSearch(keyword)` 连接字典搜索。
+`controls` 是表级的只读注册表；添加键即可注册业务控件。`field` 插槽收到 `{ field, values, control, layoutType }`，调用 `control.onChange(value)` 进入同一更新协议，`control.onSearch(keyword)` 连接字典搜索。
 
-`actions` 插槽收到 `{ submit, reset, submitting, collapsed, toggleCollapsed }`。自定义原生按钮请设置 `type="button"`，避免触发表单默认提交。
+`actions` 插槽收到 `{ submit, reset, submitting, collapsed, toggleCollapsed, showCollapseButton }`。自定义原生按钮请设置 `type="button"`，避免触发表单默认提交。
 
 ## API
 
@@ -258,12 +274,9 @@ const fields = [{ name: 'team', label: '团队', valueType: 'select', dictionary
 
 ## 主题与布局
 
-默认 `light` 按标签和控件的实际宽度依次排列字段，操作按钮跟随字段，空间不足时换行。普通控件默认宽度为 `200px`，`dateRange / dateTimeRange` 默认为 `320px`；字段不再默认占据 `240px` 或拉伸以填满整行。显式 `layout="form"` 使用原有响应式栅格，标签定宽，控件填满字段，操作区靠右。
+`labelWidth` 控制 QueryFilter 标签宽度，默认 80px，也可设为 `'auto'`。`searchGutter` 接收横向间距或 `[横向, 纵向]`，默认间距为 24px。字段内可用 `fieldProps.style.width` 调整宿主控件宽度。
 
-单个控件可用 `fieldProps.style.width` 覆盖，例如上例状态选择框的 `120px`。`--vtg-query-light-control-width` 和 `--vtg-query-light-range-width` 调整默认控件宽度；已有 `--vtg-query-light-field-width` 仍控制标签与控件组成的整个字段，其默认值改为 `auto`。
-可通过实例 `ui` 或全局 `theme.query.slots` 覆盖；宿主控件本身由对应 UI 库控制样式。
-
-布局、校验反馈与操作区的默认 class 由预设提供。
+使用实例的 `ui` 或全局 `theme.query.slots` 覆盖查询区 class。查询区和弹层默认样式由相应的 preset 提供，宿主输入控件沿用各自 UI 库的样式。
 
 ### ui slots
 

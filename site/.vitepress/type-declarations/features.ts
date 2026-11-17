@@ -221,9 +221,14 @@ export type {
   TableQueryColumn,
   TableQueryProps,
   TableQuerySlots,
+  TableQueryFieldSlotProps,
+  TableQueryActionSlotProps,
   TableQueryInstance,
   TableQueryValidationContext,
   TableQueryLocale,
+  TableQueryFooterContext,
+  TableQuerySubmitter,
+  TableControlLightFilterOptions,
 } from '@vtable-guild/vtable-guild'
 // #endregion QuerySchemaProtocol
 

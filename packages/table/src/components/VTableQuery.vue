@@ -1,15 +1,32 @@
 <script
   setup
   lang="ts"
-  generic="TValues extends object = Record<string, unknown>, TParams extends object = TValues"
+  generic="
+    TValues extends object = Record<string, unknown>,
+    TParams extends object = TValues,
+    TRecord extends object = TValues
+  "
 >
 import { ref } from 'vue'
 import TableQuery from './TableQuery'
 import type { TableQueryInstance, TableQueryProps, TableQuerySlots } from '../types/query-form'
 
 defineOptions({ name: 'VTableQuery', inheritAttrs: false })
-const props = withDefaults(defineProps<TableQueryProps<TValues, TParams>>(), { collapsible: true })
-const emit = defineEmits<{ submitted: [success: boolean]; reset: [success: boolean] }>()
+const props = withDefaults(defineProps<TableQueryProps<TValues, TParams, TRecord>>(), {
+  collapsed: undefined,
+  defaultCollapsed: undefined,
+  collapseRender: undefined,
+  optionRender: undefined,
+  preserve: true,
+  submitter: undefined,
+  collapseLabel: undefined,
+  footerRender: undefined,
+})
+const emit = defineEmits<{
+  submitted: [success: boolean]
+  reset: [success: boolean]
+  'update:collapsed': [collapsed: boolean]
+}>()
 defineSlots<TableQuerySlots<TValues>>()
 const inner = ref<TableQueryInstance>()
 defineExpose<TableQueryInstance>({
@@ -28,6 +45,7 @@ function withValuesType<T>(value: unknown): T {
     v-bind="{ ...$attrs, ...withValuesType<TableQueryProps>(props) }"
     @submitted="emit('submitted', $event)"
     @reset="emit('reset', $event)"
+    @update:collapsed="emit('update:collapsed', $event)"
   >
     <template v-if="$slots.field" #field="scope"
       ><slot

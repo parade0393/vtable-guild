@@ -360,7 +360,7 @@ The extensible type used by query field `valueType`, column `query.valueType` an
 
 ### VTableQuery
 
-`TableQueryField<TValues>` defines fields by query draft keys, and `TableQueryColumn<TRecord, TValues>` derives query configuration from columns. `VTableQuery` defaults to compact `light` layout; use `layout="form"` explicitly for the grid. Auto-submit is off by default. See [Schema query](/en/guide/schema-query).
+`TableQueryField<TValues>` defines fields by query draft keys. `TableQueryColumn<TRecord, TValues>` adds column-level `search` metadata for field derivation. `VTableQuery` defaults to the responsive `QueryFilter`. Set `layoutType="LightFilter"` for popup-based filters. See [Schema query](/en/guide/schema-query).
 
 <<< @/.vitepress/type-declarations/features.ts#QuerySchemaProtocol
 

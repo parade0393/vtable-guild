@@ -541,16 +541,7 @@ export const themeCssVarGroups: Readonly<Record<string, readonly CssVarEntry[]>>
       '字段之间的纵向间距',
       'Vertical gap between fields',
       ['schema-query'],
-      { fallback: '16px' },
-    ),
-    token(
-      '--vtg-query-field-min-width',
-      '普通字段最小布局宽度，窄容器自动收缩',
-      'Minimum layout width of regular fields; shrinks automatically in narrow containers',
-      ['schema-query'],
-      {
-        fallback: '240px',
-      },
+      { fallback: '24px' },
     ),
     token('--vtg-query-label-width', '字段标签宽度', 'Field label width', ['schema-query'], {
       fallback: '80px',
@@ -572,27 +563,165 @@ export const themeCssVarGroups: Readonly<Record<string, readonly CssVarEntry[]>>
       },
     ),
     token(
-      '--vtg-query-light-field-width',
-      '轻量字段整体宽度，包含标签与控件；默认按内容排列',
-      'Entire lightweight field width, including label and control; follows content by default',
+      '--vtg-query-vertical-label-gap',
+      '纵向表单的标签与控件间距',
+      'Gap between the label and control in a vertical form',
       ['schema-query'],
-      {
-        fallback: 'auto',
-      },
+      { fallback: '4px' },
+    ),
+    token(
+      '--vtg-query-split-color',
+      '纵向表单的行分隔线颜色',
+      'Row separator color in a vertical form',
+      ['schema-query'],
+      { fallback: 'var(--vtg-table-border-color)' },
     ),
     token(
       '--vtg-query-light-control-width',
-      '轻量模式普通控件默认宽度',
-      'Default width of regular controls in light mode',
+      'LightFilter 弹层普通控件宽度',
+      'Width of regular controls in a LightFilter popup',
       ['schema-query'],
       { fallback: '200px' },
     ),
     token(
       '--vtg-query-light-range-width',
-      '轻量模式 dateRange / dateTimeRange 控件默认宽度',
-      'Default dateRange / dateTimeRange control width in light mode',
+      'LightFilter 弹层日期区间控件宽度',
+      'Width of date range controls in a LightFilter popup',
       ['schema-query'],
       { fallback: '320px' },
+    ),
+    token('--vtg-query-light-gap', '筛选标签间距', 'Gap between filter chips', ['schema-query'], {
+      fallback: '8px',
+    }),
+    token(
+      '--vtg-query-light-border',
+      '筛选标签边框色',
+      'Filter chip border color',
+      ['schema-query'],
+      {
+        fallback: 'transparent',
+      },
+    ),
+    token('--vtg-query-light-radius', '筛选标签圆角', 'Filter chip radius', ['schema-query'], {
+      fallback: 'var(--vtg-btn-border-radius)',
+    }),
+    token('--vtg-query-light-bg', '筛选标签背景色', 'Filter chip background', ['schema-query'], {
+      fallback: 'transparent',
+    }),
+    token(
+      '--vtg-query-light-hover-border',
+      '筛选标签悬停边框色',
+      'Hovered filter chip border color',
+      ['schema-query'],
+      {
+        fallback: 'var(--color-primary)',
+      },
+    ),
+    token(
+      '--vtg-query-light-hover-bg',
+      '筛选标签悬停背景色',
+      'Hovered filter chip background',
+      ['schema-query'],
+      {
+        fallback: 'var(--color-text-hover-bg)',
+      },
+    ),
+    token(
+      '--vtg-query-light-active-bg',
+      '已选筛选标签背景色',
+      'Active filter chip background',
+      ['schema-query'],
+      {
+        fallback: 'var(--vtg-table-row-selected-bg)',
+      },
+    ),
+    token(
+      '--vtg-query-light-active-color',
+      '已选筛选标签文字颜色',
+      'Active filter chip text color',
+      ['schema-query'],
+      {
+        fallback: 'var(--color-primary)',
+      },
+    ),
+    token(
+      '--vtg-query-light-height',
+      '筛选标签最小高度',
+      'Minimum filter chip height',
+      ['schema-query'],
+      {
+        fallback: 'var(--vtg-query-control-height, 32px)',
+      },
+    ),
+    token(
+      '--vtg-query-light-trigger-padding',
+      '筛选按钮横向内边距',
+      'Horizontal filter button padding',
+      ['schema-query'],
+      {
+        fallback: '8px',
+      },
+    ),
+    token(
+      '--vtg-query-light-summary-width',
+      '筛选值摘要最大宽度',
+      'Maximum filter summary width',
+      ['schema-query'],
+      {
+        fallback: '244px',
+      },
+    ),
+    token(
+      '--vtg-query-light-icon-gap',
+      '筛选值与图标的间距',
+      'Gap between filter text and icon',
+      ['schema-query'],
+      {
+        fallback: '6px',
+      },
+    ),
+    token(
+      '--vtg-query-light-icon-size',
+      '筛选图标字号',
+      'Filter icon font size',
+      ['schema-query'],
+      {
+        fallback: '10px',
+      },
+    ),
+    token(
+      '--vtg-query-light-collapse-icon-size',
+      '合并筛选按钮的图标尺寸',
+      'Icon size of the combined filter trigger',
+      ['schema-query'],
+      { fallback: '14px' },
+    ),
+    token(
+      '--vtg-query-light-popup-padding',
+      '筛选弹层内边距',
+      'Filter popup padding',
+      ['schema-query'],
+      {
+        fallback: '12px',
+      },
+    ),
+    token(
+      '--vtg-query-light-popup-gap',
+      '筛选弹层字段与操作区间距',
+      'Filter popup fields and actions spacing',
+      ['schema-query'],
+      {
+        fallback: '12px',
+      },
+    ),
+    token(
+      '--vtg-query-light-label-gap',
+      '筛选弹层标签和控件的间距',
+      'Gap between label and control in a filter popup',
+      ['schema-query'],
+      {
+        fallback: '4px',
+      },
     ),
     token(
       '--vtg-query-action-gap',

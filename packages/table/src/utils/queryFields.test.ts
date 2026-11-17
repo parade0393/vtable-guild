@@ -30,17 +30,17 @@ describe('deriveTableQueryFields', () => {
         [1, 'One'],
         [2, 'Two'],
       ]),
-      query: { dictionary },
+      search: { dictionary },
     }
     expect(deriveTableQueryFields([column])[0]?.options).toBeUndefined()
     expect(
-      deriveTableQueryFields([{ ...column, query: undefined }], { status: { dictionary } })[0]
+      deriveTableQueryFields([{ ...column, search: undefined }], { status: { dictionary } })[0]
         ?.options,
     ).toBeUndefined()
 
     const options = [{ value: 3, label: 'Explicit' }]
     expect(
-      deriveTableQueryFields([{ ...column, query: { dictionary, options } }])[0]?.options,
+      deriveTableQueryFields([{ ...column, search: { dictionary, options } }])[0]?.options,
     ).toBe(options)
     expect(deriveTableQueryFields([column], { status: { options } })[0]?.options).toBe(options)
     expect(
@@ -54,20 +54,23 @@ describe('deriveTableQueryFields', () => {
   it('keeps query visibility, order and control type separate from table fields', () => {
     const columns: TableQueryColumn<Values>[] = [
       SELECTION_COLUMN,
-      { dataIndex: 'keyword', title: 'Keyword', visible: false, query: { order: 3 } },
+      { dataIndex: 'keyword', title: 'Keyword', visible: false, search: { order: 3 } },
       {
         dataIndex: 'status',
         title: 'Status',
         valueType: 'tag',
         valueEnum: new Map([[1, 'Enabled']]),
-        query: { order: 1 },
+        search: { order: 1 },
       },
-      { dataIndex: 'range', valueType: 'date', query: { valueType: 'dateRange', order: 2 } },
-      { dataIndex: 'duplicate', query: false },
-      { title: 'Group', children: [{ dataIndex: ['nested', 'value'], query: { name: 'nested' } }] },
+      { dataIndex: 'range', valueType: 'date', search: { valueType: 'dateRange', order: 2 } },
+      { dataIndex: 'duplicate', search: false },
+      {
+        title: 'Group',
+        children: [{ dataIndex: ['nested', 'value'], search: { name: 'nested' } }],
+      },
     ]
     const fields = deriveTableQueryFields(columns)
-    expect(fields.map((field) => field.name)).toEqual(['nested', 'status', 'range', 'keyword'])
+    expect(fields.map((field) => field.name)).toEqual(['keyword', 'range', 'status', 'nested'])
     expect(fields.find((field) => field.name === 'status')).toMatchObject({
       valueType: 'select',
       options: [{ value: 1, label: 'Enabled' }],
