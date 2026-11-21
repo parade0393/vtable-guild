@@ -13,6 +13,8 @@
 
 原生表单默认采用 `query-layout="inline"`，按表单项实际宽度排列，空间不足就换行。收起时先为查询、重置和展开按钮留出空间；展开后显示全部条件。展开和收起只改变显示，已输入的条件会保留。
 
+原生内联布局保留宿主表单项的横向间距。Antdv 表单项默认没有下边距，VTable 为换行后的各行添加间距：读取宿主的 `--ant-margin`，未提供时为 16px。Element Plus 表单项自带下边距，容器默认不再添加纵向间距。用 `searchGutter: [横向, 纵向]` 或 `--vtg-query-row-gap` 可显式配置容器的额外行距；它会与宿主表单项的下边距叠加。
+
 如果需要跨行对齐，在原生表单上设置 `query-layout="grid"`。这时它与内置表单共用下文的 24 格规则，`span` 和 `search.colSize` 都可调整字段占用的格数。`layout` 控制标签布局，支持 `horizontal`、`inline` 和 `vertical`，与 `query-layout` 控制的字段排布独立。
 
 在原生模式下，可用 `formProps` 配置整份宿主表单，用列的 `search.formItemProps` 或显式字段的 `formItemProps` 配置表单项。例如在 Ant Design Vue 或 Antdv Next 中，可用 `:form-props="{ colon: false }"` 关闭标签冒号，或用 `search: { formItemProps: { tooltip: '支持模糊查询' } }` 给单个标签加提示。输入框宽度、占位文字等仍由 `fieldProps` 控制。

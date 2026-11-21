@@ -1218,8 +1218,8 @@ export const referenceApiTablesEnFeatures = {
       [
         '`searchGutter`',
         '`number \\| [number, number]`',
-        '`24`',
-        'Grid horizontal gap or `[horizontal, vertical]`, in pixels.',
+        '`24` in grid; see native inline defaults',
+        'Extra container gap or `[horizontal, vertical]`, in pixels. Native inline defaults to the host margin (16px fallback) vertically for Antdv and 0 for Element Plus, retaining host form-item bottom margins.',
       ],
       [
         '`split`',

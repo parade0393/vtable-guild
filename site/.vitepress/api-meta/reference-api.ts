@@ -1632,8 +1632,8 @@ export const referenceApiTables = {
       [
         '`searchGutter`',
         '`number \\| [number, number]`',
-        '`24`',
-        '栅格布局的横向间距或 `[横向, 纵向]`（px）。',
+        '栅格：`24`；原生内联：见说明',
+        '容器额外横向间距或 `[横向, 纵向]`（px）。原生内联的默认纵向间距：Antdv 使用宿主 margin（回退 16px），Element Plus 为 0；宿主表单项自身的下边距仍保留。',
       ],
       ['`split`', '`boolean`', '`false`', '为纵向 QueryFilter 的栅格行显示分隔线。'],
       ['`preserve`', '`boolean`', '`true`', '查询参数保留隐藏字段和 QueryFilter 已折叠字段。'],

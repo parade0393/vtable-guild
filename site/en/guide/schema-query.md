@@ -13,6 +13,8 @@ Register the host UI library's `Form` and `FormItem` with the control factory, a
 
 The native form defaults to `query-layout="inline"`. Items use their own widths and wrap when space runs out. The collapsed layout reserves room for the search, reset and expand actions. Expanding shows all fields, and toggling the layout keeps their values.
 
+Native inline forms keep the host form items' horizontal spacing. Antdv inline items have no bottom margin, so VTable adds a gap between wrapped rows using the host's `--ant-margin`, or 16px when unavailable. Element Plus items already have a bottom margin, so the container adds no vertical gap by default. Use `searchGutter: [horizontal, vertical]` or `--vtg-query-row-gap` to set the container's extra row gap explicitly; this adds to any host form-item bottom margin.
+
 To align fields across rows, set `query-layout="grid"` on a native form. It then shares the built-in form's 24-unit grid, including `span` and `search.colSize`. The separate `layout` prop controls label placement and accepts `horizontal`, `inline` and `vertical`.
 
 In native mode, `formProps` configures the host form, while `search.formItemProps` on a column or `formItemProps` on an explicit field configures its form item. For example, with Ant Design Vue or Antdv Next, use `:form-props="{ colon: false }"` to hide the label colons or `search: { formItemProps: { tooltip: 'Supports partial matches' } }` for a single label. `fieldProps` still controls input width, placeholders and other control props.

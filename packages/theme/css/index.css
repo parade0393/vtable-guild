@@ -84,6 +84,11 @@
   --vtg-query-collapse-hover-color: var(--ant-color-primary-hover, var(--color-primary-hover));
 }
 
+/* Inline Antdv FormItems have no bottom margin; add spacing between wrapped rows. */
+[data-query-form-preset='antdv'] [data-query-inline] {
+  row-gap: var(--vtg-query-row-gap, var(--ant-margin, 16px));
+}
+
 [data-query-form-preset='element-plus'] {
   --vtg-query-collapse-color: var(--el-color-primary, var(--color-primary));
   --vtg-query-collapse-hover-color: var(--el-color-primary-light-3, var(--color-primary-hover));
