@@ -2,14 +2,31 @@
 
 `VTableQuery` 根据 `fields` 或 `columns` 生成查询控件，可放在表格上方或独立使用。[`useTableQuery`](/guide/query) 管理草稿、参数转换、提交和重置。
 
-| 模式        | 使用方式                             | 交互                                |
-| ----------- | ------------------------------------ | ----------------------------------- |
-| QueryFilter | 默认，或 `layout-type="QueryFilter"` | 响应式表单，点击查询或按 Enter 提交 |
-| LightFilter | `layout-type="LightFilter"`          | 标签展示已选值，点击打开筛选弹层    |
+| 模式        | 使用方式                             | 交互                              |
+| ----------- | ------------------------------------ | --------------------------------- |
+| QueryFilter | 默认，或 `layout-type="QueryFilter"` | 查询表单，点击查询或按 Enter 提交 |
+| LightFilter | `layout-type="LightFilter"`          | 标签展示已选值，点击打开筛选弹层  |
 
 ## QueryFilter
 
-`layout` 支持 `horizontal`、`inline` 和 `vertical`。省略时，控件按查询区的实际宽度安排栅格与标签。
+向控件工厂注册宿主 UI 库的 `Form` 和 `FormItem` 后，`QueryFilter` 默认使用它们渲染表单。设 `form-mode="builtin"` 可使用 VTable 自带的表单和标签，控件仍由所注册的 UI 库渲染。未注册宿主表单时，默认使用内置表单。
+
+原生表单默认采用 `query-layout="inline"`，按表单项实际宽度排列，空间不足就换行。收起时先为查询、重置和展开按钮留出空间；展开后显示全部条件。展开和收起只改变显示，已输入的条件会保留。
+
+如果需要跨行对齐，在原生表单上设置 `query-layout="grid"`。这时它与内置表单共用下文的 24 格规则，`span` 和 `search.colSize` 都可调整字段占用的格数。`layout` 控制标签布局，支持 `horizontal`、`inline` 和 `vertical`，与 `query-layout` 控制的字段排布独立。
+
+在原生模式下，可用 `formProps` 配置整份宿主表单，用列的 `search.formItemProps` 或显式字段的 `formItemProps` 配置表单项。例如在 Ant Design Vue 或 Antdv Next 中，可用 `:form-props="{ colon: false }"` 关闭标签冒号，或用 `search: { formItemProps: { tooltip: '支持模糊查询' } }` 给单个标签加提示。输入框宽度、占位文字等仍由 `fieldProps` 控制。
+
+```vue
+<!-- 注册 Form 和 FormItem 后，默认使用原生内联表单 -->
+<VTableQuery :query="query" :columns="columns" :controls="controls" />
+
+<!-- 原生表单按 24 格对齐，每个普通条件占 8 格 -->
+<VTableQuery :query="query" :columns="columns" :controls="controls" query-layout="grid" :span="8" />
+
+<!-- 保留宿主输入控件，切回 VTable 内置表单 -->
+<VTableQuery :query="query" :columns="columns" :controls="controls" form-mode="builtin" />
+```
 
 <Demo src="query/schema">
 
@@ -26,9 +43,9 @@
 | 701px 至 1351px | 3        | 左侧         |
 | 1352px 及以上   | 4        | 左侧         |
 
-布局按 24 格计算，`span` 指定每列的格数，也接受断点对象，如 `{ xs: 24, md: 12, xl: 8 }`。`colSize` 指定字段占用几列，默认为 1。字段按 `order` 从大到小排列，相同值保留原有顺序。
+栅格布局按 24 格计算，`span` 指定每列的格数，也接受断点对象，如 `{ xs: 24, md: 12, xl: 8 }`。`colSize` 指定字段占用几列，默认为 1。例如 `span: 8` 时，`search: { colSize: 2 }` 占 16 格。字段按 `order` 从大到小排列，相同值保留原有顺序。
 
-默认收起时先留出一列给操作区，再按顺序放入字段，至少显示第一个可见字段。`defaultColsNumber` 可以进一步限制首行字段，`defaultFormItemsNumber` 优先级更高，允许初次收起时就显示多行。通过 `defaultCollapsed` 修改初始状态，或使用 `v-model:collapsed` 控制当前状态。用 `:collapse-render="false"` 隐藏展开按钮。
+栅格布局默认收起时先留出一列给操作区，再按顺序放入字段，至少显示第一个可见字段。`defaultColsNumber` 可以进一步限制首行字段，`defaultFormItemsNumber` 优先级更高，允许初次收起时就显示多行；这两个数量配置仅用于栅格布局。原生内联布局按实际宽度计算首行容量。通过 `defaultCollapsed` 修改初始状态，或使用 `v-model:collapsed` 控制当前状态。用 `:collapse-render="false"` 隐藏展开按钮。
 
 ## LightFilter
 
@@ -47,10 +64,13 @@
 应用已经安装的宿主组件传给适配工厂，组件库不会导入另一套 UI 库。两个工厂都注册下文列出的 10 种内置控件键。
 
 ```ts
-import { Input, Select, InputNumber, DatePicker, TimePicker } from 'ant-design-vue'
+import { Button, DatePicker, Form, Input, InputNumber, Select, TimePicker } from 'ant-design-vue'
 import { createAntdvTableControls, type TableControls } from '@vtable-guild/vtable-guild'
 
 const controls: TableControls = createAntdvTableControls({
+  Form,
+  FormItem: Form.Item,
+  Button,
   Input,
   Select,
   InputNumber,
@@ -60,7 +80,7 @@ const controls: TableControls = createAntdvTableControls({
 })
 ```
 
-Element Plus 使用 `createElementPlusTableControls({ Input: ElInput, Select: ElSelect, Option: ElOption, InputNumber: ElInputNumber, DatePicker: ElDatePicker, TimePicker: ElTimePicker })`。
+Antdv Next 可直接从 `antdv-next` 导入 `Form`、`FormItem` 和 `Button`。使用 Element Plus 时，把 `ElForm`、`ElFormItem` 和 `ElButton` 分别作为 `Form`、`FormItem` 和 `Button` 传给 `createElementPlusTableControls`，同时注册 `Input: ElInput`、`Select: ElSelect`、`Option: ElOption` 等控件。
 日期默认通过宿主 `valueFormat` 使用字符串，业务可通过 `fieldProps.valueFormat` 调整。查询与编辑可共享同一份注册表，但各自拥有字段规则与值转换。
 
 ## 查询控件的 valueType {#control-value-types}
@@ -196,11 +216,31 @@ const fields = deriveTableQueryFields(columns)
 - 默认 `preserve: true` 将隐藏字段和已折叠的 QueryFilter 字段保留在提交参数中。
 - `:preserve="false"` 从请求参数中省略这些字段，草稿仍保留原值。省略的字段会跳过各自的 `fieldTransforms`。
 - 展开或收起 QueryFilter 只更新显示状态。LightFilter 的 `secondary` 条件在弹层外仍会参与查询。
-- QueryFilter 重置先恢复 `defaultValues`，按重置后的可见性执行宿主校验，然后调用一次 `onReset`。未提供 `onReset` 时使用 `onSubmit`。
+- QueryFilter 重置先恢复 `defaultValues`；原生模式清除宿主表单校验提示。随后执行自定义 `validate` 并调用一次 `onReset`，未提供 `onReset` 时使用 `onSubmit`。
 
 ## 宿主校验先于查询
 
+原生模式会在查询按钮、Enter 和组件 `submit()` 调用时自动校验宿主表单，校验失败时由宿主 `FormItem` 展示错误并阻止请求。可在 `formProps.rules` 配置整份表单规则，或在 `search.formItemProps.rules` 配置单个条件。默认校验未隐藏的条件，包括收起的条件；`preserve: false` 时只校验当前显示的条件。重置恢复默认值并清除校验提示，不要求默认值通过宿主表单规则。
+
+```ts
+const columns: TableQueryColumn<Values>[] = [
+  {
+    dataIndex: 'name',
+    title: '名称',
+    search: {
+      formItemProps: {
+        tooltip: '支持模糊查询',
+        rules: [{ required: true, message: '请输入名称' }],
+      },
+      fieldProps: { placeholder: '请输入名称', allowClear: true },
+    },
+  },
+]
+```
+
 `validate(values, { fields, action, signal })` 返回 false 或抛错时阻止请求。values 是快照，fields 包含未隐藏的字段；同一动作等待时重复调用会共享结果。输入变化或组件卸载会让旧校验失效，避免旧结果提交新草稿。
+
+原生模式先执行宿主表单校验，再执行此回调。若业务已有自己的 `Form` 包装查询区，可用以下内置模式接入方式。
 
 ```ts
 import type { TableQueryFieldSlotProps } from '@vtable-guild/vtable-guild'
@@ -215,6 +255,7 @@ const FieldControl = ({ field, control }: TableQueryFieldSlotProps<Values>) => {
 ```vue
 <a-form ref="form" :model="query.draft.value" :rules="queryRules">
   <VTableQuery
+    form-mode="builtin"
     root-tag="div"
     :query="query"
     :fields="fields"
@@ -230,7 +271,7 @@ const FieldControl = ({ field, control }: TableQueryFieldSlotProps<Values>) => {
 </a-form>
 ```
 
-宿主 Form 包裹查询区时使用 `rootTag="div"`，避免嵌套原生 form。`errors` 可传按字段名索引的错误文字；宿主 FormItem 已展示错误时可由其负责反馈。
+业务自己用宿主 Form 包裹查询区时，使用内置模式与 `rootTag="div"`，避免嵌套 form。`errors` 可传按字段名索引的错误文字；宿主 FormItem 已展示错误时可由其负责反馈。
 查询规则与编辑规则分别提供，查询字段不会自动继承编辑的 required。具体规则、跨字段关系和校验消息继续由宿主表单或业务 validate 提供。
 
 ## 查询状态与请求
@@ -274,7 +315,7 @@ const fields = [{ name: 'team', label: '团队', valueType: 'select', dictionary
 
 ## 主题与布局
 
-`labelWidth` 控制 QueryFilter 标签宽度，默认 80px，也可设为 `'auto'`。`searchGutter` 接收横向间距或 `[横向, 纵向]`，默认间距为 24px。字段内可用 `fieldProps.style.width` 调整宿主控件宽度。
+内置栅格布局的 `labelWidth` 控制标签宽度，默认 80px，也可设为 `'auto'`。栅格布局的 `searchGutter` 接收横向间距或 `[横向, 纵向]`，默认间距为 24px。字段内可用 `fieldProps.style.width` 调整宿主控件宽度。
 
 使用实例的 `ui` 或全局 `theme.query.slots` 覆盖查询区 class。查询区和弹层默认样式由相应的 preset 提供，宿主输入控件沿用各自 UI 库的样式。
 

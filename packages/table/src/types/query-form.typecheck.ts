@@ -4,7 +4,13 @@ import type {
   TableQueryColumn,
   TableQueryInstance,
 } from './query-form'
-import type { TableBuiltinControlValueType, TableControls, TableControlValueType } from './controls'
+import type {
+  TableBuiltinControlValueType,
+  TableControls,
+  TableControlValueType,
+  TableQueryFormAdapter,
+} from './controls'
+import { TABLE_QUERY_FORM_ADAPTER } from './controls'
 import type { TableColumnEditor, TableEditableCellContext } from './editable'
 import { useTableQuery } from '../composables/useTableQuery'
 import { createAntdvTableControls, createElementPlusTableControls } from '../controls'
@@ -49,7 +55,41 @@ const columns: TableQueryColumn<Values>[] = [
 ]
 const query = useTableQuery<Values>({ defaultValues: { name: '' } })
 export const queryProps: TableQueryProps<Values> = { query, fields, controls: {} as TableControls }
+export const nativeQueryProps: TableQueryProps<Values> = {
+  ...queryProps,
+  formMode: 'native',
+  queryLayout: 'inline',
+  formProps: { colon: false, size: 'small' },
+  fields: [
+    {
+      name: 'name',
+      formItemProps: ({ field, values }) => ({
+        tooltip: `${field.name}: ${values.name}`,
+        rules: [{ required: true }],
+      }),
+    },
+  ],
+}
+export const gridQueryProps: TableQueryProps<Values> = {
+  ...nativeQueryProps,
+  queryLayout: 'grid',
+  span: { xs: 24, md: 8 },
+}
+export const builtinQueryProps: TableQueryProps<Values> = {
+  ...nativeQueryProps,
+  formMode: 'builtin',
+}
+// @ts-expect-error Rendering modes only accept the public native/builtin choices.
+const invalidFormMode: NonNullable<TableQueryProps['formMode']> = 'custom'
+// @ts-expect-error Query packing only supports inline or grid.
+const invalidQueryLayout: NonNullable<TableQueryProps['queryLayout']> = 'horizontal'
+void [invalidFormMode, invalidQueryLayout]
 export const derivedFields = deriveTableQueryFields(columns)
+export function formAdapterContract(controls: TableControls) {
+  const adapter: TableQueryFormAdapter | undefined = controls[TABLE_QUERY_FORM_ADAPTER]
+  const render = controls['memberPicker']
+  void [adapter, render]
+}
 export function instanceContract(instance: TableQueryInstance) {
   const result: Promise<boolean> = instance.submit()
   void [result, invalidField]

@@ -50,7 +50,20 @@ export interface TableControlLightFilterOptions {
 export type TableControlRenderer = ((context: TableControlContext) => VNodeChild) & {
   lightFilter?: TableControlLightFilterOptions
 }
-export type TableControls = Readonly<Record<string, TableControlRenderer>>
+
+/** Optional form renderer metadata on a controls registry. */
+export const TABLE_QUERY_FORM_ADAPTER = Symbol('table-query-form-adapter')
+
+export interface TableQueryFormAdapter {
+  kind: 'antdv' | 'element-plus'
+  Form: Component
+  FormItem: Component
+  Button?: Component
+}
+
+export type TableControls = Readonly<
+  Record<string, TableControlRenderer> & { [TABLE_QUERY_FORM_ADAPTER]?: TableQueryFormAdapter }
+>
 
 /** Pass components already installed by the host application. No UI library is imported here. */
 export interface TableControlComponents {
@@ -62,4 +75,9 @@ export interface TableControlComponents {
   TimePicker?: Component
   /** Element Plus ElOption; unused by the Ant Design Vue adapter. */
   Option?: Component
+  /** Provide both Form and FormItem to enable native query form rendering. */
+  Form?: Component
+  FormItem?: Component
+  /** Use the host button for native query form actions. */
+  Button?: Component
 }

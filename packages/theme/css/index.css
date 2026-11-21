@@ -14,6 +14,106 @@
 @import './presets/element-plus.css';
 @import './transitions.css';
 
+/* Native FormItems keep their own labels, spacing and control sizing. */
+[data-query-inline] {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  width: 100%;
+  min-width: 0;
+  gap: var(--vtg-query-row-gap, 0) var(--vtg-query-column-gap, 0);
+}
+
+[data-query-inline] > :is([data-query-inline-field], [data-query-inline-actions]) {
+  flex: 0 0 auto;
+  width: fit-content;
+  max-width: 100%;
+}
+
+[data-query-inline] > [hidden] {
+  display: none;
+}
+
+/* Keep folded items measurable without laying them out or exposing them to focus. */
+[data-query-inline] > [data-query-inline-folded] {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+[data-query-native-buttons] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vtg-query-action-gap, 8px);
+}
+
+[data-query-inline-action-content] {
+  position: relative;
+  flex-wrap: nowrap;
+}
+
+[data-query-inline-buttons],
+[data-query-inline-toggle] {
+  flex-shrink: 0;
+}
+
+[data-query-inline-toggle][data-query-inline-folded] {
+  position: absolute;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+[data-query-native-toggle] {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--vtg-query-collapse-color, var(--color-primary));
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+[data-query-form-preset='antdv'] {
+  --vtg-query-collapse-color: var(--ant-color-primary, var(--color-primary));
+  --vtg-query-collapse-hover-color: var(--ant-color-primary-hover, var(--color-primary-hover));
+}
+
+[data-query-form-preset='element-plus'] {
+  --vtg-query-collapse-color: var(--el-color-primary, var(--color-primary));
+  --vtg-query-collapse-hover-color: var(--el-color-primary-light-3, var(--color-primary-hover));
+}
+
+[data-query-native-toggle]:hover {
+  color: var(--vtg-query-collapse-hover-color, var(--color-primary-hover));
+}
+
+[data-query-native-toggle]:disabled {
+  opacity: var(--vtg-query-disabled-opacity, 0.5);
+  cursor: not-allowed;
+}
+
+[data-query-native-toggle] > svg {
+  width: 1em;
+  height: 1em;
+  transition: transform var(--vtg-query-collapse-duration, 200ms);
+}
+
+[data-query-native-toggle][aria-expanded='true'] > svg {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-query-native-toggle] > svg {
+    transition: none;
+  }
+}
+
 [data-query-grid] {
   display: grid;
   grid-template-columns: repeat(24, minmax(0, 1fr));

@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { defineComponent, type VNode } from 'vue'
 import { createAntdvTableControls, createElementPlusTableControls } from './controls'
 import type { TableControlContext } from './types/controls'
+import { TABLE_QUERY_FORM_ADAPTER } from './types/controls'
 
 const Host = defineComponent({ render: () => null })
 const host = {
@@ -27,9 +28,33 @@ function context(extra: Partial<TableControlContext> = {}): TableControlContext 
   }
 }
 describe.each([false, true])('host control adapter, element=%s', (element) => {
-  const controls = element ? createElementPlusTableControls(host) : createAntdvTableControls(host)
+  const create = element ? createElementPlusTableControls : createAntdvTableControls
+  const controls = create(host)
   const model = element ? 'modelValue' : 'value'
   const event = element ? 'onUpdate:modelValue' : 'onUpdate:value'
+  it('advertises a complete native form adapter without changing the renderer keys', () => {
+    expect(create({ ...host, Form: Host })[TABLE_QUERY_FORM_ADAPTER]).toBeUndefined()
+    expect(create({ ...host, FormItem: Host })[TABLE_QUERY_FORM_ADAPTER]).toBeUndefined()
+
+    const withoutButton = create({ ...host, Form: Host, FormItem: Host })
+    expect(withoutButton[TABLE_QUERY_FORM_ADAPTER]).toMatchObject({
+      kind: element ? 'element-plus' : 'antdv',
+      Form: Host,
+      FormItem: Host,
+    })
+    expect(withoutButton[TABLE_QUERY_FORM_ADAPTER]?.Button).toBeUndefined()
+
+    const withForm = create({ ...host, Form: Host, FormItem: Host, Button: Host })
+    expect({ ...withForm }[TABLE_QUERY_FORM_ADAPTER]).toEqual({
+      kind: element ? 'element-plus' : 'antdv',
+      Form: Host,
+      FormItem: Host,
+      Button: Host,
+    })
+    expect(Object.keys(withForm)).toEqual(Object.keys(controls))
+    expect(Object.isFrozen(withForm[TABLE_QUERY_FORM_ADAPTER])).toBe(true)
+  })
+
   it('preserves string/number/boolean identity and clear values through Select', () => {
     const onChange = vi.fn()
     const ctx = context({

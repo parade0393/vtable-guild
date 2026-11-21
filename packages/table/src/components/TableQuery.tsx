@@ -1,11 +1,13 @@
 import {
   computed,
   defineComponent,
+  h,
   inject,
   mergeProps,
   nextTick,
   onBeforeUnmount,
   ref,
+  shallowRef,
   toValue,
   useId,
   watch,
@@ -13,8 +15,9 @@ import {
   type SlotsType,
 } from 'vue'
 import { Button, VTABLE_GUILD_INJECTION_KEY, useTheme } from '@vtable-guild/core'
+import { DownOutlinedIcon } from '@vtable-guild/icons'
 import { queryEnUS, queryZhCN, resolveQueryThemePreset } from '@vtable-guild/theme'
-import type { TableControlContext } from '../types/controls'
+import { TABLE_QUERY_FORM_ADAPTER, type TableControlContext } from '../types/controls'
 import type {
   TableQueryActionSlotProps,
   TableQueryField,
@@ -24,9 +27,17 @@ import type {
 } from '../types/query-form'
 import TableLightFilter from './TableLightFilter'
 import { getQueryFilterLayout, useQueryFilterWidth } from '../utils/queryFilterLayout'
+import { useQueryInlineLayout } from '../utils/queryInlineLayout'
 import { deriveTableQueryFields } from '../utils/queryFields'
 import { snapshot } from '../utils/snapshot'
 import { stateEqual } from '../utils/stateEqual'
+
+interface NativeFormInstance {
+  validateFields?: (names: string[]) => Promise<unknown>
+  validateField?: (names: string[]) => Promise<unknown>
+  resetFields?: () => void
+  clearValidate?: () => void
+}
 
 export default defineComponent({
   name: 'TableQuery',
@@ -41,6 +52,9 @@ export default defineComponent({
       type: String as PropType<NonNullable<TableQueryProps['layoutType']>>,
       default: 'QueryFilter',
     },
+    formMode: String as PropType<TableQueryProps['formMode']>,
+    queryLayout: String as PropType<TableQueryProps['queryLayout']>,
+    formProps: Object as PropType<TableQueryProps['formProps']>,
     layout: String as PropType<TableQueryProps['layout']>,
     span: [Number, Object] as PropType<TableQueryProps['span']>,
     defaultColsNumber: Number,
@@ -102,6 +116,29 @@ export default defineComponent({
     const id = useId()
     const root = ref<HTMLElement | null>(null)
     const width = useQueryFilterWidth(root)
+    const nativeForm = shallowRef<NativeFormInstance | null>(null)
+    const native = computed(() =>
+      props.formMode !== 'builtin' && props.rootTag === 'form' && props.layoutType === 'QueryFilter'
+        ? props.controls[TABLE_QUERY_FORM_ADAPTER]
+        : undefined,
+    )
+    const inline = computed(() => !!native.value && props.queryLayout !== 'grid')
+    const disabled = computed(
+      () => props.disabled || (!!native.value && !!props.formProps?.disabled),
+    )
+    const nativeLayout = computed(() => {
+      const adapter = native.value
+      if (adapter?.kind === 'element-plus') {
+        if (props.formProps?.labelPosition === 'top') return 'vertical'
+        if (props.formProps?.inline === true) return 'inline'
+      }
+      const configured = adapter?.kind === 'antdv' ? props.formProps?.layout : undefined
+      return configured === 'inline' || configured === 'horizontal' || configured === 'vertical'
+        ? configured
+        : (props.layout ?? (inline.value ? 'inline' : grid.value.layout))
+    })
+    const inlineRow = ref<HTMLElement | null>(null)
+    const inlineLayout = useQueryInlineLayout(inlineRow)
     const validating = ref(false)
     const failure = ref<string>()
     let controller: AbortController | undefined
@@ -143,6 +180,16 @@ export default defineComponent({
         showActions: showActions.value,
       }),
     )
+    const visibleFields = computed(() => {
+      if (!inline.value) return grid.value.fields.map(({ field }) => field)
+      return collapsed.value && inlineLayout.value?.canCollapse
+        ? available.value.slice(0, inlineLayout.value.collapsedCount)
+        : available.value
+    })
+    const canCollapse = computed(() =>
+      inline.value ? !!inlineLayout.value?.canCollapse : grid.value.canCollapse,
+    )
+    const hiddenCount = computed(() => available.value.length - visibleFields.value.length)
     const gridStyle = computed(() => {
       const [horizontal, vertical] = Array.isArray(props.searchGutter)
         ? props.searchGutter
@@ -154,7 +201,7 @@ export default defineComponent({
         '--vtg-query-row-gap': vertical === undefined ? undefined : `${vertical}px`,
       }
     })
-    const busy = computed(() => props.disabled || validating.value || props.query.submitting.value)
+    const busy = computed(() => disabled.value || validating.value || props.query.submitting.value)
 
     function toggleCollapsed() {
       const next = !collapsed.value
@@ -165,7 +212,9 @@ export default defineComponent({
       props.onCollapse?.(next)
       emit('update:collapsed', next)
     }
-    watch(() => [props.layoutType, props.disabled, props.query], cancel, { flush: 'sync' })
+    watch(() => [props.layoutType, disabled.value, props.query, native.value], cancel, {
+      flush: 'sync',
+    })
     function cancel() {
       generation++
       controller?.abort()
@@ -181,16 +230,34 @@ export default defineComponent({
     function submitOptions() {
       if (props.preserve) return undefined
       const retained = new Set(
-        props.layoutType === 'LightFilter'
-          ? available.value
-          : grid.value.fields.map(({ field }) => field),
+        props.layoutType === 'LightFilter' ? available.value : visibleFields.value,
       )
       return {
         omitFields: fields.value.filter((field) => !retained.has(field)).map(({ name }) => name),
       }
     }
+    async function validateNativeForm(action: 'submit' | 'reset') {
+      const adapter = native.value
+      const form = nativeForm.value
+      if (!adapter || !form) return true
+      if (action === 'reset') {
+        form.clearValidate?.()
+        return true
+      }
+      const names = (props.preserve ? available.value : visibleFields.value).map(({ name }) => name)
+      if (!names.length) return true
+      try {
+        const result = await (adapter.kind === 'antdv'
+          ? form.validateFields?.(names)
+          : form.validateField?.(names))
+        return result !== false
+      } catch {
+        // The host FormItem already displays validation messages.
+        return false
+      }
+    }
     function run(action: 'submit' | 'reset', update?: Record<string, unknown>): Promise<boolean> {
-      if (disposed || props.disabled) return Promise.resolve(false)
+      if (disposed || disabled.value) return Promise.resolve(false)
       if (pending && activeAction === action) return pending
       cancel()
       const current = generation
@@ -200,8 +267,11 @@ export default defineComponent({
       failure.value = undefined
       const draftRef = props.query.draft
       const previous = draftRef.value
-      if (action === 'reset') props.query.resetFields()
-      else if (update) draftRef.value = { ...draft.value, ...snapshot(update) }
+      if (action === 'reset') {
+        // Let the host suppress change-triggered validation while restoring defaults.
+        nativeForm.value?.resetFields?.()
+        props.query.resetFields()
+      } else if (update) draftRef.value = { ...draft.value, ...snapshot(update) }
       const values = snapshot(draft.value)
       if (update) {
         rollback = () => {
@@ -220,6 +290,8 @@ export default defineComponent({
         try {
           // Let a wrapping Form receive the replaced draft before validating it.
           if (action === 'reset' || update) await nextTick()
+          if (disposed || current !== generation || abort.signal.aborted) return false
+          if (native.value && !(await validateNativeForm(action))) return false
           if (disposed || current !== generation || abort.signal.aborted) return false
           const valid = await props.validate?.(values, {
             fields: available.value,
@@ -262,10 +334,15 @@ export default defineComponent({
     }
     function canChange(field: TableQueryField) {
       const state = fieldContext(field)
-      const disabled = typeof field.disabled === 'function' ? field.disabled(state) : field.disabled
+      const fieldDisabled =
+        typeof field.disabled === 'function' ? field.disabled(state) : field.disabled
       const readonly = typeof field.readonly === 'function' ? field.readonly(state) : field.readonly
       return (
-        !props.disabled && !props.query.submitting.value && !hidden(field) && !disabled && !readonly
+        !disabled.value &&
+        !props.query.submitting.value &&
+        !hidden(field) &&
+        !fieldDisabled &&
+        !readonly
       )
     }
     function change(name: string, value: unknown) {
@@ -324,8 +401,8 @@ export default defineComponent({
       }
       const readonly =
         typeof field.readonly === 'function' ? field.readonly(state) : !!field.readonly
-      const disabled =
-        props.disabled ||
+      const fieldDisabled =
+        disabled.value ||
         props.query.submitting.value ||
         (typeof field.disabled === 'function' ? field.disabled(state) : !!field.disabled)
       const control: TableControlContext = {
@@ -336,7 +413,7 @@ export default defineComponent({
             ? field.fieldProps(state)
             : (field.fieldProps ?? {}),
         options,
-        disabled,
+        disabled: fieldDisabled,
         readonly,
         loading: toValue(field.dictionary?.loading) ?? false,
         error,
@@ -359,8 +436,33 @@ export default defineComponent({
         valueType: registered ? valueType : 'text',
       }
     }
+    function renderActionButton(
+      key: string,
+      label: string,
+      type: 'primary' | 'default',
+      buttonProps: Record<string, unknown>,
+      action: 'submit' | 'reset',
+    ) {
+      const adapter = native.value
+      const onClick = (event: MouseEvent) => {
+        if (event.defaultPrevented) return
+        event.preventDefault()
+        void run(action)
+      }
+      return h(
+        adapter?.Button ?? Button,
+        mergeProps({ key, type }, buttonProps, {
+          [adapter?.Button && adapter.kind === 'element-plus' ? 'nativeType' : 'htmlType']:
+            action === 'submit' && props.rootTag === 'form' ? 'submit' : 'button',
+          disabled: busy.value || !!buttonProps.disabled,
+          onClick,
+        }),
+        { default: () => label },
+      )
+    }
+
     function renderActions() {
-      const showCollapseButton = grid.value.canCollapse && props.collapseRender !== false
+      const showCollapseButton = canCollapse.value && props.collapseRender !== false
       const actions: TableQueryActionSlotProps = {
         ...instance,
         submitting: busy.value,
@@ -373,64 +475,217 @@ export default defineComponent({
       const config = submitter.value
       const { resetButtonProps, submitButtonProps } = config ?? {}
       const buttons = [
-        resetButtonProps !== false && (
-          <Button
-            key="reset"
-            {...mergeProps(resetButtonProps ?? {}, {
-              htmlType: 'button',
-              disabled: busy.value || !!resetButtonProps?.disabled,
-              onClick: (event: MouseEvent) => {
-                if (!event.defaultPrevented) void run('reset')
-              },
-            })}
-          >
-            {config?.searchConfig?.resetText ?? props.resetText ?? locale.value.reset}
-          </Button>
-        ),
-        submitButtonProps !== false && (
-          <Button
-            key="submit"
-            {...mergeProps({ type: 'primary' }, submitButtonProps ?? {}, {
-              htmlType: props.rootTag === 'form' ? 'submit' : 'button',
-              disabled: busy.value || !!submitButtonProps?.disabled,
-              onClick: (event: MouseEvent) => {
-                if (event.defaultPrevented) return
-                event.preventDefault()
-                void run('submit')
-              },
-            })}
-          >
-            {config?.searchConfig?.submitText ?? props.searchText ?? locale.value.submit}
-          </Button>
-        ),
+        resetButtonProps !== false &&
+          renderActionButton(
+            'reset',
+            config?.searchConfig?.resetText ?? props.resetText ?? locale.value.reset,
+            'default',
+            resetButtonProps ?? {},
+            'reset',
+          ),
+        submitButtonProps !== false &&
+          renderActionButton(
+            'submit',
+            config?.searchConfig?.submitText ?? props.searchText ?? locale.value.submit,
+            'primary',
+            submitButtonProps ?? {},
+            'submit',
+          ),
       ].filter(Boolean)
       const render = config?.render ?? props.optionRender
+      const content =
+        render === false ? null : typeof render === 'function' ? render(actions, buttons) : buttons
+      const toggleLabel = (isCollapsed: boolean, count: number) =>
+        typeof props.collapseRender === 'function'
+          ? props.collapseRender(isCollapsed)
+          : isCollapsed
+            ? `${locale.value.expand}${props.showHiddenNum ? ` (${count})` : ''}`
+            : locale.value.collapse
+      if (native.value) {
+        const showMeasurement = inline.value && props.collapseRender !== false
+        return (
+          <div
+            class={styles.actions()}
+            data-query-inline-action-content={inline.value ? '' : undefined}
+          >
+            <div
+              data-query-inline-buttons={inline.value ? '' : undefined}
+              data-query-native-buttons=""
+            >
+              {content}
+            </div>
+            {showCollapseButton || showMeasurement ? (
+              <button
+                type="button"
+                disabled={disabled.value}
+                class={styles.collapse()}
+                onClick={toggleCollapsed}
+                aria-expanded={!collapsed.value}
+                aria-hidden={!showCollapseButton || undefined}
+                tabindex={showCollapseButton ? undefined : -1}
+                data-query-native-toggle=""
+                data-query-inline-toggle={inline.value ? '' : undefined}
+                data-query-inline-folded={!showCollapseButton ? '' : undefined}
+              >
+                {toggleLabel(collapsed.value, hiddenCount.value)}
+                {typeof props.collapseRender !== 'function' ? (
+                  <DownOutlinedIcon aria-hidden="true" />
+                ) : null}
+              </button>
+            ) : null}
+          </div>
+        )
+      }
       return (
         <>
-          {render === false
-            ? null
-            : typeof render === 'function'
-              ? render(actions, buttons)
-              : buttons}
+          {content}
           {showCollapseButton ? (
             <Button
               type="link"
               htmlType="button"
-              disabled={props.disabled}
+              disabled={disabled.value}
               class={styles.collapse()}
               onClick={toggleCollapsed}
               aria-expanded={!collapsed.value}
             >
-              {typeof props.collapseRender === 'function'
-                ? props.collapseRender(collapsed.value)
-                : collapsed.value
-                  ? `${locale.value.expand}${props.showHiddenNum ? ` (${grid.value.hiddenCount})` : ''}`
-                  : locale.value.collapse}
+              {toggleLabel(collapsed.value, hiddenCount.value)}
             </Button>
           ) : null}
         </>
       )
     }
+    function renderNativeFilter() {
+      const adapter = native.value!
+      const isInline = inline.value
+      const placements = new Map(
+        grid.value.fields.map((placement) => [placement.field.name, placement]),
+      )
+      const visible = new Set(visibleFields.value.map(({ name }) => name))
+      const availableNames = new Set(available.value.map(({ name }) => name))
+      const rendered = isInline || props.preserve ? fields.value : visibleFields.value
+      return (
+        <div
+          ref={isInline ? inlineRow : undefined}
+          class={styles.fields()}
+          data-query-inline={isInline ? '' : undefined}
+          data-query-grid={isInline ? undefined : ''}
+          style={gridStyle.value}
+        >
+          {rendered.map((field) => {
+            const { control, renderer } = resolveField(field, draft.value, (value) => {
+              change(field.name, value)
+            })
+            const shown = visible.has(field.name)
+            const folded = isInline && availableNames.has(field.name) && !shown
+            const placement = placements.get(field.name)
+            const itemProps =
+              typeof field.formItemProps === 'function'
+                ? field.formItemProps(fieldContext(field))
+                : (field.formItemProps ?? {})
+            const registered = props.preserve || shown
+            const label = itemProps.label ?? field.label ?? field.name
+            const ant = adapter.kind === 'antdv'
+            const fieldAttrs = {
+              key: field.name,
+              hidden: !shown && !folded,
+              inert: folded || undefined,
+              'aria-hidden': folded || undefined,
+              'data-query-field': field.name,
+              'data-query-inline-field':
+                isInline && availableNames.has(field.name) ? field.name : undefined,
+              'data-query-inline-folded': folded ? '' : undefined,
+            }
+            const item = h(
+              adapter.FormItem,
+              {
+                ...itemProps,
+                label: typeof label === 'string' ? label : undefined,
+                [ant ? 'name' : 'prop']: registered ? field.name : undefined,
+                [ant ? 'htmlFor' : 'for']: control.id,
+                ...(control.error && ant ? { validateStatus: 'error', help: control.error } : {}),
+                ...(control.error && !ant ? { error: control.error } : {}),
+                ...(isInline && !ant ? fieldAttrs : {}),
+              },
+              {
+                ...(typeof label === 'string' ? {} : { label: () => label }),
+                default: () => {
+                  const rendered = slots.field
+                    ? slots.field({
+                        field,
+                        values: draft.value,
+                        control,
+                        layoutType: 'QueryFilter',
+                      })
+                    : renderer?.(control)
+                  return isInline ? rendered : <div data-query-control-content="">{rendered}</div>
+                },
+              },
+            )
+            // Element forwards attrs to its root and uses :last-child for inline spacing.
+            // Antdv Next forwards data attrs to an inner row, so retain its measurable wrapper.
+            if (isInline && !ant) return item
+            return (
+              <div
+                {...fieldAttrs}
+                style={isInline ? undefined : placement?.style}
+                data-query-split={!isInline && props.split && placement?.endsRow ? '' : undefined}
+              >
+                {item}
+              </div>
+            )
+          })}
+          {showActions.value ? (
+            isInline && adapter.kind === 'element-plus' ? (
+              h(
+                adapter.FormItem,
+                {
+                  'data-query-actions': '',
+                  'data-query-inline-actions': '',
+                },
+                { default: renderActions },
+              )
+            ) : (
+              <div
+                class={isInline ? undefined : props.submitterColSpanProps?.class}
+                style={
+                  isInline
+                    ? undefined
+                    : [grid.value.actionStyle, props.submitterColSpanProps?.style]
+                }
+                data-query-actions=""
+                data-query-inline-actions={isInline ? '' : undefined}
+              >
+                {h(adapter.FormItem, null, { default: renderActions })}
+              </div>
+            )
+          ) : null}
+        </div>
+      )
+    }
+
+    function onNativeSubmit(event: Event) {
+      if (!(event.target instanceof HTMLFormElement) || event.target.parentElement !== root.value)
+        return
+      event.preventDefault()
+      event.stopPropagation()
+      void run('submit')
+    }
+
+    function onNativeReset(event: Event) {
+      if (!(event.target instanceof HTMLFormElement) || event.target.parentElement !== root.value)
+        return
+      event.preventDefault()
+      event.stopPropagation()
+      void run('reset')
+    }
+
+    const renderFeedback = () =>
+      failure.value || props.query.error.value ? (
+        <div class={styles.feedback()} role="alert">
+          {failure.value ?? props.query.error.value?.message}
+        </div>
+      ) : null
+
     function renderQueryFilter() {
       const positions = new Map(
         grid.value.fields.map((placement) => [placement.field.name, placement]),
@@ -491,6 +746,52 @@ export default defineComponent({
     return () => {
       const Root = props.rootTag
       const light = props.layoutType === 'LightFilter'
+      const adapter = native.value
+      if (adapter) {
+        const ant = adapter.kind === 'antdv'
+        const layout = nativeLayout.value
+        const labelPosition = layout === 'vertical' ? 'top' : 'right'
+        return (
+          <div
+            {...attrs}
+            ref={root}
+            class={styles.root()}
+            data-query-form-mode="native"
+            data-query-form-preset={adapter.kind}
+            data-query-layout-type={props.layoutType}
+            data-query-layout={layout}
+            {...{ onSubmitCapture: onNativeSubmit, onResetCapture: onNativeReset }}
+          >
+            {h(
+              adapter.Form,
+              {
+                ...(ant ? { layout } : { inline: inline.value, labelPosition }),
+                ...(props.labelWidth === undefined
+                  ? {}
+                  : ant
+                    ? {
+                        labelCol: {
+                          style: {
+                            width:
+                              typeof props.labelWidth === 'number'
+                                ? `${props.labelWidth}px`
+                                : props.labelWidth,
+                          },
+                        },
+                      }
+                    : { labelWidth: props.labelWidth }),
+                ...props.formProps,
+                ref: nativeForm,
+                'aria-label': locale.value.label,
+                model: draft.value,
+                disabled: props.disabled || !!props.formProps?.disabled,
+              },
+              { default: renderNativeFilter },
+            )}
+            {renderFeedback()}
+          </div>
+        )
+      }
       return (
         <Root
           {...attrs}
@@ -523,11 +824,7 @@ export default defineComponent({
           ) : (
             renderQueryFilter()
           )}
-          {failure.value || props.query.error.value ? (
-            <div class={styles.feedback()} role="alert">
-              {failure.value ?? props.query.error.value?.message}
-            </div>
-          ) : null}
+          {renderFeedback()}
         </Root>
       )
     }

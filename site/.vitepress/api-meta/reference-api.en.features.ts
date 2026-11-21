@@ -1146,28 +1146,46 @@ export const referenceApiTablesEnFeatures = {
       ['`controls`', '`TableControls`', 'Required', 'Registry of host UI controls.'],
       ['`layoutType`', "`'QueryFilter' \\| 'LightFilter'`", "`'QueryFilter'`", 'Query mode.'],
       [
+        '`formMode`',
+        "`'native' \\| 'builtin'`",
+        'Automatic',
+        'Use the registered host Form and FormItem when available; otherwise use the built-in form.',
+      ],
+      [
+        '`queryLayout`',
+        "`'inline' \\| 'grid'`",
+        '`inline` for native mode',
+        'Field arrangement for native QueryFilter. The built-in form always uses the grid.',
+      ],
+      [
+        '`formProps`',
+        '`Record<string, unknown>`',
+        '-',
+        'Props passed to the native Form. VTable owns the draft and the query and reset flow.',
+      ],
+      [
         '`layout`',
         "`'horizontal' \\| 'inline' \\| 'vertical'`",
         'Responsive',
-        'Direction of QueryFilter labels and fields.',
+        'QueryFilter label layout. Native inline packing defaults to `inline`.',
       ],
       [
         '`span`',
         "`TableQueryProps['span']`",
         'Responsive',
-        'Grid units per column. Accepts a breakpoint map.',
+        'Units per column in grid layout. Accepts a breakpoint map.',
       ],
       [
         '`defaultColsNumber`',
         '`number`',
         '-',
-        'Columns kept while collapsed, capped by first-row capacity.',
+        'Grid columns kept while collapsed, capped by first-row capacity.',
       ],
       [
         '`defaultFormItemsNumber`',
         '`number`',
         '-',
-        'Controls the collapsed field limit across rows and takes precedence over `defaultColsNumber`.',
+        'Controls the grid field limit across collapsed rows and takes precedence over `defaultColsNumber`.',
       ],
       [
         '`defaultCollapsed`',
@@ -1191,12 +1209,17 @@ export const referenceApiTablesEnFeatures = {
       ],
       ['`searchText`', '`string`', 'Localized', 'Search button text.'],
       ['`resetText`', '`string`', 'Localized', 'Reset button text.'],
-      ['`labelWidth`', "`number \\| 'auto'`", '`80`', 'QueryFilter label width in pixels.'],
+      [
+        '`labelWidth`',
+        "`number \\| 'auto'`",
+        '`80` in built-in mode',
+        'QueryFilter label width in pixels. Native mode uses the host default when omitted.',
+      ],
       [
         '`searchGutter`',
         '`number \\| [number, number]`',
         '`24`',
-        'QueryFilter horizontal gap or `[horizontal, vertical]`, in pixels.',
+        'Grid horizontal gap or `[horizontal, vertical]`, in pixels.',
       ],
       [
         '`split`',
@@ -1311,6 +1334,12 @@ export const referenceApiTablesEnFeatures = {
         '`boolean \\| ((context: TableQueryFieldContext<TValues>) => boolean)`',
         '`false`',
         'Displays the control as read-only.',
+      ],
+      [
+        '`formItemProps`',
+        "`TableQueryField<TValues>['formItemProps']`",
+        '-',
+        'Props such as tooltip or rules passed to the native FormItem. Can be computed from the field context.',
       ],
       [
         '`fieldProps`',

@@ -19,13 +19,17 @@ export interface TableQueryField<TValues extends object = Record<string, unknown
   valueType?: TableControlValueType
   /** Larger values appear first, independently of table column order. */
   order?: number
-  /** QueryFilter grid units; one unit occupies the configured span. */
+  /** QueryFilter grid units; one unit occupies the configured span. Ignored by inline packing. */
   colSize?: number
   /** LightFilter fields collected inside More filters. */
   secondary?: boolean
   hidden?: boolean | ((context: TableQueryFieldContext<TValues>) => boolean)
   disabled?: boolean | ((context: TableQueryFieldContext<TValues>) => boolean)
   readonly?: boolean | ((context: TableQueryFieldContext<TValues>) => boolean)
+  /** Props passed to the registered host FormItem in native mode. */
+  formItemProps?:
+    | Record<string, unknown>
+    | ((context: TableQueryFieldContext<TValues>) => Record<string, unknown>)
   fieldProps?:
     | Record<string, unknown>
     | ((context: TableQueryFieldContext<TValues>) => Record<string, unknown>)
@@ -76,11 +80,17 @@ export interface TableQueryProps<
   columns?: readonly TableQueryColumn<TRecord, TValues>[]
   controls: TableControls
   layoutType?: 'QueryFilter' | 'LightFilter'
+  /** Defaults to the registered host Form/FormItem, or built-in rendering if unavailable. */
+  formMode?: 'native' | 'builtin'
+  /** Native QueryFilter defaults to inline packing. Built-in QueryFilter always uses the grid. */
+  queryLayout?: 'inline' | 'grid'
+  /** Props passed to the registered host Form. VTable owns the model and submit/reset flow. */
+  formProps?: Record<string, unknown>
   layout?: 'horizontal' | 'inline' | 'vertical'
   span?: number | Partial<Record<'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl', number>>
-  /** Maximum controls in the collapsed row, limited by its grid capacity. */
+  /** Grid layout: maximum controls in the collapsed row, limited by its grid capacity. */
   defaultColsNumber?: number
-  /** Overrides defaultColsNumber and permits a collapsed area containing multiple rows. */
+  /** Grid layout: overrides defaultColsNumber and permits multiple collapsed rows. */
   defaultFormItemsNumber?: number
   defaultCollapsed?: boolean
   collapsed?: boolean

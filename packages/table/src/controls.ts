@@ -7,7 +7,9 @@ import type {
   TableControlContext,
   TableControlRenderer,
   TableControls,
+  TableQueryFormAdapter,
 } from './types/controls'
+import { TABLE_QUERY_FORM_ADAPTER } from './types/controls'
 
 function optionKey(value: ColumnValue) {
   return `${typeof value}:${String(value)}`
@@ -148,7 +150,18 @@ function createControls(host: TableControlComponents, element: boolean): TableCo
     // Time-bearing pickers emit intermediate values while their native panel stays open.
     return type.includes('time') ? renderer : popupControl(renderer)
   }
+  const formAdapter =
+    host.Form && host.FormItem
+      ? Object.freeze({
+          kind: element ? 'element-plus' : 'antdv',
+          Form: host.Form,
+          FormItem: host.FormItem,
+          Button: host.Button,
+        } satisfies TableQueryFormAdapter)
+      : undefined
+
   return Object.freeze({
+    ...(formAdapter ? { [TABLE_QUERY_FORM_ADAPTER]: formAdapter } : {}),
     text: (context) => control(host.Input, context),
     select,
     enum: select,
@@ -162,7 +175,7 @@ function createControls(host: TableControlComponents, element: boolean): TableCo
       if (!host.TimePicker) throw new Error('Time fields require TimePicker')
       return control(host.TimePicker, context, { valueFormat: 'HH:mm:ss' }, false, true)
     },
-  } satisfies Record<TableBuiltinControlValueType, TableControlRenderer>)
+  } satisfies Record<TableBuiltinControlValueType, TableControlRenderer> & TableControls)
 }
 
 export function createAntdvTableControls(components: TableControlComponents): TableControls {
