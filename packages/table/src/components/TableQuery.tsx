@@ -456,14 +456,16 @@ export default defineComponent({
                   {field.label ?? field.name}
                 </label>
                 <div class={styles.control()} data-query-value-type={valueType}>
-                  {slots.field
-                    ? slots.field({
-                        field,
-                        values: draft.value,
-                        control,
-                        layoutType: 'QueryFilter',
-                      })
-                    : renderer?.(control)}
+                  <div data-query-control-content="">
+                    {slots.field
+                      ? slots.field({
+                          field,
+                          values: draft.value,
+                          control,
+                          layoutType: 'QueryFilter',
+                        })
+                      : renderer?.(control)}
+                  </div>
                   {control.error ? (
                     <div class={styles.error()} role="alert" id={`${control.id}-error`}>
                       {control.error}

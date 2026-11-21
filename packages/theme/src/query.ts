@@ -17,7 +17,7 @@ export const queryTheme = {
   variants: {
     layoutType: {
       QueryFilter: {
-        control: 'flex-1 [&>*]:w-full',
+        control: 'flex-1',
         actions: 'justify-end',
       },
       LightFilter: {

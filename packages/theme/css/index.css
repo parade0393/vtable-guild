@@ -59,10 +59,15 @@
   align-self: end;
 }
 
-/* Host controls define unlayered widths. */
-[data-query-grid] [data-query-value-type] > * {
+/* Size host controls by their intrinsic width, up to the space allocated to the field. */
+[data-query-control-content] {
+  width: fit-content;
+  max-width: 100%;
+}
+
+[data-query-control-content] > * {
   box-sizing: border-box;
-  width: 100%;
+  min-width: 0;
   max-width: 100%;
 }
 
@@ -198,6 +203,7 @@
   min-width: 0;
   width: var(--vtg-query-light-control-width, 200px);
   max-width: 100%;
+  justify-items: start;
   gap: var(--vtg-query-light-label-gap, 4px);
 }
 
@@ -206,12 +212,6 @@
   [data-query-value-type='dateTimeRange']
 ) {
   width: var(--vtg-query-light-range-width, 320px);
-}
-
-.vtg-light-filter__popup .vtg-light-filter__field > * {
-  box-sizing: border-box;
-  min-width: 0;
-  width: 100%;
 }
 
 .vtg-light-filter__error {

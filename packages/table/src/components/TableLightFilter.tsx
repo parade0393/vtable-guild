@@ -328,8 +328,10 @@ export default defineComponent({
                 data-query-value-type={field.valueType ?? 'text'}
               >
                 {isGrouped ? <label for={control.id}>{field.label ?? field.name}</label> : null}
-                {slots.field?.({ field, values, control: context, layoutType: 'LightFilter' }) ??
-                  renderer?.(context)}
+                <div data-query-control-content="">
+                  {slots.field?.({ field, values, control: context, layoutType: 'LightFilter' }) ??
+                    renderer?.(context)}
+                </div>
                 {control.error ? (
                   <div class="vtg-light-filter__error" role="alert">
                     {control.error}
