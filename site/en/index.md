@@ -5,6 +5,10 @@ hero:
   name: vtable-guild
   text: A high-performance table replacement for ant-design-vue and element-plus users
   tagline: Built-in virtual scrolling, theme presets and three-layer style overrides, so complex application tables no longer need to be assembled from extra patches.
+  image:
+    light: /logo.svg
+    dark: /logo-dark.svg
+    alt: vtable-guild
   actions:
     - theme: brand
       text: Getting started

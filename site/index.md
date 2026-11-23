@@ -5,6 +5,10 @@ hero:
   name: vtable-guild
   text: 面向 ant-design-vue 和 element-plus 用户的高性能表格替换方案
   tagline: 内置虚拟滚动、主题预设与三层样式覆盖，让复杂业务表格不再靠额外补丁拼装。
+  image:
+    light: /logo.svg
+    dark: /logo-dark.svg
+    alt: vtable-guild
   actions:
     - theme: brand
       text: 快速开始

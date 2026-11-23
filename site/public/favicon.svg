@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="top" x1="2" y1="1" x2="62" y2="31" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2dd4bf" />
+      <stop offset="1" stop-color="#0d9488" />
+    </linearGradient>
+  </defs>
+  <!-- 16px 下每 4 单位是 1 个像素：层带竖直厚 10（2.5px），间隙 6（1.5px），所有斜边都是 2:1 -->
+  <path
+    d="M5.71 45.85L32 59L58.29 45.85"
+    stroke="#0284c7"
+    stroke-width="8.94"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M5.71 29.85L32 43L58.29 29.85"
+    stroke="#0891b2"
+    stroke-width="8.94"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M32 1.12L61.76 16L32 30.88L2.24 16Z"
+    fill="url(#top)"
+    stroke="url(#top)"
+    stroke-width="2"
+    stroke-linejoin="round"
+  />
+  <!-- 表头行：网格线在小尺寸下会糊，只留这一条 -->
+  <path d="M32 1.12L61.76 16L50.88 21.44L21.12 6.56Z" fill="#fff" fill-opacity=".38" />
+</svg>

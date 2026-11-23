@@ -217,6 +217,14 @@ export default defineConfig({
       })),
   },
   head: [
+    // head 里的 href 不会自动拼 base，要手写 /vtable-guild/ 前缀。
+    // SVG 优先；.png 给不认 SVG favicon 的浏览器（Safari）兜底。
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/vtable-guild/favicon.svg' }],
+    [
+      'link',
+      { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/vtable-guild/favicon-32x32.png' },
+    ],
+    ['link', { rel: 'apple-touch-icon', href: '/vtable-guild/apple-touch-icon.png' }],
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:site_name', content: 'vtable-guild' }],
     ['meta', { name: 'twitter:card', content: 'summary' }],
@@ -224,6 +232,7 @@ export default defineConfig({
   // VitePress 从顶层主题配置读取搜索提供方并为各语言生成索引。
   themeConfig: {
     search: { provider: 'local' },
+    logo: { light: '/logo.svg', dark: '/logo-dark.svg', alt: 'vtable-guild' },
   },
   locales: {
     root: {

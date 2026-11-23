@@ -72,8 +72,6 @@ body {
 .play-header__logo {
   width: 16px;
   height: 16px;
-  border-radius: 4px;
-  background: var(--play-brand);
   transform: translateY(2px);
 }
 

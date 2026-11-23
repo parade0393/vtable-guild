@@ -56,7 +56,44 @@ const vueOptions = computed(() =>
 <template>
   <header class="play-header">
     <a class="play-header__brand" :href="DOCS_URL">
-      <span class="play-header__logo" aria-hidden="true" />
+      <!-- 与 index.html 的 favicon 同一份图形：16px 下用去掉网格线的小尺寸版 -->
+      <svg class="play-header__logo" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+        <defs>
+          <linearGradient
+            id="play-logo-top"
+            x1="2"
+            y1="1"
+            x2="62"
+            y2="31"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop offset="0" stop-color="#2dd4bf" />
+            <stop offset="1" stop-color="#0d9488" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M5.71 45.85L32 59L58.29 45.85"
+          stroke="#0284c7"
+          stroke-width="8.94"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <path
+          d="M5.71 29.85L32 43L58.29 29.85"
+          stroke="#0891b2"
+          stroke-width="8.94"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <path
+          d="M32 1.12L61.76 16L32 30.88L2.24 16Z"
+          fill="url(#play-logo-top)"
+          stroke="url(#play-logo-top)"
+          stroke-width="2"
+          stroke-linejoin="round"
+        />
+        <path d="M32 1.12L61.76 16L50.88 21.44L21.12 6.56Z" fill="#fff" fill-opacity=".38" />
+      </svg>
       <strong>vtable-guild</strong>
       <span class="play-header__eyebrow">Playground</span>
     </a>

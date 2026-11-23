@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="top" x1="5" y1="8" x2="59" y2="35" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5eead4" />
+      <stop offset="1" stop-color="#14b8a6" />
+    </linearGradient>
+    <clipPath id="face">
+      <path d="M32 8L59 21.5L32 35L5 21.5Z" />
+    </clipPath>
+  </defs>
+  <path
+    d="M5 40.5L32 54L59 40.5"
+    stroke="#0ea5e9"
+    stroke-width="5.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M5 31L32 44.5L59 31"
+    stroke="#06b6d4"
+    stroke-width="5.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M32 8L59 21.5L32 35L5 21.5Z"
+    fill="url(#top)"
+    stroke="url(#top)"
+    stroke-width="3"
+    stroke-linejoin="round"
+  />
+  <g clip-path="url(#face)">
+    <path d="M32 8L59 21.5L50 26L23 12.5Z" fill="#fff" fill-opacity=".38" />
+    <g stroke="#fff" stroke-width="1.6" stroke-opacity=".95">
+      <path d="M23 12.5L50 26M14 17L41 30.5" />
+      <path d="M41 12.5L14 26M50 17L23 30.5" />
+    </g>
+  </g>
+</svg>

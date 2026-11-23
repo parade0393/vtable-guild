@@ -1,3 +1,12 @@
+<p align="center">
+  <a href="https://parade0393.github.io/vtable-guild/">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/parade0393/vtable-guild/master/site/public/logo-dark.svg">
+      <img src="https://raw.githubusercontent.com/parade0393/vtable-guild/master/site/public/logo.svg" width="96" height="96" alt="vtable-guild logo">
+    </picture>
+  </a>
+</p>
+
 <h1 align="center">vtable-guild</h1>
 
 <p align="center">
