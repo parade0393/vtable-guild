@@ -281,12 +281,14 @@ export function useSelection<TRecord extends Record<string, unknown>>(
   }
 
   function getSelectedRows(keys: Set<Key>): TRecord[] {
-    const rows = allNodes.value.filter((node) => keys.has(node.key)).map((node) => node.record)
-    if (rowSelection()?.preserveSelectedRowKeys) {
-      for (const key of keys) {
-        if (!nodeMap.value.has(key) && preservedRecords.has(key))
-          rows.push(preservedRecords.get(key)!)
-      }
+    const rows: TRecord[] = []
+    const nodes = nodeMap.value
+    const preserve = rowSelection()?.preserveSelectedRowKeys
+    // Keep the key order across current and cached records. Unavailable keys
+    // remain in the key array but do not produce placeholder rows.
+    for (const key of keys) {
+      const record = nodes.get(key)?.record ?? (preserve ? preservedRecords.get(key) : undefined)
+      if (record !== undefined) rows.push(record)
     }
     return rows
   }
@@ -359,12 +361,15 @@ export function useSelection<TRecord extends Record<string, unknown>>(
       innerSelectedKeys.value = normalizedKeys
     }
 
+    const keysArray = Array.from(normalizedKeys)
+    const selectedRows = getSelectedRows(normalizedKeys)
     if (triggerChange) {
-      const keysArray = Array.from(normalizedKeys)
-      const selectedRows = getSelectedRows(normalizedKeys)
       rowSelection()?.onChange?.(keysArray, selectedRows)
       onSelectionChange?.()
     }
+    // Action callbacks use this same normalized snapshot even if the parent
+    // synchronously changes keys or data in onChange.
+    return { keys: keysArray, rows: selectedRows }
   }
 
   function toggleSubtree(key: Key, nextKeys: Set<Key>, selected: boolean, changedRows: TRecord[]) {
@@ -426,8 +431,8 @@ export function useSelection<TRecord extends Record<string, unknown>>(
           }
         })
 
-        applyKeys(nextKeys, true)
-        sel.onSelectMultiple?.(selected, getSelectedRows(nextKeys), changedRows)
+        const { rows } = applyKeys(nextKeys, true)
+        sel.onSelectMultiple?.(selected, rows, changedRows)
         lastShiftAnchorKey.value = key
         return
       }
@@ -435,8 +440,8 @@ export function useSelection<TRecord extends Record<string, unknown>>(
 
     if (sel.type === 'radio') {
       const nextKeys = selected ? new Set<Key>([key]) : new Set<Key>()
-      applyKeys(nextKeys, true)
-      sel.onSelect?.(record, selected, getSelectedRows(nextKeys))
+      const { rows } = applyKeys(nextKeys, true)
+      sel.onSelect?.(record, selected, rows)
       lastShiftAnchorKey.value = key
       return
     }
@@ -448,8 +453,8 @@ export function useSelection<TRecord extends Record<string, unknown>>(
       nextKeys.delete(key)
     }
 
-    applyKeys(nextKeys, true)
-    sel.onSelect?.(record, selected, getSelectedRows(nextKeys))
+    const { rows } = applyKeys(nextKeys, true)
+    sel.onSelect?.(record, selected, rows)
     lastShiftAnchorKey.value = key
   }
 
@@ -463,8 +468,8 @@ export function useSelection<TRecord extends Record<string, unknown>>(
     const changedRows: TRecord[] = []
 
     toggleSubtree(key, nextKeys, selected, changedRows)
-    applyKeys(nextKeys, true)
-    sel.onSelect?.(record, selected, getSelectedRows(nextKeys))
+    const { rows } = applyKeys(nextKeys, true)
+    sel.onSelect?.(record, selected, rows)
     lastShiftAnchorKey.value = key
   }
 
@@ -507,8 +512,8 @@ export function useSelection<TRecord extends Record<string, unknown>>(
       }
     })
 
-    applyKeys(nextKeys, true)
-    sel.onSelectAll?.(selected, getSelectedRows(nextKeys), changeRows)
+    const { rows } = applyKeys(nextKeys, true)
+    sel.onSelectAll?.(selected, rows, changeRows)
   }
 
   const allCheckedState = computed<'all' | 'partial' | 'none'>(() => {
@@ -537,8 +542,8 @@ export function useSelection<TRecord extends Record<string, unknown>>(
       }
     })
 
-    applyKeys(nextKeys, true)
-    sel.onSelectInvert?.(Array.from(normalizeTreeSelection(nextKeys)))
+    const { keys } = applyKeys(nextKeys, true)
+    sel.onSelectInvert?.(keys)
   }
 
   function clearSelection(): void {

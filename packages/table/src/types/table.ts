@@ -92,6 +92,7 @@ export interface RowSelection<TRecord extends object = Record<string, any>> {
   type?: RowSelectionType
   selectedRowKeys?: Key[]
   defaultSelectedRowKeys?: Key[]
+  /** selectedRows follows selectedRowKeys order, skipping keys whose records are unavailable. */
   onChange?: (selectedRowKeys: Key[], selectedRows: TRecord[]) => void
   onSelect?: (record: TRecord, selected: boolean, selectedRows: TRecord[]) => void
   onSelectMultiple?: (selected: boolean, selectedRows: TRecord[], changeRows: TRecord[]) => void

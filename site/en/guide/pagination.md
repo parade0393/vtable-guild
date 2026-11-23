@@ -54,6 +54,8 @@ For new remote pagination setups, explicitly configure `manual.pagination` inste
 
 The demo below enables `preserveSelectedRowKeys` and shows the selected count and record names across pages. Select a record, change pages and select more, then return to the original page to check the checkbox state. "Select all data" only affects loaded data and does not request other pages.
 
+Controlled `selectedRowKeys` are not automatically pruned when paging replaces the data source, even without preserve enabled. In that case, however, selection callbacks return only selected rows in the current `dataSource`. Set `preserveSelectedRowKeys: true` to cache selected records from earlier pages for callbacks. Uncontrolled mode prunes absent keys when preserve is not enabled. To clear controlled selection on page changes, application code must explicitly clear the keys and any selected records it stores. See [Pagination and cross-page selection](/en/guide/selection#pagination-and-cross-page-selection).
+
 <Demo src="pagination/remote">
 
 <<< @/demos/pagination/remote.vue
@@ -200,7 +202,7 @@ The arguments of the table's `change` are `(filters: TableFiltersInfo, sorter: V
 - Changing the page and changing the page size each trigger one table event; filtering returns to page 1 and triggers only `'filter'`. Sorting keeps the page; a page-size change keeps the page and clamps it to the last page when necessary.
 - For sorting, filtering and pagination, `currentDataSource` is the processed data before pagination; in remote scenarios it contains only loaded records. `select` keeps its existing displayed-data semantics.
 - When the data shrinks, the effective page clamps to the last page, and external prop updates do not trigger events in return. If a new request is needed after the remote total shrinks, application code is responsible for it.
-- Header select-all, invert and Shift range selection are limited to the current page; the "Select all data" menu item selects all loaded records. Remote cross-page selection uses `preserveSelectedRowKeys` and does not request unloaded pages.
+- Header select-all, invert and Shift range selection are limited to the current page; the "Select all data" menu item selects all loaded records. Application code owns controlled keys; `preserveSelectedRowKeys` retains uncontrolled keys across pages and caches selected records without requesting unloaded pages.
 - `title` / `footer` receive the displayed data of the current page. Dragging happens only within the current page but returns the complete input `dataSource`.
 - The pager does not scroll horizontally with the body. `scroll.y: 'auto'` automatically reserves space for the top and bottom pagers and is compatible with virtual scrolling.
 - With pagination enabled, paginating / filtering / sorting scrolls back to the top of the body by default and keeps the horizontal position. Turn it off with `scroll.scrollToFirstRowOnChange: false`; without pagination, the existing scroll behavior is kept by default.

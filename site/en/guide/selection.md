@@ -1,3 +1,8 @@
+---
+title: Row selection
+description: Controlled and uncontrolled selectedRowKeys, cross-page record caching with preserveSelectedRowKeys, and the order and scope of keys and rows in selection callbacks.
+---
+
 # Row selection
 
 rowSelection enables the row selection column and manages single selection, multiple selection, select-all, custom batch selection and tree linkage in one place.
@@ -55,6 +60,8 @@ const dataSource: UserRow[] = [
 
 When the selection has to stay in sync with page state, a side action panel or API requests, use controlled mode directly.
 
+Passing `selectedRowKeys` enables controlled mode: application code owns the selected keys. The component requests an update through `onChange` and accepts the new selection only after the parent writes it back. Replacing `dataSource` does not automatically prune controlled keys, even when `preserveSelectedRowKeys` is omitted or explicitly set to `false`.
+
 The snippet below reuses `UserRow` from the basic example. `RowSelection<UserRow>` gives inline callbacks their contextual types: the `onChange` parameters are `Key[]` and `UserRow[]`, so you don't need to annotate them one by one.
 
 ```ts
@@ -85,9 +92,32 @@ With `pagination` enabled, the header checkbox selects or deselects only the sel
 
 `selections: true` enables the "Select all data / Invert current page / Clear all" menu, and `[SELECTION_ALL]` enables "Select all data" on its own. "Select all data" selects every loaded selectable record after filtering, regardless of the current page. Remote pagination usually loads only the current page, so this neither requests nor selects pages that have not been loaded.
 
-Remote paging replaces `dataSource`, so set `preserveSelectedRowKeys: true` to keep the keys and selected records across pages; `onChange: (keys: Key[], rows: TRecord[]) => void` can then return the records selected on earlier pages. Give every record a stable `rowKey`.
+Remote paging usually replaces `dataSource`. Whether keys survive across pages and whether callbacks can return records from earlier pages are separate questions:
+
+| Selection mode                             | `preserveSelectedRowKeys` | Keys after replacing `dataSource`                                  | rows in `onChange`                                                       |
+| ------------------------------------------ | ------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------ |
+| Controlled: `selectedRowKeys` is passed    | Omitted or `false`        | Owned by application code; never automatically pruned              | Selected records in the current `dataSource` only                        |
+| Uncontrolled: `selectedRowKeys` is omitted | Omitted or `false`        | Keys absent from the current `dataSource` are automatically pruned | Selected records in the current `dataSource` only                        |
+| Controlled: `selectedRowKeys` is passed    | `true`                    | Owned by application code; never automatically pruned              | Current records plus previously cached selected records from other pages |
+| Uncontrolled: `selectedRowKeys` is omitted | `true`                    | Keys absent from the current `dataSource` are retained             | Current records plus previously cached selected records from other pages |
+
+For example, in controlled mode, select key `1` on page 1, then select key `11` on page 2. Without preserve enabled, `onChange` receives keys `[1, 11]`, but rows contains only record `11` from page 2. Returning to page 1 still shows record `1` checked. The count based on keys can therefore exceed the number of rows.
+
+Set `preserveSelectedRowKeys: true` when `onChange: (keys: Key[], rows: TRecord[]) => void` needs to return selected records from earlier pages. It caches loaded selected records while they remain selected. It never requests unloaded pages and cannot reconstruct records that have never been loaded or cached from keys alone. Give every record a stable `rowKey`.
+
+If controlled selection must be cleared after changing pages, submitting a new query or deleting records, explicitly clear `selectedRowKeys` and any selected records stored by application code in that flow. Setting `preserveSelectedRowKeys: false` alone does not clear controlled keys.
 
 Use the [local pagination example](/en/guide/pagination#local-pagination) to check the scope of the header select-all and the menu select-all, and the [remote pagination example](/en/guide/pagination#remote-pagination) to check cross-page retention and the backfill of selected records.
+
+## Callback order
+
+Selection callbacks return `selectedRows` in the order of the corresponding `selectedRowKeys`. With ordinary checkboxes, keys keep their insertion order and newly selected keys are appended. Controlled mode starts with the key order supplied by application code; tree linkage may append parent or child keys according to its linkage rules.
+
+The component looks up each key in order, preferring records in the current data source and then checking the cross-page cache when `preserveSelectedRowKeys` is enabled. For example, selecting `3` and then `1` on the same page produces `[3, 1]` for both keys and row IDs. With preserve enabled, selecting `1` on page 1 and then `11` on page 2 produces `[1, 11]` for both; current-page records are not grouped ahead of cached records.
+
+Keys whose records are unavailable are skipped, without placeholder rows. Rows therefore preserve the relative key order but can still be fewer than keys. The arrays correspond by index only when a record is available for every key. Use `rowKey` to associate records in application code.
+
+For a single selection action, `onChange` and `onSelect`, `onSelectAll` or `onSelectMultiple` share the normalized selection result. Synchronous changes to keys or the data source in the parent's `onChange` do not cause subsequent callbacks to look up a different set of rows. `changeRows` contains records that actually changed in the action's traversal order, independently of the order of all selected rows.
 
 ## Tree data linkage
 
@@ -101,7 +131,7 @@ If your application cares more about selecting each row independently, keeping c
 
 ## Usage tips
 
-- Use preserveSelectedRowKeys when the selection has to be kept for a long time.
+- Set `preserveSelectedRowKeys: true` to retain keys absent from the data source in uncontrolled mode, or to return selected records from earlier pages in callbacks. Application code owns the retention and clearing of controlled keys.
 - If some rows cannot be acted on, disable them through getCheckboxProps instead of rolling the state back after a click.
 - Tree linkage suits permission trees, organization charts and grouped data, not tables where every row is semantically independent.
 

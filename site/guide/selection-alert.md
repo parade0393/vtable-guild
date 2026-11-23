@@ -17,7 +17,9 @@ description: 使用 VTableSelectionAlert 展示跨页已选数量、清空受控
 
 </Demo>
 
-远程跨页选择应同时给表格设置 `preserveSelectedRowKeys: true`。提示条不会主动请求其他页，也不会把“已加载记录全选”转换成“服务端全部结果”。如果业务需要操作某个查询的全部结果，应另行定义服务端选择协议。
+提示条按受控 `selectedRowKeys` 统计数量，表格未开启 preserve 时也能显示业务保留的跨页 key 数量。如果需要表格选择回调返回此前页的选中记录，再给表格设置 `preserveSelectedRowKeys: true`；提示条插槽中的 `selectedRows` 由提示条的同名 prop 提供，不会自动读取表格的记录缓存。业务可以把表格回调返回的选中行传给提示条；未传 `selectedRows` 时，插槽得到空数组。详见[分页与跨页选择](/guide/selection#分页与跨页选择)。
+
+提示条不会主动请求其他页，也不会把“已加载记录全选”转换成“服务端全部结果”。如果业务需要操作某个查询的全部结果，应另行定义服务端选择协议。
 
 ## 受控状态与清空
 

@@ -17,7 +17,9 @@ The example below simulates remote pagination with two pages of data. Check reco
 
 </Demo>
 
-For remote cross-page selection, also set `preserveSelectedRowKeys: true` on the table. The alert never requests other pages on its own, and it does not turn "all loaded records selected" into "all results on the server". If your application needs to act on every result of a query, define a separate server-side selection protocol.
+The alert counts controlled `selectedRowKeys`, so it can show keys retained by application code across pages even without preserve enabled on the table. Set `preserveSelectedRowKeys: true` on the table if its selection callbacks need to return selected records from earlier pages. The alert slot's `selectedRows` comes from the alert's prop of the same name; it does not automatically read the table's record cache. Application code can pass the selected rows returned by table callbacks to the alert. If `selectedRows` is omitted, the slot receives an empty array. See [Pagination and cross-page selection](/en/guide/selection#pagination-and-cross-page-selection).
+
+The alert never requests other pages on its own, and it does not turn "all loaded records selected" into "all results on the server". If your application needs to act on every result of a query, define a separate server-side selection protocol.
 
 ## Controlled state and clearing
 
@@ -37,6 +39,21 @@ For remote cross-page selection, also set `preserveSelectedRowKeys: true` on the
 Clearing emits `update:selectedRowKeys([])` and then `clear(previousKeys, availableRows)`. Until the parent accepts the update, the displayed count stays at the value passed in. The component does not keep a second copy of the selection state, and it triggers neither the table's `change` event nor a refresh request.
 
 `disabled` or `loading` disables the default clear control, and `disabled` in the slot reflects both states. Application buttons bind that value themselves. By default the whole alert is hidden when nothing is selected; `alwaysShow` displays the zero-selection state, in which the clear button is disabled.
+
+## Visibility transitions
+
+The alert uses a height expansion or collapse with a fade lasting about 180ms by default. Its height follows the actual content, including wrapped text and buttons; once the leave transition finishes, the alert no longer occupies space. Transitions run only when the alert changes between hidden and visible. Changes to the selected count update the content without replaying the transition.
+
+If the alert needs spacing after toolbar buttons, place that spacing inside the alert's collapsible region so it disappears together with the alert:
+
+```vue
+<VTableSelectionAlert
+  v-model:selected-row-keys="selectedRowKeys"
+  style="--vtg-selection-alert-spacing-before: 16px"
+/>
+```
+
+Use `--vtg-selection-alert-motion-duration` to adjust the duration; set it to `0s` to disable transitions. The component also respects the system's reduced-motion preference. `alwaysShow` keeps the alert visible, so clearing the selection does not collapse it.
 
 ## API
 

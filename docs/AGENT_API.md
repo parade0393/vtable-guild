@@ -172,7 +172,7 @@ const dataSource: UserRow[] = [
 | `column.ellipsis` 支持多行 `{ rows }`                           | 只支持 `boolean \| { showTitle?: boolean }`（单行省略）。                                                                                                                       |
 | 树形 + 虚拟滚动不兼容                                           | **支持组合**：树形数据可以开 `virtual`（展开状态由组件维护）。                                                                                                                  |
 
-分页传配置对象启用（不支持 `true`）；`current` / `pageSize` 分别受控，默认 1 / 10。远程分页传当页数据和 `total`，请求由业务管理。表头全选限定当前页；`selections: true` 的“全选所有”选择筛选后全部已加载可选记录，不请求其他页。远程跨页选择需设置 `preserveSelectedRowKeys: true`。
+分页传配置对象启用（不支持 `true`）；`current` / `pageSize` 分别受控，默认 1 / 10。远程分页传当页数据和 `total`，请求由业务管理。表头全选限定当前页；`selections: true` 的“全选所有”选择筛选后全部已加载可选记录，不请求其他页。受控 `selectedRowKeys` 由业务维护，替换数据源时不会自动裁剪；非受控模式未开启 preserve 时会裁剪数据源中不存在的 key。`preserveSelectedRowKeys: true` 保留非受控跨页 key，并缓存已加载的选中记录供回调返回。
 
 ## VTable Props
 
@@ -284,6 +284,10 @@ const rowSelection: RowSelection<UserRow> = {
 ```
 
 常用字段：`type`（默认 `'checkbox'`）、`selectedRowKeys`/`defaultSelectedRowKeys`、`onChange(keys, rows)`、`onSelect(record, selected, rows)`、`onSelectAll(selected, rows, changeRows)`、`onSelectInvert(keys)`、`onSelectNone()`、`getCheckboxProps`、`columnWidth`、`fixed: boolean \| 'left' \| 'right'`、`columnTitle`、`renderCell`、`checkStrictly`（**本库与 antdv 4.x 都默认 `true` 父子独立选择；如需联动显式传 `false`**）、`selections`（批量菜单，`true` 给默认项）、`hideSelectAll`、`preserveSelectedRowKeys`。
+
+受控模式未设置 `preserveSelectedRowKeys` 或设为 `false` 时，keys 可以保留跨页选择，但 `onChange` 的 rows 仅包含当前 `dataSource` 中的选中记录，数量可能小于 keys。开启 preserve 后，rows 还包含此前缓存的跨页选中记录；从未加载或缓存过的记录无法仅凭 key 补出。受控选择若需要切页、查询或删除后清空，应由业务主动清空 key 和自行保存的选中行数据，不能只设置 `preserveSelectedRowKeys: false`。
+
+选择回调的 `selectedRows` 按同次 `selectedRowKeys` 顺序查找记录，优先取当前数据源记录，开启 preserve 后再取跨页缓存。无法获取记录的 key 会跳过，rows 是 keys 的有序子集，不能无条件按下标关联。单行、全选和 Shift 多选回调与 `onChange` 共用规范化后的选中结果；`changeRows` 保留本次操作遍历顺序。详见[回调顺序](../site/guide/selection.md#回调顺序)。
 
 ## Expandable
 

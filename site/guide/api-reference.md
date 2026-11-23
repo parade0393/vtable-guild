@@ -183,7 +183,9 @@ import {
 
 默认批量选择常量见 [SelectionSentinel](/guide/type-reference#selectionsentinel)。
 
-启用分页后，表头全选和反选限定当前页。“全选所有”菜单（`selections: true` 或 `[SELECTION_ALL]`）选择筛选后全部已加载的可选记录。远程分页使用 `preserveSelectedRowKeys: true` 保留跨页 key 和已选记录，不会自动请求未加载页。见[分页与跨页选择](/guide/selection#分页与跨页选择)。
+启用分页后，表头全选和反选限定当前页。“全选所有”菜单（`selections: true` 或 `[SELECTION_ALL]`）选择筛选后全部已加载的可选记录。受控 `selectedRowKeys` 由业务维护，替换数据源时不会自动裁剪；非受控模式未开启 preserve 时会裁剪数据源中不存在的 key。`preserveSelectedRowKeys: true` 还会缓存跨页选中记录，使回调能返回此前页的行数据，不会自动请求未加载页。见[分页与跨页选择](/guide/selection#分页与跨页选择)。
+
+选择回调的 rows 按 keys 顺序返回，无法获取记录的 key 会跳过；同次操作的 `onChange` 与单行、全选、Shift 多选回调共用规范化后的选中结果。顺序和缺失记录的规则见[回调顺序](/guide/selection#回调顺序)。
 
 ## Expandable
 

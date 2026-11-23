@@ -1,3 +1,8 @@
+---
+title: 行选择
+description: 区分受控与非受控 selectedRowKeys、preserveSelectedRowKeys 的跨页记录缓存，以及选择回调中 keys 与 rows 的顺序和范围。
+---
+
 # 行选择
 
 rowSelection 用来开启行选择列，并统一管理单选、多选、全选、自定义批量选择和树形联动行为。
@@ -55,6 +60,8 @@ const dataSource: UserRow[] = [
 
 当选中项需要和页面状态、侧边栏操作区或接口请求保持同步时，建议直接使用受控模式。
 
+传入 `selectedRowKeys` 即进入受控模式，选中 key 由业务维护。组件通过 `onChange` 请求更新，父组件回写后才接受新的选中状态。替换 `dataSource` 时不会自动裁剪受控 key，即使未设置 `preserveSelectedRowKeys` 或显式设置为 `false`。
+
 下面沿用基础示例中的 `UserRow`。`RowSelection<UserRow>` 为内联回调提供上下文类型：`onChange` 的参数分别是 `Key[]` 和 `UserRow[]`，无需再逐个手工标注。
 
 ```ts
@@ -85,9 +92,32 @@ const rowSelection = computed<RowSelection<UserRow>>(() => ({
 
 `selections: true` 开启“全选所有 / 反选当页 / 清空所有”菜单，也可通过 `[SELECTION_ALL]` 单独开启“全选所有”。“全选所有”（英文 `Select all data`）选择筛选后全部已加载的可选记录，不受当前页限制。远程分页通常只加载当前页，不会因此请求或选择尚未加载的页。
 
-远程翻页会替换 `dataSource`，需设置 `preserveSelectedRowKeys: true` 保留跨页 key 和已选记录，使 `onChange: (keys: Key[], rows: TRecord[]) => void` 能返回此前页的选中记录。请为每条记录提供稳定的 `rowKey`。
+远程翻页通常会替换 `dataSource`。跨页 key 是否保留与回调能否返回此前页的行数据，需要分别判断：
+
+| 选择模式                       | `preserveSelectedRowKeys` | 替换 `dataSource` 后的 key               | `onChange` 的 rows                   |
+| ------------------------------ | ------------------------- | ---------------------------------------- | ------------------------------------ |
+| 受控：传入 `selectedRowKeys`   | 未设置或 `false`          | 由业务维护，组件不自动裁剪               | 仅包含当前 `dataSource` 中的选中记录 |
+| 非受控：未传 `selectedRowKeys` | 未设置或 `false`          | 自动裁剪当前 `dataSource` 中不存在的 key | 仅包含当前 `dataSource` 中的选中记录 |
+| 受控：传入 `selectedRowKeys`   | `true`                    | 由业务维护，组件不自动裁剪               | 当前记录加上此前缓存的跨页选中记录   |
+| 非受控：未传 `selectedRowKeys` | `true`                    | 保留当前 `dataSource` 中不存在的 key     | 当前记录加上此前缓存的跨页选中记录   |
+
+例如，受控模式下第 1 页选中 key `1`，翻到第 2 页再选中 key `11`：未开启 preserve 时，`onChange` 的 keys 为 `[1, 11]`，rows 只包含第 2 页的记录 `11`；返回第 1 页时，记录 `1` 仍然勾选。因此，按 keys 展示的已选数量可能大于 rows 的数量。
+
+需要 `onChange: (keys: Key[], rows: TRecord[]) => void` 返回此前页的选中记录时，设置 `preserveSelectedRowKeys: true`，在选择期间缓存已加载的选中记录。它不会请求未加载页，也无法仅凭 key 补出从未加载或缓存过的行数据。请为每条记录提供稳定的 `rowKey`。
+
+如果业务要求受控选择在切页、重新查询或删除记录后清空，应在对应业务流程中主动清空 `selectedRowKeys` 和自行保存的选中行数据。只设置 `preserveSelectedRowKeys: false` 不会自动清空受控 key。
 
 可在[本地分页示例](/guide/pagination#本地分页)验证表头全选与菜单全选的范围，在[远程分页示例](/guide/pagination#远程分页)验证跨页保留与已选记录回填。
+
+## 回调顺序
+
+选择回调的 `selectedRows` 按同次 `selectedRowKeys` 的顺序返回。普通复选框的 keys 保留原有插入顺序，新选择的 key 追加到末尾；受控模式以业务传入的 key 顺序为基础，树形联动可能按联动规则追加父子 key。
+
+组件依次按 key 查找记录，优先使用当前数据源中的记录，开启 `preserveSelectedRowKeys` 后再查找跨页缓存。例如，同页先选 `3` 再选 `1`，keys 和 rows 的 ID 顺序都是 `[3, 1]`；开启 preserve 后，第 1 页选 `1`、第 2 页再选 `11`，两者的顺序都是 `[1, 11]`，当前页记录不会被统一放到前面。
+
+无法获取记录的 key 会被跳过，rows 中不会插入占位值。因此 rows 保持 keys 的相对顺序，但数量仍可能小于 keys；只有每个 key 都能获取记录时，两个数组才按下标一一对应。业务关联记录时应使用 `rowKey`。
+
+一次选择操作的 `onChange` 与 `onSelect`、`onSelectAll` 或 `onSelectMultiple` 共用规范化后的选中结果，父组件在 `onChange` 中同步修改 keys 或数据源不会让后续回调重新取另一份 rows。`changeRows` 表示本次实际变化的行，保留操作遍历顺序，独立于全部选中行的顺序。
 
 ## 树形数据联动
 
@@ -101,7 +131,7 @@ const rowSelection = computed<RowSelection<UserRow>>(() => ({
 
 ## 使用建议
 
-- 需要长期保留选中结果时，使用 preserveSelectedRowKeys。
+- 非受控模式需要保留数据源外的 key，或回调需要此前页的选中记录时，设置 `preserveSelectedRowKeys: true`；受控 key 的保留与清空由业务维护。
 - 如果某些行不可操作，优先通过 getCheckboxProps 禁用，而不是在点击后再回滚状态。
 - 树形联动适合权限树、组织架构和分组数据，不适合每行语义完全独立的表格。
 

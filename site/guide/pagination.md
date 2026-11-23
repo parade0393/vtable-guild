@@ -54,6 +54,8 @@
 
 下面的示例启用 `preserveSelectedRowKeys`，展示跨页已选数量和记录名称。可先选中一条记录，翻页继续选择，再返回原页检查勾选状态。“全选所有”仅作用于已加载数据，不会请求其他页。
 
+受控 `selectedRowKeys` 即使未开启 preserve，也不会在翻页替换数据源时自动裁剪；但此时选择回调的 rows 仅包含当前 `dataSource` 中的选中记录。开启 `preserveSelectedRowKeys: true` 才会缓存此前页的选中记录供回调返回。非受控模式未开启 preserve 时会裁剪数据源中不存在的 key。若受控选择需要切页清空，应由业务主动清空 key 和自行保存的选中行数据，详见[分页与跨页选择](/guide/selection#分页与跨页选择)。
+
 <Demo src="pagination/remote">
 
 <<< @/demos/pagination/remote.vue
@@ -200,7 +202,7 @@ Element Plus 原生 `pager-count` 的合法值校验仅在开发环境告警，�
 - 翻页及修改页大小各触发一次表格事件；筛选回到第 1 页，仅触发 `'filter'`。排序保留页码；页大小变化保留页码，必要时收敛到末页。
 - 排序、筛选、分页的 `currentDataSource` 是分页前处理后的数据；远程场景仅包含已加载记录。`select` 保留现有展示数据语义。
 - 数据缩短时有效页码收敛到末页，外部属性更新不反向触发事件。远程总数缩短后如需重新请求，由业务代码负责。
-- 表头全选、反选和 Shift 连选限定当前页；“全选所有”菜单选择全部已加载记录。远程跨页选择使用 `preserveSelectedRowKeys`，不会请求未加载页。
+- 表头全选、反选和 Shift 连选限定当前页；“全选所有”菜单选择全部已加载记录。受控 key 由业务维护；`preserveSelectedRowKeys` 用于保留非受控跨页 key 和缓存已选记录，不会请求未加载页。
 - `title` / `footer` 接收当前页展示数据。拖拽仅发生在当前页，但返回完整输入 `dataSource`。
 - 分页器不随表体横向滚动。`scroll.y: 'auto'` 自动为上下分页器留出空间，兼容虚拟滚动。
 - 开启分页后，分页／筛选／排序默认滚回表体顶部，保留横向位置。通过 `scroll.scrollToFirstRowOnChange: false` 关闭；未开启分页时默认保持既有滚动行为。

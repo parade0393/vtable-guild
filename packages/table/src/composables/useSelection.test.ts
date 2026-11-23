@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { effectScope, nextTick, ref, shallowRef } from 'vue'
 import { useSelection } from './useSelection'
-import type { RowSelection } from '../types'
+import type { Key, RowSelection } from '../types'
 
 interface DemoRow extends Record<string, unknown> {
   key: string
@@ -34,6 +34,175 @@ const treeData: TreeRow[] = [
 const treeVisibleRows: TreeRow[] = [treeData[0], treeData[0].children![0], treeData[0].children![1]]
 
 describe('useSelection', () => {
+  it.each([undefined, false, true])(
+    'returns rows in selection order with preserveSelectedRowKeys=%s',
+    (preserveSelectedRowKeys) => {
+      const onChange = vi.fn()
+      const onSelect = vi.fn()
+      const api = useSelection<DemoRow>({
+        rowSelection: () => ({ preserveSelectedRowKeys, onChange, onSelect }),
+        getRowKey: (record) => record.key,
+        data: () => strictData,
+        visibleData: () => strictData,
+      })
+
+      api.toggleRow(strictData[1], 1)
+      api.toggleRow(strictData[0], 0)
+      expect(onChange).toHaveBeenLastCalledWith(['2', '1'], [strictData[1], strictData[0]])
+      expect(onSelect).toHaveBeenLastCalledWith(strictData[0], true, [strictData[1], strictData[0]])
+
+      api.toggleRow(strictData[1], 1)
+      expect(onChange).toHaveBeenLastCalledWith(['1'], [strictData[0]])
+      api.toggleRow(strictData[1], 1)
+      expect(onChange).toHaveBeenLastCalledWith(['1', '2'], [strictData[0], strictData[1]])
+    },
+  )
+
+  it.each([false, true])(
+    'keeps controlled key order and skips unavailable records with preserve=%s',
+    (preserveSelectedRowKeys) => {
+      const onChange = vi.fn()
+      const api = useSelection<DemoRow>({
+        rowSelection: () => ({
+          selectedRowKeys: ['missing', '2', '1'],
+          preserveSelectedRowKeys,
+          onChange,
+        }),
+        getRowKey: (record) => record.key,
+        data: () => strictData,
+        visibleData: () => [],
+        paginate: () => true,
+      })
+
+      api.toggleAll(true)
+      expect(onChange).toHaveBeenLastCalledWith(
+        ['missing', '2', '1'],
+        [strictData[1], strictData[0]],
+      )
+    },
+  )
+
+  it('keeps Shift selection rows in key order and changeRows in range order', () => {
+    const rows = strictData.map((record) => ({ ...record, disabled: false }))
+    const onChange = vi.fn()
+    const onSelectMultiple = vi.fn()
+    const api = useSelection<DemoRow>({
+      rowSelection: () => ({ onChange, onSelectMultiple }),
+      getRowKey: (record) => record.key,
+      data: () => rows,
+      visibleData: () => rows,
+    })
+
+    api.toggleRow(rows[2], 2)
+    api.toggleRow(rows[0], 0, { shiftKey: true } as MouseEvent)
+    expect(onChange).toHaveBeenLastCalledWith(['3', '1', '2'], [rows[2], rows[0], rows[1]])
+    expect(onSelectMultiple).toHaveBeenLastCalledWith(
+      true,
+      [rows[2], rows[0], rows[1]],
+      [rows[0], rows[1]],
+    )
+  })
+
+  it.each(['row', 'all'] as const)(
+    'shares normalized tree rows between onChange and the %s selection callback',
+    (action) => {
+      const [first, second] = treeData[0].children!
+      const onChange = vi.fn()
+      const onSelect = vi.fn()
+      const onSelectAll = vi.fn()
+      const api = useSelection<TreeRow>({
+        rowSelection: () => ({ checkStrictly: false, onChange, onSelect, onSelectAll }),
+        getRowKey: (record) => record.key,
+        data: () => treeData,
+        visibleData: () => [second],
+        paginate: () => true,
+      })
+
+      api.toggleRow(first, 1)
+      if (action === 'row') api.toggleRow(second, 2)
+      else api.toggleAll(true)
+
+      const expectedRows = [first, second, treeData[0]]
+      expect(onChange).toHaveBeenLastCalledWith(['child-1', 'child-2', 'parent'], expectedRows)
+      if (action === 'row') {
+        expect(onSelect).toHaveBeenLastCalledWith(second, true, expectedRows)
+      } else {
+        expect(onSelectAll).toHaveBeenLastCalledWith(true, expectedRows, [second])
+      }
+    },
+  )
+
+  it.each(['checkbox', 'radio'] as const)(
+    'keeps %s callbacks on the same snapshot when the parent replaces data in onChange',
+    (type) => {
+      const scope = effectScope()
+      const data = shallowRef([strictData[0]])
+      const keys = ref<Key[]>([])
+      const onChange = vi.fn((nextKeys: Key[]) => {
+        keys.value = nextKeys
+        data.value = []
+      })
+      const onSelect = vi.fn()
+      const api = scope.run(() =>
+        useSelection<DemoRow>({
+          rowSelection: () => ({ type, selectedRowKeys: keys.value, onChange, onSelect }),
+          getRowKey: (record) => record.key,
+          data: () => data.value,
+          visibleData: () => data.value,
+        }),
+      )!
+      try {
+        api.toggleRow(strictData[0], 0)
+        expect(onChange).toHaveBeenLastCalledWith(['1'], [strictData[0]])
+        expect(onSelect).toHaveBeenLastCalledWith(strictData[0], true, [strictData[0]])
+      } finally {
+        scope.stop()
+      }
+    },
+  )
+
+  it('orders cached and current records by keys and uses refreshed current records', async () => {
+    const scope = effectScope()
+    const data = shallowRef([strictData[0]])
+    const keys = ref<Key[]>(['1'])
+    const onChange = vi.fn((nextKeys: Key[]) => {
+      keys.value = nextKeys
+    })
+    const onSelect = vi.fn()
+    const onSelectAll = vi.fn()
+    const api = scope.run(() =>
+      useSelection<DemoRow>({
+        rowSelection: () => ({
+          selectedRowKeys: keys.value,
+          preserveSelectedRowKeys: true,
+          onChange,
+          onSelect,
+          onSelectAll,
+        }),
+        getRowKey: (record) => record.key,
+        data: () => data.value,
+        visibleData: () => data.value,
+        paginate: () => true,
+      }),
+    )!
+    try {
+      data.value = [strictData[1]]
+      await nextTick()
+      api.toggleRow(strictData[1], 0)
+      expect(onChange).toHaveBeenLastCalledWith(['1', '2'], [strictData[0], strictData[1]])
+      expect(onSelect).toHaveBeenLastCalledWith(strictData[1], true, [strictData[0], strictData[1]])
+
+      const refreshed = { ...strictData[0], name: 'Updated Alpha' }
+      data.value = [refreshed]
+      await nextTick()
+      api.toggleAll(true)
+      expect(onChange).toHaveBeenLastCalledWith(['1', '2'], [refreshed, strictData[1]])
+      expect(onSelectAll).toHaveBeenLastCalledWith(true, [refreshed, strictData[1]], [])
+    } finally {
+      scope.stop()
+    }
+  })
+
   it('preserves controlled off-page records until the parent accepts a clear request', async () => {
     const scope = effectScope()
     const data = shallowRef([strictData[0]])
@@ -61,19 +230,13 @@ describe('useSelection', () => {
 
       // The parent has not accepted the clear request, so row 1 is still selected.
       api.toggleRow(strictData[1], 0)
-      expect(onChange).toHaveBeenLastCalledWith(
-        ['1', '2'],
-        expect.arrayContaining([strictData[0], strictData[1]]),
-      )
+      expect(onChange).toHaveBeenLastCalledWith(['1', '2'], [strictData[0], strictData[1]])
 
       selectedRowKeys.value = ['1', '2']
       data.value = []
       await nextTick()
       api.toggleAll(true)
-      expect(onChange).toHaveBeenLastCalledWith(
-        ['1', '2'],
-        expect.arrayContaining([strictData[0], strictData[1]]),
-      )
+      expect(onChange).toHaveBeenLastCalledWith(['1', '2'], [strictData[0], strictData[1]])
 
       // Once the parent accepts clearing, old off-page records must be evicted.
       api.clearSelection()
@@ -291,13 +454,12 @@ describe('useSelection', () => {
     api.toggleAll(true)
     expect(Array.from(api.selectedKeySet.value).sort()).toEqual(['child-1', 'child-2', 'parent'])
     expect(api.allCheckedState.value).toBe('all')
-    // keys 顺序是「先已选中的 child-1，再全选补上 parent / child-2」，这里只校验集合
+    // keys 顺序是「先已选中的 child-1，再全选补上 parent / child-2」，rows 跟随相同顺序。
     const lastKeys = onChange.mock.calls.at(-1)![0]
-    expect(lastKeys.slice().sort()).toEqual(['child-1', 'child-2', 'parent'])
-    // selectedRows 按建索引的前序返回：父 → 子1 → 子2
+    expect(lastKeys).toEqual(['child-1', 'parent', 'child-2'])
     expect(onChange).toHaveBeenLastCalledWith(lastKeys, [
-      treeData[0],
       treeData[0].children![0],
+      treeData[0],
       treeData[0].children![1],
     ])
     treeVisibleRows.forEach((record, index) => {

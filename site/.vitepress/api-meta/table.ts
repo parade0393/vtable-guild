@@ -239,8 +239,9 @@ export const rowSelectionFields = [
   {
     name: 'selectedRowKeys',
     type: 'Key[]',
-    description: '受控选中 key。',
-    descriptionEn: 'Controlled selected keys.',
+    description: '受控选中 key，由业务维护；数据源变化时不自动裁剪，与 preserve 开关无关。',
+    descriptionEn:
+      'Controlled selected keys, owned by application code; data source changes never automatically prune them, regardless of preserve.',
     features: ['selection'],
   },
   {
@@ -253,29 +254,36 @@ export const rowSelectionFields = [
   {
     name: 'onChange',
     type: '(selectedRowKeys: Key[], selectedRows: TRecord[]) => void',
-    description: '选中项变化回调。',
-    descriptionEn: 'Callback when the selection changes.',
+    description:
+      '选中项变化回调；rows 按 keys 顺序返回，跳过无法获取记录的 key。未开启 preserve 时仅来自当前数据源，开启后还包含此前缓存的跨页选中记录。',
+    descriptionEn:
+      'Selection change callback; rows follows key order, skipping unavailable records. Without preserve, records come only from the current data source; with preserve, they also include previously cached selected records from other pages.',
     features: ['selection'],
   },
   {
     name: 'onSelect',
     type: '(record: TRecord, selected: boolean, selectedRows: TRecord[]) => void',
-    description: '单行选择变化回调。',
-    descriptionEn: 'Callback when the selection of a single row changes.',
+    description: '单行选择变化回调；selectedRows 与同次 onChange 的选中结果一致。',
+    descriptionEn:
+      'Single-row selection change callback; selectedRows matches the selection result of onChange for the same action.',
     features: ['selection'],
   },
   {
     name: 'onSelectMultiple',
     type: '(selected: boolean, selectedRows: TRecord[], changeRows: TRecord[]) => void',
-    description: 'Shift 多选变化回调。',
-    descriptionEn: 'Callback when a Shift multi-selection changes.',
+    description:
+      'Shift 多选变化回调；selectedRows 与同次 onChange 一致，changeRows 保留本次操作的遍历顺序。',
+    descriptionEn:
+      'Shift multi-selection callback; selectedRows matches onChange for the same action, while changeRows keeps the action traversal order.',
     features: ['selection'],
   },
   {
     name: 'onSelectAll',
     type: '(selected: boolean, selectedRows: TRecord[], changeRows: TRecord[]) => void',
-    description: '全选变化回调。',
-    descriptionEn: 'Callback when select-all changes.',
+    description:
+      '全选变化回调；selectedRows 与同次 onChange 一致，changeRows 保留本次操作的遍历顺序。',
+    descriptionEn:
+      'Select-all change callback; selectedRows matches onChange for the same action, while changeRows keeps the action traversal order.',
     features: ['selection'],
   },
   {
@@ -358,8 +366,10 @@ export const rowSelectionFields = [
     name: 'preserveSelectedRowKeys',
     type: 'boolean',
     default: '`false`',
-    description: '数据源变化时保留已选 key。',
-    descriptionEn: 'Keeps the selected keys when the data source changes.',
+    description:
+      '数据源变化时保留非受控已选 key，并缓存已加载的选中记录供跨页回调返回；受控 key 始终由业务维护，不自动请求未加载页。',
+    descriptionEn:
+      'Retains uncontrolled selected keys when the data source changes and caches loaded selected records for cross-page callbacks; controlled keys remain owned by application code, and unloaded pages are never requested automatically.',
     features: ['selection'],
   },
 ] as const satisfies readonly ApiEntry<RowSelectionFieldName>[]

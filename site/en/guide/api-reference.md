@@ -183,7 +183,9 @@ Column groups do not receive leaf-column behaviors such as sorting, filtering, `
 
 For the default batch-selection constants, see [SelectionSentinel](/en/guide/type-reference#selectionsentinel).
 
-With pagination enabled, the header select-all checkbox and invert selection are limited to the current page. The "Select all data" menu (`selections: true` or `[SELECTION_ALL]`) selects all loaded, selectable records after filtering. Remote pagination uses `preserveSelectedRowKeys: true` to keep keys and selected records across pages; unloaded pages are never requested automatically. See [Pagination and cross-page selection](/en/guide/selection#pagination-and-cross-page-selection).
+With pagination enabled, the header select-all checkbox and invert selection are limited to the current page. The "Select all data" menu (`selections: true` or `[SELECTION_ALL]`) selects all loaded, selectable records after filtering. Controlled `selectedRowKeys` are owned by application code and are not automatically pruned when the data source changes; uncontrolled mode prunes absent keys when preserve is not enabled. `preserveSelectedRowKeys: true` also caches selected records across pages so callbacks can return records from earlier pages; unloaded pages are never requested automatically. See [Pagination and cross-page selection](/en/guide/selection#pagination-and-cross-page-selection).
+
+Selection callbacks return rows in key order, skipping keys whose records are unavailable. For the same action, `onChange` and the single-row, select-all or Shift multi-selection callback share the normalized selection result. See [Callback order](/en/guide/selection#callback-order) for ordering and missing-record rules.
 
 ## Expandable
 
