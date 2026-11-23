@@ -56,7 +56,7 @@
 | `hourCycle`              | `'h11' \| 'h12' \| 'h23' \| 'h24'`                                                      | 小时周期；同时提供时，`hour12` 优先。                                                                 |
 | `timeZoneName`           | `'short' \| 'long' \| 'shortOffset' \| 'longOffset' \| 'shortGeneric' \| 'longGeneric'` | 时区名称或偏移的显示形式。                                                                            |
 
-上表列出常用字段；完整选项见 [Intl.DateTimeFormat 配置](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#options)。格式顺序、分隔符和具体文本由语言与 Intl 决定。需要 `YYYY-MM-DD` 默认展示时，可以省略 `dateFormat`。
+上表列出常用字段；完整选项见 [Intl.DateTimeFormat 配置（英文）](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#options)。格式顺序、分隔符和具体文本由语言与 Intl 决定。需要 `YYYY-MM-DD` 默认展示时，可以省略 `dateFormat`。
 
 ::: code-group
 
@@ -150,7 +150,7 @@ const column: TableColumnType = {
 | `currencyDisplay`                                     | `'symbol' \| 'narrowSymbol' \| 'code' \| 'name'`              | 货币显示为符号、窄符号、代码或名称，适用于 `money`。 |
 | `currencySign`                                        | `'standard' \| 'accounting'`                                  | 负数金额采用普通或会计形式。                         |
 
-上表列出常用字段；完整选项见 [Intl.NumberFormat 配置](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/NumberFormat#options)。`digit` 默认采用 decimal 样式；`money` 固定使用 `style: 'currency'` 和 `fieldProps.currency`，`numberFormat.style / currency` 不能覆盖它们。`percent / progress` 固定使用 percent 样式。其他有效 Intl 选项会保留，配置无效时由 Intl 抛出异常。
+上表列出常用字段；完整选项见 [Intl.NumberFormat 配置（英文）](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/NumberFormat#options)。`digit` 默认采用 decimal 样式；`money` 固定使用 `style: 'currency'` 和 `fieldProps.currency`，`numberFormat.style / currency` 不能覆盖它们。`percent / progress` 固定使用 percent 样式。其他有效 Intl 选项会保留，配置无效时由 Intl 抛出异常。
 
 ```ts
 import type { TableColumnType } from '@vtable-guild/vtable-guild'
