@@ -25,7 +25,7 @@ describe.each(['antdv', 'element-plus'] as const)('%s selection alert', (preset)
     expect(wrapper.find('strong').exists()).toBe(false)
     const option = wrapper.get('button').element.parentElement
     expect(option?.parentElement?.lastElementChild).toBe(option)
-    expect(wrapper.attributes('data-vtg-preset')).toBe(preset)
+    expect(wrapper.get('[role="group"]').attributes('data-vtg-preset')).toBe(preset)
     await wrapper.get('button').trigger('click')
     expect(wrapper.emitted('update:selectedRowKeys')).toEqual([[[]]])
     expect(wrapper.emitted('clear')).toEqual([[keys, rows]])
@@ -43,10 +43,12 @@ describe.each(['antdv', 'element-plus'] as const)('%s selection alert', (preset)
       global: { plugins: [createVTableGuild({ themePreset: preset, locale: 'en-US' })] },
     })
     wrappers.push(wrapper)
+    const alertElement = wrapper.get('[role="group"]').element
     expect(wrapper.text()).toContain('0 selected')
     expect(wrapper.get('button').attributes('disabled')).toBeDefined()
     await wrapper.setProps({ selectedRowKeys: [1], loading: true })
-    expect(wrapper.attributes('aria-busy')).toBe('true')
+    expect(wrapper.get('[role="group"]').element).toBe(alertElement)
+    expect(wrapper.get('[role="group"]').attributes('aria-busy')).toBe('true')
     await wrapper.get('button').trigger('click')
     expect(wrapper.emitted('clear')).toBeUndefined()
     await wrapper.setProps({ loading: false, disabled: true })
@@ -54,6 +56,9 @@ describe.each(['antdv', 'element-plus'] as const)('%s selection alert', (preset)
     expect(wrapper.emitted('clear')).toBeUndefined()
     await wrapper.setProps({ disabled: false, showClear: false })
     expect(wrapper.find('button').exists()).toBe(false)
+    await wrapper.setProps({ selectedRowKeys: [] })
+    expect(wrapper.get('[role="group"]').element).toBe(alertElement)
+    expect(wrapper.text()).toContain('0 selected')
   })
 
   it('offers key-based batch actions and protects prop arrays from slot changes', async () => {
@@ -103,11 +108,17 @@ describe.each(['antdv', 'element-plus'] as const)('%s selection alert', (preset)
     })
     wrappers.push(wrapper)
     const status = () => wrapper.get('[role="status"]')
+    const alertElement = wrapper.get('[role="group"]').element
+    const statusElement = status().element
+    const clearElement = wrapper.get('button').element
     expect(wrapper.findAll('[aria-live]')).toHaveLength(1)
     expect(status().attributes('aria-live')).toBe('polite')
     expect(status().text()).toBe(text(1))
     await wrapper.setProps({ selectedRowKeys: [1, 2] })
     expect(status().text()).toBe(text(2))
+    expect(wrapper.get('[role="group"]').element).toBe(alertElement)
+    expect(status().element).toBe(statusElement)
+    expect(wrapper.get('button').element).toBe(clearElement)
     // The clear action stays outside the announced region.
     expect(status().find('button').exists()).toBe(false)
   })
@@ -130,7 +141,9 @@ describe.each(['antdv', 'element-plus'] as const)('%s selection alert', (preset)
     wrappers.push(wrapper)
     expect(wrapper.text()).toContain('Picked 1')
     expect(wrapper.get('button').text()).toBe('Reset keys')
-    expect(wrapper.classes()).toEqual(expect.arrayContaining(['local-alert', 'global-alert']))
+    expect(wrapper.get('.local-alert').classes()).toEqual(
+      expect.arrayContaining(['local-alert', 'global-alert']),
+    )
   })
 })
 

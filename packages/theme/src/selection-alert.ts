@@ -7,6 +7,8 @@ import type {
 /** Visual language follows ProTable's current alert (2.8.x / 3.x): neutral tint, no border. */
 export const selectionAlertTheme = {
   slots: {
+    wrapper: '',
+    content: '',
     root: 'box-border flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-[var(--vtg-selection-alert-radius,6px)] bg-[color:var(--vtg-selection-alert-bg,#fafafa)] px-[var(--vtg-selection-alert-padding-inline,24px)] py-[var(--vtg-selection-alert-padding-block,8px)] text-[length:var(--vtg-table-font-size)] font-[family-name:var(--font-family-base)] leading-[var(--vtg-table-line-height)] text-[color:var(--color-muted)]',
     info: 'flex min-w-0 flex-1 flex-wrap items-center',
     text: 'break-words',

@@ -497,6 +497,27 @@ export const themeCssVarGroups: Readonly<Record<string, readonly CssVarEntry[]>>
       'Selection alert vertical padding',
       ['selection-alert'],
     ),
+    token(
+      '--vtg-selection-alert-motion-duration',
+      '提示条高度与透明度的过渡时长，设为 `0s` 可关闭过渡',
+      'Transition duration of the alert height and opacity; set to `0s` to disable transitions',
+      ['selection-alert'],
+      { fallback: '180ms' },
+    ),
+    token(
+      '--vtg-selection-alert-motion-easing',
+      '提示条显隐过渡的缓动曲线',
+      'Easing curve of the alert visibility transition',
+      ['selection-alert'],
+      { fallback: 'cubic-bezier(0.645, 0.045, 0.355, 1)' },
+    ),
+    token(
+      '--vtg-selection-alert-spacing-before',
+      '提示条前的间距，包含在展开、收起的高度中',
+      'Spacing before the alert, included in its expanded and collapsed height',
+      ['selection-alert'],
+      { fallback: '0' },
+    ),
   ],
   'tokens-editor': [
     token(

@@ -38,6 +38,21 @@ description: 使用 VTableSelectionAlert 展示跨页已选数量、清空受控
 
 `disabled` 或 `loading` 会禁用默认清空入口，插槽中的 `disabled` 同时反映这两个状态。业务按钮自行绑定该值。默认没有选中项时隐藏整个提示条；`alwaysShow` 可以显示零选中状态，此时清空按钮禁用。
 
+## 显隐过渡
+
+提示条默认使用约 180ms 的高度展开、收起与淡入淡出。高度按内容实际尺寸计算，支持文字和业务按钮换行；收起结束后移除占位。过渡只在提示条从隐藏变为显示或从显示变为隐藏时触发，选中数量变化只更新内容。
+
+如果提示条与前面的工具栏按钮之间需要间距，将间距放在组件的折叠区域内，让它随提示条一起收起：
+
+```vue
+<VTableSelectionAlert
+  v-model:selected-row-keys="selectedRowKeys"
+  style="--vtg-selection-alert-spacing-before: 16px"
+/>
+```
+
+通过 `--vtg-selection-alert-motion-duration` 调整时长，设为 `0s` 可以关闭过渡。组件也会遵循系统的减少动态效果设置。`alwaysShow` 保持提示条可见，因此不会因选中数量归零而收起。
+
 ## API
 
 `TRecord` 表示业务行类型。

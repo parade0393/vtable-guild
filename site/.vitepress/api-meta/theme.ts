@@ -655,7 +655,15 @@ const columnSettingsSlots = componentSlots<ColumnSettingsSlots>(
 const selectionAlertSlots = componentSlots<SelectionAlertSlots>(
   'selection-alert',
   {
-    root: ['批量操作提示条根容器。', 'Selection alert root container.'],
+    wrapper: [
+      '显隐过渡与高度折叠的外层容器。',
+      'Outer container for visibility transitions and height collapse.',
+    ],
+    content: [
+      '包含提示条前间距的内容容器。',
+      'Content container including the spacing before the alert.',
+    ],
+    root: ['批量操作提示条视觉容器。', 'Visual container of the selection alert.'],
     info: [
       '选中数量或 `#info` 自定义内容的容器。',
       'Container for the selected count or custom `#info` content.',

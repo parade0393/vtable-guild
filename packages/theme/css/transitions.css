@@ -1,4 +1,4 @@
-/* Shared table popup motion. */
+/* Shared table motion. */
 
 .vtg-table-popup-enter-active,
 .vtg-table-popup-leave-active {
@@ -19,9 +19,39 @@
   pointer-events: none;
 }
 
+[data-selection-alert-motion] {
+  display: flow-root;
+}
+
+[data-selection-alert-content] {
+  padding-block-start: var(--vtg-selection-alert-spacing-before, 0);
+}
+
+.vtg-selection-alert-enter-active,
+.vtg-selection-alert-leave-active {
+  overflow: hidden;
+  transition:
+    height var(--vtg-selection-alert-motion-duration, 180ms)
+      var(--vtg-selection-alert-motion-easing, cubic-bezier(0.645, 0.045, 0.355, 1)),
+    opacity var(--vtg-selection-alert-motion-duration, 180ms)
+      var(--vtg-selection-alert-motion-easing, cubic-bezier(0.645, 0.045, 0.355, 1));
+}
+
+.vtg-selection-alert-enter-from,
+.vtg-selection-alert-leave-to {
+  height: 0;
+  opacity: 0;
+}
+
+.vtg-selection-alert-leave-active {
+  pointer-events: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .vtg-table-popup-enter-active,
-  .vtg-table-popup-leave-active {
+  .vtg-table-popup-leave-active,
+  .vtg-selection-alert-enter-active,
+  .vtg-selection-alert-leave-active {
     transition: none;
   }
 }
