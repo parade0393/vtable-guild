@@ -28,6 +28,7 @@ import type {
 import TableLightFilter from './TableLightFilter'
 import { getQueryFilterLayout, useQueryFilterWidth } from '../utils/queryFilterLayout'
 import { useQueryInlineLayout } from '../utils/queryInlineLayout'
+import { useQueryCollapseMotion } from '../composables/useQueryCollapseMotion'
 import { deriveTableQueryFields } from '../utils/queryFields'
 import { snapshot } from '../utils/snapshot'
 import { stateEqual } from '../utils/stateEqual'
@@ -167,6 +168,10 @@ export default defineComponent({
       () =>
         props.collapsed ??
         (showActions.value && (defaultCollapsed.value ?? props.query.collapsed.value)),
+    )
+    useQueryCollapseMotion(
+      root,
+      computed(() => (props.layoutType === 'QueryFilter' ? collapsed.value : undefined)),
     )
     const grid = computed(() =>
       getQueryFilterLayout(available.value, {

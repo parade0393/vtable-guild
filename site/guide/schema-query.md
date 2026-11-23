@@ -321,6 +321,8 @@ const fields = [{ name: 'team', label: '团队', valueType: 'select', dictionary
 
 使用实例的 `ui` 或全局 `theme.query.slots` 覆盖查询区 class。查询区和弹层默认样式由相应的 preset 提供，宿主输入控件沿用各自 UI 库的样式。
 
+`QueryFilter` 展开和收起时默认使用 180ms 的高度动画。通过 `--vtg-query-motion-duration` 和 `--vtg-query-motion-easing` 调整时长与缓动；时长设为 `0s` 可关闭动画。组件也会遵循系统的减少动态效果设置。
+
 ### ui slots
 
 <!-- @api: ui schema-query -->

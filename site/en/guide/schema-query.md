@@ -326,6 +326,8 @@ In the built-in grid, `labelWidth` sets the label width. It defaults to 80px and
 
 Override query area classes with the instance's `ui` or global `theme.query.slots`. The selected preset supplies the query area and popup styles, and the host UI library styles its own inputs.
 
+`QueryFilter` animates its height when expanding or collapsing, with a default duration of 180ms. Adjust the duration and easing with `--vtg-query-motion-duration` and `--vtg-query-motion-easing`; set the duration to `0s` to disable the animation. The component also respects the system's reduced-motion preference.
+
 ### ui slots
 
 <!-- @api: ui schema-query -->
