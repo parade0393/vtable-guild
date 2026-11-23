@@ -1,4 +1,12 @@
-import type { ColumnType, TableProps } from '@vtable-guild/vtable-guild'
+import type {
+  ColumnType,
+  TableFieldProps,
+  TableFieldRenderContext,
+  TableFieldRenderResult,
+  TableFieldRenderer,
+  TableFieldRenderers,
+  TableProps,
+} from '@vtable-guild/vtable-guild'
 import type * as Docs from './features'
 
 type Equal<A, B> =
@@ -74,6 +82,14 @@ export type FeatureDeclarationContracts = [
   >,
   Assert<Equal<Docs.FieldRendererTableFields, Pick<TableProps, 'renderers'>>>,
   Assert<Equal<Docs.FieldRendererTableFields<Row>, Pick<TableProps<Row>, 'renderers'>>>,
+  Assert<Equal<Docs.TableFieldProps, TableFieldProps>>,
+  Assert<Equal<Docs.TableFieldRenderContext, TableFieldRenderContext>>,
+  Assert<Equal<Docs.TableFieldRenderContext<Row>, TableFieldRenderContext<Row>>>,
+  Assert<Equal<Docs.TableFieldRenderResult, TableFieldRenderResult>>,
+  Assert<Equal<Docs.TableFieldRenderer, TableFieldRenderer>>,
+  Assert<Equal<Docs.TableFieldRenderer<Row>, TableFieldRenderer<Row>>>,
+  Assert<Equal<Docs.TableFieldRenderers, TableFieldRenderers>>,
+  Assert<Equal<Docs.TableFieldRenderers<Row>, TableFieldRenderers<Row>>>,
   Assert<Equal<Docs.SortingColumnFields, Pick<ColumnType, SortingKeys>>>,
   Assert<Equal<Docs.SortingColumnFields<Row>, Pick<ColumnType<Row>, SortingKeys>>>,
   Assert<Equal<Docs.FilteringColumnFields, Pick<ColumnType, FilteringKeys>>>,
